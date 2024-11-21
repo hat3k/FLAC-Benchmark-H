@@ -1,0 +1,16 @@
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\bin\Release\net9.0-windows\FLAC Benchmark-H.exe
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\bin\Release\net9.0-windows\FLAC Benchmark-H.deps.json
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\bin\Release\net9.0-windows\FLAC Benchmark-H.runtimeconfig.json
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\bin\Release\net9.0-windows\FLAC Benchmark-H.dll
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\bin\Release\net9.0-windows\FLAC Benchmark-H.pdb
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC_Benchmark_H.Form1.resources
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.csproj.GenerateResource.cache
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.AssemblyInfoInputs.cache
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.AssemblyInfo.cs
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.csproj.CoreCompileInputs.cache
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.dll
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\refint\FLAC Benchmark-H.dll
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.pdb
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\FLAC Benchmark-H.genruntimeconfig.cache
+C:\Users\Alexander\source\repos\FLAC Benchmark-H\obj\Release\net9.0-windows\ref\FLAC Benchmark-H.dll
