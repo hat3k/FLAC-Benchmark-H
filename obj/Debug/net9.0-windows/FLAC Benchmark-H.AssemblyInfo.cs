@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FLAC Benchmark-H")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+15b1725f1f522169a0944c697a1da117ba596044")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("FLAC Benchmark-H")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FLAC Benchmark-H")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
