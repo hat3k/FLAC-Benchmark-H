@@ -30,9 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
+            buttonStartDecode = new Button();
+            checkBoxHighPriority = new CheckBox();
             labelSetThreads = new Label();
             labelSetCores = new Label();
-            comboBoxFlacExecutables = new ComboBox();
             labelSetCompression = new Label();
             buttonSetHalfThreads = new Button();
             buttonSetMaxThreads = new Button();
@@ -43,8 +44,6 @@
             labelCPUinfo = new Label();
             buttonOpenLogtxt = new Button();
             labelFlacUsedVersion = new Label();
-            labelFlacFileProperties = new Label();
-            labelWavFileProperties = new Label();
             labelThreads = new Label();
             buttonClearLog = new Button();
             textBoxCompressionLevel = new TextBox();
@@ -53,27 +52,29 @@
             textBoxThreads = new TextBox();
             buttonNoSeektable = new Button();
             buttonNoPadding = new Button();
-            radioReEncode = new RadioButton();
-            radioEncode = new RadioButton();
             buttonAsubdividetukey5flattop = new Button();
             buttonepr8 = new Button();
             progressBar = new ProgressBar();
-            buttonStart = new Button();
+            buttonStartEncode = new Button();
             labelAdditionalArguments = new Label();
             textBoxAdditionalArguments = new TextBox();
             textBoxFlacExecutables = new TextBox();
             listBoxFlacExecutables = new ListBox();
             groupBoxEncoders = new GroupBox();
             buttonReloadFlacExetutablesAndAudioFies = new Button();
+            groupBoxAudioFiles = new GroupBox();
+            listBoxAudioFiles = new ListBox();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
+            groupBoxAudioFiles.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(buttonStartDecode);
+            groupBoxEncoderSettings.Controls.Add(checkBoxHighPriority);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
-            groupBoxEncoderSettings.Controls.Add(comboBoxFlacExecutables);
             groupBoxEncoderSettings.Controls.Add(labelSetCompression);
             groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
             groupBoxEncoderSettings.Controls.Add(buttonSetMaxThreads);
@@ -84,8 +85,6 @@
             groupBoxEncoderSettings.Controls.Add(labelCPUinfo);
             groupBoxEncoderSettings.Controls.Add(buttonOpenLogtxt);
             groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
-            groupBoxEncoderSettings.Controls.Add(labelFlacFileProperties);
-            groupBoxEncoderSettings.Controls.Add(labelWavFileProperties);
             groupBoxEncoderSettings.Controls.Add(labelThreads);
             groupBoxEncoderSettings.Controls.Add(buttonClearLog);
             groupBoxEncoderSettings.Controls.Add(textBoxCompressionLevel);
@@ -94,20 +93,39 @@
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
             groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
             groupBoxEncoderSettings.Controls.Add(buttonNoPadding);
-            groupBoxEncoderSettings.Controls.Add(radioReEncode);
-            groupBoxEncoderSettings.Controls.Add(radioEncode);
             groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
             groupBoxEncoderSettings.Controls.Add(buttonepr8);
             groupBoxEncoderSettings.Controls.Add(progressBar);
-            groupBoxEncoderSettings.Controls.Add(buttonStart);
+            groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(labelAdditionalArguments);
             groupBoxEncoderSettings.Controls.Add(textBoxAdditionalArguments);
-            groupBoxEncoderSettings.Location = new Point(313, 12);
+            groupBoxEncoderSettings.Location = new Point(614, 12);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
             groupBoxEncoderSettings.Size = new Size(984, 244);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
+            // 
+            // buttonStartDecode
+            // 
+            buttonStartDecode.Location = new Point(139, 211);
+            buttonStartDecode.Name = "buttonStartDecode";
+            buttonStartDecode.Size = new Size(127, 23);
+            buttonStartDecode.TabIndex = 23;
+            buttonStartDecode.Text = "Decode";
+            buttonStartDecode.UseVisualStyleBackColor = true;
+            buttonStartDecode.Click += buttonStartDecode_Click;
+            // 
+            // checkBoxHighPriority
+            // 
+            checkBoxHighPriority.AutoSize = true;
+            checkBoxHighPriority.Location = new Point(606, 24);
+            checkBoxHighPriority.Name = "checkBoxHighPriority";
+            checkBoxHighPriority.Size = new Size(155, 19);
+            checkBoxHighPriority.TabIndex = 22;
+            checkBoxHighPriority.Text = "Set High Process Priority";
+            checkBoxHighPriority.UseVisualStyleBackColor = true;
+            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
             // 
             // labelSetThreads
             // 
@@ -121,27 +139,16 @@
             // labelSetCores
             // 
             labelSetCores.AutoSize = true;
-            labelSetCores.Location = new Point(225, 56);
+            labelSetCores.Location = new Point(228, 56);
             labelSetCores.Name = "labelSetCores";
-            labelSetCores.Size = new Size(57, 15);
+            labelSetCores.Size = new Size(59, 15);
             labelSetCores.TabIndex = 20;
-            labelSetCores.Text = "Set cores:";
-            // 
-            // comboBoxFlacExecutables
-            // 
-            comboBoxFlacExecutables.Enabled = false;
-            comboBoxFlacExecutables.FormattingEnabled = true;
-            comboBoxFlacExecutables.Location = new Point(468, 0);
-            comboBoxFlacExecutables.Name = "comboBoxFlacExecutables";
-            comboBoxFlacExecutables.Size = new Size(516, 23);
-            comboBoxFlacExecutables.TabIndex = 2;
-            comboBoxFlacExecutables.Visible = false;
-            comboBoxFlacExecutables.SelectedIndexChanged += comboBoxFlacExecutables_SelectedIndexChanged;
+            labelSetCores.Text = "Set Cores:";
             // 
             // labelSetCompression
             // 
             labelSetCompression.AutoSize = true;
-            labelSetCompression.Location = new Point(183, 26);
+            labelSetCompression.Location = new Point(188, 26);
             labelSetCompression.Name = "labelSetCompression";
             labelSetCompression.Size = new Size(99, 15);
             labelSetCompression.TabIndex = 19;
@@ -230,32 +237,12 @@
             // labelFlacUsedVersion
             // 
             labelFlacUsedVersion.AutoSize = true;
-            labelFlacUsedVersion.Location = new Point(411, 215);
+            labelFlacUsedVersion.Location = new Point(459, 215);
             labelFlacUsedVersion.Name = "labelFlacUsedVersion";
             labelFlacUsedVersion.Size = new Size(81, 15);
             labelFlacUsedVersion.TabIndex = 15;
             labelFlacUsedVersion.Text = "Using version:";
             labelFlacUsedVersion.Click += labelFlacUsedVersion_Click;
-            // 
-            // labelFlacFileProperties
-            // 
-            labelFlacFileProperties.AutoSize = true;
-            labelFlacFileProperties.Location = new Point(203, 188);
-            labelFlacFileProperties.Name = "labelFlacFileProperties";
-            labelFlacFileProperties.Size = new Size(112, 15);
-            labelFlacFileProperties.TabIndex = 14;
-            labelFlacFileProperties.Text = "FLAC File Properties";
-            labelFlacFileProperties.TextAlign = ContentAlignment.TopRight;
-            // 
-            // labelWavFileProperties
-            // 
-            labelWavFileProperties.AutoSize = true;
-            labelWavFileProperties.Location = new Point(206, 163);
-            labelWavFileProperties.Name = "labelWavFileProperties";
-            labelWavFileProperties.Size = new Size(109, 15);
-            labelWavFileProperties.TabIndex = 13;
-            labelWavFileProperties.Text = "WAV File Properties";
-            labelWavFileProperties.TextAlign = ContentAlignment.TopRight;
             // 
             // labelThreads
             // 
@@ -298,7 +285,7 @@
             // labelCompressionLevel
             // 
             labelCompressionLevel.AutoSize = true;
-            labelCompressionLevel.Location = new Point(21, 25);
+            labelCompressionLevel.Location = new Point(21, 26);
             labelCompressionLevel.Name = "labelCompressionLevel";
             labelCompressionLevel.Size = new Size(110, 15);
             labelCompressionLevel.TabIndex = 0;
@@ -333,30 +320,6 @@
             buttonNoPadding.UseVisualStyleBackColor = true;
             buttonNoPadding.Click += buttonNoPadding_Click;
             // 
-            // radioReEncode
-            // 
-            radioReEncode.AutoSize = true;
-            radioReEncode.Location = new Point(6, 186);
-            radioReEncode.Name = "radioReEncode";
-            radioReEncode.Size = new Size(193, 19);
-            radioReEncode.TabIndex = 8;
-            radioReEncode.Text = "Re-encode (needs an input.flac)";
-            radioReEncode.UseVisualStyleBackColor = true;
-            radioReEncode.CheckedChanged += radioReEncode_CheckedChanged;
-            // 
-            // radioEncode
-            // 
-            radioEncode.AutoSize = true;
-            radioEncode.Checked = true;
-            radioEncode.Location = new Point(6, 161);
-            radioEncode.Name = "radioEncode";
-            radioEncode.Size = new Size(177, 19);
-            radioEncode.TabIndex = 7;
-            radioEncode.TabStop = true;
-            radioEncode.Text = "Encode (needs an input.wav)";
-            radioEncode.UseVisualStyleBackColor = true;
-            radioEncode.CheckedChanged += radioEncode_CheckedChanged;
-            // 
             // buttonAsubdividetukey5flattop
             // 
             buttonAsubdividetukey5flattop.Location = new Point(192, 112);
@@ -379,29 +342,29 @@
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(137, 211);
+            progressBar.Location = new Point(272, 211);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(669, 23);
+            progressBar.Size = new Size(534, 23);
             progressBar.TabIndex = 4;
             // 
-            // buttonStart
+            // buttonStartEncode
             // 
-            buttonStart.Location = new Point(4, 211);
-            buttonStart.Name = "buttonStart";
-            buttonStart.Size = new Size(127, 23);
-            buttonStart.TabIndex = 1;
-            buttonStart.Text = "Start";
-            buttonStart.UseVisualStyleBackColor = true;
-            buttonStart.Click += buttonStart_Click;
+            buttonStartEncode.Location = new Point(4, 211);
+            buttonStartEncode.Name = "buttonStartEncode";
+            buttonStartEncode.Size = new Size(127, 23);
+            buttonStartEncode.TabIndex = 1;
+            buttonStartEncode.Text = "Encode";
+            buttonStartEncode.UseVisualStyleBackColor = true;
+            buttonStartEncode.Click += buttonStartEncode_Click;
             // 
             // labelAdditionalArguments
             // 
             labelAdditionalArguments.AutoSize = true;
-            labelAdditionalArguments.Location = new Point(6, 86);
+            labelAdditionalArguments.Location = new Point(4, 86);
             labelAdditionalArguments.Name = "labelAdditionalArguments";
-            labelAdditionalArguments.Size = new Size(125, 15);
+            labelAdditionalArguments.Size = new Size(127, 15);
             labelAdditionalArguments.TabIndex = 1;
-            labelAdditionalArguments.Text = "Additional arguments:";
+            labelAdditionalArguments.Text = "Additional Arguments:";
             // 
             // textBoxAdditionalArguments
             // 
@@ -412,7 +375,7 @@
             // 
             // textBoxFlacExecutables
             // 
-            textBoxFlacExecutables.Location = new Point(313, 262);
+            textBoxFlacExecutables.Location = new Point(614, 262);
             textBoxFlacExecutables.Multiline = true;
             textBoxFlacExecutables.Name = "textBoxFlacExecutables";
             textBoxFlacExecutables.PlaceholderText = "Log (there is also additional log file in the app folder)";
@@ -425,6 +388,7 @@
             // listBoxFlacExecutables
             // 
             listBoxFlacExecutables.FormattingEnabled = true;
+            listBoxFlacExecutables.HorizontalScrollbar = true;
             listBoxFlacExecutables.Location = new Point(6, 25);
             listBoxFlacExecutables.Name = "listBoxFlacExecutables";
             listBoxFlacExecutables.Size = new Size(283, 634);
@@ -433,39 +397,62 @@
             // 
             // groupBoxEncoders
             // 
-            groupBoxEncoders.Controls.Add(buttonReloadFlacExetutablesAndAudioFies);
             groupBoxEncoders.Controls.Add(listBoxFlacExecutables);
             groupBoxEncoders.Location = new Point(12, 12);
             groupBoxEncoders.Name = "groupBoxEncoders";
-            groupBoxEncoders.Size = new Size(295, 696);
+            groupBoxEncoders.Size = new Size(295, 668);
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
-            groupBoxEncoders.Text = "Choose encoder binary";
+            groupBoxEncoders.Text = "Choose Encoder";
             // 
             // buttonReloadFlacExetutablesAndAudioFies
             // 
-            buttonReloadFlacExetutablesAndAudioFies.Location = new Point(6, 667);
+            buttonReloadFlacExetutablesAndAudioFies.Location = new Point(18, 686);
             buttonReloadFlacExetutablesAndAudioFies.Name = "buttonReloadFlacExetutablesAndAudioFies";
-            buttonReloadFlacExetutablesAndAudioFies.Size = new Size(283, 23);
+            buttonReloadFlacExetutablesAndAudioFies.Size = new Size(584, 23);
             buttonReloadFlacExetutablesAndAudioFies.TabIndex = 4;
             buttonReloadFlacExetutablesAndAudioFies.Text = "Reload all";
             buttonReloadFlacExetutablesAndAudioFies.UseVisualStyleBackColor = true;
             buttonReloadFlacExetutablesAndAudioFies.Click += buttonReloadFlacExetutablesAndAudioFies_Click;
             // 
+            // groupBoxAudioFiles
+            // 
+            groupBoxAudioFiles.Controls.Add(listBoxAudioFiles);
+            groupBoxAudioFiles.Location = new Point(313, 12);
+            groupBoxAudioFiles.Name = "groupBoxAudioFiles";
+            groupBoxAudioFiles.Size = new Size(295, 668);
+            groupBoxAudioFiles.TabIndex = 3;
+            groupBoxAudioFiles.TabStop = false;
+            groupBoxAudioFiles.Text = "Found Audio Files";
+            // 
+            // listBoxAudioFiles
+            // 
+            listBoxAudioFiles.FormattingEnabled = true;
+            listBoxAudioFiles.HorizontalScrollbar = true;
+            listBoxAudioFiles.Location = new Point(6, 25);
+            listBoxAudioFiles.Name = "listBoxAudioFiles";
+            listBoxAudioFiles.SelectionMode = SelectionMode.MultiExtended;
+            listBoxAudioFiles.Size = new Size(283, 634);
+            listBoxAudioFiles.TabIndex = 2;
+            listBoxAudioFiles.SelectedIndexChanged += listBox1_SelectedIndexChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1309, 719);
+            ClientSize = new Size(1611, 719);
+            Controls.Add(buttonReloadFlacExetutablesAndAudioFies);
+            Controls.Add(groupBoxAudioFiles);
             Controls.Add(groupBoxEncoders);
             Controls.Add(textBoxFlacExecutables);
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.5 build 20241122.0128]";
+            Text = "FLAC Benchmark-H [beta 0.7 build 20241122.2120]";
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
             groupBoxEncoders.ResumeLayout(false);
+            groupBoxAudioFiles.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -480,20 +467,15 @@
         private Label labelAdditionalArguments;
         private TextBox textBoxAdditionalArguments;
         private ProgressBar progressBar;
-        private Button buttonStart;
+        private Button buttonStartEncode;
         private TextBox textBoxFlacExecutables;
         private Button buttonepr8;
         private Button buttonAsubdividetukey5flattop;
-        private RadioButton radioReEncode;
-        private RadioButton radioEncode;
         private Button buttonNoPadding;
         private Button buttonNoSeektable;
         private Button buttonClear;
         private Button buttonClearLog;
-        private Label labelFlacFileProperties;
-        private Label labelWavFileProperties;
         private Label labelFlacUsedVersion;
-        private ComboBox comboBoxFlacExecutables;
         private ListBox listBoxFlacExecutables;
         private GroupBox groupBoxEncoders;
         private Button buttonOpenLogtxt;
@@ -508,5 +490,9 @@
         private Button buttonMaxCompressionLevel;
         private Label labelSetCores;
         private Label labelSetThreads;
+        private GroupBox groupBoxAudioFiles;
+        private ListBox listBoxAudioFiles;
+        private CheckBox checkBoxHighPriority;
+        private Button buttonStartDecode;
     }
 }

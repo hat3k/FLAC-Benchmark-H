@@ -1,8 +1,7 @@
-using Microsoft.VisualBasic.FileIO;
-using NAudio.Wave;
-using System.Diagnostics;
-using System.IO.Compression;
-using System.Management;
+using NAudio.Wave; // Необходимо для работы с аудиофайлами
+using System.Diagnostics; // Необходимо для работы с процессами
+using System.Management; // Необходимо для получения информации о процессоре
+using System.Text; // Необходимо для работы с StringBuilder
 
 
 namespace FLAC_Benchmark_H
@@ -12,9 +11,10 @@ namespace FLAC_Benchmark_H
         private const string LogFileName = "log.txt"; // Имя лог-файла, в который будет записываться время выполнения
         private const string SettingsFileName = "settings.txt"; // Имя файла с настройками
         private Process _process; // Поле для хранения текущего процесса
-        // Объявляем поля для хранения информации о физических и логических ядрах
-        private int physicalCores;
+        private int physicalCores; // Объявляем поля для хранения информации о физических и логических ядрах
         private int logicalCores;
+        private string flacAudioDir; // Поле для хранения пути к каталогу flac_audio
+
 
         public Form1()
         {
@@ -23,15 +23,77 @@ namespace FLAC_Benchmark_H
             progressBar.Maximum = 100;
             progressBar.Value = 0; // Устанавливаем начальное значение
             LoadSettings(); // Загружаем настройки при старте приложения
+            CheckAndCreateDirectories(); // Проверка и создание директорий
+            LoadAudioFiles(); // Загружаем аудиофайлы при инициализации
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.KeyPreview = true; // Включаем возможность перехвата событий клавиатуры на уровне формы
             this.KeyDown += Form1_KeyDown; // Подключаем обработчик события KeyDown
-            LoadAudioProperties(); // загружаем свойства при инициализации
-                                   //          CheckFlacVersion(); // Проверка версии flac.exe
             LoadFlacExecutables(); // Загружаем .exe файлы при инициализации
             LoadCPUInfo(); // Загружаем информацию о процессоре
 
 
+        }
+        private void CheckAndCreateDirectories()
+        {
+            string flacExeDir = Path.Combine(Environment.CurrentDirectory, "flac_exe");
+            flacAudioDir = Path.Combine(Environment.CurrentDirectory, "flac_audio"); // Теперь это поле класса
+            string wavAudioDir = Path.Combine(Environment.CurrentDirectory, "wav_audio");
+
+            // Проверяем и создаем папку flac_exe
+            if (!Directory.Exists(flacExeDir))
+            {
+                Directory.CreateDirectory(flacExeDir);
+            }
+
+            // Проверяем и создаем flac_audio
+            if (!Directory.Exists(flacAudioDir))
+            {
+                Directory.CreateDirectory(flacAudioDir);
+            }
+
+            // Проверяем и создаем wav_audio
+            if (!Directory.Exists(wavAudioDir))
+            {
+                Directory.CreateDirectory(wavAudioDir);
+            }
+        }
+
+        private void LoadAudioFiles()
+        {
+            string currentDirectory = Environment.CurrentDirectory;
+            // flacAudioDir уже объявлен как поле класса, тут мы его просто используем
+
+            string wavAudioDir = Path.Combine(currentDirectory, "wav_audio");
+
+            listBoxAudioFiles.Items.Clear(); // Очищаем предыдущие элементы списка
+
+            // Загружаем FLAC файлы
+            if (Directory.Exists(flacAudioDir))
+            {
+                var flacFiles = Directory.GetFiles(flacAudioDir, "*.flac");
+                foreach (var file in flacFiles)
+                {
+                    // Добавляем в список только те файлы, которые не содержат "_FLAC_Benchmark_H_output" в имени
+                    if (!Path.GetFileName(file).Contains("_FLAC_Benchmark_H_output"))
+                    {
+                        listBoxAudioFiles.Items.Add(Path.GetFileName(file)); // Добавляем только имя файла
+                    }
+                }
+            }
+
+            // Загружаем WAV файлы
+            if (Directory.Exists(wavAudioDir))
+            {
+                var wavFiles = Directory.GetFiles(wavAudioDir, "*.wav");
+                foreach (var file in wavFiles)
+                {
+                    // Добавляем в список только те файлы, которые не содержат "_FLAC_Benchmark_H_output" в имени
+                    if (!Path.GetFileName(file).Contains("_FLAC_Benchmark_H_output"))
+                    {
+                        listBoxAudioFiles.Items.Add(Path.GetFileName(file)); // Добавляем только имя файла
+                    }
+                }
+            }
         }
 
         // Метод для загрузки информации о процессоре
@@ -61,13 +123,13 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Метод для поиска и загрузки всех .exe файлов папке flac
+        // Метод для поиска и загрузки всех .exe файлов в папке flac_exe
         private void LoadFlacExecutables()
         {
-            string flacDirectory = Path.Combine(Environment.CurrentDirectory, "flac");
-            if (Directory.Exists(flacDirectory))
+            string flacExeDirectory = Path.Combine(Environment.CurrentDirectory, "flac_exe");
+            if (Directory.Exists(flacExeDirectory))
             {
-                var exeFiles = Directory.GetFiles(flacDirectory, "*.exe");
+                var exeFiles = Directory.GetFiles(flacExeDirectory, "*.exe");
 
                 listBoxFlacExecutables.Items.Clear(); // Очищаем предыдущие элементы
                 if (exeFiles.Length > 0)
@@ -77,85 +139,15 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    MessageBox.Show("No .exe files found in the flac directory.", "Error");
+                    MessageBox.Show("No .exe files found in the flac_exe directory.", "Error");
                 }
             }
             else
             {
-                MessageBox.Show("Flac directory not found.", "Error");
+                MessageBox.Show("Flac_exe directory not found.", "Error");
             }
         }
 
-        //        private void CheckFlacVersion()
-        //        {
-        //            try
-        //            {
-        //        // Настраиваем процесс для получения версии flac.exe
-        //                ProcessStartInfo startInfo = new ProcessStartInfo()
-        //                {
-        //        FileName = "flac.exe",
-        //        Arguments = "--version",
-        //        UseShellExecute = false,
-        //        RedirectStandardOutput = true,
-        //        CreateNoWindow = true
-        //    };
-        //
-        //                using (Process process = new Process())
-        //                {
-        //        process.StartInfo = startInfo;
-        //        process.Start();
-        //
-        //        // Чтение стандартного вывода
-        //        string output = process.StandardOutput.ReadToEnd();
-        //        process.WaitForExit();
-        //
-        //                    // Устанавливаем текст в labelFlacUsedVersion
-        //                    if (!string.IsNullOrEmpty(output))
-        //                    {
-        //        // Можно добавить дополнительную обработку, если нужно извлечь только номер версии
-        //        labelFlacUsedVersion.Text = "Using version: " + output.Trim(); // Убираем пробелы по краям
-        //    }
-        //                    else
-        //                    {
-        //        labelFlacUsedVersion.Text = "Version not available";
-        //    }
-        //    }
-        //    }
-        //            catch (Exception ex)
-        //            {
-        //        labelFlacUsedVersion.Text = "Error: " + ex.Message; // Обработка ошибок
-        //    }
-        //}
-        private void LoadAudioProperties()
-        {
-            string currentDirectory = Environment.CurrentDirectory;
-            string wavFilePath = Path.Combine(currentDirectory, "input.wav");
-            string flacFilePath = Path.Combine(currentDirectory, "input.flac");
-
-            // Получаем продолжительность для WAV файла
-            if (File.Exists(wavFilePath))
-            {
-                TimeSpan wavDuration = GetAudioDuration(wavFilePath);
-                long wavDurationInMilliseconds = (long)wavDuration.TotalMilliseconds; // Получаем продолжительность в миллисекундах
-                labelWavFileProperties.Text = $"WAV Duration: {wavDuration.Hours:D2}:{wavDuration.Minutes:D2}:{wavDuration.Seconds:D2}:{wavDuration.Milliseconds} ({wavDurationInMilliseconds} ms)";
-            }
-            else
-            {
-                labelWavFileProperties.Text = "WAV file not found.";
-            }
-
-            // Получаем продолжительность для FLAC файла
-            if (File.Exists(flacFilePath))
-            {
-                TimeSpan flacDuration = GetAudioDuration(flacFilePath);
-                long flacDurationInMilliseconds = (long)flacDuration.TotalMilliseconds; // Получаем продолжительность в миллисекундах
-                labelFlacFileProperties.Text = $"FLAC Duration: {flacDuration.Hours:D2}:{flacDuration.Minutes:D2}:{flacDuration.Seconds:D2}:{flacDuration.Milliseconds} ({flacDurationInMilliseconds} ms)";
-            }
-            else
-            {
-                labelFlacFileProperties.Text = "FLAC file not found.";
-            }
-        }
 
         private TimeSpan GetAudioDuration(string filePath)
         {
@@ -169,7 +161,7 @@ namespace FLAC_Benchmark_H
             // Проверяем, была ли нажата клавиша Enter
             if (e.KeyCode == Keys.Enter)
             {
-                buttonStart_Click(sender, e); // Вызываем метод для запуска процесса
+                buttonStartEncode_Click(sender, e); // Вызываем метод для запуска процесса
                 e.SuppressKeyPress = true; // предотвращаем дальнейшую обработку нажатия клавиши
             }
         }
@@ -181,8 +173,8 @@ namespace FLAC_Benchmark_H
                 textBoxCompressionLevel.Text,
                 textBoxThreads.Text,
                 textBoxAdditionalArguments.Text,
-                radioEncode.Checked.ToString(), // Добавляем состояние радиокнопки Encode
-                radioReEncode.Checked.ToString() // Добавляем состояние радиокнопки Re-encode
+                checkBoxHighPriority.Checked.ToString() // Добавляем состояние чекбокса High Priority
+
             };
 
             File.WriteAllLines(SettingsFileName, settings);
@@ -193,23 +185,12 @@ namespace FLAC_Benchmark_H
             if (File.Exists(SettingsFileName))
             {
                 var settings = File.ReadAllLines(SettingsFileName);
-                // Проверяем, что файл настроек содержит как минимум 5 элементов
-                if (settings.Length >= 5)
+                // Проверяем, что файл настроек содержит как минимум 4 элемента
                 {
                     textBoxCompressionLevel.Text = settings[0];
                     textBoxThreads.Text = settings[1];
                     textBoxAdditionalArguments.Text = settings[2];
-
-                    // Устанавливаем состояния радиокнопок, если они есть
-                    radioEncode.Checked = bool.TryParse(settings[3], out bool encodeChecked) && encodeChecked;
-                    radioReEncode.Checked = bool.TryParse(settings[4], out bool reEncodeChecked) && reEncodeChecked;
-                }
-                else if (settings.Length >= 3) // Если есть только 3 элемента, загружаем их
-                {
-                    textBoxCompressionLevel.Text = settings[0];
-                    textBoxThreads.Text = settings[1];
-                    textBoxAdditionalArguments.Text = settings[2];
-                    // Радиокнопки останутся в значениях по умолчанию
+                    checkBoxHighPriority.Checked = bool.TryParse(settings[3], out bool highPriorityChecked) && highPriorityChecked; // Загружаем состояние чекбокса
                 }
             }
         }
@@ -219,150 +200,169 @@ namespace FLAC_Benchmark_H
             SaveSettings(); // Сохраняем настройки перед закрытием формы
         }
 
-        private async void buttonStart_Click(object sender, EventArgs e)
+        private async void buttonStartEncode_Click(object sender, EventArgs e)
         {
-            // Проверяем, выбран ли .exe файл из ComboBox
+            // Проверяем, выбран ли .exe файл из ListBox
             if (listBoxFlacExecutables.SelectedItem == null)
             {
                 MessageBox.Show("Please select a FLAC executable file.");
                 return;
             }
 
-            // Полный путь к выбранному файлу .exe
-            string selectedFlacFile = Path.Combine(Environment.CurrentDirectory, "flac", listBoxFlacExecutables.SelectedItem.ToString());
+            // Полный путь к выбранному файлу .exe в папке flac_exe
+            string selectedFlacFile = Path.Combine(Environment.CurrentDirectory, "flac_exe", listBoxFlacExecutables.SelectedItem.ToString());
 
             try
             {
                 // Получаем текущую директорию приложения
                 string currentDirectory = Environment.CurrentDirectory;
 
-                string inputFile; // Определяем входной файл
-                string outputFile = Path.Combine(currentDirectory, "output.flac"); // Выходной файл остается прежним
+                // Настройка для записи логов
+                StringBuilder logBuilder = new StringBuilder();
 
-                // Обновляем версию FLAC перед началом процесса
-                string flacVersion = await Task.Run(() => GetFlacVersion(selectedFlacFile));
-                labelFlacUsedVersion.Text = "Using version: " + flacVersion;
 
-                // Обновляем интерфейс, чтобы отобразить новую версию
-                await Task.Delay(100); // Небольшая задержка для обновления интерфейса
-
-                // Проверяем, какая радиокнопка выбрана
-                string encodingType = string.Empty; // Переменная для записи типа кодирования
-
-                if (radioEncode.Checked)
+                // Получаем выбранные файлы из listBoxAudioFiles
+                foreach (var item in listBoxAudioFiles.Items)
                 {
-                    inputFile = Path.Combine(currentDirectory, "input.wav"); // Указываем входной файл для кодирования
-                    encodingType = "WAV>FLAC:"; // Устанавливаем тип кодирования
+                    string fileName = item.ToString(); // Получаем только имя файла
+                    string inputFilePath;
 
-                }
-                else if (radioReEncode.Checked)
-                {
-                    inputFile = Path.Combine(currentDirectory, "input.flac"); // Указываем входной файл для перекодирования
-                    encodingType = "FLAC>FLAC:"; // Устанавливаем тип кодирования
-
-                }
-                else
-                {
-                    MessageBox.Show("Please select either 'Encode' or 'Re-encode'.");
-                    return;
-                }
-
-                // Проверяем существование входного файла
-                if (!File.Exists(inputFile))
-                {
-                    MessageBox.Show($"There is no input file '{inputFile}'. Please ensure the file is present in the app directory.");
-                    return;
-                }
-
-                // Получаем значение из TextBox и проверяем, является ли оно числом
-                if (!int.TryParse(textBoxCompressionLevel.Text, out int compressionLevelValue) || compressionLevelValue < 0)
-                {
-                    MessageBox.Show("Please enter a number for compression level from 0 to 8");
-                    return;
-                }
-
-                // Получаем значение из TextBox и проверяем, является ли оно числом
-                if (!int.TryParse(textBoxThreads.Text, out int threadsValue) || threadsValue < 1)
-                {
-                    MessageBox.Show("Please enter a number of threads (minimum 1)");
-                    return;
-                }
-
-                // Получаем текст из текстового поля
-                string additionalArgumentsText = textBoxAdditionalArguments.Text; // Замените textBoxInput на имя вашего текстового поля
-
-                // Создаем таймер
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
-
-                ProcessStartInfo startInfo = new ProcessStartInfo()
-                {
-                    FileName = selectedFlacFile, // Используем выбранный переменный путь к flac
-                    Arguments = $"-{compressionLevelValue} -j{threadsValue} {additionalArgumentsText} -f \"{inputFile}\" -o \"{outputFile}\"",
-                    // Использовать оболочку (настраивается по вашему желанию)
-                    UseShellExecute = false,
-                    CreateNoWindow = true // Скрываем окно консоли
-                };
-
-                // Запускаем процесс
-                using (Process process = new Process())
-                {
-                    process.StartInfo = startInfo;
-
-                    // Обработчик вывода для обновления прогресса
-                    process.EnableRaisingEvents = true;
-
-                    process.Start(); // Запускаем процесс
-
-                    // Устанавливаем приоритет процесса на максимальный
-                    process.PriorityClass = ProcessPriorityClass.High;
-
-                    // Обновляем прогресс (в случае длительного выполнения можно делать по другому)
-                    for (int i = 0; i <= 100; i++)
+                    // Определяем, является ли файл FLAC или WAV
+                    if (fileName.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!process.HasExited)
+                        inputFilePath = Path.Combine(flacAudioDir, fileName); // Путь к FLAC
+                    }
+                    else if (fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Для WAV путь будет в другой директории
+                        inputFilePath = Path.Combine(currentDirectory, "wav_audio", fileName); // Путь к WAV
+                    }
+                    else
+                    {
+                        continue; // Пропустить файлы других типов
+                    }
+
+                    string outputFilePath = Path.Combine(Path.GetDirectoryName(inputFilePath),
+                        Path.GetFileNameWithoutExtension(inputFilePath) + "_FLAC_Benchmark_H_output.flac");
+
+                    // Обновляем версию FLAC перед началом процесса
+                    string flacVersion = await Task.Run(() => GetFlacVersion(selectedFlacFile));
+                    labelFlacUsedVersion.Text = "Using version: " + flacVersion;
+
+                    // Обновляем интерфейс, чтобы отобразить новую версию
+                    await Task.Delay(100); // Небольшая задержка для обновления интерфейса
+
+
+                    // Проверяем существование входного файла
+                    if (!File.Exists(inputFilePath))
+                    {
+                        MessageBox.Show($"There is no input file '{inputFilePath}'. Please ensure the file is present in the app directory.");
+                        return;
+                    }
+
+                    // Получаем размер входного файла
+                    FileInfo inputFileInfo = new FileInfo(inputFilePath);
+                    long inputFileSize = inputFileInfo.Length;
+
+                    // Компрессия - Получаем значение из TextBox и проверяем, является ли оно числом
+                    if (!int.TryParse(textBoxCompressionLevel.Text, out int compressionLevelValue) || compressionLevelValue < 0)
+                    {
+                        MessageBox.Show("Please enter a number for compression level from 0 to 8");
+                        return;
+                    }
+
+                    // Потоки - Получаем значение из TextBox и проверяем, является ли оно числом
+                    if (!int.TryParse(textBoxThreads.Text, out int threadsValue) || threadsValue < 1)
+                    {
+                        MessageBox.Show("Please enter a number of threads (minimum 1)");
+                        return;
+                    }
+
+                    // Дополнительные аргументы - Получаем текст из текстового поля
+                    string additionalArgumentsText = textBoxAdditionalArguments.Text;
+
+                    // Создаем таймер
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
+
+                    ProcessStartInfo startInfo = new ProcessStartInfo()
+                    {
+                        FileName = selectedFlacFile, // Используем выбранный переменный путь к flac
+                        Arguments = $"-{compressionLevelValue} -j{threadsValue} {additionalArgumentsText} -f \"{inputFilePath}\" -o \"{outputFilePath}\"",
+                        UseShellExecute = false, // Использовать оболочку (настраивается по вашему желанию)
+                        CreateNoWindow = true // Скрываем окно консоли
+                    };
+
+                    // Запускаем процесс
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo = startInfo;
+
+                        // Обработчик вывода для обновления прогресса
+                        process.EnableRaisingEvents = true;
+
+                        process.Start(); // Запускаем процесс
+
+                        // Устанавливаем приоритет процесса на высокий, если чекбокс включен
+                        if (checkBoxHighPriority.Checked)
                         {
-                            Invoke(new Action(() => progressBar.Value = i));
-                            System.Threading.Thread.Sleep(50); // Эмуляция прогресса
+                            process.PriorityClass = ProcessPriorityClass.High;
+                        }
+                        else
+                        {
+                            process.PriorityClass = ProcessPriorityClass.Normal; // Устанавливаем нормальный приоритет
+                        }
+
+                        // Обновляем прогресс (в случае длительного выполнения можно делать по другому)
+                        for (int i = 0; i <= 100; i++)
+                        {
+                            if (!process.HasExited)
+                            {
+                                Invoke(new Action(() => progressBar.Value = i));
+                                System.Threading.Thread.Sleep(50); // Эмуляция прогресса
+                            }
+                        }
+
+                        process.WaitForExit(); // Ждем завершения процесса
+
+                        // Проверяем код завершения процесса
+                        if (process.ExitCode != 0)
+                        {
+                            MessageBox.Show("Error", "Error");
+                            return;
                         }
                     }
 
-                    process.WaitForExit(); // Ждем завершения процесса
+                    stopwatch.Stop(); // Останавливаем таймер
 
-                    // Проверяем код завершения процесса
-                    if (process.ExitCode != 0)
-                    {
-                        MessageBox.Show("Error", "Error");
-                        return;
-                    }
+                    // Получаем время выполнения в миллисекундах
+                    long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+                    // Получаем продолжительность аудиофайла
+                    TimeSpan audioDuration = GetAudioDuration(inputFilePath);
+                    double audioDurationInMilliSeconds = audioDuration.TotalMilliseconds; // Получаем продолжительность в секундах
+
+                    // Получаем размер выходного файла в байтах
+                    FileInfo outputFileInfo = new FileInfo(outputFilePath);
+                    long outputFileSize = outputFileInfo.Exists ? outputFileInfo.Length : 0;
+
+                    // Рассчитываем процент сжатия
+                    double compressionPercentage = ((double)(outputFileSize) / inputFileSize) * 100;
+
+                    // Рассчитываем скорость кодирования
+                    double speed = audioDurationInMilliSeconds / elapsedMilliseconds; // Во сколько раз кодирование быстрее
+
+                    // Дописываем информацию в лог-файл
+                    string logEntry = $"{outputFileSize} bytes ({compressionPercentage:F3}%)\t{elapsedMilliseconds} ms (x{speed:F3})\t-{compressionLevelValue}\t-j{threadsValue}\t{additionalArgumentsText}\tVersion: {flacVersion}\tEXE: {Path.GetFileName(selectedFlacFile)}\t{Path.GetFileName(inputFilePath)}"; // Изменение здесь
+                    File.AppendAllText(LogFileName, logEntry.Trim() + Environment.NewLine); // Убедитесь, что здесь тоже используется Trim и новая строчка
+
+                    // Обновляем текстовое поле с логами
+                    UpdateLogTextBox(logEntry);
+
+                    // Сбрасываем прогресс-бар
+                    progressBar.Style = ProgressBarStyle.Blocks; // Выключаем стиль "маркировка"
+                    progressBar.Value = 0; // Сбрасываем значение прогресс-бара
                 }
-
-                stopwatch.Stop(); // Останавливаем таймер
-
-                // Получаем время выполнения в миллисекундах
-                long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-
-                // Получаем продолжительность аудиофайла
-                TimeSpan audioDuration = GetAudioDuration(inputFile);
-                double audioDurationInMilliSeconds = audioDuration.TotalMilliseconds; // Получаем продолжительность в секундах
-
-                // Получаем размер выходного файла в байтах
-                FileInfo outputFileInfo = new FileInfo(outputFile);
-                long fileSizeInBytes = outputFileInfo.Exists ? outputFileInfo.Length : 0;
-
-                // Рассчитываем скорость кодирования
-                double speed = audioDurationInMilliSeconds / elapsedMilliseconds; // Во сколько раз кодирование быстрее
-
-                // Дописываем информацию в лог-файл
-                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{encodingType}\t{fileSizeInBytes} bytes\t{elapsedMilliseconds} ms (x{speed:F3})\t-{compressionLevelValue}\t-j{threadsValue}\t{additionalArgumentsText}\tVersion: {flacVersion}\tEXE: {Path.GetFileName(selectedFlacFile)}";
-                File.AppendAllText(LogFileName, logEntry.Trim() + Environment.NewLine); // Убедитесь, что здесь тоже используется Trim и новая строчка
-
-                // Обновляем текстовое поле с логами
-                UpdateLogTextBox(logEntry);
-
-                // Сбрасываем прогресс-бар
-                progressBar.Style = ProgressBarStyle.Blocks; // Выключаем стиль "маркировка"
-                progressBar.Value = 0; // Сбрасываем значение прогресс-бара
             }
             catch (Exception ex)
             {
@@ -518,11 +518,15 @@ namespace FLAC_Benchmark_H
 
         private void buttonReloadFlacExetutablesAndAudioFies_Click(object sender, EventArgs e)
         {
+            // Проверка и создание директорий
+            CheckAndCreateDirectories();
+
             // Перезагружаем список .exe файлов
             LoadFlacExecutables();
 
-            // Перезагружаем свойства аудиофайлов
-            LoadAudioProperties();
+            // Перезагружаем список аудиофайлов
+            LoadAudioFiles(); // Добавляем загрузку аудио файлов
+
         }
 
         private void labelCPUinfo_Click(object sender, EventArgs e)
@@ -568,5 +572,132 @@ namespace FLAC_Benchmark_H
             textBoxCompressionLevel.Text = "8"; // Устанавливаем значение 8
 
         }
+
+        private void checkBoxHighPriority_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void buttonStartDecode_Click(object sender, EventArgs e)
+        {
+            // Проверяем, выбран ли .exe файл из ListBox
+            if (listBoxFlacExecutables.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a FLAC executable file.");
+                return;
+            }
+
+            // Полный путь к выбранному файлу .exe в папке flac_exe
+            string selectedFlacFile = Path.Combine(Environment.CurrentDirectory, "flac_exe", listBoxFlacExecutables.SelectedItem.ToString());
+
+            try
+            {
+                // Получаем текущую директорию приложения
+                string currentDirectory = Environment.CurrentDirectory;
+
+                // Получаем выбранные файлы из listBoxAudioFiles
+                foreach (var item in listBoxAudioFiles.Items)
+                {
+                    string fileName = item.ToString(); // Получаем только имя файла
+
+                    // Проверяем, является ли файл FLAC
+                    if (!fileName.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue; // Пропускаем файлы других типов
+                    }
+
+                    string inputFilePath = Path.Combine(flacAudioDir, fileName); // Путь к FLAC
+                    string outputFilePath = Path.Combine(flacAudioDir, Path.GetFileNameWithoutExtension(inputFilePath) + "_FLAC_Benchmark_H_output.wav");
+
+                    // Обновляем версию FLAC перед началом процесса
+                    string flacVersion = await Task.Run(() => GetFlacVersion(selectedFlacFile));
+                    labelFlacUsedVersion.Text = "Using version: " + flacVersion;
+
+                    // Обновляем интерфейс, чтобы отобразить новую версию
+                    await Task.Delay(100); // Небольшая задержка для обновления интерфейса
+
+                    // Проверяем существование входного файла
+                    if (!File.Exists(inputFilePath))
+                    {
+                        MessageBox.Show($"There is no input file '{inputFilePath}'. Please ensure the file is present in the app directory.");
+                        return;
+                    }
+
+
+
+                    // Создаем таймер
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
+
+                    ProcessStartInfo startInfo = new ProcessStartInfo()
+                    {
+                        FileName = selectedFlacFile, // Используем выбранный исполняемый файл FLAC
+                        Arguments = $"-d -f \"{inputFilePath}\" -o \"{outputFilePath}\"", // Аргументы для декодирования
+                        UseShellExecute = false,
+                        CreateNoWindow = true // Скрываем консольное окно
+                    };
+
+                    // Запускаем процесс
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo = startInfo;
+                        process.EnableRaisingEvents = true;
+
+                        process.Start(); // Запускаем процесс
+
+                        // Устанавливаем приоритет процесса на высокий, если чекбокс включен
+                        if (checkBoxHighPriority.Checked)
+                        {
+                            process.PriorityClass = ProcessPriorityClass.High;
+                        }
+                        else
+                        {
+                            process.PriorityClass = ProcessPriorityClass.Normal; // Устанавливаем нормальный приоритет
+                        }
+
+                        // Ждем завершения процесса
+                        await Task.Run(() => process.WaitForExit());
+
+                        process.WaitForExit(); // Ждем завершения процесса
+
+                        // Проверяем код завершения процесса
+                        if (process.ExitCode != 0)
+                        {
+                            MessageBox.Show("Error during decoding", "Error");
+                            return;
+                        }
+                    }
+
+                    stopwatch.Stop(); // Останавливаем таймер
+
+                    // Получаем время выполнения в миллисекундах
+                    long elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+                    // Получаем продолжительность аудиофайла
+                    TimeSpan audioDuration = GetAudioDuration(inputFilePath);
+                    double audioDurationInMilliSeconds = audioDuration.TotalMilliseconds; // Продолжительность в миллисекундах
+                    // Получаем размер выходного файла в байтах
+                    FileInfo outputFileInfo = new FileInfo(outputFilePath);
+                    long outputFileSize = outputFileInfo.Exists ? outputFileInfo.Length : 0;
+
+                    // Рассчитываем скорость декодирования
+                    double speed = audioDurationInMilliSeconds / elapsedMilliseconds; // Во сколько раз декодирование быстрее
+
+                    // Дописываем информацию в лог-файл
+                    string logEntry = $"{outputFileSize} bytes\t{elapsedMilliseconds} ms (x{speed:F3})\tVersion: {flacVersion}\tInput: {Path.GetFileName(inputFilePath)}\tOutput: {Path.GetFileName(outputFilePath)}";
+                    File.AppendAllText(LogFileName, logEntry.Trim() + Environment.NewLine); // Логируем информацию
+
+                    // Обновляем текстовое поле с логами
+                    UpdateLogTextBox(logEntry);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Error");
+            }
+        }
+
+
+
     }
 }
