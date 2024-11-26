@@ -26,35 +26,3 @@ build/
 *.sdf
 .vs
 *.opensdf
-obj/Debug/net9.0-windows/FLAC Benchmark-H.GeneratedMSBuildEditorConfig.editorconfig
-obj/Debug/net9.0-windows/FLAC Benchmark-H.assets.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfoInputs.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfo.cs
-obj/project.nuget.cache
-obj/project.assets.json
-obj/FLAC Benchmark-H.csproj.nuget.dgspec.json
-obj/Debug/net9.0-windows/refint/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/ref/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/FLAC Benchmark-H.pdb
-obj/Debug/net9.0-windows/FLAC Benchmark-H.genruntimeconfig.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.GeneratedMSBuildEditorConfig.editorconfig
-obj/Debug/net9.0-windows/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/FLAC Benchmark-H.csproj.FileListAbsolute.txt
-obj/Debug/net9.0-windows/FLAC Benchmark-H.assets.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfoInputs.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfo.cs
-obj/Debug/net9.0-windows/apphost.exe
-obj/project.nuget.cache
-obj/project.assets.json
-obj/FLAC Benchmark-H.csproj.nuget.dgspec.json
-obj/Debug/net9.0-windows/refint/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/ref/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/FLAC Benchmark-H.pdb
-obj/Debug/net9.0-windows/FLAC Benchmark-H.genruntimeconfig.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.GeneratedMSBuildEditorConfig.editorconfig
-obj/Debug/net9.0-windows/FLAC Benchmark-H.dll
-obj/Debug/net9.0-windows/FLAC Benchmark-H.csproj.FileListAbsolute.txt
-obj/Debug/net9.0-windows/FLAC Benchmark-H.assets.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfoInputs.cache
-obj/Debug/net9.0-windows/FLAC Benchmark-H.AssemblyInfo.cs
-obj/Debug/net9.0-windows/apphost.exe
