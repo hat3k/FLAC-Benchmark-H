@@ -1,6 +1,7 @@
 
 /.vs
 /obj
+obj/
 *.user
 # OS Files #
 .directory
