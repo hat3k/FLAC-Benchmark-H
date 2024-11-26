@@ -7,7 +7,7 @@ obj/
 .directory
 *.DS_Store
 [Tt]humbs.db 
-
+*obj*
 
 # MSVC junk #
 [Dd]ebug/
