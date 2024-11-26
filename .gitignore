@@ -1,4 +1,28 @@
 
 /.vs
 /obj
-/obj
+*.user
+# OS Files #
+.directory
+*.DS_Store
+[Tt]humbs.db 
+
+
+# MSVC junk #
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.exe
+*.zip
+*.7z
+*.ncb
+*.msi
+*.wix???
+*.sdf
+.vs
+*.opensdf
