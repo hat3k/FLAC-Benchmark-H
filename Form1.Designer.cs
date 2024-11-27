@@ -61,56 +61,75 @@
             textBoxFlacExecutables = new TextBox();
             listBoxFlacExecutables = new ListBox();
             groupBoxEncoders = new GroupBox();
-            buttonReloadFlacExetutablesAndAudioFies = new Button();
             groupBoxAudioFiles = new GroupBox();
             listBoxAudioFiles = new ListBox();
+            groupBoxJobsQueue = new GroupBox();
+            groupLog = new GroupBox();
+            buttonImportJobList = new Button();
+            buttonExportJobList = new Button();
+            buttonClearJobList = new Button();
+            textBoxJobsQueue = new TextBox();
+            buttonClearAudioFiles = new Button();
+            buttonClearEncoders = new Button();
+            buttonAddEncoders = new Button();
+            buttonAddAudioFiles = new Button();
+            button1 = new Button();
+            button2 = new Button();
+            buttonStartJobList = new Button();
+            groupBoxJobSettings = new GroupBox();
+            buttonAddJobToQueue = new Button();
+            radioButtonEncode = new RadioButton();
+            radioButtonDecode = new RadioButton();
+            button3 = new Button();
+            buttonCopyLog = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
+            groupBoxJobsQueue.SuspendLayout();
+            groupLog.SuspendLayout();
+            groupBoxJobSettings.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
+            groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
+            groupBoxEncoderSettings.Controls.Add(progressBar);
             groupBoxEncoderSettings.Controls.Add(buttonStartDecode);
             groupBoxEncoderSettings.Controls.Add(checkBoxHighPriority);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
+            groupBoxEncoderSettings.Controls.Add(labelAdditionalArguments);
+            groupBoxEncoderSettings.Controls.Add(textBoxAdditionalArguments);
             groupBoxEncoderSettings.Controls.Add(labelSetCompression);
+            groupBoxEncoderSettings.Controls.Add(buttonepr8);
             groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
+            groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
             groupBoxEncoderSettings.Controls.Add(buttonSetMaxThreads);
+            groupBoxEncoderSettings.Controls.Add(buttonNoPadding);
             groupBoxEncoderSettings.Controls.Add(buttonHalfCores);
+            groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
             groupBoxEncoderSettings.Controls.Add(buttonSetMaxCores);
+            groupBoxEncoderSettings.Controls.Add(buttonClear);
             groupBoxEncoderSettings.Controls.Add(buttonMaxCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(button5CompressionLevel);
             groupBoxEncoderSettings.Controls.Add(labelCPUinfo);
-            groupBoxEncoderSettings.Controls.Add(buttonOpenLogtxt);
-            groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
             groupBoxEncoderSettings.Controls.Add(labelThreads);
-            groupBoxEncoderSettings.Controls.Add(buttonClearLog);
             groupBoxEncoderSettings.Controls.Add(textBoxCompressionLevel);
-            groupBoxEncoderSettings.Controls.Add(buttonClear);
             groupBoxEncoderSettings.Controls.Add(labelCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
-            groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
-            groupBoxEncoderSettings.Controls.Add(buttonNoPadding);
-            groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
-            groupBoxEncoderSettings.Controls.Add(buttonepr8);
-            groupBoxEncoderSettings.Controls.Add(progressBar);
-            groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
-            groupBoxEncoderSettings.Controls.Add(labelAdditionalArguments);
-            groupBoxEncoderSettings.Controls.Add(textBoxAdditionalArguments);
-            groupBoxEncoderSettings.Location = new Point(614, 12);
+            groupBoxEncoderSettings.Location = new Point(622, 12);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
-            groupBoxEncoderSettings.Size = new Size(984, 244);
+            groupBoxEncoderSettings.Size = new Size(858, 260);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             // 
             // buttonStartDecode
             // 
-            buttonStartDecode.Location = new Point(139, 211);
+            buttonStartDecode.Location = new Point(112, 230);
             buttonStartDecode.Name = "buttonStartDecode";
-            buttonStartDecode.Size = new Size(127, 23);
+            buttonStartDecode.Size = new Size(100, 23);
             buttonStartDecode.TabIndex = 23;
             buttonStartDecode.Text = "Decode";
             buttonStartDecode.UseVisualStyleBackColor = true;
@@ -119,7 +138,7 @@
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Location = new Point(606, 24);
+            checkBoxHighPriority.Location = new Point(526, 233);
             checkBoxHighPriority.Name = "checkBoxHighPriority";
             checkBoxHighPriority.Size = new Size(155, 19);
             checkBoxHighPriority.TabIndex = 22;
@@ -217,7 +236,7 @@
             // labelCPUinfo
             // 
             labelCPUinfo.AutoSize = true;
-            labelCPUinfo.Location = new Point(606, 56);
+            labelCPUinfo.Location = new Point(124, -3);
             labelCPUinfo.Name = "labelCPUinfo";
             labelCPUinfo.Size = new Size(298, 15);
             labelCPUinfo.TabIndex = 17;
@@ -226,7 +245,7 @@
             // 
             // buttonOpenLogtxt
             // 
-            buttonOpenLogtxt.Location = new Point(812, 211);
+            buttonOpenLogtxt.Location = new Point(721, 392);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
             buttonOpenLogtxt.TabIndex = 16;
@@ -237,7 +256,7 @@
             // labelFlacUsedVersion
             // 
             labelFlacUsedVersion.AutoSize = true;
-            labelFlacUsedVersion.Location = new Point(459, 215);
+            labelFlacUsedVersion.Location = new Point(228, 234);
             labelFlacUsedVersion.Name = "labelFlacUsedVersion";
             labelFlacUsedVersion.Size = new Size(81, 15);
             labelFlacUsedVersion.TabIndex = 15;
@@ -255,7 +274,7 @@
             // 
             // buttonClearLog
             // 
-            buttonClearLog.Location = new Point(903, 211);
+            buttonClearLog.Location = new Point(903, 392);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(75, 23);
             buttonClearLog.TabIndex = 12;
@@ -274,7 +293,7 @@
             // 
             // buttonClear
             // 
-            buttonClear.Location = new Point(903, 83);
+            buttonClear.Location = new Point(777, 82);
             buttonClear.Name = "buttonClear";
             buttonClear.Size = new Size(75, 23);
             buttonClear.TabIndex = 11;
@@ -302,7 +321,7 @@
             // 
             // buttonNoSeektable
             // 
-            buttonNoSeektable.Location = new Point(469, 112);
+            buttonNoSeektable.Location = new Point(469, 111);
             buttonNoSeektable.Name = "buttonNoSeektable";
             buttonNoSeektable.Size = new Size(89, 23);
             buttonNoSeektable.TabIndex = 10;
@@ -312,7 +331,7 @@
             // 
             // buttonNoPadding
             // 
-            buttonNoPadding.Location = new Point(380, 112);
+            buttonNoPadding.Location = new Point(380, 111);
             buttonNoPadding.Name = "buttonNoPadding";
             buttonNoPadding.Size = new Size(83, 23);
             buttonNoPadding.TabIndex = 9;
@@ -322,7 +341,7 @@
             // 
             // buttonAsubdividetukey5flattop
             // 
-            buttonAsubdividetukey5flattop.Location = new Point(192, 112);
+            buttonAsubdividetukey5flattop.Location = new Point(192, 111);
             buttonAsubdividetukey5flattop.Name = "buttonAsubdividetukey5flattop";
             buttonAsubdividetukey5flattop.Size = new Size(182, 23);
             buttonAsubdividetukey5flattop.TabIndex = 6;
@@ -332,7 +351,7 @@
             // 
             // buttonepr8
             // 
-            buttonepr8.Location = new Point(138, 112);
+            buttonepr8.Location = new Point(138, 111);
             buttonepr8.Name = "buttonepr8";
             buttonepr8.Size = new Size(48, 23);
             buttonepr8.TabIndex = 5;
@@ -342,16 +361,16 @@
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(272, 211);
+            progressBar.Location = new Point(218, 230);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(534, 23);
+            progressBar.Size = new Size(302, 23);
             progressBar.TabIndex = 4;
             // 
             // buttonStartEncode
             // 
-            buttonStartEncode.Location = new Point(4, 211);
+            buttonStartEncode.Location = new Point(6, 230);
             buttonStartEncode.Name = "buttonStartEncode";
-            buttonStartEncode.Size = new Size(127, 23);
+            buttonStartEncode.Size = new Size(100, 23);
             buttonStartEncode.TabIndex = 1;
             buttonStartEncode.Text = "Encode";
             buttonStartEncode.UseVisualStyleBackColor = true;
@@ -360,7 +379,7 @@
             // labelAdditionalArguments
             // 
             labelAdditionalArguments.AutoSize = true;
-            labelAdditionalArguments.Location = new Point(4, 86);
+            labelAdditionalArguments.Location = new Point(4, 85);
             labelAdditionalArguments.Name = "labelAdditionalArguments";
             labelAdditionalArguments.Size = new Size(127, 15);
             labelAdditionalArguments.TabIndex = 1;
@@ -368,20 +387,20 @@
             // 
             // textBoxAdditionalArguments
             // 
-            textBoxAdditionalArguments.Location = new Point(139, 83);
+            textBoxAdditionalArguments.Location = new Point(139, 82);
             textBoxAdditionalArguments.Name = "textBoxAdditionalArguments";
-            textBoxAdditionalArguments.Size = new Size(758, 23);
+            textBoxAdditionalArguments.Size = new Size(632, 23);
             textBoxAdditionalArguments.TabIndex = 4;
             // 
             // textBoxFlacExecutables
             // 
-            textBoxFlacExecutables.Location = new Point(614, 262);
+            textBoxFlacExecutables.Location = new Point(6, 22);
             textBoxFlacExecutables.Multiline = true;
             textBoxFlacExecutables.Name = "textBoxFlacExecutables";
             textBoxFlacExecutables.PlaceholderText = "Log (there is also additional log file in the app folder)";
             textBoxFlacExecutables.ReadOnly = true;
             textBoxFlacExecutables.ScrollBars = ScrollBars.Both;
-            textBoxFlacExecutables.Size = new Size(984, 446);
+            textBoxFlacExecutables.Size = new Size(972, 364);
             textBoxFlacExecutables.TabIndex = 1;
             textBoxFlacExecutables.WordWrap = false;
             // 
@@ -391,39 +410,35 @@
             listBoxFlacExecutables.HorizontalScrollbar = true;
             listBoxFlacExecutables.Location = new Point(6, 25);
             listBoxFlacExecutables.Name = "listBoxFlacExecutables";
-            listBoxFlacExecutables.Size = new Size(283, 634);
+            listBoxFlacExecutables.Size = new Size(287, 199);
             listBoxFlacExecutables.TabIndex = 2;
             listBoxFlacExecutables.SelectedIndexChanged += listBox1_SelectedIndexChanged;
             // 
             // groupBoxEncoders
             // 
             groupBoxEncoders.Controls.Add(listBoxFlacExecutables);
+            groupBoxEncoders.Controls.Add(button1);
+            groupBoxEncoders.Controls.Add(buttonAddEncoders);
+            groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
             groupBoxEncoders.Name = "groupBoxEncoders";
-            groupBoxEncoders.Size = new Size(295, 668);
+            groupBoxEncoders.Size = new Size(299, 260);
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
-            groupBoxEncoders.Text = "Choose Encoder";
-            // 
-            // buttonReloadFlacExetutablesAndAudioFies
-            // 
-            buttonReloadFlacExetutablesAndAudioFies.Location = new Point(18, 686);
-            buttonReloadFlacExetutablesAndAudioFies.Name = "buttonReloadFlacExetutablesAndAudioFies";
-            buttonReloadFlacExetutablesAndAudioFies.Size = new Size(584, 23);
-            buttonReloadFlacExetutablesAndAudioFies.TabIndex = 4;
-            buttonReloadFlacExetutablesAndAudioFies.Text = "Reload all";
-            buttonReloadFlacExetutablesAndAudioFies.UseVisualStyleBackColor = true;
-            buttonReloadFlacExetutablesAndAudioFies.Click += buttonReloadFlacExetutablesAndAudioFies_Click;
+            groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop is available)";
             // 
             // groupBoxAudioFiles
             // 
             groupBoxAudioFiles.Controls.Add(listBoxAudioFiles);
-            groupBoxAudioFiles.Location = new Point(313, 12);
+            groupBoxAudioFiles.Controls.Add(button2);
+            groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
+            groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
+            groupBoxAudioFiles.Location = new Point(317, 12);
             groupBoxAudioFiles.Name = "groupBoxAudioFiles";
-            groupBoxAudioFiles.Size = new Size(295, 668);
+            groupBoxAudioFiles.Size = new Size(299, 260);
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
-            groupBoxAudioFiles.Text = "Found Audio Files";
+            groupBoxAudioFiles.Text = "Audio Files (Drag'n'Drop is available)";
             // 
             // listBoxAudioFiles
             // 
@@ -432,29 +447,234 @@
             listBoxAudioFiles.Location = new Point(6, 25);
             listBoxAudioFiles.Name = "listBoxAudioFiles";
             listBoxAudioFiles.SelectionMode = SelectionMode.MultiExtended;
-            listBoxAudioFiles.Size = new Size(283, 634);
+            listBoxAudioFiles.Size = new Size(287, 199);
             listBoxAudioFiles.TabIndex = 2;
             listBoxAudioFiles.SelectedIndexChanged += listBox1_SelectedIndexChanged;
+            // 
+            // groupBoxJobsQueue
+            // 
+            groupBoxJobsQueue.Controls.Add(textBoxJobsQueue);
+            groupBoxJobsQueue.Controls.Add(buttonStartJobList);
+            groupBoxJobsQueue.Controls.Add(buttonExportJobList);
+            groupBoxJobsQueue.Controls.Add(buttonImportJobList);
+            groupBoxJobsQueue.Controls.Add(buttonClearJobList);
+            groupBoxJobsQueue.Location = new Point(12, 278);
+            groupBoxJobsQueue.Name = "groupBoxJobsQueue";
+            groupBoxJobsQueue.Size = new Size(604, 422);
+            groupBoxJobsQueue.TabIndex = 5;
+            groupBoxJobsQueue.TabStop = false;
+            groupBoxJobsQueue.Text = "Jobs Queue (Drag'n'Drop is available)";
+            // 
+            // groupLog
+            // 
+            groupLog.Controls.Add(textBoxFlacExecutables);
+            groupLog.Controls.Add(buttonClearLog);
+            groupLog.Controls.Add(button3);
+            groupLog.Controls.Add(buttonCopyLog);
+            groupLog.Controls.Add(buttonOpenLogtxt);
+            groupLog.Location = new Point(622, 278);
+            groupLog.Name = "groupLog";
+            groupLog.Size = new Size(984, 422);
+            groupLog.TabIndex = 6;
+            groupLog.TabStop = false;
+            groupLog.Text = "Log";
+            // 
+            // buttonImportJobList
+            // 
+            buttonImportJobList.Location = new Point(112, 392);
+            buttonImportJobList.Name = "buttonImportJobList";
+            buttonImportJobList.Size = new Size(100, 23);
+            buttonImportJobList.TabIndex = 3;
+            buttonImportJobList.Text = "Import";
+            buttonImportJobList.UseVisualStyleBackColor = true;
+            // 
+            // buttonExportJobList
+            // 
+            buttonExportJobList.Location = new Point(218, 392);
+            buttonExportJobList.Name = "buttonExportJobList";
+            buttonExportJobList.Size = new Size(100, 23);
+            buttonExportJobList.TabIndex = 3;
+            buttonExportJobList.Text = "Export";
+            buttonExportJobList.UseVisualStyleBackColor = true;
+            // 
+            // buttonClearJobList
+            // 
+            buttonClearJobList.Location = new Point(523, 392);
+            buttonClearJobList.Name = "buttonClearJobList";
+            buttonClearJobList.Size = new Size(75, 23);
+            buttonClearJobList.TabIndex = 11;
+            buttonClearJobList.Text = "Clear";
+            buttonClearJobList.UseVisualStyleBackColor = true;
+            buttonClearJobList.Click += buttonClear_Click;
+            // 
+            // textBoxJobsQueue
+            // 
+            textBoxJobsQueue.Location = new Point(6, 22);
+            textBoxJobsQueue.Multiline = true;
+            textBoxJobsQueue.Name = "textBoxJobsQueue";
+            textBoxJobsQueue.PlaceholderText = "You may edit this text";
+            textBoxJobsQueue.ScrollBars = ScrollBars.Both;
+            textBoxJobsQueue.Size = new Size(592, 364);
+            textBoxJobsQueue.TabIndex = 1;
+            textBoxJobsQueue.WordWrap = false;
+            // 
+            // buttonClearAudioFiles
+            // 
+            buttonClearAudioFiles.Location = new Point(218, 230);
+            buttonClearAudioFiles.Name = "buttonClearAudioFiles";
+            buttonClearAudioFiles.Size = new Size(75, 23);
+            buttonClearAudioFiles.TabIndex = 11;
+            buttonClearAudioFiles.Text = "Clear";
+            buttonClearAudioFiles.UseVisualStyleBackColor = true;
+            buttonClearAudioFiles.Click += buttonClear_Click;
+            // 
+            // buttonClearEncoders
+            // 
+            buttonClearEncoders.Location = new Point(218, 230);
+            buttonClearEncoders.Name = "buttonClearEncoders";
+            buttonClearEncoders.Size = new Size(75, 23);
+            buttonClearEncoders.TabIndex = 11;
+            buttonClearEncoders.Text = "Clear";
+            buttonClearEncoders.UseVisualStyleBackColor = true;
+            buttonClearEncoders.Click += buttonClear_Click;
+            // 
+            // buttonAddEncoders
+            // 
+            buttonAddEncoders.Location = new Point(6, 230);
+            buttonAddEncoders.Name = "buttonAddEncoders";
+            buttonAddEncoders.Size = new Size(100, 23);
+            buttonAddEncoders.TabIndex = 11;
+            buttonAddEncoders.Text = "Add Encoders";
+            buttonAddEncoders.UseVisualStyleBackColor = true;
+            buttonAddEncoders.Click += buttonClear_Click;
+            // 
+            // buttonAddAudioFiles
+            // 
+            buttonAddAudioFiles.Location = new Point(6, 230);
+            buttonAddAudioFiles.Name = "buttonAddAudioFiles";
+            buttonAddAudioFiles.Size = new Size(100, 23);
+            buttonAddAudioFiles.TabIndex = 11;
+            buttonAddAudioFiles.Text = "Add Audio Files";
+            buttonAddAudioFiles.UseVisualStyleBackColor = true;
+            buttonAddAudioFiles.Click += buttonClear_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(112, 230);
+            button1.Name = "button1";
+            button1.Size = new Size(100, 23);
+            button1.TabIndex = 11;
+            button1.Text = "Remove file";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += buttonClear_Click;
+            // 
+            // button2
+            // 
+            button2.Location = new Point(112, 230);
+            button2.Name = "button2";
+            button2.Size = new Size(100, 23);
+            button2.TabIndex = 11;
+            button2.Text = "Remove file";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += buttonClear_Click;
+            // 
+            // buttonStartJobList
+            // 
+            buttonStartJobList.Location = new Point(6, 392);
+            buttonStartJobList.Name = "buttonStartJobList";
+            buttonStartJobList.Size = new Size(100, 23);
+            buttonStartJobList.TabIndex = 24;
+            buttonStartJobList.Text = "Start Job List";
+            buttonStartJobList.UseVisualStyleBackColor = true;
+            // 
+            // groupBoxJobSettings
+            // 
+            groupBoxJobSettings.Controls.Add(radioButtonDecode);
+            groupBoxJobSettings.Controls.Add(radioButtonEncode);
+            groupBoxJobSettings.Controls.Add(buttonAddJobToQueue);
+            groupBoxJobSettings.Location = new Point(1486, 12);
+            groupBoxJobSettings.Name = "groupBoxJobSettings";
+            groupBoxJobSettings.Size = new Size(114, 260);
+            groupBoxJobSettings.TabIndex = 25;
+            groupBoxJobSettings.TabStop = false;
+            groupBoxJobSettings.Text = "Job settings";
+            // 
+            // buttonAddJobToQueue
+            // 
+            buttonAddJobToQueue.Location = new Point(6, 230);
+            buttonAddJobToQueue.Name = "buttonAddJobToQueue";
+            buttonAddJobToQueue.Size = new Size(100, 23);
+            buttonAddJobToQueue.TabIndex = 24;
+            buttonAddJobToQueue.Text = "Add to queue";
+            buttonAddJobToQueue.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonEncode
+            // 
+            radioButtonEncode.AutoSize = true;
+            radioButtonEncode.Location = new Point(6, 22);
+            radioButtonEncode.Name = "radioButtonEncode";
+            radioButtonEncode.Size = new Size(64, 19);
+            radioButtonEncode.TabIndex = 25;
+            radioButtonEncode.TabStop = true;
+            radioButtonEncode.Text = "Encode";
+            radioButtonEncode.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonDecode
+            // 
+            radioButtonDecode.AutoSize = true;
+            radioButtonDecode.Location = new Point(6, 47);
+            radioButtonDecode.Name = "radioButtonDecode";
+            radioButtonDecode.Size = new Size(65, 19);
+            radioButtonDecode.TabIndex = 25;
+            radioButtonDecode.TabStop = true;
+            radioButtonDecode.Text = "Decode";
+            radioButtonDecode.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            button3.Location = new Point(705, 305);
+            button3.Name = "button3";
+            button3.Size = new Size(85, 23);
+            button3.TabIndex = 16;
+            button3.Text = "Open log.txt";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += buttonOpenLogtxt_Click;
+            // 
+            // buttonCopyLog
+            // 
+            buttonCopyLog.Location = new Point(812, 392);
+            buttonCopyLog.Name = "buttonCopyLog";
+            buttonCopyLog.Size = new Size(85, 23);
+            buttonCopyLog.TabIndex = 16;
+            buttonCopyLog.Text = "Copy Log";
+            buttonCopyLog.UseVisualStyleBackColor = true;
+            buttonCopyLog.Click += buttonOpenLogtxt_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1611, 719);
-            Controls.Add(buttonReloadFlacExetutablesAndAudioFies);
+            ClientSize = new Size(1620, 711);
+            Controls.Add(groupLog);
+            Controls.Add(groupBoxJobSettings);
+            Controls.Add(groupBoxJobsQueue);
             Controls.Add(groupBoxAudioFiles);
             Controls.Add(groupBoxEncoders);
-            Controls.Add(textBoxFlacExecutables);
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.7 build 20241122.2120]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241127.1]";
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
             groupBoxEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
+            groupBoxJobsQueue.ResumeLayout(false);
+            groupBoxJobsQueue.PerformLayout();
+            groupLog.ResumeLayout(false);
+            groupLog.PerformLayout();
+            groupBoxJobSettings.ResumeLayout(false);
+            groupBoxJobSettings.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -479,7 +699,6 @@
         private ListBox listBoxFlacExecutables;
         private GroupBox groupBoxEncoders;
         private Button buttonOpenLogtxt;
-        private Button buttonReloadFlacExetutablesAndAudioFies;
         private Label labelCPUinfo;
         private Button buttonSetMaxCores;
         private Button buttonHalfCores;
@@ -494,5 +713,24 @@
         private ListBox listBoxAudioFiles;
         private CheckBox checkBoxHighPriority;
         private Button buttonStartDecode;
+        private GroupBox groupBoxJobsQueue;
+        private GroupBox groupLog;
+        private Button buttonExportJobList;
+        private Button buttonImportJobList;
+        private Button buttonClearJobList;
+        private TextBox textBoxJobsQueue;
+        private Button buttonAddEncoders;
+        private Button buttonClearEncoders;
+        private Button buttonAddAudioFiles;
+        private Button buttonClearAudioFiles;
+        private Button button1;
+        private Button button2;
+        private GroupBox groupBoxJobSettings;
+        private Button buttonStartJobList;
+        private Button buttonAddJobToQueue;
+        private RadioButton radioButtonDecode;
+        private RadioButton radioButtonEncode;
+        private Button button3;
+        private Button buttonCopyLog;
     }
 }
