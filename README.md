@@ -1,10 +1,11 @@
 1. Copy any .flac files in "flac_audio" folder
-1. Copy any .wav files in "wav_audio" folder
-1. Copy any FLAC bulds files in "flac_exe" folder
-3. Run "FLAC Benchmark-H.exe"
-5. Change any setting you wat and hit "Enter" key
-6. The log will be shown in a program window an will be stored in log.txt
-7. Settings are stored in "settings.txt"
+2. Copy any .wav files in "wav_audio" folder
+3. Copy any FLAC bulds files in "flac_exe" folder
+4. Run "FLAC Benchmark-H.exe"
+5. Chose encoder in left list
+6. Change any setting you wat and hit "Enter" key
+7. The log will be shown in a program window an will be stored in log.txt
+8. Settings are stored in "settings.txt"
 
 
 Note:
