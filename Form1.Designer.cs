@@ -647,6 +647,7 @@
             buttonAddJobToQueue.TabIndex = 24;
             buttonAddJobToQueue.Text = "Add to queue";
             buttonAddJobToQueue.UseVisualStyleBackColor = true;
+            buttonAddJobToQueue.Click += buttonAddJobToQueue_Click;
             // 
             // Form1
             // 

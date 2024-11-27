@@ -700,7 +700,46 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void buttonAddJobToQueue_Click(object sender, EventArgs e)
+        {
+            {
+                if (listBoxFlacExecutables.SelectedItem == null)
+                {
+                    MessageBox.Show("Please select a FLAC executable file.");
+                    return;
+                }
 
+                string selectedFlacFile = listBoxFlacExecutables.SelectedItem.ToString();
+                string arguments = textBoxAdditionalArguments.Text;
 
+                if (listBoxAudioFiles.SelectedItem == null)
+                {
+                    MessageBox.Show("Please select an audio file to process.");
+                    return;
+                }
+
+                string selectedAudioFile = listBoxAudioFiles.SelectedItem.ToString();
+                string inputFilePath = Path.Combine(flacAudioDir, selectedAudioFile); // ѕуть к входному файлу
+                string outputFilePath; // ќбъ€вл€ем переменную выходного пути
+
+                if (radioButtonEncode.Checked)
+                {
+                    outputFilePath = Path.Combine(flacAudioDir, Path.GetFileNameWithoutExtension(inputFilePath) + "_FLAC_Benchmark_H_output.flac");
+                    string jobEntry = $"{selectedFlacFile} {arguments} -f \"{inputFilePath}\" -o \"{outputFilePath}\"";
+                    textBoxJobsQueue.AppendText($"Encode Job: {jobEntry}{Environment.NewLine}");
+                }
+                else if (radioButtonDecode.Checked)
+                {
+                    outputFilePath = Path.Combine(flacAudioDir, Path.GetFileNameWithoutExtension(inputFilePath) + "_FLAC_Benchmark_H_output.wav");
+                    string jobEntry = $"{selectedFlacFile} {arguments} -d -f \"{inputFilePath}\" -o \"{outputFilePath}\"";
+                    textBoxJobsQueue.AppendText($"Decode Job: {jobEntry}{Environment.NewLine}");
+                }
+                else
+                {
+                    MessageBox.Show("Please select an operation (Encode/Decode).");
+                    return;
+                }
+            }
+        }
     }
 }
