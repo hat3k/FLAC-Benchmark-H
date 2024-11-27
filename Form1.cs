@@ -175,7 +175,6 @@ namespace FLAC_Benchmark_H
                 textBoxCompressionLevel.Text,
                 textBoxThreads.Text,
                 textBoxAdditionalArguments.Text,
-                textBoxJobsQueue.Text,
                 checkBoxHighPriority.Checked.ToString()
 
             };
@@ -193,7 +192,6 @@ namespace FLAC_Benchmark_H
                     textBoxCompressionLevel.Text = settings[0];
                     textBoxThreads.Text = settings[1];
                     textBoxAdditionalArguments.Text = settings[2];
-                    textBoxJobsQueue.Text = settings[3];
                     checkBoxHighPriority.Checked = bool.TryParse(settings[3], out bool highPriorityChecked) && highPriorityChecked; // Загружаем состояние чекбокса
                 }
             }
@@ -219,12 +217,6 @@ namespace FLAC_Benchmark_H
                 var jobs = File.ReadAllLines(JobsFileName);
                 textBoxJobsQueue.Lines = jobs; // Заполняем текстовое поле строками задач
             }
-        }
-
-        private void AddJobToQueue(string job)
-        {
-            textBoxJobsQueue.AppendText(job + Environment.NewLine);
-            SaveJobsQueue(); // Сохраняем изменения сразу
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
