@@ -10,6 +10,7 @@ namespace FLAC_Benchmark_H
     {
         private const string LogFileName = "log.txt"; // Имя лог-файла, в который будет записываться время выполнения
         private const string SettingsFileName = "settings.txt"; // Имя файла с настройками
+        private const string JobsFileName = "jobs.txt"; // Имя файла с настройками очереди задач
         private Process _process; // Поле для хранения текущего процесса
         private int physicalCores; // Объявляем поля для хранения информации о физических и логических ядрах
         private int logicalCores;
@@ -25,6 +26,7 @@ namespace FLAC_Benchmark_H
             LoadSettings(); // Загружаем настройки при старте приложения
             CheckAndCreateDirectories(); // Проверка и создание директорий
             LoadAudioFiles(); // Загружаем аудиофайлы при инициализации
+            LoadJobsQueue(); // Загрузка очереди задач при старте приложения
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.KeyPreview = true; // Включаем возможность перехвата событий клавиатуры на уровне формы
             this.KeyDown += Form1_KeyDown; // Подключаем обработчик события KeyDown
@@ -173,7 +175,8 @@ namespace FLAC_Benchmark_H
                 textBoxCompressionLevel.Text,
                 textBoxThreads.Text,
                 textBoxAdditionalArguments.Text,
-                checkBoxHighPriority.Checked.ToString() // Добавляем состояние чекбокса High Priority
+                textBoxJobsQueue.Text,
+                checkBoxHighPriority.Checked.ToString()
 
             };
 
@@ -190,14 +193,45 @@ namespace FLAC_Benchmark_H
                     textBoxCompressionLevel.Text = settings[0];
                     textBoxThreads.Text = settings[1];
                     textBoxAdditionalArguments.Text = settings[2];
+                    textBoxJobsQueue.Text = settings[3];
                     checkBoxHighPriority.Checked = bool.TryParse(settings[3], out bool highPriorityChecked) && highPriorityChecked; // Загружаем состояние чекбокса
                 }
             }
+        }
+        private void SaveJobsQueue()
+        {
+            var jobs = new List<string>();
+            foreach (var item in textBoxJobsQueue.Lines) // Предполагаем, что текстовое поле для очереди задач имеет строки для каждой задачи
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                {
+                    jobs.Add(item.Trim());
+                }
+            }
+
+            File.WriteAllLines(JobsFileName, jobs);
+        }
+
+        private void LoadJobsQueue()
+        {
+            if (File.Exists(JobsFileName))
+            {
+                var jobs = File.ReadAllLines(JobsFileName);
+                textBoxJobsQueue.Lines = jobs; // Заполняем текстовое поле строками задач
+            }
+        }
+
+        private void AddJobToQueue(string job)
+        {
+            textBoxJobsQueue.AppendText(job + Environment.NewLine);
+            SaveJobsQueue(); // Сохраняем изменения сразу
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings(); // Сохраняем настройки перед закрытием формы
+            SaveJobsQueue(); // Сохраняем очередь задач при закрытии формы
+
         }
 
         private async void buttonStartEncode_Click(object sender, EventArgs e)
@@ -516,24 +550,6 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonReloadFlacExetutablesAndAudioFies_Click(object sender, EventArgs e)
-        {
-            // Проверка и создание директорий
-            CheckAndCreateDirectories();
-
-            // Перезагружаем список .exe файлов
-            LoadFlacExecutables();
-
-            // Перезагружаем список аудиофайлов
-            LoadAudioFiles(); // Добавляем загрузку аудио файлов
-
-        }
-
-        private void labelCPUinfo_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonHalfCores_Click(object sender, EventArgs e)
         {
             // Рассчитываем половину физических ядер
@@ -570,11 +586,6 @@ namespace FLAC_Benchmark_H
         private void buttonMaxCompressionLevel_Click(object sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "8"; // Устанавливаем значение 8
-
-        }
-
-        private void checkBoxHighPriority_CheckedChanged(object sender, EventArgs e)
-        {
 
         }
 

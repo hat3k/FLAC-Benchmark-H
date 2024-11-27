@@ -171,7 +171,6 @@
             checkBoxHighPriority.TabIndex = 22;
             checkBoxHighPriority.Text = "Set High Process Priority";
             checkBoxHighPriority.UseVisualStyleBackColor = true;
-            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
             // 
             // labelSetThreads
             // 
@@ -334,7 +333,6 @@
             labelCPUinfo.Size = new Size(298, 15);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "Your system has: Physical cores: XX, Logical threads: XX";
-            labelCPUinfo.Click += labelCPUinfo_Click;
             // 
             // labelThreads
             // 
@@ -626,13 +624,13 @@
             radioButtonDecode.Name = "radioButtonDecode";
             radioButtonDecode.Size = new Size(65, 19);
             radioButtonDecode.TabIndex = 25;
-            radioButtonDecode.TabStop = true;
             radioButtonDecode.Text = "Decode";
             radioButtonDecode.UseVisualStyleBackColor = true;
             // 
             // radioButtonEncode
             // 
             radioButtonEncode.AutoSize = true;
+            radioButtonEncode.Checked = true;
             radioButtonEncode.Location = new Point(6, 22);
             radioButtonEncode.Name = "radioButtonEncode";
             radioButtonEncode.Size = new Size(64, 19);
