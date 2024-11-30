@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,13 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="System.Management" Version="9.0.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="System.Management" />
-</ItemGroup>
   
 
 </Project>

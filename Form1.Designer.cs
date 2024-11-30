@@ -2,15 +2,8 @@
 {
     partial class Form1
     {
-        /// <summary>
-        ///  Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -30,6 +23,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
+            labelCommandLine = new Label();
             labelFlacUsedVersion = new Label();
             buttonStartEncode = new Button();
             progressBar = new ProgressBar();
@@ -37,8 +31,7 @@
             checkBoxHighPriority = new CheckBox();
             labelSetThreads = new Label();
             labelSetCores = new Label();
-            labelAdditionalArguments = new Label();
-            textBoxAdditionalArguments = new TextBox();
+            textBoxCommandLineOptions = new TextBox();
             labelSetCompression = new Label();
             buttonepr8 = new Button();
             buttonSetHalfThreads = new Button();
@@ -48,7 +41,7 @@
             buttonHalfCores = new Button();
             buttonNoSeektable = new Button();
             buttonSetMaxCores = new Button();
-            buttonClear = new Button();
+            buttonClearCommandLine = new Button();
             buttonMaxCompressionLevel = new Button();
             button5CompressionLevel = new Button();
             labelCPUinfo = new Label();
@@ -58,19 +51,19 @@
             textBoxThreads = new TextBox();
             buttonOpenLogtxt = new Button();
             buttonClearLog = new Button();
-            textBoxFlacExecutables = new TextBox();
-            listBoxFlacExecutables = new ListBox();
+            textBoxLog = new TextBox();
             groupBoxEncoders = new GroupBox();
-            button1 = new Button();
+            buttonRemoveEncoder = new Button();
+            listViewFlacExecutables = new ListView();
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
-            listBoxAudioFiles = new ListBox();
-            button2 = new Button();
+            listViewAudioFiles = new ListView();
+            buttonRemoveAudiofile = new Button();
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
-            groupBoxJobsQueue = new GroupBox();
-            textBoxJobsQueue = new TextBox();
+            groupBoxJobsList = new GroupBox();
+            textBoxJobList = new TextBox();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -81,17 +74,18 @@
             groupBoxJobSettings = new GroupBox();
             radioButtonDecode = new RadioButton();
             radioButtonEncode = new RadioButton();
-            buttonAddJobToQueue = new Button();
+            buttonAddJobToJobList = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
-            groupBoxJobsQueue.SuspendLayout();
+            groupBoxJobsList.SuspendLayout();
             groupLog.SuspendLayout();
             groupBoxJobSettings.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(labelCommandLine);
             groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(progressBar);
@@ -99,8 +93,7 @@
             groupBoxEncoderSettings.Controls.Add(checkBoxHighPriority);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
-            groupBoxEncoderSettings.Controls.Add(labelAdditionalArguments);
-            groupBoxEncoderSettings.Controls.Add(textBoxAdditionalArguments);
+            groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptions);
             groupBoxEncoderSettings.Controls.Add(labelSetCompression);
             groupBoxEncoderSettings.Controls.Add(buttonepr8);
             groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
@@ -110,7 +103,7 @@
             groupBoxEncoderSettings.Controls.Add(buttonHalfCores);
             groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
             groupBoxEncoderSettings.Controls.Add(buttonSetMaxCores);
-            groupBoxEncoderSettings.Controls.Add(buttonClear);
+            groupBoxEncoderSettings.Controls.Add(buttonClearCommandLine);
             groupBoxEncoderSettings.Controls.Add(buttonMaxCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(button5CompressionLevel);
             groupBoxEncoderSettings.Controls.Add(labelCPUinfo);
@@ -120,19 +113,32 @@
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
             groupBoxEncoderSettings.Location = new Point(622, 12);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
-            groupBoxEncoderSettings.Size = new Size(858, 260);
+            groupBoxEncoderSettings.Size = new Size(710, 260);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
+            groupBoxEncoderSettings.Enter += groupBoxEncoderSettings_Enter;
+            // 
+            // labelCommandLine
+            // 
+            labelCommandLine.AutoSize = true;
+            labelCommandLine.Location = new Point(27, 83);
+            labelCommandLine.Name = "labelCommandLine";
+            labelCommandLine.Size = new Size(89, 15);
+            labelCommandLine.TabIndex = 24;
+            labelCommandLine.Text = "Command line:";
+            labelCommandLine.Click += labelCommandLine_Click;
             // 
             // labelFlacUsedVersion
             // 
             labelFlacUsedVersion.AutoSize = true;
+            labelFlacUsedVersion.Enabled = false;
             labelFlacUsedVersion.Location = new Point(228, 234);
             labelFlacUsedVersion.Name = "labelFlacUsedVersion";
             labelFlacUsedVersion.Size = new Size(81, 15);
             labelFlacUsedVersion.TabIndex = 15;
             labelFlacUsedVersion.Text = "Using version:";
+            labelFlacUsedVersion.Visible = false;
             labelFlacUsedVersion.Click += labelFlacUsedVersion_Click;
             // 
             // buttonStartEncode
@@ -149,8 +155,9 @@
             // 
             progressBar.Location = new Point(218, 230);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(340, 23);
+            progressBar.Size = new Size(348, 23);
             progressBar.TabIndex = 4;
+            progressBar.Click += progressBar_Click;
             // 
             // buttonStartDecode
             // 
@@ -165,61 +172,57 @@
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Location = new Point(564, 233);
+            checkBoxHighPriority.Location = new Point(572, 53);
             checkBoxHighPriority.Name = "checkBoxHighPriority";
-            checkBoxHighPriority.Size = new Size(155, 19);
+            checkBoxHighPriority.Size = new Size(93, 19);
             checkBoxHighPriority.TabIndex = 22;
-            checkBoxHighPriority.Text = "Set High Process Priority";
+            checkBoxHighPriority.Text = "High Priority";
             checkBoxHighPriority.UseVisualStyleBackColor = true;
+            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
             // 
             // labelSetThreads
             // 
             labelSetThreads.AutoSize = true;
-            labelSetThreads.Location = new Point(411, 56);
+            labelSetThreads.Location = new Point(378, 54);
             labelSetThreads.Name = "labelSetThreads";
             labelSetThreads.Size = new Size(70, 15);
             labelSetThreads.TabIndex = 21;
             labelSetThreads.Text = "Set Threads:";
+            labelSetThreads.Click += labelSetThreads_Click;
             // 
             // labelSetCores
             // 
             labelSetCores.AutoSize = true;
-            labelSetCores.Location = new Point(228, 56);
+            labelSetCores.Location = new Point(198, 54);
             labelSetCores.Name = "labelSetCores";
             labelSetCores.Size = new Size(59, 15);
             labelSetCores.TabIndex = 20;
             labelSetCores.Text = "Set Cores:";
+            labelSetCores.Click += labelSetCores_Click;
             // 
-            // labelAdditionalArguments
+            // textBoxCommandLineOptions
             // 
-            labelAdditionalArguments.AutoSize = true;
-            labelAdditionalArguments.Location = new Point(4, 85);
-            labelAdditionalArguments.Name = "labelAdditionalArguments";
-            labelAdditionalArguments.Size = new Size(127, 15);
-            labelAdditionalArguments.TabIndex = 1;
-            labelAdditionalArguments.Text = "Additional Arguments:";
-            // 
-            // textBoxAdditionalArguments
-            // 
-            textBoxAdditionalArguments.Location = new Point(139, 82);
-            textBoxAdditionalArguments.Name = "textBoxAdditionalArguments";
-            textBoxAdditionalArguments.Size = new Size(632, 23);
-            textBoxAdditionalArguments.TabIndex = 4;
+            textBoxCommandLineOptions.Location = new Point(122, 80);
+            textBoxCommandLineOptions.Name = "textBoxCommandLineOptions";
+            textBoxCommandLineOptions.Size = new Size(444, 23);
+            textBoxCommandLineOptions.TabIndex = 4;
+            textBoxCommandLineOptions.TextChanged += textBoxCommandLineOptions_TextChanged;
             // 
             // labelSetCompression
             // 
             labelSetCompression.AutoSize = true;
-            labelSetCompression.Location = new Point(188, 26);
+            labelSetCompression.Location = new Point(156, 24);
             labelSetCompression.Name = "labelSetCompression";
             labelSetCompression.Size = new Size(99, 15);
             labelSetCompression.TabIndex = 19;
             labelSetCompression.Text = "Set Compression:";
+            labelSetCompression.Click += labelSetCompression_Click;
             // 
             // buttonepr8
             // 
-            buttonepr8.Location = new Point(138, 111);
+            buttonepr8.Location = new Point(122, 109);
             buttonepr8.Name = "buttonepr8";
-            buttonepr8.Size = new Size(48, 23);
+            buttonepr8.Size = new Size(50, 23);
             buttonepr8.TabIndex = 5;
             buttonepr8.Text = "-epr8";
             buttonepr8.UseVisualStyleBackColor = true;
@@ -227,7 +230,7 @@
             // 
             // buttonSetHalfThreads
             // 
-            buttonSetHalfThreads.Location = new Point(487, 52);
+            buttonSetHalfThreads.Location = new Point(454, 50);
             buttonSetHalfThreads.Name = "buttonSetHalfThreads";
             buttonSetHalfThreads.Size = new Size(53, 23);
             buttonSetHalfThreads.TabIndex = 18;
@@ -237,9 +240,9 @@
             // 
             // buttonAsubdividetukey5flattop
             // 
-            buttonAsubdividetukey5flattop.Location = new Point(192, 111);
+            buttonAsubdividetukey5flattop.Location = new Point(178, 109);
             buttonAsubdividetukey5flattop.Name = "buttonAsubdividetukey5flattop";
-            buttonAsubdividetukey5flattop.Size = new Size(182, 23);
+            buttonAsubdividetukey5flattop.Size = new Size(195, 23);
             buttonAsubdividetukey5flattop.TabIndex = 6;
             buttonAsubdividetukey5flattop.Text = "-A \"subdivide_tukey(5);flattop\"";
             buttonAsubdividetukey5flattop.UseVisualStyleBackColor = true;
@@ -247,7 +250,7 @@
             // 
             // buttonSetMaxThreads
             // 
-            buttonSetMaxThreads.Location = new Point(546, 52);
+            buttonSetMaxThreads.Location = new Point(513, 50);
             buttonSetMaxThreads.Name = "buttonSetMaxThreads";
             buttonSetMaxThreads.Size = new Size(53, 23);
             buttonSetMaxThreads.TabIndex = 18;
@@ -257,9 +260,9 @@
             // 
             // buttonNoPadding
             // 
-            buttonNoPadding.Location = new Point(380, 111);
+            buttonNoPadding.Location = new Point(380, 109);
             buttonNoPadding.Name = "buttonNoPadding";
-            buttonNoPadding.Size = new Size(83, 23);
+            buttonNoPadding.Size = new Size(90, 23);
             buttonNoPadding.TabIndex = 9;
             buttonNoPadding.Text = "No Padding";
             buttonNoPadding.UseVisualStyleBackColor = true;
@@ -267,7 +270,7 @@
             // 
             // buttonHalfCores
             // 
-            buttonHalfCores.Location = new Point(293, 52);
+            buttonHalfCores.Location = new Point(261, 50);
             buttonHalfCores.Name = "buttonHalfCores";
             buttonHalfCores.Size = new Size(53, 23);
             buttonHalfCores.TabIndex = 18;
@@ -277,9 +280,9 @@
             // 
             // buttonNoSeektable
             // 
-            buttonNoSeektable.Location = new Point(469, 111);
+            buttonNoSeektable.Location = new Point(476, 109);
             buttonNoSeektable.Name = "buttonNoSeektable";
-            buttonNoSeektable.Size = new Size(89, 23);
+            buttonNoSeektable.Size = new Size(90, 23);
             buttonNoSeektable.TabIndex = 10;
             buttonNoSeektable.Text = "No Seektable";
             buttonNoSeektable.UseVisualStyleBackColor = true;
@@ -287,7 +290,7 @@
             // 
             // buttonSetMaxCores
             // 
-            buttonSetMaxCores.Location = new Point(352, 52);
+            buttonSetMaxCores.Location = new Point(320, 50);
             buttonSetMaxCores.Name = "buttonSetMaxCores";
             buttonSetMaxCores.Size = new Size(53, 23);
             buttonSetMaxCores.TabIndex = 18;
@@ -295,19 +298,19 @@
             buttonSetMaxCores.UseVisualStyleBackColor = true;
             buttonSetMaxCores.Click += buttonSetMaxCores_Click;
             // 
-            // buttonClear
+            // buttonClearCommandLine
             // 
-            buttonClear.Location = new Point(777, 82);
-            buttonClear.Name = "buttonClear";
-            buttonClear.Size = new Size(75, 23);
-            buttonClear.TabIndex = 11;
-            buttonClear.Text = "Clear";
-            buttonClear.UseVisualStyleBackColor = true;
-            buttonClear.Click += buttonClear_Click;
+            buttonClearCommandLine.Location = new Point(572, 80);
+            buttonClearCommandLine.Name = "buttonClearCommandLine";
+            buttonClearCommandLine.Size = new Size(75, 23);
+            buttonClearCommandLine.TabIndex = 11;
+            buttonClearCommandLine.Text = "Clear";
+            buttonClearCommandLine.UseVisualStyleBackColor = true;
+            buttonClearCommandLine.Click += buttonClearCommandLine_Click;
             // 
             // buttonMaxCompressionLevel
             // 
-            buttonMaxCompressionLevel.Location = new Point(352, 22);
+            buttonMaxCompressionLevel.Location = new Point(320, 20);
             buttonMaxCompressionLevel.Name = "buttonMaxCompressionLevel";
             buttonMaxCompressionLevel.Size = new Size(53, 23);
             buttonMaxCompressionLevel.TabIndex = 18;
@@ -317,7 +320,7 @@
             // 
             // button5CompressionLevel
             // 
-            button5CompressionLevel.Location = new Point(293, 22);
+            button5CompressionLevel.Location = new Point(261, 20);
             button5CompressionLevel.Name = "button5CompressionLevel";
             button5CompressionLevel.Size = new Size(53, 23);
             button5CompressionLevel.TabIndex = 18;
@@ -328,51 +331,56 @@
             // labelCPUinfo
             // 
             labelCPUinfo.AutoSize = true;
-            labelCPUinfo.Location = new Point(138, 0);
+            labelCPUinfo.Location = new Point(124, 0);
             labelCPUinfo.Name = "labelCPUinfo";
             labelCPUinfo.Size = new Size(298, 15);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "Your system has: Physical cores: XX, Logical threads: XX";
+            labelCPUinfo.Click += labelCPUinfo_Click;
             // 
             // labelThreads
             // 
             labelThreads.AutoSize = true;
-            labelThreads.Location = new Point(80, 56);
+            labelThreads.Location = new Point(65, 54);
             labelThreads.Name = "labelThreads";
             labelThreads.Size = new Size(51, 15);
             labelThreads.TabIndex = 0;
             labelThreads.Text = "Threads:";
+            labelThreads.Click += labelThreads_Click;
             // 
             // textBoxCompressionLevel
             // 
-            textBoxCompressionLevel.Location = new Point(139, 22);
+            textBoxCompressionLevel.Location = new Point(122, 21);
             textBoxCompressionLevel.Name = "textBoxCompressionLevel";
             textBoxCompressionLevel.Size = new Size(28, 23);
             textBoxCompressionLevel.TabIndex = 2;
             textBoxCompressionLevel.Text = "8";
             textBoxCompressionLevel.TextAlign = HorizontalAlignment.Center;
+            textBoxCompressionLevel.TextChanged += textBoxCompressionLevel_TextChanged;
             // 
             // labelCompressionLevel
             // 
             labelCompressionLevel.AutoSize = true;
-            labelCompressionLevel.Location = new Point(21, 26);
+            labelCompressionLevel.Location = new Point(6, 24);
             labelCompressionLevel.Name = "labelCompressionLevel";
             labelCompressionLevel.Size = new Size(110, 15);
             labelCompressionLevel.TabIndex = 0;
             labelCompressionLevel.Text = "Compression Level:";
+            labelCompressionLevel.Click += labelCompressionLevel_Click;
             // 
             // textBoxThreads
             // 
-            textBoxThreads.Location = new Point(139, 53);
+            textBoxThreads.Location = new Point(122, 51);
             textBoxThreads.Name = "textBoxThreads";
             textBoxThreads.Size = new Size(28, 23);
             textBoxThreads.TabIndex = 3;
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
+            textBoxThreads.TextChanged += textBoxThreads_TextChanged;
             // 
             // buttonOpenLogtxt
             // 
-            buttonOpenLogtxt.Location = new Point(721, 392);
+            buttonOpenLogtxt.Location = new Point(578, 392);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
             buttonOpenLogtxt.TabIndex = 16;
@@ -382,7 +390,7 @@
             // 
             // buttonClearLog
             // 
-            buttonClearLog.Location = new Point(903, 392);
+            buttonClearLog.Location = new Point(760, 392);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(75, 23);
             buttonClearLog.TabIndex = 12;
@@ -390,32 +398,23 @@
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
             // 
-            // textBoxFlacExecutables
+            // textBoxLog
             // 
-            textBoxFlacExecutables.Location = new Point(6, 22);
-            textBoxFlacExecutables.Multiline = true;
-            textBoxFlacExecutables.Name = "textBoxFlacExecutables";
-            textBoxFlacExecutables.PlaceholderText = "Log (there is also additional log file in the app folder)";
-            textBoxFlacExecutables.ReadOnly = true;
-            textBoxFlacExecutables.ScrollBars = ScrollBars.Both;
-            textBoxFlacExecutables.Size = new Size(972, 364);
-            textBoxFlacExecutables.TabIndex = 1;
-            textBoxFlacExecutables.WordWrap = false;
-            // 
-            // listBoxFlacExecutables
-            // 
-            listBoxFlacExecutables.FormattingEnabled = true;
-            listBoxFlacExecutables.HorizontalScrollbar = true;
-            listBoxFlacExecutables.Location = new Point(6, 25);
-            listBoxFlacExecutables.Name = "listBoxFlacExecutables";
-            listBoxFlacExecutables.Size = new Size(287, 199);
-            listBoxFlacExecutables.TabIndex = 2;
-            listBoxFlacExecutables.SelectedIndexChanged += listBox1_SelectedIndexChanged;
+            textBoxLog.Location = new Point(6, 22);
+            textBoxLog.Multiline = true;
+            textBoxLog.Name = "textBoxLog";
+            textBoxLog.PlaceholderText = "Log (there is also additional log file in the app folder)";
+            textBoxLog.ReadOnly = true;
+            textBoxLog.ScrollBars = ScrollBars.Both;
+            textBoxLog.Size = new Size(829, 364);
+            textBoxLog.TabIndex = 1;
+            textBoxLog.WordWrap = false;
+            textBoxLog.TextChanged += textBoxLog_TextChanged;
             // 
             // groupBoxEncoders
             // 
-            groupBoxEncoders.Controls.Add(listBoxFlacExecutables);
-            groupBoxEncoders.Controls.Add(button1);
+            groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
+            groupBoxEncoders.Controls.Add(listViewFlacExecutables);
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
@@ -424,16 +423,28 @@
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop is available)";
+            groupBoxEncoders.Enter += groupBoxEncoders_Enter;
             // 
-            // button1
+            // buttonRemoveEncoder
             // 
-            button1.Location = new Point(112, 230);
-            button1.Name = "button1";
-            button1.Size = new Size(100, 23);
-            button1.TabIndex = 11;
-            button1.Text = "Remove file";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += buttonClear_Click;
+            buttonRemoveEncoder.Location = new Point(112, 230);
+            buttonRemoveEncoder.Name = "buttonRemoveEncoder";
+            buttonRemoveEncoder.Size = new Size(100, 23);
+            buttonRemoveEncoder.TabIndex = 11;
+            buttonRemoveEncoder.Text = "Remove file";
+            buttonRemoveEncoder.UseVisualStyleBackColor = true;
+            buttonRemoveEncoder.Click += buttonRemoveEncoder_Click;
+            // 
+            // listViewFlacExecutables
+            // 
+            listViewFlacExecutables.CheckBoxes = true;
+            listViewFlacExecutables.Location = new Point(6, 22);
+            listViewFlacExecutables.Name = "listViewFlacExecutables";
+            listViewFlacExecutables.Size = new Size(287, 202);
+            listViewFlacExecutables.TabIndex = 25;
+            listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
+            listViewFlacExecutables.View = View.List;
+            listViewFlacExecutables.SelectedIndexChanged += listViewFlacExecutables_SelectedIndexChanged;
             // 
             // buttonAddEncoders
             // 
@@ -443,7 +454,7 @@
             buttonAddEncoders.TabIndex = 11;
             buttonAddEncoders.Text = "Add encoders";
             buttonAddEncoders.UseVisualStyleBackColor = true;
-            buttonAddEncoders.Click += buttonClear_Click;
+            buttonAddEncoders.Click += buttonAddEncoders_Click;
             // 
             // buttonClearEncoders
             // 
@@ -453,12 +464,12 @@
             buttonClearEncoders.TabIndex = 11;
             buttonClearEncoders.Text = "Clear";
             buttonClearEncoders.UseVisualStyleBackColor = true;
-            buttonClearEncoders.Click += buttonClear_Click;
+            buttonClearEncoders.Click += buttonClearEncoders_Click;
             // 
             // groupBoxAudioFiles
             // 
-            groupBoxAudioFiles.Controls.Add(listBoxAudioFiles);
-            groupBoxAudioFiles.Controls.Add(button2);
+            groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
+            groupBoxAudioFiles.Controls.Add(buttonRemoveAudiofile);
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
             groupBoxAudioFiles.Location = new Point(317, 12);
@@ -466,28 +477,29 @@
             groupBoxAudioFiles.Size = new Size(299, 260);
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
-            groupBoxAudioFiles.Text = "Audio Files (Drag'n'Drop is available)";
+            groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop is available)";
+            groupBoxAudioFiles.Enter += groupBoxAudioFiles_Enter;
             // 
-            // listBoxAudioFiles
+            // listViewAudioFiles
             // 
-            listBoxAudioFiles.FormattingEnabled = true;
-            listBoxAudioFiles.HorizontalScrollbar = true;
-            listBoxAudioFiles.Location = new Point(6, 25);
-            listBoxAudioFiles.Name = "listBoxAudioFiles";
-            listBoxAudioFiles.SelectionMode = SelectionMode.MultiExtended;
-            listBoxAudioFiles.Size = new Size(287, 199);
-            listBoxAudioFiles.TabIndex = 2;
-            listBoxAudioFiles.SelectedIndexChanged += listBox1_SelectedIndexChanged;
+            listViewAudioFiles.CheckBoxes = true;
+            listViewAudioFiles.Location = new Point(6, 22);
+            listViewAudioFiles.Name = "listViewAudioFiles";
+            listViewAudioFiles.Size = new Size(287, 202);
+            listViewAudioFiles.TabIndex = 25;
+            listViewAudioFiles.UseCompatibleStateImageBehavior = false;
+            listViewAudioFiles.View = View.List;
+            listViewAudioFiles.SelectedIndexChanged += listViewAudioFiles_SelectedIndexChanged;
             // 
-            // button2
+            // buttonRemoveAudiofile
             // 
-            button2.Location = new Point(112, 230);
-            button2.Name = "button2";
-            button2.Size = new Size(100, 23);
-            button2.TabIndex = 11;
-            button2.Text = "Remove file";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += buttonClear_Click;
+            buttonRemoveAudiofile.Location = new Point(112, 230);
+            buttonRemoveAudiofile.Name = "buttonRemoveAudiofile";
+            buttonRemoveAudiofile.Size = new Size(100, 23);
+            buttonRemoveAudiofile.TabIndex = 11;
+            buttonRemoveAudiofile.Text = "Remove file";
+            buttonRemoveAudiofile.UseVisualStyleBackColor = true;
+            buttonRemoveAudiofile.Click += buttonRemoveAudiofile_Click;
             // 
             // buttonAddAudioFiles
             // 
@@ -497,7 +509,7 @@
             buttonAddAudioFiles.TabIndex = 11;
             buttonAddAudioFiles.Text = "Add audio files";
             buttonAddAudioFiles.UseVisualStyleBackColor = true;
-            buttonAddAudioFiles.Click += buttonClear_Click;
+            buttonAddAudioFiles.Click += buttonAddAudioFiles_Click;
             // 
             // buttonClearAudioFiles
             // 
@@ -507,32 +519,35 @@
             buttonClearAudioFiles.TabIndex = 11;
             buttonClearAudioFiles.Text = "Clear";
             buttonClearAudioFiles.UseVisualStyleBackColor = true;
-            buttonClearAudioFiles.Click += buttonClear_Click;
+            buttonClearAudioFiles.Click += buttonClearAudioFiles_Click;
             // 
-            // groupBoxJobsQueue
+            // groupBoxJobsList
             // 
-            groupBoxJobsQueue.Controls.Add(textBoxJobsQueue);
-            groupBoxJobsQueue.Controls.Add(buttonStartJobList);
-            groupBoxJobsQueue.Controls.Add(buttonExportJobList);
-            groupBoxJobsQueue.Controls.Add(buttonImportJobList);
-            groupBoxJobsQueue.Controls.Add(buttonClearJobList);
-            groupBoxJobsQueue.Location = new Point(12, 278);
-            groupBoxJobsQueue.Name = "groupBoxJobsQueue";
-            groupBoxJobsQueue.Size = new Size(604, 422);
-            groupBoxJobsQueue.TabIndex = 5;
-            groupBoxJobsQueue.TabStop = false;
-            groupBoxJobsQueue.Text = "Jobs Queue (Drag'n'Drop is available)";
+            groupBoxJobsList.Controls.Add(textBoxJobList);
+            groupBoxJobsList.Controls.Add(buttonStartJobList);
+            groupBoxJobsList.Controls.Add(buttonExportJobList);
+            groupBoxJobsList.Controls.Add(buttonImportJobList);
+            groupBoxJobsList.Controls.Add(buttonClearJobList);
+            groupBoxJobsList.Enabled = false;
+            groupBoxJobsList.Location = new Point(12, 278);
+            groupBoxJobsList.Name = "groupBoxJobsList";
+            groupBoxJobsList.Size = new Size(604, 422);
+            groupBoxJobsList.TabIndex = 5;
+            groupBoxJobsList.TabStop = false;
+            groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
+            groupBoxJobsList.Enter += groupBoxJobList_Enter;
             // 
-            // textBoxJobsQueue
+            // textBoxJobList
             // 
-            textBoxJobsQueue.Location = new Point(6, 22);
-            textBoxJobsQueue.Multiline = true;
-            textBoxJobsQueue.Name = "textBoxJobsQueue";
-            textBoxJobsQueue.PlaceholderText = "You may edit this text";
-            textBoxJobsQueue.ScrollBars = ScrollBars.Both;
-            textBoxJobsQueue.Size = new Size(592, 364);
-            textBoxJobsQueue.TabIndex = 1;
-            textBoxJobsQueue.WordWrap = false;
+            textBoxJobList.Location = new Point(6, 22);
+            textBoxJobList.Multiline = true;
+            textBoxJobList.Name = "textBoxJobList";
+            textBoxJobList.PlaceholderText = "You may edit this text";
+            textBoxJobList.ScrollBars = ScrollBars.Both;
+            textBoxJobList.Size = new Size(592, 364);
+            textBoxJobList.TabIndex = 1;
+            textBoxJobList.WordWrap = false;
+            textBoxJobList.TextChanged += textBoxJobList_TextChanged;
             // 
             // buttonStartJobList
             // 
@@ -542,6 +557,7 @@
             buttonStartJobList.TabIndex = 24;
             buttonStartJobList.Text = "Start job list";
             buttonStartJobList.UseVisualStyleBackColor = true;
+            buttonStartJobList.Click += buttonStartJobList_Click;
             // 
             // buttonExportJobList
             // 
@@ -551,6 +567,7 @@
             buttonExportJobList.TabIndex = 3;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
+            buttonExportJobList.Click += buttonExportJobList_Click;
             // 
             // buttonImportJobList
             // 
@@ -560,6 +577,7 @@
             buttonImportJobList.TabIndex = 3;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
+            buttonImportJobList.Click += buttonImportJobList_Click;
             // 
             // buttonClearJobList
             // 
@@ -569,21 +587,22 @@
             buttonClearJobList.TabIndex = 11;
             buttonClearJobList.Text = "Clear";
             buttonClearJobList.UseVisualStyleBackColor = true;
-            buttonClearJobList.Click += buttonClear_Click;
+            buttonClearJobList.Click += buttonClearJobList_Click;
             // 
             // groupLog
             // 
-            groupLog.Controls.Add(textBoxFlacExecutables);
+            groupLog.Controls.Add(textBoxLog);
             groupLog.Controls.Add(buttonClearLog);
             groupLog.Controls.Add(button3);
             groupLog.Controls.Add(buttonCopyLog);
             groupLog.Controls.Add(buttonOpenLogtxt);
             groupLog.Location = new Point(622, 278);
             groupLog.Name = "groupLog";
-            groupLog.Size = new Size(984, 422);
+            groupLog.Size = new Size(841, 422);
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
+            groupLog.Enter += groupLog_Enter;
             // 
             // button3
             // 
@@ -593,29 +612,30 @@
             button3.TabIndex = 16;
             button3.Text = "Open log.txt";
             button3.UseVisualStyleBackColor = true;
-            button3.Click += buttonOpenLogtxt_Click;
             // 
             // buttonCopyLog
             // 
-            buttonCopyLog.Location = new Point(812, 392);
+            buttonCopyLog.Location = new Point(669, 392);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(85, 23);
             buttonCopyLog.TabIndex = 16;
             buttonCopyLog.Text = "Copy Log";
             buttonCopyLog.UseVisualStyleBackColor = true;
-            buttonCopyLog.Click += buttonOpenLogtxt_Click;
+            buttonCopyLog.Click += buttonCopyLog_Click;
             // 
             // groupBoxJobSettings
             // 
             groupBoxJobSettings.Controls.Add(radioButtonDecode);
             groupBoxJobSettings.Controls.Add(radioButtonEncode);
-            groupBoxJobSettings.Controls.Add(buttonAddJobToQueue);
-            groupBoxJobSettings.Location = new Point(1486, 12);
+            groupBoxJobSettings.Controls.Add(buttonAddJobToJobList);
+            groupBoxJobSettings.Enabled = false;
+            groupBoxJobSettings.Location = new Point(1338, 12);
             groupBoxJobSettings.Name = "groupBoxJobSettings";
-            groupBoxJobSettings.Size = new Size(114, 260);
+            groupBoxJobSettings.Size = new Size(125, 260);
             groupBoxJobSettings.TabIndex = 25;
             groupBoxJobSettings.TabStop = false;
             groupBoxJobSettings.Text = "Job settings";
+            groupBoxJobSettings.Enter += groupBoxJobSettings_Enter;
             // 
             // radioButtonDecode
             // 
@@ -626,6 +646,7 @@
             radioButtonDecode.TabIndex = 25;
             radioButtonDecode.Text = "Decode";
             radioButtonDecode.UseVisualStyleBackColor = true;
+            radioButtonDecode.CheckedChanged += radioButtonDecode_CheckedChanged;
             // 
             // radioButtonEncode
             // 
@@ -638,37 +659,39 @@
             radioButtonEncode.TabStop = true;
             radioButtonEncode.Text = "Encode";
             radioButtonEncode.UseVisualStyleBackColor = true;
+            radioButtonEncode.CheckedChanged += radioButtonEncode_CheckedChanged;
             // 
-            // buttonAddJobToQueue
+            // buttonAddJobToJobList
             // 
-            buttonAddJobToQueue.Location = new Point(6, 230);
-            buttonAddJobToQueue.Name = "buttonAddJobToQueue";
-            buttonAddJobToQueue.Size = new Size(100, 23);
-            buttonAddJobToQueue.TabIndex = 24;
-            buttonAddJobToQueue.Text = "Add to queue";
-            buttonAddJobToQueue.UseVisualStyleBackColor = true;
-            buttonAddJobToQueue.Click += buttonAddJobToQueue_Click;
+            buttonAddJobToJobList.Location = new Point(6, 230);
+            buttonAddJobToJobList.Name = "buttonAddJobToJobList";
+            buttonAddJobToJobList.Size = new Size(113, 23);
+            buttonAddJobToJobList.TabIndex = 24;
+            buttonAddJobToJobList.Text = "Add to Job List";
+            buttonAddJobToJobList.UseVisualStyleBackColor = true;
+            buttonAddJobToJobList.Click += buttonAddJobToJobList_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1620, 711);
+            ClientSize = new Size(1477, 711);
             Controls.Add(groupLog);
             Controls.Add(groupBoxJobSettings);
-            Controls.Add(groupBoxJobsQueue);
+            Controls.Add(groupBoxJobsList);
             Controls.Add(groupBoxAudioFiles);
             Controls.Add(groupBoxEncoders);
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241127.1]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241128.1]";
+            Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
             groupBoxEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
-            groupBoxJobsQueue.ResumeLayout(false);
-            groupBoxJobsQueue.PerformLayout();
+            groupBoxJobsList.ResumeLayout(false);
+            groupBoxJobsList.PerformLayout();
             groupLog.ResumeLayout(false);
             groupLog.PerformLayout();
             groupBoxJobSettings.ResumeLayout(false);
@@ -679,23 +702,22 @@
         #endregion
 
         private GroupBox groupBoxEncoderSettings;
+        private ListView listViewFlacExecutables;
         private Label labelCompressionLevel;
         private Label labelThreads;
         private TextBox textBoxThreads;
         private TextBox textBoxCompressionLevel;
-        private Label labelAdditionalArguments;
-        private TextBox textBoxAdditionalArguments;
+        private TextBox textBoxCommandLineOptions;
         private ProgressBar progressBar;
         private Button buttonStartEncode;
-        private TextBox textBoxFlacExecutables;
+        private TextBox textBoxLog;
         private Button buttonepr8;
         private Button buttonAsubdividetukey5flattop;
         private Button buttonNoPadding;
         private Button buttonNoSeektable;
-        private Button buttonClear;
+        private Button buttonClearCommandLine;
         private Button buttonClearLog;
         private Label labelFlacUsedVersion;
-        private ListBox listBoxFlacExecutables;
         private GroupBox groupBoxEncoders;
         private Button buttonOpenLogtxt;
         private Label labelCPUinfo;
@@ -709,27 +731,28 @@
         private Label labelSetCores;
         private Label labelSetThreads;
         private GroupBox groupBoxAudioFiles;
-        private ListBox listBoxAudioFiles;
+        private ListView listViewAudioFiles;
         private CheckBox checkBoxHighPriority;
         private Button buttonStartDecode;
-        private GroupBox groupBoxJobsQueue;
+        private GroupBox groupBoxJobsList;
         private GroupBox groupLog;
         private Button buttonExportJobList;
         private Button buttonImportJobList;
         private Button buttonClearJobList;
-        private TextBox textBoxJobsQueue;
+        private TextBox textBoxJobList;
         private Button buttonAddEncoders;
         private Button buttonClearEncoders;
         private Button buttonAddAudioFiles;
         private Button buttonClearAudioFiles;
-        private Button button1;
-        private Button button2;
+        private Button buttonRemoveEncoder;
+        private Button buttonRemoveAudiofile;
         private GroupBox groupBoxJobSettings;
         private Button buttonStartJobList;
-        private Button buttonAddJobToQueue;
+        private Button buttonAddJobToJobList;
         private RadioButton radioButtonDecode;
         private RadioButton radioButtonEncode;
         private Button button3;
         private Button buttonCopyLog;
+        private Label labelCommandLine;
     }
 }
