@@ -19,6 +19,7 @@ namespace FLAC_Benchmark_H
         private Stopwatch stopwatch;
         private PerformanceCounter cpuCounter;
         private System.Windows.Forms.Timer cpuUsageTimer; // Указываем явно, что это Timer из System.Windows.Forms
+        private bool _isEncodingStopped = false;
 
 
 
@@ -611,6 +612,8 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonStartEncode_Click(object sender, EventArgs e)
         {
+            _isEncodingStopped = false;
+
             // Создаём временную директорию для выходного файла
             string tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             Directory.CreateDirectory(tempFolderPath);
@@ -638,6 +641,11 @@ namespace FLAC_Benchmark_H
             {
                 foreach (var audioFile in selectedAudioFiles)
                 {
+                    if (_isEncodingStopped)
+                    {
+                        return; // Выходим из метода
+                    }
+
                     // Получаем значения из текстовых полей
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
@@ -653,9 +661,9 @@ namespace FLAC_Benchmark_H
                     {
                         await Task.Run(() =>
                         {
-                            using (var process = new Process())
+                            using (_process = new Process()) // Сохраняем процесс в поле _process
                             {
-                                process.StartInfo = new ProcessStartInfo
+                                _process.StartInfo = new ProcessStartInfo
                                 {
                                     FileName = executable,
                                     Arguments = arguments,
@@ -666,19 +674,18 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();  // обнулить предыдущие результаты
                                 stopwatch.Start(); // Запускаем отсчет времени
-                                process.Start();
+
+                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+                                {
+                                    _process.Start(); // Используйте _process здесь
+                                }
 
                                 // Устанавливаем приоритет процесса на высокий, если чекбокс включен
-                                if (checkBoxHighPriority.Checked)
-                                {
-                                    process.PriorityClass = ProcessPriorityClass.High;
-                                }
-                                else
-                                {
-                                    process.PriorityClass = ProcessPriorityClass.Normal; // Устанавливаем нормальный приоритет
-                                }
+                                _process.PriorityClass = checkBoxHighPriority.Checked
+                                    ? ProcessPriorityClass.High
+                                    : ProcessPriorityClass.Normal;
 
-                                process.WaitForExit(); // Дождаться завершения процесса
+                                _process.WaitForExit(); // Дождаться завершения процесса
                                 stopwatch.Stop(); // Останавливаем отсчет времени
                             }
                         });
@@ -712,9 +719,8 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-
-            // MessageBox.Show("Encoding completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
 
         private void buttonStartDecode_Click(object sender, EventArgs e)
         {
@@ -849,7 +855,29 @@ namespace FLAC_Benchmark_H
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
+            // Устанавливаем флаг, что кодирование остановлено
+            _isEncodingStopped = true;
 
+            // Если процесс запущен, его нужно остановить
+            if (_process != null && !_process.HasExited)
+            {
+                try
+                {
+                    _process.Kill(); // Завершаем процесс
+                    _process.Dispose(); // Освобождаем ресурсы
+                    _process = null; // Обнуляем процесс
+                    MessageBox.Show("Encoding process has been stopped.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error stopping the process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No encoding process is running.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
+
     }
 }
