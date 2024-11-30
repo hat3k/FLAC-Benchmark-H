@@ -23,6 +23,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
+            buttonStop = new Button();
             labelCommandLine = new Label();
             labelFlacUsedVersion = new Label();
             buttonStartEncode = new Button();
@@ -75,7 +76,6 @@
             radioButtonDecode = new RadioButton();
             radioButtonEncode = new RadioButton();
             buttonAddJobToJobList = new Button();
-            buttonStop = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -120,6 +120,16 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             groupBoxEncoderSettings.Enter += groupBoxEncoderSettings_Enter;
+            // 
+            // buttonStop
+            // 
+            buttonStop.Location = new Point(572, 230);
+            buttonStop.Name = "buttonStop";
+            buttonStop.Size = new Size(75, 23);
+            buttonStop.TabIndex = 25;
+            buttonStop.Text = "Stop";
+            buttonStop.UseVisualStyleBackColor = true;
+            buttonStop.Click += buttonStop_Click;
             // 
             // labelCommandLine
             // 
@@ -673,16 +683,6 @@
             buttonAddJobToJobList.UseVisualStyleBackColor = true;
             buttonAddJobToJobList.Click += buttonAddJobToJobList_Click;
             // 
-            // buttonStop
-            // 
-            buttonStop.Location = new Point(572, 230);
-            buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(75, 23);
-            buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop";
-            buttonStop.UseVisualStyleBackColor = true;
-            buttonStop.Click += buttonStop_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -696,7 +696,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241128.1]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241130.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
