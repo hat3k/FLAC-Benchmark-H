@@ -672,12 +672,12 @@ namespace FLAC_Benchmark_H
                                 };
 
                                 // Запускаем отсчет времени
-                                stopwatch.Reset();  // обнулить предыдущие результаты
-                                stopwatch.Start(); // Запускаем отсчет времени
+                                stopwatch.Reset();
+                                stopwatch.Start();
 
                                 if (!_isEncodingStopped) // Добавляем проверку перед запуском
                                 {
-                                    _process.Start(); // Используйте _process здесь
+                                    _process.Start();
                                 }
 
                                 // Устанавливаем приоритет процесса на высокий, если чекбокс включен
@@ -686,7 +686,7 @@ namespace FLAC_Benchmark_H
                                     : ProcessPriorityClass.Normal;
 
                                 _process.WaitForExit(); // Дождаться завершения процесса
-                                stopwatch.Stop(); // Останавливаем отсчет времени
+                                stopwatch.Stop();
                             }
                         });
 
@@ -702,11 +702,15 @@ namespace FLAC_Benchmark_H
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
 
-                            // Записываем информацию в textBoxLog
-                            textBoxLog.AppendText($"{audioFileName}\t{fileSizeFormatted}\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
+                            // Условие: записывать в лог только если процесс не был остановлен
+                            if (!_isEncodingStopped)
+                            {
+                                // Записываем информацию в textBoxLog
+                                textBoxLog.AppendText($"{audioFileName}\t{fileSizeFormatted}\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
 
-                            // Также записываем в log.txt
-                            File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {fileSizeFormatted}\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                                // Также записываем в log.txt
+                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {fileSizeFormatted}\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                            }
                         }
                         else
                         {
@@ -720,7 +724,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
 
         private void buttonStartDecode_Click(object sender, EventArgs e)
         {
