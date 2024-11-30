@@ -667,7 +667,7 @@ namespace FLAC_Benchmark_H
                                 stopwatch.Reset();  // обнулить предыдущие результаты
                                 stopwatch.Start(); // Запускаем отсчет времени
                                 process.Start();
-                                
+
                                 // Устанавливаем приоритет процесса на высокий, если чекбокс включен
                                 if (checkBoxHighPriority.Checked)
                                 {
@@ -713,7 +713,7 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-           // MessageBox.Show("Encoding completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // MessageBox.Show("Encoding completed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void buttonStartDecode_Click(object sender, EventArgs e)
@@ -783,7 +783,7 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         File.WriteAllText(saveFileDialog.FileName, textBoxJobList.Text);
-                    //   MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        //   MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
@@ -845,6 +845,11 @@ namespace FLAC_Benchmark_H
         private void buttonClearLog_Click(object sender, EventArgs e)
         {
             textBoxLog.Clear(); // Очищаем textBoxLog
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

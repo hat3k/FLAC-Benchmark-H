@@ -75,6 +75,7 @@
             radioButtonDecode = new RadioButton();
             radioButtonEncode = new RadioButton();
             buttonAddJobToJobList = new Button();
+            buttonStop = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -85,6 +86,7 @@
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(buttonStop);
             groupBoxEncoderSettings.Controls.Add(labelCommandLine);
             groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
@@ -671,6 +673,16 @@
             buttonAddJobToJobList.UseVisualStyleBackColor = true;
             buttonAddJobToJobList.Click += buttonAddJobToJobList_Click;
             // 
+            // buttonStop
+            // 
+            buttonStop.Location = new Point(572, 230);
+            buttonStop.Name = "buttonStop";
+            buttonStop.Size = new Size(75, 23);
+            buttonStop.TabIndex = 25;
+            buttonStop.Text = "Stop";
+            buttonStop.UseVisualStyleBackColor = true;
+            buttonStop.Click += buttonStop_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -754,5 +766,6 @@
         private Button button3;
         private Button buttonCopyLog;
         private Label labelCommandLine;
+        private Button buttonStop;
     }
 }
