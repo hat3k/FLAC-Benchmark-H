@@ -416,7 +416,8 @@ namespace FLAC_Benchmark_H
         {
             // Настройка DataGridView (по желанию)
             dataGridViewLog.Columns.Add("FileName", "File Name");
-            dataGridViewLog.Columns.Add("FileSize", "File Size");
+            dataGridViewLog.Columns.Add("InputFileSize", "Input File Size");
+            dataGridViewLog.Columns.Add("OutputFileSize", "Output File Size");
             dataGridViewLog.Columns.Add("Compression", "Compression");
             dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
             dataGridViewLog.Columns.Add("Executable", "Binary");
@@ -661,9 +662,18 @@ namespace FLAC_Benchmark_H
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
 
                     // Формируем аргументы для запуска
-                    string outputFileName = "temp_encoded.flac"; // Имя выходного файла
-                    string outputFilePath = Path.Combine(tempFolderPath, outputFileName);
-                    string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine} -j{threads} -f -o \"{outputFilePath}\"";
+                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+
+                    // Формируем базовые аргументы
+                    string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
+
+                    // Добавляем аргумент -j{threads} только если threads больше 1
+                    if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+                    {
+                        arguments += $" -j{threads}"; // Добавляем -j{threads}
+                    }
+
+                    arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
 
                     // Запускаем процесс и дожидаемся завершения
                     try
@@ -710,7 +720,7 @@ namespace FLAC_Benchmark_H
                             long outputSize = outputFile.Length; // Размер выходного файла
                             TimeSpan timeTaken = stopwatch.Elapsed;
 
-                            // Calculate compression percentage
+                            // Вычисление процента сжатия
                             double compressionPercentage = ((double)outputSize / inputSize) * 100;
 
 
@@ -720,7 +730,19 @@ namespace FLAC_Benchmark_H
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                dataGridViewLog.Rows.Add(audioFileName, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable));
+                                // Добавляем запись в лог
+                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, inputSize, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable));
+
+                                // Установка цвета текста в зависимости от сравнения размеров файлов
+                                if (outputSize > inputSize)
+                                {
+                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Red; // Выходной размер больше
+                                }
+                                else if (outputSize < inputSize)
+                                {
+                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
+                                }
+
                                 File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }
