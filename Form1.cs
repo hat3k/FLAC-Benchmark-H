@@ -675,6 +675,12 @@ namespace FLAC_Benchmark_H
 
                     arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
 
+                    // Добавляем параметры (без входящих и исходящих файлов)
+                    string parameters = $"{compressionLevel} {commandLine}";
+                    if (threadCount > 1)
+                    {
+                        parameters += $" -j{threads}";
+                    }
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -731,7 +737,7 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 // Добавляем запись в лог
-                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, inputSize, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable));
+                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, inputSize, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
 
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
@@ -743,7 +749,8 @@ namespace FLAC_Benchmark_H
                                     dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
                                 }
 
-                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                                // Логирование в файл
+                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters}\n");
                             }
                         }
                         else
