@@ -725,9 +725,115 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonStartDecode_Click(object sender, EventArgs e)
+        private async void buttonStartDecode_Click(object sender, EventArgs e)
         {
+            // Устанавливаем флаг остановки
+            _isEncodingStopped = false;
+
+            // Создадим временную директорию для выходных файлов, если нужно
+            string tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+            Directory.CreateDirectory(tempFolderPath);
+
+            // Получаем выделенные .exe файлы
+            var selectedExecutables = listViewFlacExecutables.CheckedItems
+                .Cast<ListViewItem>()
+                .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                .ToList();
+
+            // Получаем выделенные аудиофайлы, но только с расширением .flac
+            var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                .Cast<ListViewItem>()
+                .Select(item => item.Tag.ToString())
+                .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .wav файлы
+                .ToList();
+
+            // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+            if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+            {
+                MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            foreach (var executable in selectedExecutables)
+            {
+                foreach (var audioFile in selectedAudioFiles)
+                {
+                    if (_isEncodingStopped)
+                    {
+                        return; // Выходим из метода
+                    }
+
+                    // Получаем значения из текстовых полей
+                    string threads = textBoxThreads.Text;
+                    string commandLine = textBoxCommandLineOptions.Text;
+
+                    // Формируем аргументы для запуска
+                    string outputFileName = "temp_decoded.wav"; // Имя выходного файла
+                    string outputFilePath = Path.Combine(tempFolderPath, outputFileName);
+                    string arguments = $"\"{audioFile}\" -d -f -o \"{outputFilePath}\"";
+
+                    try
+                    {
+                        await Task.Run(() =>
+                        {
+                            using (_process = new Process())
+                            {
+                                _process.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = executable,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
+
+                                stopwatch.Reset();
+                                stopwatch.Start();
+
+                                if (!_isEncodingStopped)
+                                {
+                                    _process.Start();
+                                }
+
+                                // Устанавливаем приоритет процесса
+                                _process.PriorityClass = checkBoxHighPriority.Checked ? ProcessPriorityClass.High : ProcessPriorityClass.Normal;
+
+                                _process.WaitForExit(); // Дожидаемся завершения процесса
+                                stopwatch.Stop();
+                            }
+                        });
+
+                        // После завершения процесса проверяем выходные файлы
+                        FileInfo outputFile = new FileInfo(outputFilePath);
+
+                        if (outputFile.Exists)
+                        {
+                            long fileSize = outputFile.Length;
+                            string fileSizeFormatted = $"{fileSize} bytes"; // Форматируем
+                            TimeSpan timeTaken = stopwatch.Elapsed;
+
+                            // Получаем только имя файла для логирования
+                            string audioFileName = Path.GetFileName(audioFile);
+
+                            if (!_isEncodingStopped)
+                            {
+                                // Записываем информацию в лог
+                                textBoxLog.AppendText($"{audioFileName}\t{fileSizeFormatted}\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
+                                File.AppendAllText("log.txt", $"{audioFileName}\tdecoded with {Path.GetFileName(executable)}\tResulting file size: {fileSizeFormatted}\tTotal decoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
+
         private void labelFlacUsedVersion_Click(object sender, EventArgs e)
         {
         }
