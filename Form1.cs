@@ -63,7 +63,7 @@ namespace FLAC_Benchmark_H
                 // Обновляем метку с информацией о процессоре
                 if (physicalCores > 0 && threadCount > 0)
                 {
-                    labelCPUinfo.Text = $"Your system has: Cores: {physicalCores}, Threads: {threadCount}";
+                    labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
                 }
                 else
                 {
@@ -79,7 +79,7 @@ namespace FLAC_Benchmark_H
         private void UpdateCpuUsage()
         {
             float cpuUsage = cpuCounter.NextValue();
-            labelCPUinfo.Text = $"Your system has: Cores: {physicalCores}, Threads: {threadCount} CPU Usage: {cpuUsage:F2}%";
+            labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}\nCPU Usage: {cpuUsage:F2}%";
         }
         // Метод для загрузки настроек
         private void LoadSettings()
@@ -107,7 +107,7 @@ namespace FLAC_Benchmark_H
                                     textBoxThreads.Text = value;
                                     break;
                                 case "CommandLineOptions":
-                                    textBoxCommandLineOptions.Text = value;
+                                    textBoxCommandLineOptionsEncoder.Text = value;
                                     break;
                                 case "HighPriority":
                                     checkBoxHighPriority.Checked = bool.Parse(value);
@@ -135,7 +135,7 @@ namespace FLAC_Benchmark_H
                 {
             $"CompressionLevel={textBoxCompressionLevel.Text}",
             $"Threads={textBoxThreads.Text}",
-            $"CommandLineOptions={textBoxCommandLineOptions.Text}",
+            $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
             $"HighPriority={checkBoxHighPriority.Checked}"
         };
                 File.WriteAllLines(SettingsFilePath, settings);
@@ -421,7 +421,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
             dataGridViewLog.Columns.Add("Executable", "Binary");
         }
-// FORM LOAD
+        // FORM LOAD
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
@@ -524,9 +524,6 @@ namespace FLAC_Benchmark_H
         private void groupBoxEncoderSettings_Enter(object sender, EventArgs e)
         {
         }
-        private void labelCPUinfo_Click(object sender, EventArgs e)
-        {
-        }
         private void labelCompressionLevel_Click(object sender, EventArgs e)
         {
         }
@@ -583,42 +580,42 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearCommandLine_Click(object sender, EventArgs e)
         {
-            textBoxCommandLineOptions.Clear(); // Очищаем textCommandLineOptions
+            textBoxCommandLineOptionsEncoder.Clear(); // Очищаем textCommandLineOptions
         }
         private void buttonepr8_Click(object sender, EventArgs e)
         {
             // Проверяем, содержится ли -epr8 в textBoxAdditionalArguments
-            if (!textBoxCommandLineOptions.Text.Contains("-epr8"))
+            if (!textBoxCommandLineOptionsEncoder.Text.Contains("-epr8"))
             {
                 // Если нет, добавляем его
-                textBoxCommandLineOptions.AppendText(" -epr8"); // Добавляем с пробелом перед текстом
+                textBoxCommandLineOptionsEncoder.AppendText(" -epr8"); // Добавляем с пробелом перед текстом
             }
         }
         private void buttonAsubdividetukey5flattop_Click(object sender, EventArgs e)
         {
             // Проверяем, содержится ли -A "subdivide_tukey(5);flattop" в textBoxAdditionalArguments
-            if (!textBoxCommandLineOptions.Text.Contains("-A \"subdivide_tukey(5);flattop\""))
+            if (!textBoxCommandLineOptionsEncoder.Text.Contains("-A \"subdivide_tukey(5);flattop\""))
             {
                 // Если нет, добавляем его
-                textBoxCommandLineOptions.AppendText(" -A \"subdivide_tukey(5);flattop\""); // Добавляем с пробелом перед текстом
+                textBoxCommandLineOptionsEncoder.AppendText(" -A \"subdivide_tukey(5);flattop\""); // Добавляем с пробелом перед текстом
             }
         }
         private void buttonNoPadding_Click(object sender, EventArgs e)
         {
             // Проверяем, содержится ли --no-padding в textBoxAdditionalArguments
-            if (!textBoxCommandLineOptions.Text.Contains("--no-padding"))
+            if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-padding"))
             {
                 // Если нет, добавляем его
-                textBoxCommandLineOptions.AppendText(" --no-padding"); // Добавляем с пробелом перед текстом
+                textBoxCommandLineOptionsEncoder.AppendText(" --no-padding"); // Добавляем с пробелом перед текстом
             }
         }
         private void buttonNoSeektable_Click(object sender, EventArgs e)
         {
             // Проверяем, содержится ли --no-seektable в textBoxAdditionalArguments
-            if (!textBoxCommandLineOptions.Text.Contains("--no-seektable"))
+            if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-seektable"))
             {
                 // Если нет, добавляем его
-                textBoxCommandLineOptions.AppendText(" --no-seektable"); // Добавляем с пробелом перед текстом
+                textBoxCommandLineOptionsEncoder.AppendText(" --no-seektable"); // Добавляем с пробелом перед текстом
             }
         }
         private async void buttonStartEncode_Click(object sender, EventArgs e)
@@ -660,7 +657,7 @@ namespace FLAC_Benchmark_H
                     // Получаем значения из текстовых полей
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
-                    string commandLine = textBoxCommandLineOptions.Text;
+                    string commandLine = textBoxCommandLineOptionsEncoder.Text;
 
                     // Формируем аргументы для запуска
                     string outputFileName = "temp_encoded.flac"; // Имя выходного файла
@@ -779,12 +776,12 @@ namespace FLAC_Benchmark_H
 
                     // Получаем значения из текстовых полей
                     string threads = textBoxThreads.Text;
-                    string commandLine = textBoxCommandLineOptions.Text;
+                    string commandLine = textBoxCommandLineOptionsDecoder.Text;
 
                     // Формируем аргументы для запуска
                     string outputFileName = "temp_decoded.wav"; // Имя выходного файла
                     string outputFilePath = Path.Combine(tempFolderPath, outputFileName);
-                    string arguments = $"\"{audioFile}\" -d -f -o \"{outputFilePath}\"";
+                    string arguments = $"\"{audioFile}\" -d {commandLine} -f -o \"{outputFilePath}\"";
 
                     try
                     {
@@ -973,7 +970,7 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearLog_Click(object sender, EventArgs e)
         {
-            textBoxLog.Clear(); // Очищаем textBoxLog
+            dataGridViewLog.Rows.Clear();
         }
 
         private void buttonStop_Click(object sender, EventArgs e)
@@ -1002,5 +999,9 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void checkBoxClearTempFolder_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
