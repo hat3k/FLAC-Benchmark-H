@@ -420,6 +420,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Compression", "Compression");
             dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
             dataGridViewLog.Columns.Add("Executable", "Binary");
+            dataGridViewLog.Columns.Add("Parameters", "Parameters");
         }
         // FORM LOAD
         private void Form1_Load(object sender, EventArgs e)
