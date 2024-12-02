@@ -605,6 +605,7 @@
             // 
             // dataGridViewLog
             // 
+            dataGridViewLog.AllowUserToAddRows = false;
             dataGridViewLog.AllowUserToOrderColumns = true;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
