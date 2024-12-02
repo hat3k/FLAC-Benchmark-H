@@ -719,7 +719,7 @@ namespace FLAC_Benchmark_H
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                dataGridViewLog.Rows.Add(audioFileName, outputSize, $"{compressionPercentage:F3}%", timeTaken.TotalMilliseconds, Path.GetFileName(executable));
+                                dataGridViewLog.Rows.Add(audioFileName, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable));
                                 File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }
@@ -806,7 +806,9 @@ namespace FLAC_Benchmark_H
                                 }
 
                                 // Устанавливаем приоритет процесса
-                                _process.PriorityClass = checkBoxHighPriority.Checked ? ProcessPriorityClass.High : ProcessPriorityClass.Normal;
+                                _process.PriorityClass = checkBoxHighPriority.Checked
+                                    ? ProcessPriorityClass.High
+                                    : ProcessPriorityClass.Normal;
 
                                 _process.WaitForExit(); // Дожидаемся завершения процесса
                                 stopwatch.Stop();
@@ -819,7 +821,6 @@ namespace FLAC_Benchmark_H
                         if (outputFile.Exists)
                         {
                             long fileSize = outputFile.Length;
-                            string fileSizeFormatted = $"{fileSize} bytes"; // Форматируем
                             TimeSpan timeTaken = stopwatch.Elapsed;
 
                             // Получаем только имя файла для логирования
@@ -828,8 +829,8 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 // Записываем информацию в лог
-                                dataGridViewLog.Rows.Add(audioFileName, fileSizeFormatted, "", timeTaken.TotalMilliseconds, Path.GetFileName(executable));
-                                File.AppendAllText("log.txt", $"{audioFileName}\tdecoded with {Path.GetFileName(executable)}\tResulting file size: {fileSizeFormatted}\tTotal decoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                                dataGridViewLog.Rows.Add(audioFileName, fileSize, "", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable));
+                                File.AppendAllText("log.txt", $"{audioFileName}\tdecoded with {Path.GetFileName(executable)}\tResulting file size: {fileSize} bytes\tTotal decoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }
                         else

@@ -30,7 +30,6 @@
             labelFlacUsedVersion = new Label();
             buttonStartEncode = new Button();
             progressBarEncoder = new ProgressBar();
-            checkBoxHighPriority = new CheckBox();
             labelSetThreads = new Label();
             labelSetCores = new Label();
             textBoxCommandLineOptionsEncoder = new TextBox();
@@ -50,6 +49,7 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
+            checkBoxHighPriority = new CheckBox();
             buttonStartDecode = new Button();
             labelCPUinfo = new Label();
             buttonOpenLogtxt = new Button();
@@ -93,13 +93,11 @@
             // 
             // groupBoxEncoderSettings
             // 
-            groupBoxEncoderSettings.Controls.Add(buttonStop);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
-            groupBoxEncoderSettings.Controls.Add(checkBoxHighPriority);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
             groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
@@ -122,7 +120,7 @@
             groupBoxEncoderSettings.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxEncoderSettings.Location = new Point(622, 12);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
-            groupBoxEncoderSettings.Size = new Size(663, 171);
+            groupBoxEncoderSettings.Size = new Size(650, 171);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
@@ -131,11 +129,11 @@
             // buttonStop
             // 
             buttonStop.Font = new Font("Segoe UI", 9F);
-            buttonStop.Location = new Point(568, 141);
+            buttonStop.Location = new Point(6, 230);
             buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(75, 23);
+            buttonStop.Size = new Size(154, 23);
             buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop";
+            buttonStop.Text = "Stop Encoding/Decoding";
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += buttonStop_Click;
             // 
@@ -195,18 +193,6 @@
             progressBarEncoder.TabIndex = 4;
             progressBarEncoder.Click += progressBar_Click;
             // 
-            // checkBoxHighPriority
-            // 
-            checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Font = new Font("Segoe UI", 9F);
-            checkBoxHighPriority.Location = new Point(497, 53);
-            checkBoxHighPriority.Name = "checkBoxHighPriority";
-            checkBoxHighPriority.Size = new Size(93, 19);
-            checkBoxHighPriority.TabIndex = 22;
-            checkBoxHighPriority.Text = "High Priority";
-            checkBoxHighPriority.UseVisualStyleBackColor = true;
-            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
-            // 
             // labelSetThreads
             // 
             labelSetThreads.AutoSize = true;
@@ -231,6 +217,7 @@
             // 
             // textBoxCommandLineOptionsEncoder
             // 
+            textBoxCommandLineOptionsEncoder.Font = new Font("Segoe UI", 9F);
             textBoxCommandLineOptionsEncoder.Location = new Point(122, 80);
             textBoxCommandLineOptionsEncoder.Name = "textBoxCommandLineOptionsEncoder";
             textBoxCommandLineOptionsEncoder.Size = new Size(440, 23);
@@ -413,6 +400,18 @@
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             textBoxThreads.TextChanged += textBoxThreads_TextChanged;
             // 
+            // checkBoxHighPriority
+            // 
+            checkBoxHighPriority.AutoSize = true;
+            checkBoxHighPriority.Font = new Font("Segoe UI", 9F);
+            checkBoxHighPriority.Location = new Point(6, 177);
+            checkBoxHighPriority.Name = "checkBoxHighPriority";
+            checkBoxHighPriority.Size = new Size(93, 19);
+            checkBoxHighPriority.TabIndex = 22;
+            checkBoxHighPriority.Text = "High Priority";
+            checkBoxHighPriority.UseVisualStyleBackColor = true;
+            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
+            // 
             // buttonStartDecode
             // 
             buttonStartDecode.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
@@ -429,13 +428,13 @@
             labelCPUinfo.Font = new Font("Segoe UI", 9F);
             labelCPUinfo.Location = new Point(6, 24);
             labelCPUinfo.Name = "labelCPUinfo";
-            labelCPUinfo.Size = new Size(160, 50);
+            labelCPUinfo.Size = new Size(154, 50);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "CPU Info";
             // 
             // buttonOpenLogtxt
             // 
-            buttonOpenLogtxt.Location = new Point(578, 392);
+            buttonOpenLogtxt.Location = new Point(559, 392);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
             buttonOpenLogtxt.TabIndex = 16;
@@ -445,7 +444,7 @@
             // 
             // buttonClearLog
             // 
-            buttonClearLog.Location = new Point(760, 392);
+            buttonClearLog.Location = new Point(741, 392);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(75, 23);
             buttonClearLog.TabIndex = 12;
@@ -649,7 +648,7 @@
             groupLog.Controls.Add(buttonOpenLogtxt);
             groupLog.Location = new Point(622, 278);
             groupLog.Name = "groupLog";
-            groupLog.Size = new Size(841, 422);
+            groupLog.Size = new Size(822, 422);
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
@@ -675,13 +674,13 @@
             dataGridViewLog.Name = "dataGridViewLog";
             dataGridViewLog.ReadOnly = true;
             dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
-            dataGridViewLog.Size = new Size(829, 364);
+            dataGridViewLog.Size = new Size(810, 364);
             dataGridViewLog.TabIndex = 17;
             // 
             // buttonCopyLog
             // 
             buttonCopyLog.Enabled = false;
-            buttonCopyLog.Location = new Point(669, 392);
+            buttonCopyLog.Location = new Point(650, 392);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(85, 23);
             buttonCopyLog.TabIndex = 16;
@@ -691,11 +690,13 @@
             // 
             // groupBoxSystemandSettings
             // 
+            groupBoxSystemandSettings.Controls.Add(buttonStop);
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
-            groupBoxSystemandSettings.Location = new Point(1291, 12);
+            groupBoxSystemandSettings.Controls.Add(checkBoxHighPriority);
+            groupBoxSystemandSettings.Location = new Point(1278, 12);
             groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
-            groupBoxSystemandSettings.Size = new Size(172, 260);
+            groupBoxSystemandSettings.Size = new Size(166, 260);
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
@@ -705,7 +706,7 @@
             // 
             checkBoxClearTempFolder.AutoSize = true;
             checkBoxClearTempFolder.Enabled = false;
-            checkBoxClearTempFolder.Location = new Point(6, 233);
+            checkBoxClearTempFolder.Location = new Point(6, 201);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
             checkBoxClearTempFolder.TabIndex = 18;
@@ -724,7 +725,7 @@
             groupBoxDecoderSettings.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxDecoderSettings.Location = new Point(622, 189);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
-            groupBoxDecoderSettings.Size = new Size(663, 83);
+            groupBoxDecoderSettings.Size = new Size(650, 83);
             groupBoxDecoderSettings.TabIndex = 26;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
@@ -754,6 +755,7 @@
             // 
             // textBoxCommandLineOptionsDecoder
             // 
+            textBoxCommandLineOptionsDecoder.Font = new Font("Segoe UI", 9F);
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
             textBoxCommandLineOptionsDecoder.Size = new Size(440, 23);
@@ -784,7 +786,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1477, 711);
+            ClientSize = new Size(1457, 711);
             Controls.Add(groupBoxDecoderSettings);
             Controls.Add(groupLog);
             Controls.Add(groupBoxSystemandSettings);
