@@ -39,6 +39,8 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Interval = 250; // Каждые 250 мс
             cpuUsageTimer.Tick += (sender, e) => UpdateCpuUsage();
             cpuUsageTimer.Start();
+            InitializedataGridViewLog();
+
         }
 
 
@@ -410,7 +412,16 @@ namespace FLAC_Benchmark_H
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveAudiofile.PerformClick();
         }
-        // FORM LOAD
+        private void InitializedataGridViewLog()
+        {
+            // Настройка DataGridView (по желанию)
+            dataGridViewLog.Columns.Add("FileName", "File Name");
+            dataGridViewLog.Columns.Add("FileSize", "File Size");
+            dataGridViewLog.Columns.Add("Compression", "Compression");
+            dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
+            dataGridViewLog.Columns.Add("Executable", "Binary");
+        }
+// FORM LOAD
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
@@ -711,7 +722,7 @@ namespace FLAC_Benchmark_H
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                textBoxLog.AppendText($"{audioFileName}\t{outputSize} bytes\t{compressionPercentage:F3}% compression\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
+                                dataGridViewLog.Rows.Add(audioFileName, outputSize, $"{compressionPercentage:F3}%", timeTaken.TotalMilliseconds, Path.GetFileName(executable));
                                 File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }
@@ -820,7 +831,7 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 // Записываем информацию в лог
-                                textBoxLog.AppendText($"{audioFileName}\t{fileSizeFormatted}\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
+                                dataGridViewLog.Rows.Add(audioFileName, fileSizeFormatted, "", timeTaken.TotalMilliseconds, Path.GetFileName(executable));
                                 File.AppendAllText("log.txt", $"{audioFileName}\tdecoded with {Path.GetFileName(executable)}\tResulting file size: {fileSizeFormatted}\tTotal decoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }

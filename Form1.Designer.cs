@@ -21,6 +21,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
             buttonStop = new Button();
@@ -52,7 +53,6 @@
             textBoxThreads = new TextBox();
             buttonOpenLogtxt = new Button();
             buttonClearLog = new Button();
-            textBoxLog = new TextBox();
             groupBoxEncoders = new GroupBox();
             buttonRemoveEncoder = new Button();
             listViewFlacExecutables = new ListView();
@@ -70,7 +70,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupLog = new GroupBox();
-            button3 = new Button();
+            dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxJobSettings = new GroupBox();
             radioButtonDecode = new RadioButton();
@@ -81,6 +81,7 @@
             groupBoxAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
             groupLog.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
             groupBoxJobSettings.SuspendLayout();
             SuspendLayout();
             // 
@@ -410,19 +411,6 @@
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
             // 
-            // textBoxLog
-            // 
-            textBoxLog.Location = new Point(6, 22);
-            textBoxLog.Multiline = true;
-            textBoxLog.Name = "textBoxLog";
-            textBoxLog.PlaceholderText = "Log (there is also additional log file in the app folder)";
-            textBoxLog.ReadOnly = true;
-            textBoxLog.ScrollBars = ScrollBars.Both;
-            textBoxLog.Size = new Size(829, 364);
-            textBoxLog.TabIndex = 1;
-            textBoxLog.WordWrap = false;
-            textBoxLog.TextChanged += textBoxLog_TextChanged;
-            // 
             // groupBoxEncoders
             // 
             groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
@@ -603,9 +591,8 @@
             // 
             // groupLog
             // 
-            groupLog.Controls.Add(textBoxLog);
+            groupLog.Controls.Add(dataGridViewLog);
             groupLog.Controls.Add(buttonClearLog);
-            groupLog.Controls.Add(button3);
             groupLog.Controls.Add(buttonCopyLog);
             groupLog.Controls.Add(buttonOpenLogtxt);
             groupLog.Location = new Point(622, 278);
@@ -616,14 +603,27 @@
             groupLog.Text = "Log";
             groupLog.Enter += groupLog_Enter;
             // 
-            // button3
+            // dataGridViewLog
             // 
-            button3.Location = new Point(705, 305);
-            button3.Name = "button3";
-            button3.Size = new Size(85, 23);
-            button3.TabIndex = 16;
-            button3.Text = "Open log.txt";
-            button3.UseVisualStyleBackColor = true;
+            dataGridViewLog.AllowUserToOrderColumns = true;
+            dataGridViewLog.BackgroundColor = SystemColors.Control;
+            dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewLog.GridColor = SystemColors.Control;
+            dataGridViewLog.Location = new Point(6, 22);
+            dataGridViewLog.Name = "dataGridViewLog";
+            dataGridViewLog.ReadOnly = true;
+            dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+            dataGridViewLog.Size = new Size(829, 364);
+            dataGridViewLog.TabIndex = 17;
             // 
             // buttonCopyLog
             // 
@@ -705,7 +705,7 @@
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
             groupLog.ResumeLayout(false);
-            groupLog.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
             groupBoxJobSettings.ResumeLayout(false);
             groupBoxJobSettings.PerformLayout();
             ResumeLayout(false);
@@ -763,9 +763,9 @@
         private Button buttonAddJobToJobList;
         private RadioButton radioButtonDecode;
         private RadioButton radioButtonEncode;
-        private Button button3;
         private Button buttonCopyLog;
         private Label labelCommandLine;
         private Button buttonStop;
+        private DataGridView dataGridViewLog;
     }
 }
