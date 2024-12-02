@@ -659,6 +659,9 @@ namespace FLAC_Benchmark_H
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
+                        FileInfo inputFileInfo = new FileInfo(audioFile);
+                        long inputSize = inputFileInfo.Length; // Размер входного файла
+
                         await Task.Run(() =>
                         {
                             using (_process = new Process()) // Сохраняем процесс в поле _process
@@ -695,9 +698,12 @@ namespace FLAC_Benchmark_H
 
                         if (outputFile.Exists)
                         {
-                            long fileSize = outputFile.Length; // Размер файла в байтах
-                            string fileSizeFormatted = $"{fileSize} bytes"; // Форматирование в КБ
+                            long outputSize = outputFile.Length; // Размер выходного файла
                             TimeSpan timeTaken = stopwatch.Elapsed;
+
+                            // Calculate compression percentage
+                            double compressionPercentage = ((double)outputSize / inputSize) * 100;
+
 
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
@@ -705,11 +711,8 @@ namespace FLAC_Benchmark_H
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                // Записываем информацию в textBoxLog
-                                textBoxLog.AppendText($"{audioFileName}\t{fileSizeFormatted}\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
-
-                                // Также записываем в log.txt
-                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {fileSizeFormatted}\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
+                                textBoxLog.AppendText($"{audioFileName}\t{outputSize} bytes\t{compressionPercentage:F3}% compression\t{timeTaken.TotalMilliseconds:F3} ms\t{Path.GetFileName(executable)}" + Environment.NewLine);
+                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\n");
                             }
                         }
                         else
