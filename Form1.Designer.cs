@@ -22,9 +22,9 @@
         private void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
-            buttonStop = new Button();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             labelFlacUsedVersion = new Label();
@@ -49,6 +49,7 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
+            buttonStop = new Button();
             checkBoxHighPriority = new CheckBox();
             buttonStartDecode = new Button();
             labelCPUinfo = new Label();
@@ -125,17 +126,6 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             groupBoxEncoderSettings.Enter += groupBoxEncoderSettings_Enter;
-            // 
-            // buttonStop
-            // 
-            buttonStop.Font = new Font("Segoe UI", 9F);
-            buttonStop.Location = new Point(6, 230);
-            buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(154, 23);
-            buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop Encoding/Decoding";
-            buttonStop.UseVisualStyleBackColor = true;
-            buttonStop.Click += buttonStop_Click;
             // 
             // labelCommandLineEncoder
             // 
@@ -400,6 +390,17 @@
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             textBoxThreads.TextChanged += textBoxThreads_TextChanged;
             // 
+            // buttonStop
+            // 
+            buttonStop.Font = new Font("Segoe UI", 9F);
+            buttonStop.Location = new Point(6, 230);
+            buttonStop.Name = "buttonStop";
+            buttonStop.Size = new Size(154, 23);
+            buttonStop.TabIndex = 25;
+            buttonStop.Text = "Stop Encoding/Decoding";
+            buttonStop.UseVisualStyleBackColor = true;
+            buttonStop.Click += buttonStop_Click;
+            // 
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
@@ -658,21 +659,31 @@
             // 
             dataGridViewLog.AllowUserToAddRows = false;
             dataGridViewLog.AllowUserToOrderColumns = true;
+            dataGridViewLog.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
             dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
             dataGridViewLog.ReadOnly = true;
+            dataGridViewLog.RowHeadersVisible = false;
             dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
             dataGridViewLog.Size = new Size(810, 364);
             dataGridViewLog.TabIndex = 17;

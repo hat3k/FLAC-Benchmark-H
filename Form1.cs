@@ -616,10 +616,12 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
             foreach (var executable in selectedExecutables)
             {
                 foreach (var audioFile in selectedAudioFiles)
                 {
+
                     if (_isEncodingStopped)
                     {
                         return; // Выходим из метода
@@ -689,7 +691,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                             if (!_isEncodingStopped)
                             {
                                 // Добавляем запись в лог
-                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, inputSize, outputSize, $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
+                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, $"{inputSize:n0}", $"{outputSize:n0}", $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
                                 {
@@ -700,7 +702,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                                     dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
                                 }
                                 // Логирование в файл
-                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters}\n");
+                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize:n0} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters}\n");
                             }
                         }
                         else
