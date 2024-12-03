@@ -289,7 +289,9 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                bool hasExeFiles = files.Any(file => Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                bool hasExeFiles = files.Any(file =>
+                    Directory.Exists(file) ||
+                    Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -303,7 +305,20 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
             {
-                if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                if (Directory.Exists(file)) // Если это папка, ищем исполняемые файлы внутри
+                {
+                    var exeFiles = Directory.GetFiles(file, "*.exe");
+                    foreach (var exeFile in exeFiles)
+                    {
+                        var item = new ListViewItem(Path.GetFileName(exeFile))
+                        {
+                            Tag = exeFile,
+                            Checked = true // Устанавливаем выделение по умолчанию
+                        };
+                        listViewFlacExecutables.Items.Add(item);
+                    }
+                }
+                else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                 {
                     var item = new ListViewItem(Path.GetFileName(file))
                     {
@@ -321,8 +336,9 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 bool hasAudioFiles = files.Any(file =>
-                Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
+                    Directory.Exists(file) ||
+                    Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasAudioFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -336,8 +352,21 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
             {
-                if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                if (Directory.Exists(file)) // Если это папка, ищем файлы внутри
+                {
+                    var audioFiles = Directory.GetFiles(file, "*.wav").Concat(Directory.GetFiles(file, "*.flac"));
+                    foreach (var audioFile in audioFiles)
+                    {
+                        var item = new ListViewItem(Path.GetFileName(audioFile))
+                        {
+                            Tag = audioFile,
+                            Checked = true // Устанавливаем выделение по умолчанию
+                        };
+                        listViewAudioFiles.Items.Add(item);
+                    }
+                }
+                else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                         Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                 {
                     var item = new ListViewItem(Path.GetFileName(file))
                     {
