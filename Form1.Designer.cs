@@ -118,10 +118,9 @@
             groupBoxEncoderSettings.Controls.Add(textBoxCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(labelCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
-            groupBoxEncoderSettings.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBoxEncoderSettings.Location = new Point(622, 12);
+            groupBoxEncoderSettings.Location = new Point(12, 278);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
-            groupBoxEncoderSettings.Size = new Size(650, 171);
+            groupBoxEncoderSettings.Size = new Size(777, 171);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
@@ -130,7 +129,6 @@
             // labelCommandLineEncoder
             // 
             labelCommandLineEncoder.AutoSize = true;
-            labelCommandLineEncoder.Font = new Font("Segoe UI", 9F);
             labelCommandLineEncoder.Location = new Point(27, 83);
             labelCommandLineEncoder.Name = "labelCommandLineEncoder";
             labelCommandLineEncoder.Size = new Size(89, 15);
@@ -140,8 +138,6 @@
             // 
             // buttonAddJobToJobListEncoder
             // 
-            buttonAddJobToJobListEncoder.Enabled = false;
-            buttonAddJobToJobListEncoder.Font = new Font("Segoe UI", 9F);
             buttonAddJobToJobListEncoder.Location = new Point(122, 141);
             buttonAddJobToJobListEncoder.Name = "buttonAddJobToJobListEncoder";
             buttonAddJobToJobListEncoder.Size = new Size(110, 23);
@@ -165,7 +161,6 @@
             // 
             // buttonStartEncode
             // 
-            buttonStartEncode.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             buttonStartEncode.Location = new Point(6, 141);
             buttonStartEncode.Name = "buttonStartEncode";
             buttonStartEncode.Size = new Size(110, 23);
@@ -186,7 +181,6 @@
             // labelSetThreads
             // 
             labelSetThreads.AutoSize = true;
-            labelSetThreads.Font = new Font("Segoe UI", 9F);
             labelSetThreads.Location = new Point(322, 54);
             labelSetThreads.Name = "labelSetThreads";
             labelSetThreads.Size = new Size(51, 15);
@@ -197,7 +191,6 @@
             // labelSetCores
             // 
             labelSetCores.AutoSize = true;
-            labelSetCores.Font = new Font("Segoe UI", 9F);
             labelSetCores.Location = new Point(156, 54);
             labelSetCores.Name = "labelSetCores";
             labelSetCores.Size = new Size(40, 15);
@@ -207,7 +200,6 @@
             // 
             // textBoxCommandLineOptionsEncoder
             // 
-            textBoxCommandLineOptionsEncoder.Font = new Font("Segoe UI", 9F);
             textBoxCommandLineOptionsEncoder.Location = new Point(122, 80);
             textBoxCommandLineOptionsEncoder.Name = "textBoxCommandLineOptionsEncoder";
             textBoxCommandLineOptionsEncoder.Size = new Size(440, 23);
@@ -217,7 +209,6 @@
             // labelSetCompression
             // 
             labelSetCompression.AutoSize = true;
-            labelSetCompression.Font = new Font("Segoe UI", 9F);
             labelSetCompression.Location = new Point(170, 24);
             labelSetCompression.Name = "labelSetCompression";
             labelSetCompression.Size = new Size(26, 15);
@@ -227,7 +218,6 @@
             // 
             // buttonepr8
             // 
-            buttonepr8.Font = new Font("Segoe UI", 9F);
             buttonepr8.Location = new Point(122, 109);
             buttonepr8.Name = "buttonepr8";
             buttonepr8.Size = new Size(50, 23);
@@ -238,7 +228,6 @@
             // 
             // buttonSetHalfThreads
             // 
-            buttonSetHalfThreads.Font = new Font("Segoe UI", 9F);
             buttonSetHalfThreads.Location = new Point(379, 50);
             buttonSetHalfThreads.Name = "buttonSetHalfThreads";
             buttonSetHalfThreads.Size = new Size(53, 23);
@@ -249,7 +238,6 @@
             // 
             // buttonAsubdividetukey5flattop
             // 
-            buttonAsubdividetukey5flattop.Font = new Font("Segoe UI", 9F);
             buttonAsubdividetukey5flattop.Location = new Point(178, 109);
             buttonAsubdividetukey5flattop.Name = "buttonAsubdividetukey5flattop";
             buttonAsubdividetukey5flattop.Size = new Size(192, 23);
@@ -260,7 +248,6 @@
             // 
             // buttonSetMaxThreads
             // 
-            buttonSetMaxThreads.Font = new Font("Segoe UI", 9F);
             buttonSetMaxThreads.Location = new Point(438, 50);
             buttonSetMaxThreads.Name = "buttonSetMaxThreads";
             buttonSetMaxThreads.Size = new Size(53, 23);
@@ -271,7 +258,6 @@
             // 
             // buttonNoPadding
             // 
-            buttonNoPadding.Font = new Font("Segoe UI", 9F);
             buttonNoPadding.Location = new Point(376, 109);
             buttonNoPadding.Name = "buttonNoPadding";
             buttonNoPadding.Size = new Size(90, 23);
@@ -282,7 +268,6 @@
             // 
             // buttonHalfCores
             // 
-            buttonHalfCores.Font = new Font("Segoe UI", 9F);
             buttonHalfCores.Location = new Point(202, 51);
             buttonHalfCores.Name = "buttonHalfCores";
             buttonHalfCores.Size = new Size(53, 23);
@@ -293,7 +278,6 @@
             // 
             // buttonNoSeektable
             // 
-            buttonNoSeektable.Font = new Font("Segoe UI", 9F);
             buttonNoSeektable.Location = new Point(472, 109);
             buttonNoSeektable.Name = "buttonNoSeektable";
             buttonNoSeektable.Size = new Size(90, 23);
@@ -304,7 +288,6 @@
             // 
             // buttonSetMaxCores
             // 
-            buttonSetMaxCores.Font = new Font("Segoe UI", 9F);
             buttonSetMaxCores.Location = new Point(261, 50);
             buttonSetMaxCores.Name = "buttonSetMaxCores";
             buttonSetMaxCores.Size = new Size(53, 23);
@@ -315,7 +298,6 @@
             // 
             // buttonClearCommandLineEncoder
             // 
-            buttonClearCommandLineEncoder.Font = new Font("Segoe UI", 9F);
             buttonClearCommandLineEncoder.Location = new Point(568, 80);
             buttonClearCommandLineEncoder.Name = "buttonClearCommandLineEncoder";
             buttonClearCommandLineEncoder.Size = new Size(75, 23);
@@ -326,7 +308,6 @@
             // 
             // buttonMaxCompressionLevel
             // 
-            buttonMaxCompressionLevel.Font = new Font("Segoe UI", 9F);
             buttonMaxCompressionLevel.Location = new Point(261, 20);
             buttonMaxCompressionLevel.Name = "buttonMaxCompressionLevel";
             buttonMaxCompressionLevel.Size = new Size(53, 23);
@@ -337,7 +318,6 @@
             // 
             // button5CompressionLevel
             // 
-            button5CompressionLevel.Font = new Font("Segoe UI", 9F);
             button5CompressionLevel.Location = new Point(202, 20);
             button5CompressionLevel.Name = "button5CompressionLevel";
             button5CompressionLevel.Size = new Size(53, 23);
@@ -349,7 +329,6 @@
             // labelThreads
             // 
             labelThreads.AutoSize = true;
-            labelThreads.Font = new Font("Segoe UI", 9F);
             labelThreads.Location = new Point(65, 54);
             labelThreads.Name = "labelThreads";
             labelThreads.Size = new Size(51, 15);
@@ -359,7 +338,6 @@
             // 
             // textBoxCompressionLevel
             // 
-            textBoxCompressionLevel.Font = new Font("Segoe UI", 9F);
             textBoxCompressionLevel.Location = new Point(122, 21);
             textBoxCompressionLevel.Name = "textBoxCompressionLevel";
             textBoxCompressionLevel.Size = new Size(28, 23);
@@ -371,7 +349,6 @@
             // labelCompressionLevel
             // 
             labelCompressionLevel.AutoSize = true;
-            labelCompressionLevel.Font = new Font("Segoe UI", 9F);
             labelCompressionLevel.Location = new Point(6, 24);
             labelCompressionLevel.Name = "labelCompressionLevel";
             labelCompressionLevel.Size = new Size(110, 15);
@@ -381,7 +358,6 @@
             // 
             // textBoxThreads
             // 
-            textBoxThreads.Font = new Font("Segoe UI", 9F);
             textBoxThreads.Location = new Point(122, 51);
             textBoxThreads.Name = "textBoxThreads";
             textBoxThreads.Size = new Size(28, 23);
@@ -392,10 +368,9 @@
             // 
             // buttonStop
             // 
-            buttonStop.Font = new Font("Segoe UI", 9F);
-            buttonStop.Location = new Point(6, 230);
+            buttonStop.Location = new Point(6, 141);
             buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(154, 23);
+            buttonStop.Size = new Size(155, 23);
             buttonStop.TabIndex = 25;
             buttonStop.Text = "Stop Encoding/Decoding";
             buttonStop.UseVisualStyleBackColor = true;
@@ -404,8 +379,7 @@
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Font = new Font("Segoe UI", 9F);
-            checkBoxHighPriority.Location = new Point(6, 177);
+            checkBoxHighPriority.Location = new Point(6, 82);
             checkBoxHighPriority.Name = "checkBoxHighPriority";
             checkBoxHighPriority.Size = new Size(93, 19);
             checkBoxHighPriority.TabIndex = 22;
@@ -415,8 +389,7 @@
             // 
             // buttonStartDecode
             // 
-            buttonStartDecode.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonStartDecode.Location = new Point(6, 53);
+            buttonStartDecode.Location = new Point(6, 141);
             buttonStartDecode.Name = "buttonStartDecode";
             buttonStartDecode.Size = new Size(110, 23);
             buttonStartDecode.TabIndex = 23;
@@ -426,16 +399,15 @@
             // 
             // labelCPUinfo
             // 
-            labelCPUinfo.Font = new Font("Segoe UI", 9F);
             labelCPUinfo.Location = new Point(6, 24);
             labelCPUinfo.Name = "labelCPUinfo";
-            labelCPUinfo.Size = new Size(154, 50);
+            labelCPUinfo.Size = new Size(155, 50);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "CPU Info";
             // 
             // buttonOpenLogtxt
             // 
-            buttonOpenLogtxt.Location = new Point(559, 392);
+            buttonOpenLogtxt.Location = new Point(514, 364);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
             buttonOpenLogtxt.TabIndex = 16;
@@ -445,7 +417,7 @@
             // 
             // buttonClearLog
             // 
-            buttonClearLog.Location = new Point(741, 392);
+            buttonClearLog.Location = new Point(696, 364);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(75, 23);
             buttonClearLog.TabIndex = 12;
@@ -459,10 +431,9 @@
             groupBoxEncoders.Controls.Add(listViewFlacExecutables);
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
-            groupBoxEncoders.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxEncoders.Location = new Point(12, 12);
             groupBoxEncoders.Name = "groupBoxEncoders";
-            groupBoxEncoders.Size = new Size(299, 260);
+            groupBoxEncoders.Size = new Size(777, 260);
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop is available)";
@@ -471,9 +442,9 @@
             // buttonRemoveEncoder
             // 
             buttonRemoveEncoder.Font = new Font("Segoe UI", 9F);
-            buttonRemoveEncoder.Location = new Point(112, 230);
+            buttonRemoveEncoder.Location = new Point(122, 230);
             buttonRemoveEncoder.Name = "buttonRemoveEncoder";
-            buttonRemoveEncoder.Size = new Size(100, 23);
+            buttonRemoveEncoder.Size = new Size(110, 23);
             buttonRemoveEncoder.TabIndex = 11;
             buttonRemoveEncoder.Text = "Remove file";
             buttonRemoveEncoder.UseVisualStyleBackColor = true;
@@ -482,11 +453,10 @@
             // listViewFlacExecutables
             // 
             listViewFlacExecutables.CheckBoxes = true;
-            listViewFlacExecutables.Font = new Font("Segoe UI", 9F);
             listViewFlacExecutables.FullRowSelect = true;
             listViewFlacExecutables.Location = new Point(6, 22);
             listViewFlacExecutables.Name = "listViewFlacExecutables";
-            listViewFlacExecutables.Size = new Size(287, 202);
+            listViewFlacExecutables.Size = new Size(765, 202);
             listViewFlacExecutables.TabIndex = 25;
             listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
             listViewFlacExecutables.View = View.Details;
@@ -497,7 +467,7 @@
             buttonAddEncoders.Font = new Font("Segoe UI", 9F);
             buttonAddEncoders.Location = new Point(6, 230);
             buttonAddEncoders.Name = "buttonAddEncoders";
-            buttonAddEncoders.Size = new Size(100, 23);
+            buttonAddEncoders.Size = new Size(110, 23);
             buttonAddEncoders.TabIndex = 11;
             buttonAddEncoders.Text = "Add encoders";
             buttonAddEncoders.UseVisualStyleBackColor = true;
@@ -506,7 +476,7 @@
             // buttonClearEncoders
             // 
             buttonClearEncoders.Font = new Font("Segoe UI", 9F);
-            buttonClearEncoders.Location = new Point(218, 230);
+            buttonClearEncoders.Location = new Point(696, 230);
             buttonClearEncoders.Name = "buttonClearEncoders";
             buttonClearEncoders.Size = new Size(75, 23);
             buttonClearEncoders.TabIndex = 11;
@@ -520,10 +490,9 @@
             groupBoxAudioFiles.Controls.Add(buttonRemoveAudiofile);
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
-            groupBoxAudioFiles.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBoxAudioFiles.Location = new Point(317, 12);
+            groupBoxAudioFiles.Location = new Point(795, 12);
             groupBoxAudioFiles.Name = "groupBoxAudioFiles";
-            groupBoxAudioFiles.Size = new Size(299, 260);
+            groupBoxAudioFiles.Size = new Size(777, 260);
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop is available)";
@@ -532,11 +501,10 @@
             // listViewAudioFiles
             // 
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Font = new Font("Segoe UI", 9F);
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
-            listViewAudioFiles.Size = new Size(287, 202);
+            listViewAudioFiles.Size = new Size(765, 202);
             listViewAudioFiles.TabIndex = 25;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
             listViewAudioFiles.View = View.Details;
@@ -544,10 +512,9 @@
             // 
             // buttonRemoveAudiofile
             // 
-            buttonRemoveAudiofile.Font = new Font("Segoe UI", 9F);
-            buttonRemoveAudiofile.Location = new Point(112, 230);
+            buttonRemoveAudiofile.Location = new Point(122, 230);
             buttonRemoveAudiofile.Name = "buttonRemoveAudiofile";
-            buttonRemoveAudiofile.Size = new Size(100, 23);
+            buttonRemoveAudiofile.Size = new Size(110, 23);
             buttonRemoveAudiofile.TabIndex = 11;
             buttonRemoveAudiofile.Text = "Remove file";
             buttonRemoveAudiofile.UseVisualStyleBackColor = true;
@@ -555,10 +522,9 @@
             // 
             // buttonAddAudioFiles
             // 
-            buttonAddAudioFiles.Font = new Font("Segoe UI", 9F);
             buttonAddAudioFiles.Location = new Point(6, 230);
             buttonAddAudioFiles.Name = "buttonAddAudioFiles";
-            buttonAddAudioFiles.Size = new Size(100, 23);
+            buttonAddAudioFiles.Size = new Size(110, 23);
             buttonAddAudioFiles.TabIndex = 11;
             buttonAddAudioFiles.Text = "Add audio files";
             buttonAddAudioFiles.UseVisualStyleBackColor = true;
@@ -566,8 +532,7 @@
             // 
             // buttonClearAudioFiles
             // 
-            buttonClearAudioFiles.Font = new Font("Segoe UI", 9F);
-            buttonClearAudioFiles.Location = new Point(218, 230);
+            buttonClearAudioFiles.Location = new Point(696, 230);
             buttonClearAudioFiles.Name = "buttonClearAudioFiles";
             buttonClearAudioFiles.Size = new Size(75, 23);
             buttonClearAudioFiles.TabIndex = 11;
@@ -582,10 +547,9 @@
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
             groupBoxJobsList.Controls.Add(buttonClearJobList);
-            groupBoxJobsList.Enabled = false;
-            groupBoxJobsList.Location = new Point(12, 278);
+            groupBoxJobsList.Location = new Point(12, 455);
             groupBoxJobsList.Name = "groupBoxJobsList";
-            groupBoxJobsList.Size = new Size(604, 422);
+            groupBoxJobsList.Size = new Size(777, 394);
             groupBoxJobsList.TabIndex = 5;
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
@@ -598,16 +562,16 @@
             textBoxJobList.Name = "textBoxJobList";
             textBoxJobList.PlaceholderText = "You may edit this text";
             textBoxJobList.ScrollBars = ScrollBars.Both;
-            textBoxJobList.Size = new Size(592, 364);
+            textBoxJobList.Size = new Size(765, 336);
             textBoxJobList.TabIndex = 1;
             textBoxJobList.WordWrap = false;
             textBoxJobList.TextChanged += textBoxJobList_TextChanged;
             // 
             // buttonStartJobList
             // 
-            buttonStartJobList.Location = new Point(6, 392);
+            buttonStartJobList.Location = new Point(6, 364);
             buttonStartJobList.Name = "buttonStartJobList";
-            buttonStartJobList.Size = new Size(100, 23);
+            buttonStartJobList.Size = new Size(110, 23);
             buttonStartJobList.TabIndex = 24;
             buttonStartJobList.Text = "Start job list";
             buttonStartJobList.UseVisualStyleBackColor = true;
@@ -615,9 +579,9 @@
             // 
             // buttonExportJobList
             // 
-            buttonExportJobList.Location = new Point(218, 392);
+            buttonExportJobList.Location = new Point(238, 364);
             buttonExportJobList.Name = "buttonExportJobList";
-            buttonExportJobList.Size = new Size(100, 23);
+            buttonExportJobList.Size = new Size(110, 23);
             buttonExportJobList.TabIndex = 3;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
@@ -625,9 +589,9 @@
             // 
             // buttonImportJobList
             // 
-            buttonImportJobList.Location = new Point(112, 392);
+            buttonImportJobList.Location = new Point(122, 364);
             buttonImportJobList.Name = "buttonImportJobList";
-            buttonImportJobList.Size = new Size(100, 23);
+            buttonImportJobList.Size = new Size(110, 23);
             buttonImportJobList.TabIndex = 3;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
@@ -635,7 +599,7 @@
             // 
             // buttonClearJobList
             // 
-            buttonClearJobList.Location = new Point(523, 392);
+            buttonClearJobList.Location = new Point(696, 364);
             buttonClearJobList.Name = "buttonClearJobList";
             buttonClearJobList.Size = new Size(75, 23);
             buttonClearJobList.TabIndex = 11;
@@ -649,9 +613,9 @@
             groupLog.Controls.Add(buttonClearLog);
             groupLog.Controls.Add(buttonCopyLog);
             groupLog.Controls.Add(buttonOpenLogtxt);
-            groupLog.Location = new Point(622, 278);
+            groupLog.Location = new Point(795, 455);
             groupLog.Name = "groupLog";
-            groupLog.Size = new Size(822, 422);
+            groupLog.Size = new Size(777, 394);
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
@@ -687,13 +651,13 @@
             dataGridViewLog.ReadOnly = true;
             dataGridViewLog.RowHeadersVisible = false;
             dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
-            dataGridViewLog.Size = new Size(810, 364);
+            dataGridViewLog.Size = new Size(765, 336);
             dataGridViewLog.TabIndex = 17;
             // 
             // buttonCopyLog
             // 
             buttonCopyLog.Enabled = false;
-            buttonCopyLog.Location = new Point(650, 392);
+            buttonCopyLog.Location = new Point(605, 364);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(85, 23);
             buttonCopyLog.TabIndex = 16;
@@ -707,9 +671,9 @@
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
             groupBoxSystemandSettings.Controls.Add(checkBoxHighPriority);
-            groupBoxSystemandSettings.Location = new Point(1278, 12);
+            groupBoxSystemandSettings.Location = new Point(1405, 278);
             groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
-            groupBoxSystemandSettings.Size = new Size(166, 260);
+            groupBoxSystemandSettings.Size = new Size(167, 171);
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
@@ -719,7 +683,7 @@
             // 
             checkBoxClearTempFolder.AutoSize = true;
             checkBoxClearTempFolder.Enabled = false;
-            checkBoxClearTempFolder.Location = new Point(6, 201);
+            checkBoxClearTempFolder.Location = new Point(6, 106);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
             checkBoxClearTempFolder.TabIndex = 18;
@@ -735,10 +699,9 @@
             groupBoxDecoderSettings.Controls.Add(textBoxCommandLineOptionsDecoder);
             groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
-            groupBoxDecoderSettings.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBoxDecoderSettings.Location = new Point(622, 189);
+            groupBoxDecoderSettings.Location = new Point(795, 278);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
-            groupBoxDecoderSettings.Size = new Size(650, 83);
+            groupBoxDecoderSettings.Size = new Size(604, 171);
             groupBoxDecoderSettings.TabIndex = 26;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
@@ -746,7 +709,6 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 9F);
             label1.Location = new Point(27, 24);
             label1.Name = "label1";
             label1.Size = new Size(89, 15);
@@ -756,9 +718,7 @@
             // 
             // buttonAddJobToJobListDecoder
             // 
-            buttonAddJobToJobListDecoder.Enabled = false;
-            buttonAddJobToJobListDecoder.Font = new Font("Segoe UI", 9F);
-            buttonAddJobToJobListDecoder.Location = new Point(122, 53);
+            buttonAddJobToJobListDecoder.Location = new Point(122, 141);
             buttonAddJobToJobListDecoder.Name = "buttonAddJobToJobListDecoder";
             buttonAddJobToJobListDecoder.Size = new Size(110, 23);
             buttonAddJobToJobListDecoder.TabIndex = 24;
@@ -768,26 +728,24 @@
             // 
             // textBoxCommandLineOptionsDecoder
             // 
-            textBoxCommandLineOptionsDecoder.Font = new Font("Segoe UI", 9F);
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
-            textBoxCommandLineOptionsDecoder.Size = new Size(440, 23);
+            textBoxCommandLineOptionsDecoder.Size = new Size(395, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 4;
             textBoxCommandLineOptionsDecoder.TextChanged += textBoxCommandLineOptions_TextChanged;
             // 
             // progressBarDecoder
             // 
             progressBarDecoder.Enabled = false;
-            progressBarDecoder.Location = new Point(238, 53);
+            progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(324, 23);
+            progressBarDecoder.Size = new Size(360, 23);
             progressBarDecoder.TabIndex = 4;
             progressBarDecoder.Click += progressBar_Click;
             // 
             // buttonClearCommandLineDecoder
             // 
-            buttonClearCommandLineDecoder.Font = new Font("Segoe UI", 9F);
-            buttonClearCommandLineDecoder.Location = new Point(568, 21);
+            buttonClearCommandLineDecoder.Location = new Point(523, 21);
             buttonClearCommandLineDecoder.Name = "buttonClearCommandLineDecoder";
             buttonClearCommandLineDecoder.Size = new Size(75, 23);
             buttonClearCommandLineDecoder.TabIndex = 11;
@@ -799,7 +757,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1457, 711);
+            ClientSize = new Size(1584, 861);
             Controls.Add(groupBoxDecoderSettings);
             Controls.Add(groupLog);
             Controls.Add(groupBoxSystemandSettings);
@@ -809,7 +767,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241202.1]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241203.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
