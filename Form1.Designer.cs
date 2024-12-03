@@ -483,6 +483,7 @@
             // 
             listViewFlacExecutables.CheckBoxes = true;
             listViewFlacExecutables.Font = new Font("Segoe UI", 9F);
+            listViewFlacExecutables.FullRowSelect = true;
             listViewFlacExecutables.Location = new Point(6, 22);
             listViewFlacExecutables.Name = "listViewFlacExecutables";
             listViewFlacExecutables.Size = new Size(287, 202);
@@ -532,6 +533,7 @@
             // 
             listViewAudioFiles.CheckBoxes = true;
             listViewAudioFiles.Font = new Font("Segoe UI", 9F);
+            listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
             listViewAudioFiles.Size = new Size(287, 202);

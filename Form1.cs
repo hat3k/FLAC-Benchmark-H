@@ -305,18 +305,9 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
             {
-                if (Directory.Exists(file)) // Если это папка, ищем исполняемые файлы внутри
+                if (Directory.Exists(file)) // Если это папка, ищем исполняемые файлы внутри рекурсивно
                 {
-                    var exeFiles = Directory.GetFiles(file, "*.exe");
-                    foreach (var exeFile in exeFiles)
-                    {
-                        var item = new ListViewItem(Path.GetFileName(exeFile))
-                        {
-                            Tag = exeFile,
-                            Checked = true // Устанавливаем выделение по умолчанию
-                        };
-                        listViewFlacExecutables.Items.Add(item);
-                    }
+                    AddExecutableFiles(file);
                 }
                 else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                 {
@@ -329,6 +320,30 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 }
             }
         }
+
+        // Рекурсивный метод для добавления исполняемых файлов в ListView
+        private void AddExecutableFiles(string directory)
+        {
+            try
+            {
+                // Находим все .exe файлы в текущей директории
+                var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
+                foreach (var exeFile in exeFiles)
+                {
+                    var item = new ListViewItem(Path.GetFileName(exeFile))
+                    {
+                        Tag = exeFile,
+                        Checked = true // Устанавливаем выделение по умолчанию
+                    };
+                    listViewFlacExecutables.Items.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object sender, DragEventArgs e)
         {
@@ -352,18 +367,9 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
             {
-                if (Directory.Exists(file)) // Если это папка, ищем файлы внутри
+                if (Directory.Exists(file)) // Если это папка, ищем аудиофайлы внутри рекурсивно
                 {
-                    var audioFiles = Directory.GetFiles(file, "*.wav").Concat(Directory.GetFiles(file, "*.flac"));
-                    foreach (var audioFile in audioFiles)
-                    {
-                        var item = new ListViewItem(Path.GetFileName(audioFile))
-                        {
-                            Tag = audioFile,
-                            Checked = true // Устанавливаем выделение по умолчанию
-                        };
-                        listViewAudioFiles.Items.Add(item);
-                    }
+                    AddAudioFiles(file);
                 }
                 else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                          Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
@@ -377,6 +383,32 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 }
             }
         }
+
+        // Рекурсивный метод для добавления аудиофайлов в ListView
+        private void AddAudioFiles(string directory)
+        {
+            try
+            {
+                // Находим все аудиофайлы в текущей директории
+                var audioFiles = Directory.GetFiles(directory, "*.wav", SearchOption.AllDirectories)
+                    .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
+
+                foreach (var audioFile in audioFiles)
+                {
+                    var item = new ListViewItem(Path.GetFileName(audioFile))
+                    {
+                        Tag = audioFile,
+                        Checked = true // Устанавливаем выделение по умолчанию
+                    };
+                    listViewAudioFiles.Items.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // Обработчик DragEnter для TextBoxJobList
         private void TextBoxJobList_DragEnter(object sender, DragEventArgs e)
         {
@@ -660,21 +692,25 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                     {
                         return; // Выходим из метода
                     }
+                    
                     // Получаем значения из текстовых полей
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
+                    
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                                                                                                // Формируем базовые аргументы
                     string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
+                    
                     // Добавляем аргумент -j{threads} только если threads больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
                         arguments += $" -j{threads}"; // Добавляем -j{threads}
                     }
                     arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
-                                                                 // Добавляем параметры (без входящих и исходящих файлов)
+                    
+                    // Добавляем параметры (без входящих и исходящих файлов)
                     string parameters = $"-{compressionLevel} {commandLine}";
                     if (threadCount > 1)
                     {
@@ -717,15 +753,26 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                         {
                             long outputSize = outputFile.Length; // Размер выходного файла
                             TimeSpan timeTaken = stopwatch.Elapsed;
+                           
                             // Вычисление процента сжатия
                             double compressionPercentage = ((double)outputSize / inputSize) * 100;
+                            
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
+
+                            // Получаем начало и окончание имени файла
+                            string startName = audioFileName.Length > 22 ? audioFileName.Substring(0, 22) : audioFileName;
+                            string endName = audioFileName.Length > 22 ? audioFileName.Substring(audioFileName.Length - 22) : "";
+
+                            // Объединяем начало и окончание
+                            string logFileName = startName + (string.IsNullOrEmpty(endName) ? "" : "...") + endName;
+
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
                                 // Добавляем запись в лог
                                 var rowIndex = dataGridViewLog.Rows.Add(audioFileName, $"{inputSize:n0}", $"{outputSize:n0}", $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
+                                
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
                                 {
@@ -735,8 +782,12 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                                 {
                                     dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
                                 }
+
+                                // Прокручиваем DataGridView вниз к последней добавленной строке
+                                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
+
                                 // Логирование в файл
-                                File.AppendAllText("log.txt", $"{audioFileName}\tencoded with {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize:n0} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters}\n");
+                                File.AppendAllText("log.txt", $"{DateTime.Now}: {logFileName}\tEncoded with: {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters.Trim()}{Environment.NewLine}");
                             }
                         }
                         else
