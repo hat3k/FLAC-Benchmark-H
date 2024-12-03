@@ -28,3 +28,4 @@ build/
 *.opensdf
 /libs
 /Mediainfo
+MediaInfo.dll
