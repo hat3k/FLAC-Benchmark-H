@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Text;
-using MediaInfolib;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
