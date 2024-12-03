@@ -468,7 +468,18 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter; // Например, выравнивание по центру для процентов
+            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            
+            listViewAudioFiles.Columns.Add("FileName", "File Name");
+            listViewAudioFiles.Columns.Add("Duration", "Duration");
+            listViewAudioFiles.Columns.Add("BitDepth", "Bit Depth");
+            listViewAudioFiles.Columns.Add("SamplingRate", "Sampling Rate");
+
+
+            listViewFlacExecutables.Columns.Add("FileName", "File Name");
+            listViewFlacExecutables.Columns.Add("Version", "Version");
+            listViewFlacExecutables.Columns.Add("Size", "Size");
+
         }
         // FORM LOAD
         private void Form1_Load(object sender, EventArgs e)

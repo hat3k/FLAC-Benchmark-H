@@ -489,7 +489,7 @@
             listViewFlacExecutables.Size = new Size(287, 202);
             listViewFlacExecutables.TabIndex = 25;
             listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
-            listViewFlacExecutables.View = View.List;
+            listViewFlacExecutables.View = View.Details;
             listViewFlacExecutables.SelectedIndexChanged += listViewFlacExecutables_SelectedIndexChanged;
             // 
             // buttonAddEncoders
@@ -539,7 +539,7 @@
             listViewAudioFiles.Size = new Size(287, 202);
             listViewAudioFiles.TabIndex = 25;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
-            listViewAudioFiles.View = View.List;
+            listViewAudioFiles.View = View.Details;
             listViewAudioFiles.SelectedIndexChanged += listViewAudioFiles_SelectedIndexChanged;
             // 
             // buttonRemoveAudiofile
