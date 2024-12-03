@@ -403,6 +403,11 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
             dataGridViewLog.Columns.Add("Executable", "Binary");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
+            // Установка выравнивания для колонок
+            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter; // Например, выравнивание по центру для процентов
         }
         // FORM LOAD
         private void Form1_Load(object sender, EventArgs e)
@@ -641,7 +646,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                     }
                     arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
                                                                  // Добавляем параметры (без входящих и исходящих файлов)
-                    string parameters = $"{compressionLevel} {commandLine}";
+                    string parameters = $"-{compressionLevel} {commandLine}";
                     if (threadCount > 1)
                     {
                         parameters += $" -j{threads}";
