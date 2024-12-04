@@ -347,7 +347,7 @@ namespace FLAC_Benchmark_H
             using (Process process = new Process())
             {
                 process.StartInfo.FileName = executablePath;
-                process.StartInfo.Arguments = "--version"; // Зависит от вашего исполняемого файла
+                process.StartInfo.Arguments = "--version";
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
                 process.StartInfo.CreateNoWindow = true;
@@ -531,14 +531,18 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("InputFileSize", "Input File Size");
             dataGridViewLog.Columns.Add("OutputFileSize", "Output File Size");
             dataGridViewLog.Columns.Add("Compression", "Compression");
-            dataGridViewLog.Columns.Add("TimeTaken", "Time Taken");
+            dataGridViewLog.Columns.Add("Time", "Time");
+            dataGridViewLog.Columns.Add("Speed", "Speed");
             dataGridViewLog.Columns.Add("Executable", "Binary");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
+            dataGridViewLog.Columns.Add("Version", "Version");
+
             // Установка выравнивания для колонок
             dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
         }
         // FORM LOAD
@@ -749,6 +753,7 @@ namespace FLAC_Benchmark_H
 
             foreach (var executable in selectedExecutables)
             {
+
                 foreach (var audioFile in selectedAudioFiles)
                 {
 
@@ -757,14 +762,16 @@ namespace FLAC_Benchmark_H
                         return; // Выходим из метода
                     }
 
-                    // Получаем значения из текстовых полей
+                    // Получаем информацию об аудиофайле
+                    var (duration, _, _, _) = GetAudioInfo(audioFile);
+                    long durationMs = Convert.ToInt64(duration);
+                    // Получаем значения из текстовых полей и формируем аргументы...
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
 
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                                                                                               // Формируем базовые аргументы
                     string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
 
                     // Добавляем аргумент -j{threads} только если threads больше 1
@@ -821,6 +828,8 @@ namespace FLAC_Benchmark_H
                             // Вычисление процента сжатия
                             double compressionPercentage = ((double)outputSize / inputSize) * 100;
 
+                            // Рассчитываем отношение скорости кодирования к длительности
+                            double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
 
@@ -829,13 +838,24 @@ namespace FLAC_Benchmark_H
                             string endName = audioFileName.Length > 22 ? audioFileName.Substring(audioFileName.Length - 22) : "";
 
                             // Объединяем начало и окончание
-                            string logFileName = startName + (string.IsNullOrEmpty(endName) ? "" : "...") + endName;
+                            string audioFileNameShort = startName + (string.IsNullOrEmpty(endName) ? "" : "...") + endName;
 
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
+                                // Получаем информацию о версии exe файла 
+                                var version = GetExecutableInfo(executable);
+
                                 // Добавляем запись в лог
-                                var rowIndex = dataGridViewLog.Rows.Add(audioFileName, $"{inputSize:n0}", $"{outputSize:n0}", $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
+                                int rowIndex = dataGridViewLog.Rows.Add(audioFileName,
+                                    $"{inputSize:n0}",
+                                    $"{outputSize:n0}",
+                                    $"{compressionPercentage:F3}%",
+                                    $"{timeTaken.TotalMilliseconds:F3}",
+                                    $"({encodingSpeed:F3})x",
+                                    Path.GetFileName(executable),
+                                    parameters,
+                                    version);
 
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
@@ -851,7 +871,7 @@ namespace FLAC_Benchmark_H
                                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
 
                                 // Логирование в файл
-                                File.AppendAllText("log.txt", $"{DateTime.Now}: {logFileName}\tEncoded with: {Path.GetFileName(executable)}\tResulting FLAC size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTotal encoding time: {timeTaken.TotalMilliseconds:F3} ms\tParameters: {parameters.Trim()}{Environment.NewLine}");
+                                File.AppendAllText("log.txt", $"{DateTime.Now}: {audioFileNameShort}\tEncoded with: {Path.GetFileName(executable)}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tEncoding Speed Ratio: {encodingSpeed:F3}\tParameters: {parameters.Trim()}{Environment.NewLine}");
                             }
                         }
                         else
