@@ -21,6 +21,9 @@ namespace FLAC_Benchmark_H
         private PerformanceCounter cpuCounter;
         private System.Windows.Forms.Timer cpuUsageTimer; // Указываем явно, что это Timer из System.Windows.Forms
         private bool _isEncodingStopped = false;
+        private string tempFolderPath; // Поле для хранения пути к временной папке
+
+
         public Form1()
         {
             InitializeComponent();
@@ -37,6 +40,9 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Tick += (sender, e) => UpdateCpuUsage();
             cpuUsageTimer.Start();
             InitializedataGridViewLog();
+            tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
+
+
         }
         // Метод для загрузки информации о процессоре
         private void LoadCPUInfo()
@@ -78,58 +84,65 @@ namespace FLAC_Benchmark_H
         // Метод для загрузки настроек
         private void LoadSettings()
         {
-            if (File.Exists(SettingsFilePath))
+            // Загрузка пути к временной папке
+            tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+
+            try
             {
-                try
+                string[] lines = File.ReadAllLines(SettingsFilePath);
+                foreach (var line in lines)
                 {
-                    string[] lines = File.ReadAllLines(SettingsFilePath);
-                    foreach (var line in lines)
+                    var parts = line.Split(new[] { '=' }, 2); // Разделяем строку на ключ и значение, ограничиваем отделение по первому знаку '='
+                    if (parts.Length == 2)
                     {
-                        var parts = line.Split('='); // Разделяем строку на ключ и значение
-                        if (parts.Length == 2)
+                        var key = parts[0].Trim();
+                        var value = parts[1].Trim();
+
+                        // Загружаем значения в соответствующие поля
+                        switch (key)
                         {
-                            var key = parts[0].Trim();
-                            var value = parts[1].Trim();
-                            // Загружаем значения в соответствующие поля
-                            switch (key)
-                            {
-                                case "CompressionLevel":
-                                    textBoxCompressionLevel.Text = value;
-                                    break;
-                                case "Threads":
-                                    textBoxThreads.Text = value;
-                                    break;
-                                case "CommandLineOptions":
-                                    textBoxCommandLineOptionsEncoder.Text = value;
-                                    break;
-                                case "HighPriority":
-                                    checkBoxHighPriority.Checked = bool.Parse(value);
-                                    break;
-                            }
+                            case "CompressionLevel":
+                                textBoxCompressionLevel.Text = value;
+                                break;
+                            case "Threads":
+                                textBoxThreads.Text = value;
+                                break;
+                            case "CommandLineOptions":
+                                textBoxCommandLineOptionsEncoder.Text = value;
+                                break;
+                            case "HighPriority":
+                                checkBoxHighPriority.Checked = bool.Parse(value);
+                                break;
+                            case "TempFolderPath": // Загружаем путь к временной папке
+                                tempFolderPath = value;
+                                break;
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
+            catch
+            {
+            }
+
+            // Продолжение выполнения независимо от того, был ли загружен файл настроек
             LoadExecutables(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobsQueue(); // Загружаем содержимое jobs.txt после загрузки других настроек
         }
-        // Метод для сохранения настроек
+
+            // Метод для сохранения настроек
         private void SaveSettings()
         {
             try
             {
                 var settings = new[]
                 {
-$"CompressionLevel={textBoxCompressionLevel.Text}",
-$"Threads={textBoxThreads.Text}",
-$"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
-$"HighPriority={checkBoxHighPriority.Checked}"
-};
+            $"CompressionLevel={textBoxCompressionLevel.Text}",
+            $"Threads={textBoxThreads.Text}",
+            $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
+            $"HighPriority={checkBoxHighPriority.Checked}",
+            $"TempFolderPath={tempFolderPath}" // Сохраняем путь к временной папке
+        };
                 File.WriteAllLines(SettingsFilePath, settings);
                 SaveExecutables(); // Сохранение исполняемых файлов
                 SaveAudioFiles(); // Сохранение аудиофайлов
@@ -140,6 +153,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         // Загрузка исполняемых файлов
         private void LoadExecutables()
         {
@@ -413,7 +427,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Добавляем длительность в подэлемент
             item.SubItems.Add(bitDepth + " bit"); // Добавляем разрядность в подэлемент
             item.SubItems.Add(samplingRate); // Добавляем частоту дискретизации в подэлемент
-            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") +" bytes"); // Добавляем размер в подэлемент с форматированием
+            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Добавляем размер в подэлемент с форматированием
 
 
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
@@ -495,7 +509,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            
+
 
 
 
@@ -509,6 +523,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
+
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -691,7 +706,6 @@ $"HighPriority={checkBoxHighPriority.Checked}"
         {
             _isEncodingStopped = false;
             // Создаём временную директорию для выходного файла
-            string tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
             var selectedExecutables = listViewFlacExecutables.CheckedItems
@@ -719,24 +733,24 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                     {
                         return; // Выходим из метода
                     }
-                    
+
                     // Получаем значения из текстовых полей
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
-                    
+
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                                                                                                // Формируем базовые аргументы
                     string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
-                    
+
                     // Добавляем аргумент -j{threads} только если threads больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
                         arguments += $" -j{threads}"; // Добавляем -j{threads}
                     }
                     arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
-                    
+
                     // Добавляем параметры (без входящих и исходящих файлов)
                     string parameters = $"-{compressionLevel} {commandLine}";
                     if (threadCount > 1)
@@ -780,10 +794,10 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                         {
                             long outputSize = outputFile.Length; // Размер выходного файла
                             TimeSpan timeTaken = stopwatch.Elapsed;
-                           
+
                             // Вычисление процента сжатия
                             double compressionPercentage = ((double)outputSize / inputSize) * 100;
-                            
+
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
 
@@ -799,7 +813,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                             {
                                 // Добавляем запись в лог
                                 var rowIndex = dataGridViewLog.Rows.Add(audioFileName, $"{inputSize:n0}", $"{outputSize:n0}", $"{compressionPercentage:F3}%", $"{timeTaken.TotalMilliseconds:F3}", Path.GetFileName(executable), parameters);
-                                
+
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
                                 {
@@ -834,7 +848,6 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
             // Создадим временную директорию для выходных файлов, если нужно
-            string tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
             var selectedExecutables = listViewFlacExecutables.CheckedItems
@@ -1072,5 +1085,29 @@ $"HighPriority={checkBoxHighPriority.Checked}"
         private void checkBoxClearTempFolder_CheckedChanged(object sender, EventArgs e)
         {
         }
+
+        private void buttonSelectTempFolder_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                folderBrowserDialog.Description = "Select temp folder";
+
+                // Если путь сохранён в настройках, устанавливаем его
+                if (Directory.Exists(tempFolderPath))
+                {
+                    folderBrowserDialog.SelectedPath = tempFolderPath;
+                }
+
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Получаем выбранный путь
+                    tempFolderPath = folderBrowserDialog.SelectedPath;
+
+                    // Сохраняем путь в настройках
+                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
+                }
+            }
+        }
+
     }
 }

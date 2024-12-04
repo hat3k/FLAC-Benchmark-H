@@ -20,6 +20,12 @@
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="MediaInfo.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   
 
 </Project>

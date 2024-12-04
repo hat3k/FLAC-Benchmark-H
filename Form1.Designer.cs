@@ -87,6 +87,7 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            buttonSelectTempFolder = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -99,6 +100,7 @@
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(buttonStop);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
@@ -373,7 +375,7 @@
             // 
             // buttonStop
             // 
-            buttonStop.Location = new Point(6, 141);
+            buttonStop.Location = new Point(616, 141);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(155, 23);
             buttonStop.TabIndex = 25;
@@ -706,7 +708,7 @@
             // 
             // groupBoxSystemandSettings
             // 
-            groupBoxSystemandSettings.Controls.Add(buttonStop);
+            groupBoxSystemandSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
             groupBoxSystemandSettings.Controls.Add(checkBoxHighPriority);
@@ -791,6 +793,16 @@
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLine_Click;
+            // 
+            // buttonSelectTempFolder
+            // 
+            buttonSelectTempFolder.Location = new Point(6, 141);
+            buttonSelectTempFolder.Name = "buttonSelectTempFolder";
+            buttonSelectTempFolder.Size = new Size(155, 23);
+            buttonSelectTempFolder.TabIndex = 23;
+            buttonSelectTempFolder.Text = "Select temp folder";
+            buttonSelectTempFolder.UseVisualStyleBackColor = true;
+            buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
             // 
             // Form1
             // 
@@ -889,5 +901,6 @@
         private ColumnHeader BitDepth;
         private ColumnHeader SamplingRate;
         private ColumnHeader Size;
+        private Button buttonSelectTempFolder;
     }
 }
