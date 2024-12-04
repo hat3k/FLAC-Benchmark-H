@@ -1,11 +1,6 @@
-using System;
-using System.Management;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using System.Text;
 using MediaInfoLib;
+using System.Diagnostics;
+using System.Management;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
@@ -130,7 +125,7 @@ namespace FLAC_Benchmark_H
             LoadJobsQueue(); // Загружаем содержимое jobs.txt после загрузки других настроек
         }
 
-            // Метод для сохранения настроек
+        // Метод для сохранения настроек
         private void SaveSettings()
         {
             try
@@ -151,34 +146,6 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // Загрузка исполняемых файлов
-        private void LoadExecutables()
-        {
-            if (File.Exists(executablesFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(executablesFilePath);
-                    listViewFlacExecutables.Items.Clear();
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~');
-                        if (parts.Length == 2)
-                        {
-                            var item = new ListViewItem(Path.GetFileName(parts[0]));
-                            item.Tag = parts[0]; // Полный путь хранится в Tag
-                            item.Checked = bool.Parse(parts[1]);
-                            listViewFlacExecutables.Items.Add(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading executables: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
         }
         // Сохранение исполняемых файлов
@@ -262,15 +229,18 @@ namespace FLAC_Benchmark_H
             listViewFlacExecutables.AllowDrop = true;
             listViewFlacExecutables.DragEnter += ListViewFlacExecutables_DragEnter;
             listViewFlacExecutables.DragDrop += ListViewFlacExecutables_DragDrop;
+
             // Разрешаем перетаскивание файлов в ListView для аудиофайлов
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
+
             // Разрешаем перетаскивание файлов в TextBox для очереди задач
             textBoxJobList.AllowDrop = true;
             textBoxJobList.DragEnter += TextBoxJobList_DragEnter;
             textBoxJobList.DragDrop += TextBoxJobList_DragDrop;
         }
+
         // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object sender, DragEventArgs e)
         {
@@ -287,6 +257,7 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
+
         // Обработчик DragDrop для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragDrop(object sender, DragEventArgs e)
         {
@@ -299,12 +270,7 @@ namespace FLAC_Benchmark_H
                 }
                 else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    var item = new ListViewItem(Path.GetFileName(file))
-                    {
-                        Tag = file,
-                        Checked = true // Устанавливаем выделение по умолчанию
-                    };
-                    listViewFlacExecutables.Items.Add(item);
+                    AddExecutableFileToListView(file); // Используем общий метод
                 }
             }
         }
@@ -314,22 +280,56 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                // Находим все .exe файлы в текущей директории
+                // Находим все аудиофайлы с заданными расширениями exe в текущей директории
                 var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
+
                 foreach (var exeFile in exeFiles)
                 {
-                    var item = new ListViewItem(Path.GetFileName(exeFile))
-                    {
-                        Tag = exeFile,
-                        Checked = true // Устанавливаем выделение по умолчанию
-                    };
-                    listViewFlacExecutables.Items.Add(item);
+                    AddExecutableFileToListView(exeFile); // Используем общий метод
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        // Загрузка исполняемых файлов из файла txt
+        private void LoadExecutables()
+        {
+            if (File.Exists(executablesFilePath))
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(executablesFilePath);
+                    listViewFlacExecutables.Items.Clear();
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~');
+                        if (parts.Length == 2)
+                        {
+                            string executablePath = parts[0]; // Полный путь
+                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
+                            AddExecutableFileToListView(executablePath, isChecked); // Вызываем метод добавления
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading executables: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // Общий метод добавления исполняемых файлов в ListView
+        private void AddExecutableFileToListView(string executable, bool isChecked = true)
+        {
+            var item = new ListViewItem(Path.GetFileName(executable))
+            {
+                Tag = executable, // Полный путь хранится в Tag
+                Checked = isChecked // Устанавливаем выделение по умолчанию
+            };
+            listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
 
         // Обработчик DragEnter для ListViewAudioFiles
@@ -349,6 +349,7 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
+
         // Обработчик DragDrop для ListViewAudioFiles
         private void ListViewAudioFiles_DragDrop(object sender, DragEventArgs e)
         {
@@ -367,7 +368,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Рекурсивный метод для добавления аудиофайлов из директории
+        // Рекурсивный метод для добавления аудиофайлов из директории в ListView
         private void AddAudioFiles(string directory)
         {
             try
@@ -401,9 +402,9 @@ namespace FLAC_Benchmark_H
                         var parts = line.Split('~');
                         if (parts.Length == 2)
                         {
-                            string audioFilePath = parts[0];
-                            bool isChecked = bool.Parse(parts[1]);
-                            AddAudioFileToListView(audioFilePath, isChecked); // Используем общий метод
+                            string audioFilePath = parts[0]; // Полный путь
+                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
+                            AddAudioFileToListView(audioFilePath, isChecked); // Вызываем метод добавления
                         }
                     }
                 }
@@ -413,22 +414,22 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        // Общее добавление аудиофайлов в ListView
+
+        // Общий метод добавления аудиофайлов в ListView
         private void AddAudioFileToListView(string audioFile, bool isChecked = true)
         {
             var item = new ListViewItem(Path.GetFileName(audioFile))
             {
-                Tag = audioFile,
+                Tag = audioFile, // Полный путь хранится в Tag
                 Checked = isChecked // Устанавливаем выделение по умолчанию
             };
 
-            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile); // Получаем длительность, разрядность, частоту дискретизации и размер аудиофайла
+            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile); // Получаем информацию о файле
 
-            item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Добавляем длительность в подэлемент
-            item.SubItems.Add(bitDepth + " bit"); // Добавляем разрядность в подэлемент
-            item.SubItems.Add(samplingRate); // Добавляем частоту дискретизации в подэлемент
-            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Добавляем размер в подэлемент с форматированием
-
+            item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Длительность
+            item.SubItems.Add(bitDepth + " bit"); // Разрядность
+            item.SubItems.Add(samplingRate); // Частота дискретизации
+            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
 
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
@@ -448,6 +449,7 @@ namespace FLAC_Benchmark_H
 
             return (duration, bitDepth, samplingRate, fileSize);
         }
+
 
         // Обработчик DragEnter для TextBoxJobList
         private void TextBoxJobList_DragEnter(object sender, DragEventArgs e)
@@ -534,16 +536,12 @@ namespace FLAC_Benchmark_H
                 openFileDialog.Title = "Select Executable Files";
                 openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
                 openFileDialog.Multiselect = true;
+
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     foreach (var file in openFileDialog.FileNames)
                     {
-                        var item = new ListViewItem(Path.GetFileName(file))
-                        {
-                            Tag = file,
-                            Checked = true // Устанавливаем выделение
-                        };
-                        listViewFlacExecutables.Items.Add(item);
+                        AddExecutableFileToListView(file); // Используем общий метод
                     }
                 }
             }
