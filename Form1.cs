@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Text;
+using MediaInfoLib;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
@@ -406,9 +407,35 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 Tag = audioFile,
                 Checked = isChecked // Устанавливаем выделение по умолчанию
             };
-            item.SubItems.Add("DONE"); // Добавляем новый элемент для второй колонки
+
+            // Получаем длительность аудиофайла
+            string duration = GetAudioDuration(audioFile);
+            item.SubItems.Add(duration); // Добавляем длительность в подэлемент
 
             listViewAudioFiles.Items.Add(item);
+        }
+
+        // Метод для получения длительности аудиофайла
+        private string GetAudioDuration(string audioFile)
+        {
+            try
+            {
+                var mediaInfo = new MediaInfoLib.MediaInfo();
+                mediaInfo.Open(audioFile);
+                string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration");
+                mediaInfo.Close();
+
+                if (double.TryParse(duration, out double durationInMs))
+                {
+                    return durationInMs.ToString("F0"); // Возвращаем длительность в миллисекундах без десятичных
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error getting duration for file {audioFile}: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return "N/A"; // Возвращаем "N/A", если не удалось получить длительность
         }
         // Обработчик DragEnter для TextBoxJobList
         private void TextBoxJobList_DragEnter(object sender, DragEventArgs e)
