@@ -182,33 +182,6 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 MessageBox.Show($"Error saving executables: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        // Аналогичные изменения для загрузки и сохранения аудиофайлов
-        private void LoadAudioFiles()
-        {
-            if (File.Exists(audioFilesFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(audioFilesFilePath);
-                    listViewAudioFiles.Items.Clear();
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~');
-                        if (parts.Length == 2)
-                        {
-                            var item = new ListViewItem(Path.GetFileName(parts[0]));
-                            item.Tag = parts[0]; // Полный путь хранится в Tag
-                            item.Checked = bool.Parse(parts[1]);
-                            listViewAudioFiles.Items.Add(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
         private void SaveAudioFiles()
         {
             try
@@ -374,33 +347,23 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                          Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                 {
-                    var item = new ListViewItem(Path.GetFileName(file))
-                    {
-                        Tag = file,
-                        Checked = true // Устанавливаем выделение по умолчанию
-                    };
-                    listViewAudioFiles.Items.Add(item);
+                    AddAudioFileToListView(file); // Используем общий метод
                 }
             }
         }
 
-        // Рекурсивный метод для добавления аудиофайлов в ListView
+        // Рекурсивный метод для добавления аудиофайлов из директории
         private void AddAudioFiles(string directory)
         {
             try
             {
-                // Находим все аудиофайлы в текущей директории
+                // Находим все аудиофайлы с заданными расширениями в текущей директории
                 var audioFiles = Directory.GetFiles(directory, "*.wav", SearchOption.AllDirectories)
                     .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
 
                 foreach (var audioFile in audioFiles)
                 {
-                    var item = new ListViewItem(Path.GetFileName(audioFile))
-                    {
-                        Tag = audioFile,
-                        Checked = true // Устанавливаем выделение по умолчанию
-                    };
-                    listViewAudioFiles.Items.Add(item);
+                    AddAudioFileToListView(audioFile); // Используем общий метод
                 }
             }
             catch (Exception ex)
@@ -409,6 +372,44 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             }
         }
 
+        // Метод для загрузки аудиофайлов из файла txt
+        private void LoadAudioFiles()
+        {
+            if (File.Exists(audioFilesFilePath))
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(audioFilesFilePath);
+                    listViewAudioFiles.Items.Clear();
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~');
+                        if (parts.Length == 2)
+                        {
+                            string audioFilePath = parts[0];
+                            bool isChecked = bool.Parse(parts[1]);
+                            AddAudioFileToListView(audioFilePath, isChecked); // Используем общий метод
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        // Общее добавление аудиофайлов в ListView
+        private void AddAudioFileToListView(string audioFile, bool isChecked = true)
+        {
+            var item = new ListViewItem(Path.GetFileName(audioFile))
+            {
+                Tag = audioFile,
+                Checked = isChecked // Устанавливаем выделение по умолчанию
+            };
+            item.SubItems.Add("DONE"); // Добавляем новый элемент для второй колонки
+
+            listViewAudioFiles.Items.Add(item);
+        }
         // Обработчик DragEnter для TextBoxJobList
         private void TextBoxJobList_DragEnter(object sender, DragEventArgs e)
         {
@@ -549,12 +550,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 {
                     foreach (var file in openFileDialog.FileNames)
                     {
-                        var item = new ListViewItem(Path.GetFileName(file))
-                        {
-                            Tag = file,
-                            Checked = true // Устанавливаем выделение
-                        };
-                        listViewAudioFiles.Items.Add(item);
+                        AddAudioFileToListView(file); // Используем общий метод
                     }
                 }
             }
