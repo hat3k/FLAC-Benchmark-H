@@ -87,7 +87,7 @@
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
-            label1 = new Label();
+            labelCommandLineDecoder = new Label();
             buttonAddJobToJobListDecoder = new Button();
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
@@ -325,7 +325,7 @@
             buttonClearCommandLineEncoder.TabIndex = 11;
             buttonClearCommandLineEncoder.Text = "Clear";
             buttonClearCommandLineEncoder.UseVisualStyleBackColor = true;
-            buttonClearCommandLineEncoder.Click += buttonClearCommandLine_Click;
+            buttonClearCommandLineEncoder.Click += buttonClearCommandLineEncoder_Click;
             // 
             // buttonMaxCompressionLevel
             // 
@@ -447,7 +447,7 @@
             groupBoxEncoders.Size = new Size(777, 260);
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
-            groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop is available)";
+            groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available)";
             groupBoxEncoders.Enter += groupBoxEncoders_Enter;
             // 
             // buttonRemoveEncoder
@@ -532,7 +532,7 @@
             groupBoxAudioFiles.Size = new Size(777, 260);
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
-            groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop is available)";
+            groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
             groupBoxAudioFiles.Enter += groupBoxAudioFiles_Enter;
             // 
             // listViewAudioFiles
@@ -775,7 +775,7 @@
             // groupBoxDecoderSettings
             // 
             groupBoxDecoderSettings.Controls.Add(buttonStartDecode);
-            groupBoxDecoderSettings.Controls.Add(label1);
+            groupBoxDecoderSettings.Controls.Add(labelCommandLineDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonAddJobToJobListDecoder);
             groupBoxDecoderSettings.Controls.Add(textBoxCommandLineOptionsDecoder);
             groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
@@ -787,15 +787,15 @@
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
             // 
-            // label1
+            // labelCommandLineDecoder
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(27, 24);
-            label1.Name = "label1";
-            label1.Size = new Size(89, 15);
-            label1.TabIndex = 24;
-            label1.Text = "Command line:";
-            label1.Click += labelCommandLine_Click;
+            labelCommandLineDecoder.AutoSize = true;
+            labelCommandLineDecoder.Location = new Point(27, 24);
+            labelCommandLineDecoder.Name = "labelCommandLineDecoder";
+            labelCommandLineDecoder.Size = new Size(89, 15);
+            labelCommandLineDecoder.TabIndex = 24;
+            labelCommandLineDecoder.Text = "Command line:";
+            labelCommandLineDecoder.Click += labelCommandLine_Click;
             // 
             // buttonAddJobToJobListDecoder
             // 
@@ -832,7 +832,7 @@
             buttonClearCommandLineDecoder.TabIndex = 11;
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
-            buttonClearCommandLineDecoder.Click += buttonClearCommandLine_Click;
+            buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
             // Form1
             // 
@@ -919,7 +919,7 @@
         private Button buttonStop;
         private DataGridView dataGridViewLog;
         private GroupBox groupBoxDecoderSettings;
-        private Label label1;
+        private Label labelCommandLineDecoder;
         private Button buttonAddJobToJobListDecoder;
         private TextBox textBoxCommandLineOptionsDecoder;
         private Button buttonClearCommandLineDecoder;

@@ -680,9 +680,14 @@ namespace FLAC_Benchmark_H
         private void textBoxCommandLineOptions_TextChanged(object sender, EventArgs e)
         {
         }
-        private void buttonClearCommandLine_Click(object sender, EventArgs e)
+        private void buttonClearCommandLineEncoder_Click(object sender, EventArgs e)
         {
             textBoxCommandLineOptionsEncoder.Clear(); // Очищаем textCommandLineOptions
+        }
+        private void buttonClearCommandLineDecoder_Click(object sender, EventArgs e)
+        {
+            textBoxCommandLineOptionsDecoder.Clear(); // Очищаем textCommandLineOptions
+
         }
         private void buttonepr8_Click(object sender, EventArgs e)
         {
@@ -1126,6 +1131,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
 
     }
 }
