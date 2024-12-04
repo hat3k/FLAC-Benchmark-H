@@ -62,6 +62,11 @@
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
             listViewAudioFiles = new ListView();
+            FileName = new ColumnHeader();
+            Duration = new ColumnHeader();
+            BitDepth = new ColumnHeader();
+            SamplingRate = new ColumnHeader();
+            Size = new ColumnHeader();
             buttonRemoveAudiofile = new Button();
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
@@ -501,6 +506,7 @@
             // listViewAudioFiles
             // 
             listViewAudioFiles.CheckBoxes = true;
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size });
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
@@ -508,7 +514,40 @@
             listViewAudioFiles.TabIndex = 25;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
             listViewAudioFiles.View = View.Details;
-            listViewAudioFiles.SelectedIndexChanged += listViewAudioFiles_SelectedIndexChanged;
+            // 
+            // FileName
+            // 
+            FileName.Tag = "FileName";
+            FileName.Text = "File Name";
+            FileName.Width = 386;
+            // 
+            // Duration
+            // 
+            Duration.Tag = "Duration";
+            Duration.Text = "Duration";
+            Duration.TextAlign = HorizontalAlignment.Right;
+            Duration.Width = 100;
+            // 
+            // BitDepth
+            // 
+            BitDepth.Tag = "BitDepth";
+            BitDepth.Text = "Bit Depth";
+            BitDepth.TextAlign = HorizontalAlignment.Right;
+            BitDepth.Width = 62;
+            // 
+            // SamplingRate
+            // 
+            SamplingRate.Tag = "SamplingRate";
+            SamplingRate.Text = "Sampling Rate";
+            SamplingRate.TextAlign = HorizontalAlignment.Right;
+            SamplingRate.Width = 88;
+            // 
+            // Size
+            // 
+            Size.Tag = "Size";
+            Size.Text = "Size";
+            Size.TextAlign = HorizontalAlignment.Right;
+            Size.Width = 125;
             // 
             // buttonRemoveAudiofile
             // 
@@ -767,7 +806,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241203.2]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241204.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -845,5 +884,10 @@
         private ProgressBar progressBarDecoder;
         private Label labelSetCompression;
         private CheckBox checkBoxClearTempFolder;
+        private ColumnHeader FileName;
+        private ColumnHeader Duration;
+        private ColumnHeader BitDepth;
+        private ColumnHeader SamplingRate;
+        private ColumnHeader Size;
     }
 }

@@ -408,18 +408,19 @@ $"HighPriority={checkBoxHighPriority.Checked}"
                 Checked = isChecked // Устанавливаем выделение по умолчанию
             };
 
-            var (duration, bitDepth, samplingRate) = GetAudioInfo(audioFile); // Получаем длительность, разрядность и частоту дискретизации аудиофайла
+            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile); // Получаем длительность, разрядность, частоту дискретизации и размер аудиофайла
 
-            item.SubItems.Add(duration); // Добавляем длительность в подэлемент
-            item.SubItems.Add(bitDepth); // Добавляем разрядность в подэлемент
+            item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Добавляем длительность в подэлемент
+            item.SubItems.Add(bitDepth + " bit"); // Добавляем разрядность в подэлемент
             item.SubItems.Add(samplingRate); // Добавляем частоту дискретизации в подэлемент
-            item.SubItems.Add($"{new FileInfo(audioFile).Length} bytes");
+            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") +" bytes"); // Добавляем размер в подэлемент с форматированием
+
 
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
 
         // Метод для получения длительности и разрядности аудиофайла
-        private (string duration, string bitDepth, string samplingRate) GetAudioInfo(string audioFile)
+        private (string duration, string bitDepth, string samplingRate, string size) GetAudioInfo(string audioFile)
         {
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFile);
@@ -427,10 +428,11 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
+            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
 
             mediaInfo.Close();
 
-            return (duration + " ms", bitDepth + " bit", samplingRate);
+            return (duration, bitDepth, samplingRate, fileSize);
         }
 
         // Обработчик DragEnter для TextBoxJobList
@@ -494,11 +496,7 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             
-            listViewAudioFiles.Columns.Add("FileName", "File Name");
-            listViewAudioFiles.Columns.Add("Duration", "Duration");
-            listViewAudioFiles.Columns.Add("BitDepth", "Bit Depth");
-            listViewAudioFiles.Columns.Add("SamplingRate", "Sampling Rate");
-            listViewAudioFiles.Columns.Add("Size", "Size");
+
 
 
 
@@ -559,9 +557,6 @@ $"HighPriority={checkBoxHighPriority.Checked}"
             listViewFlacExecutables.Items.Clear();
         }
         private void groupBoxAudioFiles_Enter(object sender, EventArgs e)
-        {
-        }
-        private void listViewAudioFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
         }
         private void buttonAddAudioFiles_Click(object sender, EventArgs e)
