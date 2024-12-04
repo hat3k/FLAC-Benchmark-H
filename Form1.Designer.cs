@@ -25,6 +25,7 @@
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
+            buttonStop = new Button();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             labelFlacUsedVersion = new Label();
@@ -49,7 +50,6 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
-            buttonStop = new Button();
             checkBoxHighPriority = new CheckBox();
             buttonStartDecode = new Button();
             labelCPUinfo = new Label();
@@ -58,6 +58,7 @@
             groupBoxEncoders = new GroupBox();
             buttonRemoveEncoder = new Button();
             listViewFlacExecutables = new ListView();
+            FileNameExe = new ColumnHeader();
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
@@ -80,6 +81,7 @@
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxSystemandSettings = new GroupBox();
+            buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
             label1 = new Label();
@@ -87,7 +89,9 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            buttonSelectTempFolder = new Button();
+            Version = new ColumnHeader();
+            SizeEexe = new ColumnHeader();
+            DateExe = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -132,6 +136,16 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             groupBoxEncoderSettings.Enter += groupBoxEncoderSettings_Enter;
+            // 
+            // buttonStop
+            // 
+            buttonStop.Location = new Point(616, 141);
+            buttonStop.Name = "buttonStop";
+            buttonStop.Size = new Size(155, 23);
+            buttonStop.TabIndex = 25;
+            buttonStop.Text = "Stop Encoding/Decoding";
+            buttonStop.UseVisualStyleBackColor = true;
+            buttonStop.Click += buttonStop_Click;
             // 
             // labelCommandLineEncoder
             // 
@@ -373,16 +387,6 @@
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             textBoxThreads.TextChanged += textBoxThreads_TextChanged;
             // 
-            // buttonStop
-            // 
-            buttonStop.Location = new Point(616, 141);
-            buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(155, 23);
-            buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop Encoding/Decoding";
-            buttonStop.UseVisualStyleBackColor = true;
-            buttonStop.Click += buttonStop_Click;
-            // 
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
@@ -460,6 +464,7 @@
             // listViewFlacExecutables
             // 
             listViewFlacExecutables.CheckBoxes = true;
+            listViewFlacExecutables.Columns.AddRange(new ColumnHeader[] { FileNameExe, Version, SizeEexe, DateExe });
             listViewFlacExecutables.FullRowSelect = true;
             listViewFlacExecutables.Location = new Point(6, 22);
             listViewFlacExecutables.Name = "listViewFlacExecutables";
@@ -468,6 +473,12 @@
             listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
             listViewFlacExecutables.View = View.Details;
             listViewFlacExecutables.SelectedIndexChanged += listViewFlacExecutables_SelectedIndexChanged;
+            // 
+            // FileNameExe
+            // 
+            FileNameExe.Tag = "FileNameExe";
+            FileNameExe.Text = "File Name";
+            FileNameExe.Width = 400;
             // 
             // buttonAddEncoders
             // 
@@ -720,6 +731,16 @@
             groupBoxSystemandSettings.Text = "System and Settings";
             groupBoxSystemandSettings.Enter += groupBoxJobSettings_Enter;
             // 
+            // buttonSelectTempFolder
+            // 
+            buttonSelectTempFolder.Location = new Point(6, 141);
+            buttonSelectTempFolder.Name = "buttonSelectTempFolder";
+            buttonSelectTempFolder.Size = new Size(155, 23);
+            buttonSelectTempFolder.TabIndex = 23;
+            buttonSelectTempFolder.Text = "Select temp folder";
+            buttonSelectTempFolder.UseVisualStyleBackColor = true;
+            buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
+            // 
             // checkBoxClearTempFolder
             // 
             checkBoxClearTempFolder.AutoSize = true;
@@ -794,15 +815,21 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLine_Click;
             // 
-            // buttonSelectTempFolder
+            // Version
             // 
-            buttonSelectTempFolder.Location = new Point(6, 141);
-            buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(155, 23);
-            buttonSelectTempFolder.TabIndex = 23;
-            buttonSelectTempFolder.Text = "Select temp folder";
-            buttonSelectTempFolder.UseVisualStyleBackColor = true;
-            buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
+            Version.Tag = "Version";
+            Version.Text = "Version";
+            // 
+            // SizeEexe
+            // 
+            SizeEexe.Tag = "SizeExe";
+            SizeEexe.Text = "Size";
+            SizeEexe.TextAlign = HorizontalAlignment.Right;
+            // 
+            // DateExe
+            // 
+            DateExe.Tag = "DateExe";
+            DateExe.Text = "Date";
             // 
             // Form1
             // 
@@ -902,5 +929,9 @@
         private ColumnHeader SamplingRate;
         private ColumnHeader Size;
         private Button buttonSelectTempFolder;
+        private ColumnHeader FileNameExe;
+        private ColumnHeader Version;
+        private ColumnHeader SizeEexe;
+        private ColumnHeader DateExe;
     }
 }

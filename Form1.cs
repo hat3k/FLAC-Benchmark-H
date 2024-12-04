@@ -510,14 +510,6 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["TimeTaken"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-
-
-
-
-            listViewFlacExecutables.Columns.Add("FileName", "File Name");
-            listViewFlacExecutables.Columns.Add("Version", "Version");
-            listViewFlacExecutables.Columns.Add("Size", "Size");
-
         }
         // FORM LOAD
         private void Form1_Load(object sender, EventArgs e)
