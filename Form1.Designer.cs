@@ -696,6 +696,7 @@
             // 
             dataGridViewLog.AllowUserToAddRows = false;
             dataGridViewLog.AllowUserToOrderColumns = true;
+            dataGridViewLog.AllowUserToResizeRows = false;
             dataGridViewLog.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
@@ -722,6 +723,7 @@
             dataGridViewLog.ReadOnly = true;
             dataGridViewLog.RowHeadersVisible = false;
             dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+            dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLog.Size = new Size(765, 336);
             dataGridViewLog.TabIndex = 17;
             // 
