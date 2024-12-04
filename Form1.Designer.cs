@@ -59,6 +59,9 @@
             buttonRemoveEncoder = new Button();
             listViewFlacExecutables = new ListView();
             FileNameExe = new ColumnHeader();
+            VersionExe = new ColumnHeader();
+            SizeEexe = new ColumnHeader();
+            DateExe = new ColumnHeader();
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
@@ -89,9 +92,6 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            Version = new ColumnHeader();
-            SizeEexe = new ColumnHeader();
-            DateExe = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -464,7 +464,7 @@
             // listViewFlacExecutables
             // 
             listViewFlacExecutables.CheckBoxes = true;
-            listViewFlacExecutables.Columns.AddRange(new ColumnHeader[] { FileNameExe, Version, SizeEexe, DateExe });
+            listViewFlacExecutables.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, SizeEexe, DateExe });
             listViewFlacExecutables.FullRowSelect = true;
             listViewFlacExecutables.Location = new Point(6, 22);
             listViewFlacExecutables.Name = "listViewFlacExecutables";
@@ -478,7 +478,26 @@
             // 
             FileNameExe.Tag = "FileNameExe";
             FileNameExe.Text = "File Name";
-            FileNameExe.Width = 400;
+            FileNameExe.Width = 391;
+            // 
+            // VersionExe
+            // 
+            VersionExe.Tag = "VersionExe";
+            VersionExe.Text = "Version";
+            VersionExe.Width = 170;
+            // 
+            // SizeEexe
+            // 
+            SizeEexe.Tag = "SizeExe";
+            SizeEexe.Text = "Size";
+            SizeEexe.TextAlign = HorizontalAlignment.Right;
+            SizeEexe.Width = 100;
+            // 
+            // DateExe
+            // 
+            DateExe.Tag = "DateExe";
+            DateExe.Text = "Date";
+            DateExe.Width = 100;
             // 
             // buttonAddEncoders
             // 
@@ -625,7 +644,7 @@
             buttonStartJobList.Name = "buttonStartJobList";
             buttonStartJobList.Size = new Size(110, 23);
             buttonStartJobList.TabIndex = 24;
-            buttonStartJobList.Text = "Start job list";
+            buttonStartJobList.Text = "Start Job List";
             buttonStartJobList.UseVisualStyleBackColor = true;
             buttonStartJobList.Click += buttonStartJobList_Click;
             // 
@@ -815,22 +834,6 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLine_Click;
             // 
-            // Version
-            // 
-            Version.Tag = "Version";
-            Version.Text = "Version";
-            // 
-            // SizeEexe
-            // 
-            SizeEexe.Tag = "SizeExe";
-            SizeEexe.Text = "Size";
-            SizeEexe.TextAlign = HorizontalAlignment.Right;
-            // 
-            // DateExe
-            // 
-            DateExe.Tag = "DateExe";
-            DateExe.Text = "Date";
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -845,7 +848,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241204.1]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241204.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -933,5 +936,6 @@
         private ColumnHeader Version;
         private ColumnHeader SizeEexe;
         private ColumnHeader DateExe;
+        private ColumnHeader VersionExe;
     }
 }

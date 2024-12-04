@@ -324,9 +324,9 @@ namespace FLAC_Benchmark_H
         // Общий метод добавления исполняемых файлов в ListView
         private void AddExecutableFileToListView(string executable, bool isChecked = true)
         {
-            var version = GetExecutableVersion(executable); // Получаем версию исполняемого файла
+            var version = GetExecutableInfo(executable); // Получаем версию исполняемого файла
             long fileSize = new FileInfo(executable).Length; // Получаем размер файла
-            DateTime creationDate = new FileInfo(executable).CreationTime; // Получаем дату создания файла
+            DateTime lastModifiedDate = new FileInfo(executable).LastWriteTime; // Получаем дату изменения файла
 
             var item = new ListViewItem(Path.GetFileName(executable))
             {
@@ -336,39 +336,27 @@ namespace FLAC_Benchmark_H
 
             item.SubItems.Add(version); // Добавляем версию в вторую колонку
             item.SubItems.Add($"{fileSize:n0} bytes"); // Добавляем размер в третью колонку
-            item.SubItems.Add(creationDate.ToString("g")); // Добавляем дату создания в четвёртую колонку
+            item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm")); // Добавляем дату изменения в четвёртую колонку
 
             listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
 
-        private string GetExecutableVersion(string executablePath)
+
+        private string GetExecutableInfo(string executablePath)
         {
-            try
+            using (Process process = new Process())
             {
-                // Получаем информацию о файле
-                FileInfo fileInfo = new FileInfo(executablePath);
-                long fileSize = fileInfo.Length; // Размер файла в байтах
-                DateTime creationDate = fileInfo.CreationTime; // Дата создания файла
+                process.StartInfo.FileName = executablePath;
+                process.StartInfo.Arguments = "--version"; // Зависит от вашего исполняемого файла
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
+                process.StartInfo.CreateNoWindow = true;
 
-                using (Process process = new Process())
-                {
-                    process.StartInfo.FileName = executablePath;
-                    process.StartInfo.Arguments = "--version"; // Зависит от вашего исполняемого файла
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
-                    process.StartInfo.CreateNoWindow = true;
+                process.Start();
+                string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
+                process.WaitForExit();
 
-                    process.Start();
-                    string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
-                    process.WaitForExit();
-
-                    // Формируем и возвращаем строку с версией, размером файла и датой создания
-                    return $"{version}, {fileSize}, {creationDate:G}"; // Убедитесь, что вы используете правильный формат
-                }
-            }
-            catch
-            {
-                return "N/A"; // Возвращаем "N/A" в случае ошибки
+                return version; // Возвращаем только версию
             }
         }
 
