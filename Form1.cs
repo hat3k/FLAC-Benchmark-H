@@ -2,6 +2,7 @@ using MediaInfoLib;
 using System.Diagnostics;
 using System.Management;
 using System.Text;
+using System.Windows.Forms;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
@@ -38,8 +39,7 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Start();
             InitializedataGridViewLog();
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
-
-
+            _process = new Process(); // Initialize _process to avoid nullability warning
         }
         // Метод для загрузки информации о процессоре
         private void LoadCPUInfo()
@@ -248,7 +248,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Обработчик DragEnter для ListViewFlacExecutables
-        private void ListViewFlacExecutables_DragEnter(object sender, DragEventArgs e)
+        private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -265,7 +265,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Обработчик DragDrop для ListViewFlacExecutables
-        private void ListViewFlacExecutables_DragDrop(object sender, DragEventArgs e)
+        private void ListViewFlacExecutables_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
@@ -367,7 +367,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Обработчик DragEnter для ListViewAudioFiles
-        private void ListViewAudioFiles_DragEnter(object sender, DragEventArgs e)
+        private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -385,7 +385,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Обработчик DragDrop для ListViewAudioFiles
-        private void ListViewAudioFiles_DragDrop(object sender, DragEventArgs e)
+        private void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
@@ -486,7 +486,7 @@ namespace FLAC_Benchmark_H
 
 
         // Обработчик DragEnter для TextBoxJobList
-        private void TextBoxJobList_DragEnter(object sender, DragEventArgs e)
+        private void TextBoxJobList_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -500,7 +500,7 @@ namespace FLAC_Benchmark_H
             }
         }
         // Обработчик DragDrop для TextBoxJobList
-        private void TextBoxJobList_DragDrop(object sender, DragEventArgs e)
+        private void TextBoxJobList_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             textBoxJobList.Clear(); // Очищаем textBox перед добавлением
@@ -520,12 +520,12 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ListViewFlacExecutables_KeyDown(object sender, KeyEventArgs e)
+        private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveEncoder.PerformClick();
         }
-        private void ListViewAudioFiles_KeyDown(object sender, KeyEventArgs e)
+        private void ListViewAudioFiles_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveAudiofile.PerformClick();
@@ -552,24 +552,24 @@ namespace FLAC_Benchmark_H
 
         }
         // FORM LOAD
-        private void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object? sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
 
         }
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
             SaveSettings(); // Сохранение настроек
             cpuUsageTimer.Stop();
             cpuUsageTimer.Dispose();
         }
-        private void groupBoxEncoders_Enter(object sender, EventArgs e)
+        private void groupBoxEncoders_Enter(object? sender, EventArgs e)
         {
         }
-        private void listViewFlacExecutables_SelectedIndexChanged(object sender, EventArgs e)
+        private void listViewFlacExecutables_SelectedIndexChanged(object? sender, EventArgs e)
         {
         }
-        private void buttonAddEncoders_Click(object sender, EventArgs e)
+        private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -586,7 +586,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonRemoveEncoder_Click(object sender, EventArgs e)
+        private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewFlacExecutables
             for (int i = listViewFlacExecutables.Items.Count - 1; i >= 0; i--)
@@ -597,14 +597,14 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonClearEncoders_Click(object sender, EventArgs e)
+        private void buttonClearEncoders_Click(object? sender, EventArgs e)
         {
             listViewFlacExecutables.Items.Clear();
         }
-        private void groupBoxAudioFiles_Enter(object sender, EventArgs e)
+        private void groupBoxAudioFiles_Enter(object? sender, EventArgs e)
         {
         }
-        private void buttonAddAudioFiles_Click(object sender, EventArgs e)
+        private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -620,7 +620,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonRemoveAudiofile_Click(object sender, EventArgs e)
+        private void buttonRemoveAudiofile_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewAudioFiles
             for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
@@ -631,77 +631,77 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonClearAudioFiles_Click(object sender, EventArgs e)
+        private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
         }
-        private void groupBoxEncoderSettings_Enter(object sender, EventArgs e)
+        private void groupBoxEncoderSettings_Enter(object? sender, EventArgs e)
         {
         }
-        private void labelCompressionLevel_Click(object sender, EventArgs e)
+        private void labelCompressionLevel_Click(object? sender, EventArgs e)
         {
         }
-        private void textBoxCompressionLevel_TextChanged(object sender, EventArgs e)
+        private void textBoxCompressionLevel_TextChanged(object? sender, EventArgs e)
         {
         }
-        private void labelSetCompression_Click(object sender, EventArgs e)
+        private void labelSetCompression_Click(object? sender, EventArgs e)
         {
         }
-        private void button5CompressionLevel_Click(object sender, EventArgs e)
+        private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
         }
-        private void buttonMaxCompressionLevel_Click(object sender, EventArgs e)
+        private void buttonMaxCompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "8";
         }
-        private void labelThreads_Click(object sender, EventArgs e)
+        private void labelThreads_Click(object? sender, EventArgs e)
         {
         }
-        private void textBoxThreads_TextChanged(object sender, EventArgs e)
+        private void textBoxThreads_TextChanged(object? sender, EventArgs e)
         {
         }
-        private void labelSetCores_Click(object sender, EventArgs e)
+        private void labelSetCores_Click(object? sender, EventArgs e)
         {
         }
-        private void buttonHalfCores_Click(object sender, EventArgs e)
+        private void buttonHalfCores_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = (physicalCores / 2).ToString(); // Устанавливаем половину ядер
         }
-        private void buttonSetMaxCores_Click(object sender, EventArgs e)
+        private void buttonSetMaxCores_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = physicalCores.ToString(); // Устанавливаем максимальное количество ядер
         }
-        private void labelSetThreads_Click(object sender, EventArgs e)
+        private void labelSetThreads_Click(object? sender, EventArgs e)
         {
         }
-        private void buttonSetHalfThreads_Click(object sender, EventArgs e)
+        private void buttonSetHalfThreads_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = (threadCount / 2).ToString(); // Устанавливаем половину потоков
         }
-        private void buttonSetMaxThreads_Click(object sender, EventArgs e)
+        private void buttonSetMaxThreads_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = threadCount.ToString(); // Устанавливаем максимальное количество потоков
         }
-        private void checkBoxHighPriority_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxHighPriority_CheckedChanged(object? sender, EventArgs e)
         {
         }
-        private void labelCommandLine_Click(object sender, EventArgs e)
+        private void labelCommandLine_Click(object? sender, EventArgs e)
         {
         }
-        private void textBoxCommandLineOptions_TextChanged(object sender, EventArgs e)
+        private void textBoxCommandLineOptions_TextChanged(object? sender, EventArgs e)
         {
         }
-        private void buttonClearCommandLineEncoder_Click(object sender, EventArgs e)
+        private void buttonClearCommandLineEncoder_Click(object? sender, EventArgs e)
         {
             textBoxCommandLineOptionsEncoder.Clear(); // Очищаем textCommandLineOptions
         }
-        private void buttonClearCommandLineDecoder_Click(object sender, EventArgs e)
+        private void buttonClearCommandLineDecoder_Click(object? sender, EventArgs e)
         {
             textBoxCommandLineOptionsDecoder.Clear(); // Очищаем textCommandLineOptions
 
         }
-        private void buttonepr8_Click(object sender, EventArgs e)
+        private void buttonepr8_Click(object? sender, EventArgs e)
         {
             // Проверяем, содержится ли -epr8 в textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("-epr8"))
@@ -710,7 +710,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" -epr8"); // Добавляем с пробелом перед текстом
             }
         }
-        private void buttonAsubdividetukey5flattop_Click(object sender, EventArgs e)
+        private void buttonAsubdividetukey5flattop_Click(object? sender, EventArgs e)
         {
             // Проверяем, содержится ли -A "subdivide_tukey(5);flattop" в textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("-A \"subdivide_tukey(5);flattop\""))
@@ -719,7 +719,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" -A \"subdivide_tukey(5);flattop\""); // Добавляем с пробелом перед текстом
             }
         }
-        private void buttonNoPadding_Click(object sender, EventArgs e)
+        private void buttonNoPadding_Click(object? sender, EventArgs e)
         {
             // Проверяем, содержится ли --no-padding в textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-padding"))
@@ -728,7 +728,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" --no-padding"); // Добавляем с пробелом перед текстом
             }
         }
-        private void buttonNoSeektable_Click(object sender, EventArgs e)
+        private void buttonNoSeektable_Click(object? sender, EventArgs e)
         {
             // Проверяем, содержится ли --no-seektable в textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-seektable"))
@@ -737,7 +737,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" --no-seektable"); // Добавляем с пробелом перед текстом
             }
         }
-        private async void buttonStartEncode_Click(object sender, EventArgs e)
+        private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             _isEncodingStopped = false;
             // Создаём временную директорию для выходного файла
@@ -888,7 +888,7 @@ namespace FLAC_Benchmark_H
                                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
                                 dataGridViewLog.ClearSelection();
-
+                              
                                 // Логирование в файл
                                 File.AppendAllText("log.txt", $"{DateTime.Now}: {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tEncoding Speed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoded with: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
                             }
@@ -905,7 +905,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private async void buttonStartDecode_Click(object sender, EventArgs e)
+        private async void buttonStartDecode_Click(object? sender, EventArgs e)
         {
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
@@ -997,34 +997,34 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void labelFlacUsedVersion_Click(object sender, EventArgs e)
+        private void labelFlacUsedVersion_Click(object? sender, EventArgs e)
         {
         }
-        private void progressBar_Click(object sender, EventArgs e)
+        private void progressBar_Click(object? sender, EventArgs e)
         {
         }
-        private void groupBoxJobSettings_Enter(object sender, EventArgs e)
+        private void groupBoxJobSettings_Enter(object? sender, EventArgs e)
         {
         }
-        private void radioButtonEncode_CheckedChanged(object sender, EventArgs e)
+        private void radioButtonEncode_CheckedChanged(object? sender, EventArgs e)
         {
         }
-        private void radioButtonDecode_CheckedChanged(object sender, EventArgs e)
+        private void radioButtonDecode_CheckedChanged(object? sender, EventArgs e)
         {
         }
-        private void buttonAddJobToJobList_Click(object sender, EventArgs e)
+        private void buttonAddJobToJobList_Click(object? sender, EventArgs e)
         {
         }
-        private void groupBoxJobList_Enter(object sender, EventArgs e)
+        private void groupBoxJobList_Enter(object? sender, EventArgs e)
         {
         }
-        private void textBoxJobList_TextChanged(object sender, EventArgs e)
+        private void textBoxJobList_TextChanged(object? sender, EventArgs e)
         {
         }
-        private void buttonStartJobList_Click(object sender, EventArgs e)
+        private void buttonStartJobList_Click(object? sender, EventArgs e)
         {
         }
-        private void buttonImportJobList_Click(object sender, EventArgs e)
+        private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -1045,7 +1045,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonExportJobList_Click(object sender, EventArgs e)
+        private void buttonExportJobList_Click(object? sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
@@ -1067,17 +1067,17 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonClearJobList_Click(object sender, EventArgs e)
+        private void buttonClearJobList_Click(object? sender, EventArgs e)
         {
             textBoxJobList.Clear(); // Очищаем textBoxJobList
         }
-        private void groupLog_Enter(object sender, EventArgs e)
+        private void groupLog_Enter(object? sender, EventArgs e)
         {
         }
-        private void textBoxLog_TextChanged(object sender, EventArgs e)
+        private void textBoxLog_TextChanged(object? sender, EventArgs e)
         {
         }
-        private void buttonOpenLogtxt_Click(object sender, EventArgs e)
+        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Путь к файлу логирования
             string logFilePath = "log.txt";
@@ -1103,7 +1103,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        private void buttonCopyLog_Click(object sender, EventArgs e)
+        private void buttonCopyLog_Click(object? sender, EventArgs e)
         {
             // Копируем текст из textBoxLog в буфер обмена
             if (!string.IsNullOrWhiteSpace(textBoxLog.Text))
@@ -1116,11 +1116,11 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        private void buttonClearLog_Click(object sender, EventArgs e)
+        private void buttonClearLog_Click(object? sender, EventArgs e)
         {
             dataGridViewLog.Rows.Clear();
         }
-        private void buttonStop_Click(object sender, EventArgs e)
+        private void buttonStop_Click(object? sender, EventArgs e)
         {
             // Устанавливаем флаг, что кодирование остановлено
             _isEncodingStopped = true;
@@ -1144,11 +1144,11 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("No encoding process is running.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private void checkBoxClearTempFolder_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxClearTempFolder_CheckedChanged(object? sender, EventArgs e)
         {
         }
 
-        private void buttonSelectTempFolder_Click(object sender, EventArgs e)
+        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
             {
