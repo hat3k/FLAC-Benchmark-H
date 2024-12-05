@@ -18,6 +18,7 @@ namespace FLAC_Benchmark_H
         private System.Windows.Forms.Timer cpuUsageTimer; // Указываем явно, что это Timer из System.Windows.Forms
         private bool _isEncodingStopped = false;
         private string tempFolderPath; // Поле для хранения пути к временной папке
+        private bool isCpuInfoLoaded = false;
 
 
         public Form1()
@@ -33,7 +34,7 @@ namespace FLAC_Benchmark_H
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             cpuUsageTimer = new System.Windows.Forms.Timer(); // Явно указываем System.Windows.Forms.Timer
             cpuUsageTimer.Interval = 250; // Каждые 250 мс
-            cpuUsageTimer.Tick += (sender, e) => UpdateCpuUsage();
+            cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
             cpuUsageTimer.Start();
             InitializedataGridViewLog();
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
@@ -43,38 +44,42 @@ namespace FLAC_Benchmark_H
         // Метод для загрузки информации о процессоре
         private void LoadCPUInfo()
         {
-            try
+            if (!isCpuInfoLoaded)
             {
-                physicalCores = 0;
-                threadCount = 0;
-                // Создаем запрос для получения информации о процессорах
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_Processor"))
+                try
                 {
-                    foreach (ManagementObject obj in searcher.Get())
+                    physicalCores = 0;
+                    threadCount = 0;
+                    // Создаем запрос для получения информации о процессорах
+                    using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_Processor"))
                     {
-                        physicalCores += int.Parse(obj["NumberOfCores"].ToString());
-                        threadCount += int.Parse(obj["ThreadCount"].ToString());
+                        foreach (ManagementObject obj in searcher.Get())
+                        {
+                            physicalCores += int.Parse(obj["NumberOfCores"].ToString());
+                            threadCount += int.Parse(obj["ThreadCount"].ToString());
+                        }
                     }
+                    // Обновляем метку с информацией о процессоре
+                    if (physicalCores > 0 && threadCount > 0)
+                    {
+                        labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
+                    }
+                    else
+                    {
+                        labelCPUinfo.Text = "Unable to retrieve CPU information.";
+                    }
+                    isCpuInfoLoaded = true;
                 }
-                // Обновляем метку с информацией о процессоре
-                if (physicalCores > 0 && threadCount > 0)
+                catch (Exception ex)
                 {
-                    labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
+                    // Записываем ошибку в labelCPUinfo
+                    labelCPUinfo.Text = "Error loading CPU info: " + ex.Message;
                 }
-                else
-                {
-                    labelCPUinfo.Text = "Unable to retrieve CPU information.";
-                }
-            }
-            catch (Exception ex)
-            {
-                // Записываем ошибку в labelCPUinfo
-                labelCPUinfo.Text = "Error loading CPU info: " + ex.Message;
             }
         }
-        private void UpdateCpuUsage()
+        private async Task UpdateCpuUsageAsync()
         {
-            float cpuUsage = cpuCounter.NextValue();
+            float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
             labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}\nCPU Usage: {cpuUsage:F2}%";
         }
         // Метод для загрузки настроек
@@ -555,6 +560,8 @@ namespace FLAC_Benchmark_H
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings(); // Сохранение настроек
+            cpuUsageTimer.Stop();
+            cpuUsageTimer.Dispose();
         }
         private void groupBoxEncoders_Enter(object sender, EventArgs e)
         {
