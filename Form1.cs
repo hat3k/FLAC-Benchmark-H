@@ -1120,30 +1120,39 @@ namespace FLAC_Benchmark_H
         {
             dataGridViewLog.Rows.Clear();
         }
-        private void buttonStop_Click(object? sender, EventArgs e)
+        private void buttonStop_Click(object sender, EventArgs e)
         {
-            // Устанавливаем флаг, что кодирование остановлено
-            _isEncodingStopped = true;
-            // Если процесс запущен, его нужно остановить
-            if (_process != null && !_process.HasExited)
+            _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
+
+            if (_process != null)
             {
                 try
                 {
-                    _process.Kill(); // Завершаем процесс
-                    _process.Dispose(); // Освобождаем ресурсы
-                    _process = null; // Обнуляем процесс
-                    MessageBox.Show("Encoding process has been stopped.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Проверяем, запущен ли процесс
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill(); // Завершаем процесс
+                        MessageBox.Show("Encoding process has been stopped.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("The encoding process has already exited.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error stopping the process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    _process.Dispose(); // Освобождаем ресурсы
+                    _process = null; // Обнуляем ссылку на процесс
                 }
             }
             else
             {
-                MessageBox.Show("No encoding process is running.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
         private void checkBoxClearTempFolder_CheckedChanged(object? sender, EventArgs e)
         {
         }
