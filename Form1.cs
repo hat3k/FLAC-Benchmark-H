@@ -27,6 +27,7 @@ namespace FLAC_Benchmark_H
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.listViewFlacExecutables.KeyDown += ListViewFlacExecutables_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
+            this.listViewJobList.KeyDown += ListViewJobList_KeyDown;
             LoadCPUInfo(); // Загружаем информацию о процессоре
             this.KeyPreview = true;
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
@@ -560,12 +561,6 @@ namespace FLAC_Benchmark_H
                 if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
             }
         }
-        private void groupBoxEncoders_Enter(object? sender, EventArgs e)
-        {
-        }
-        private void listViewFlacExecutables_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-        }
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -631,18 +626,6 @@ namespace FLAC_Benchmark_H
         {
             listViewAudioFiles.Items.Clear();
         }
-        private void groupBoxEncoderSettings_Enter(object? sender, EventArgs e)
-        {
-        }
-        private void labelCompressionLevel_Click(object? sender, EventArgs e)
-        {
-        }
-        private void textBoxCompressionLevel_TextChanged(object? sender, EventArgs e)
-        {
-        }
-        private void labelSetCompression_Click(object? sender, EventArgs e)
-        {
-        }
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
@@ -650,15 +633,6 @@ namespace FLAC_Benchmark_H
         private void buttonMaxCompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "8";
-        }
-        private void labelThreads_Click(object? sender, EventArgs e)
-        {
-        }
-        private void textBoxThreads_TextChanged(object? sender, EventArgs e)
-        {
-        }
-        private void labelSetCores_Click(object? sender, EventArgs e)
-        {
         }
         private void buttonHalfCores_Click(object? sender, EventArgs e)
         {
@@ -678,15 +652,6 @@ namespace FLAC_Benchmark_H
         private void buttonSetMaxThreads_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = threadCount.ToString(); // Устанавливаем максимальное количество потоков
-        }
-        private void checkBoxHighPriority_CheckedChanged(object? sender, EventArgs e)
-        {
-        }
-        private void labelCommandLine_Click(object? sender, EventArgs e)
-        {
-        }
-        private void textBoxCommandLineOptions_TextChanged(object? sender, EventArgs e)
-        {
         }
         private void buttonClearCommandLineEncoder_Click(object? sender, EventArgs e)
         {
@@ -1018,33 +983,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void labelFlacUsedVersion_Click(object? sender, EventArgs e)
-        {
-        }
-        private void progressBar_Click(object? sender, EventArgs e)
-        {
-        }
-        private void groupBoxJobSettings_Enter(object? sender, EventArgs e)
-        {
-        }
-        private void radioButtonEncode_CheckedChanged(object? sender, EventArgs e)
-        {
-        }
-        private void radioButtonDecode_CheckedChanged(object? sender, EventArgs e)
-        {
-        }
-        private void buttonAddJobToJobList_Click(object? sender, EventArgs e)
-        {
-        }
-        private void groupBoxJobList_Enter(object? sender, EventArgs e)
-        {
-        }
-        private void textBoxJobList_TextChanged(object? sender, EventArgs e)
-        {
-        }
-        private void buttonStartJobList_Click(object? sender, EventArgs e)
-        {
-        }
         private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -1102,12 +1040,6 @@ namespace FLAC_Benchmark_H
         private void buttonClearJobList_Click(object? sender, EventArgs e)
         {
             listViewJobList.Items.Clear(); // Очищаем listViewJobList
-        }
-        private void groupLog_Enter(object? sender, EventArgs e)
-        {
-        }
-        private void textBoxLog_TextChanged(object? sender, EventArgs e)
-        {
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
@@ -1183,9 +1115,6 @@ namespace FLAC_Benchmark_H
             {
             }
         }
-        private void checkBoxClearTempFolder_CheckedChanged(object? sender, EventArgs e)
-        {
-        }
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -1204,11 +1133,6 @@ namespace FLAC_Benchmark_H
                     SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
                 }
             }
-        }
-
-        private void listViewJobList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

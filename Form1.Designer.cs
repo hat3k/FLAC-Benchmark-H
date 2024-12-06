@@ -135,7 +135,6 @@
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
-            groupBoxEncoderSettings.Enter += groupBoxEncoderSettings_Enter;
             // 
             // buttonStop
             // 
@@ -155,7 +154,6 @@
             labelCommandLineEncoder.Size = new Size(89, 15);
             labelCommandLineEncoder.TabIndex = 24;
             labelCommandLineEncoder.Text = "Command line:";
-            labelCommandLineEncoder.Click += labelCommandLine_Click;
             // 
             // buttonAddJobToJobListEncoder
             // 
@@ -165,7 +163,6 @@
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
-            buttonAddJobToJobListEncoder.Click += buttonAddJobToJobList_Click;
             // 
             // labelFlacUsedVersion
             // 
@@ -178,7 +175,6 @@
             labelFlacUsedVersion.TabIndex = 15;
             labelFlacUsedVersion.Text = "Using version:";
             labelFlacUsedVersion.Visible = false;
-            labelFlacUsedVersion.Click += labelFlacUsedVersion_Click;
             // 
             // buttonStartEncode
             // 
@@ -197,7 +193,6 @@
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
             progressBarEncoder.TabIndex = 4;
-            progressBarEncoder.Click += progressBar_Click;
             // 
             // labelSetThreads
             // 
@@ -217,7 +212,6 @@
             labelSetCores.Size = new Size(40, 15);
             labelSetCores.TabIndex = 20;
             labelSetCores.Text = "Cores:";
-            labelSetCores.Click += labelSetCores_Click;
             // 
             // textBoxCommandLineOptionsEncoder
             // 
@@ -225,7 +219,6 @@
             textBoxCommandLineOptionsEncoder.Name = "textBoxCommandLineOptionsEncoder";
             textBoxCommandLineOptionsEncoder.Size = new Size(440, 23);
             textBoxCommandLineOptionsEncoder.TabIndex = 4;
-            textBoxCommandLineOptionsEncoder.TextChanged += textBoxCommandLineOptions_TextChanged;
             // 
             // labelSetCompression
             // 
@@ -235,7 +228,6 @@
             labelSetCompression.Size = new Size(26, 15);
             labelSetCompression.TabIndex = 19;
             labelSetCompression.Text = "Set:";
-            labelSetCompression.Click += labelSetCompression_Click;
             // 
             // buttonepr8
             // 
@@ -355,7 +347,6 @@
             labelThreads.Size = new Size(51, 15);
             labelThreads.TabIndex = 0;
             labelThreads.Text = "Threads:";
-            labelThreads.Click += labelThreads_Click;
             // 
             // textBoxCompressionLevel
             // 
@@ -365,7 +356,6 @@
             textBoxCompressionLevel.TabIndex = 2;
             textBoxCompressionLevel.Text = "8";
             textBoxCompressionLevel.TextAlign = HorizontalAlignment.Center;
-            textBoxCompressionLevel.TextChanged += textBoxCompressionLevel_TextChanged;
             // 
             // labelCompressionLevel
             // 
@@ -375,7 +365,6 @@
             labelCompressionLevel.Size = new Size(110, 15);
             labelCompressionLevel.TabIndex = 0;
             labelCompressionLevel.Text = "Compression Level:";
-            labelCompressionLevel.Click += labelCompressionLevel_Click;
             // 
             // textBoxThreads
             // 
@@ -385,7 +374,6 @@
             textBoxThreads.TabIndex = 3;
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
-            textBoxThreads.TextChanged += textBoxThreads_TextChanged;
             // 
             // checkBoxHighPriority
             // 
@@ -396,7 +384,6 @@
             checkBoxHighPriority.TabIndex = 22;
             checkBoxHighPriority.Text = "High Priority";
             checkBoxHighPriority.UseVisualStyleBackColor = true;
-            checkBoxHighPriority.CheckedChanged += checkBoxHighPriority_CheckedChanged;
             // 
             // buttonStartDecode
             // 
@@ -448,7 +435,6 @@
             groupBoxEncoders.TabIndex = 3;
             groupBoxEncoders.TabStop = false;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available)";
-            groupBoxEncoders.Enter += groupBoxEncoders_Enter;
             // 
             // buttonRemoveEncoder
             // 
@@ -472,7 +458,6 @@
             listViewFlacExecutables.TabIndex = 25;
             listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
             listViewFlacExecutables.View = View.Details;
-            listViewFlacExecutables.SelectedIndexChanged += listViewFlacExecutables_SelectedIndexChanged;
             // 
             // FileNameExe
             // 
@@ -624,7 +609,6 @@
             groupBoxJobsList.TabIndex = 5;
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
-            groupBoxJobsList.Enter += groupBoxJobList_Enter;
             // 
             // listViewJobList
             // 
@@ -634,7 +618,6 @@
             listViewJobList.Size = new Size(765, 336);
             listViewJobList.TabIndex = 25;
             listViewJobList.UseCompatibleStateImageBehavior = false;
-            listViewJobList.SelectedIndexChanged += listViewJobList_SelectedIndexChanged;
             // 
             // buttonStartJobList
             // 
@@ -644,7 +627,6 @@
             buttonStartJobList.TabIndex = 24;
             buttonStartJobList.Text = "Start Job List";
             buttonStartJobList.UseVisualStyleBackColor = true;
-            buttonStartJobList.Click += buttonStartJobList_Click;
             // 
             // buttonExportJobList
             // 
@@ -688,7 +670,6 @@
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
-            groupLog.Enter += groupLog_Enter;
             // 
             // dataGridViewLog
             // 
@@ -748,7 +729,6 @@
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
-            groupBoxSystemandSettings.Enter += groupBoxJobSettings_Enter;
             // 
             // buttonSelectTempFolder
             // 
@@ -769,7 +749,6 @@
             checkBoxClearTempFolder.TabIndex = 18;
             checkBoxClearTempFolder.Text = "Clear temp folder on exit";
             checkBoxClearTempFolder.UseVisualStyleBackColor = true;
-            checkBoxClearTempFolder.CheckedChanged += checkBoxClearTempFolder_CheckedChanged;
             // 
             // groupBoxDecoderSettings
             // 
@@ -794,7 +773,6 @@
             labelCommandLineDecoder.Size = new Size(89, 15);
             labelCommandLineDecoder.TabIndex = 24;
             labelCommandLineDecoder.Text = "Command line:";
-            labelCommandLineDecoder.Click += labelCommandLine_Click;
             // 
             // buttonAddJobToJobListDecoder
             // 
@@ -804,7 +782,6 @@
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
-            buttonAddJobToJobListDecoder.Click += buttonAddJobToJobList_Click;
             // 
             // textBoxCommandLineOptionsDecoder
             // 
@@ -812,7 +789,6 @@
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
             textBoxCommandLineOptionsDecoder.Size = new Size(395, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 4;
-            textBoxCommandLineOptionsDecoder.TextChanged += textBoxCommandLineOptions_TextChanged;
             // 
             // progressBarDecoder
             // 
@@ -821,7 +797,6 @@
             progressBarDecoder.Name = "progressBarDecoder";
             progressBarDecoder.Size = new Size(360, 23);
             progressBarDecoder.TabIndex = 4;
-            progressBarDecoder.Click += progressBar_Click;
             // 
             // buttonClearCommandLineDecoder
             // 
