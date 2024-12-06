@@ -299,7 +299,6 @@ namespace FLAC_Benchmark_H
         }
 
 
-
         private void InitializeDragAndDrop()
         {
             // Разрешаем перетаскивание файлов в ListView для программ
@@ -552,21 +551,32 @@ namespace FLAC_Benchmark_H
             }
         }
         // Метод загрузки задач из файла
+        // Метод загрузки задач из файла
         private void LoadJobsFromFile(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 string[] lines = File.ReadAllLines(filePath);
+                listViewJobs.Items.Clear(); // Очищаем существующие элементы перед загрузкой новых
+
                 foreach (var line in lines)
                 {
-                    var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
+                    var parts = line.Split('~'); // Разделяем строку на части
                     if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
                     {
-                        AddJobsToListView(parts[0], isChecked, parts[2]); // Загружаем с указанием параметров
+                        string jobName = parts[0];
+                        string parameters = parts[2];
+                        AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
                     }
-                    else if (parts.Length == 2 && !string.IsNullOrWhiteSpace(line))
+                    else
                     {
-                        AddJobsToListView(parts[0], true); // По умолчанию параметр пустой
+                        MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
             }
@@ -575,6 +585,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         // Метод для загрузки задач из файла txt
         private void LoadJobs()
         {
@@ -602,7 +613,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Общий метод добавления задач в ListView
         private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
         {
@@ -628,8 +638,8 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete)
-                buttonRemoveAudiofile.PerformClick();
+         //   if (e.KeyCode == Keys.Delete)
+         //       buttonRemoveAudiofile.PerformClick();
         }
 
         private void InitializedataGridViewLog()
@@ -1095,22 +1105,27 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        string[] lines = File.ReadAllLines(openFileDialog.FileName);
-                        listViewJobs.Items.Clear(); // Очищаем существующий список
+                        string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
+                        listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
+
                         foreach (var line in lines)
                         {
-                            var parts = line.Split('~');
-                            if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
+                            var parts = line.Split('~'); // Разделяем строку на части
+                            if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
                             {
-                                var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
-                                listViewJobs.Items.Add(item);
+                                string jobName = parts[0];
+                                string parameters = parts[2];
+                                AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
                         }
-                        MessageBox.Show("Job list imported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error importing job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -1128,7 +1143,8 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                            .Select(item => $"{item.Text}~{item.Checked}").ToArray(); // Получаем текст и состояние чекбокса
+                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
+                            .ToArray(); // Сохраняем в одном формате
                         File.WriteAllLines(saveFileDialog.FileName, jobList);
                         MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -1282,39 +1298,40 @@ namespace FLAC_Benchmark_H
             listViewJobs.Items.Add(item);
         }
 
-private void buttonCopyJobs_Click(object sender, EventArgs e)
-{
-    StringBuilder jobsText = new StringBuilder();
-    
-    // Проверяем, есть ли выделенные элементы
-    if (listViewJobs.SelectedItems.Count > 0)
-    {
-        // Копируем только выделенные задачи
-        foreach (ListViewItem item in listViewJobs.SelectedItems)
+        private void buttonCopyJobs_Click(object sender, EventArgs e)
         {
-            jobsText.AppendLine($"{item.SubItems[0].Text}\t{item.SubItems[1].Text}");
-        }
-    }
-    else
-    {
-        // Если ничего не выделено, копируем все задачи
-        foreach (ListViewItem item in listViewJobs.Items)
-        {
-            jobsText.AppendLine($"{item.SubItems[0].Text}\t{item.SubItems[1].Text}");
-        }
-    }
+            StringBuilder jobsText = new StringBuilder();
 
-    // Копируем текст в буфер обмена
-    if (jobsText.Length > 0)
-    {
-        Clipboard.SetText(jobsText.ToString());
-    //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-    }
-    else
-    {
-        MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-    }
-}
+            // Проверяем, есть ли выделенные элементы
+            if (listViewJobs.SelectedItems.Count > 0)
+            {
+                // Копируем только выделенные задачи
+                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+            else
+            {
+                // Если ничего не выделено, копируем все задачи
+                foreach (ListViewItem item in listViewJobs.Items)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+
+            // Копируем текст в буфер обмена
+            if (jobsText.Length > 0)
+            {
+                Clipboard.SetText(jobsText.ToString());
+                MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
 
         private void buttonPasteJobs_Click(object sender, EventArgs e)
         {
