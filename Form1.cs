@@ -184,17 +184,24 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        // Новая структура для хранения элементов CheckedListBox с полными путями
         private void LoadJobsQueue()
         {
-            // Создаем бэкап jobs.txt перед его загрузкой
             BackupJobsFile();
             if (File.Exists(JobsFilePath))
             {
                 try
                 {
-                    string content = File.ReadAllText(JobsFilePath);
-                    textBoxJobList.Text = content;
+                    string[] lines = File.ReadAllLines(JobsFilePath);
+                    listViewJobList.Items.Clear(); // Очищаем список перед загрузкой
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем текст на текст и состояние чекбокса
+                        if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
+                            listViewJobList.Items.Add(item);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -221,13 +228,16 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                File.WriteAllText(JobsFilePath, textBoxJobList.Text);
+                var jobList = listViewJobList.Items.Cast<ListViewItem>()
+                    .Select(item => $"{item.Text}~{item.Checked}").ToArray(); // Сохраняем текст и состояние чекбокса
+                File.WriteAllLines(JobsFilePath, jobList);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void InitializeDragAndDrop()
         {
             // Разрешаем перетаскивание файлов в ListView для программ
@@ -239,9 +249,9 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
             // Разрешаем перетаскивание файлов в TextBox для очереди задач
-            textBoxJobList.AllowDrop = true;
-            textBoxJobList.DragEnter += TextBoxJobList_DragEnter;
-            textBoxJobList.DragDrop += TextBoxJobList_DragDrop;
+            listViewJobList.AllowDrop = true;
+            listViewJobList.DragEnter += TextBoxJobList_DragEnter;
+            listViewJobList.DragDrop += TextBoxJobList_DragDrop;
         }
         // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
@@ -468,11 +478,12 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
+
         // Обработчик DragDrop для TextBoxJobList
         private void TextBoxJobList_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            textBoxJobList.Clear(); // Очищаем textBox перед добавлением
+            listViewJobList.Items.Clear(); // Очищаем ListView перед добавлением
             foreach (var file in files)
             {
                 if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
@@ -480,11 +491,19 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         string content = File.ReadAllText(file);
-                        textBoxJobList.AppendText(content + Environment.NewLine); // Добавляем содержимое файла
+                        string[] lines = content.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+                        foreach (var line in lines)
+                        {
+                            if (!string.IsNullOrWhiteSpace(line)) // Пропускаем пустые строки
+                            {
+                                listViewJobList.Items.Add(new ListViewItem(line)); // Добавляем каждую строку как новый элемент
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error reading file: {ex.Message}");
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -495,6 +514,11 @@ namespace FLAC_Benchmark_H
                 buttonRemoveEncoder.PerformClick();
         }
         private void ListViewAudioFiles_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+                buttonRemoveAudiofile.PerformClick();
+        }
+        private void ListViewJobList_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveAudiofile.PerformClick();
@@ -1031,8 +1055,17 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        string content = File.ReadAllText(openFileDialog.FileName);
-                        textBoxJobList.Text = content;
+                        string[] lines = File.ReadAllLines(openFileDialog.FileName);
+                        listViewJobList.Items.Clear(); // Очищаем существующий список
+                        foreach (var line in lines)
+                        {
+                            var parts = line.Split('~');
+                            if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
+                            {
+                                var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
+                                listViewJobList.Items.Add(item);
+                            }
+                        }
                         MessageBox.Show("Job list imported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
@@ -1048,14 +1081,16 @@ namespace FLAC_Benchmark_H
             {
                 saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
                 saveFileDialog.Title = "Save Job List";
-                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYYMMDD
+                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYY-MM-DD
                 saveFileDialog.FileName = fileName; // Устанавливаем начальное имя файла
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        File.WriteAllText(saveFileDialog.FileName, textBoxJobList.Text);
-                        //   MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        var jobList = listViewJobList.Items.Cast<ListViewItem>()
+                            .Select(item => $"{item.Text}~{item.Checked}").ToArray(); // Получаем текст и состояние чекбокса
+                        File.WriteAllLines(saveFileDialog.FileName, jobList);
+                        MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
@@ -1066,7 +1101,7 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearJobList_Click(object? sender, EventArgs e)
         {
-            textBoxJobList.Clear(); // Очищаем textBoxJobList
+            listViewJobList.Items.Clear(); // Очищаем listViewJobList
         }
         private void groupLog_Enter(object? sender, EventArgs e)
         {
@@ -1169,6 +1204,11 @@ namespace FLAC_Benchmark_H
                     SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
                 }
             }
+        }
+
+        private void listViewJobList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -75,7 +75,7 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
-            textBoxJobList = new TextBox();
+            listViewJobList = new ListView();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -613,7 +613,7 @@
             // 
             // groupBoxJobsList
             // 
-            groupBoxJobsList.Controls.Add(textBoxJobList);
+            groupBoxJobsList.Controls.Add(listViewJobList);
             groupBoxJobsList.Controls.Add(buttonStartJobList);
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
@@ -626,17 +626,15 @@
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             groupBoxJobsList.Enter += groupBoxJobList_Enter;
             // 
-            // textBoxJobList
+            // listViewJobList
             // 
-            textBoxJobList.Location = new Point(6, 22);
-            textBoxJobList.Multiline = true;
-            textBoxJobList.Name = "textBoxJobList";
-            textBoxJobList.PlaceholderText = "You may edit this text";
-            textBoxJobList.ScrollBars = ScrollBars.Both;
-            textBoxJobList.Size = new Size(765, 336);
-            textBoxJobList.TabIndex = 1;
-            textBoxJobList.WordWrap = false;
-            textBoxJobList.TextChanged += textBoxJobList_TextChanged;
+            listViewJobList.CheckBoxes = true;
+            listViewJobList.Location = new Point(6, 22);
+            listViewJobList.Name = "listViewJobList";
+            listViewJobList.Size = new Size(765, 336);
+            listViewJobList.TabIndex = 25;
+            listViewJobList.UseCompatibleStateImageBehavior = false;
+            listViewJobList.SelectedIndexChanged += listViewJobList_SelectedIndexChanged;
             // 
             // buttonStartJobList
             // 
@@ -856,7 +854,6 @@
             groupBoxEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxJobsList.ResumeLayout(false);
-            groupBoxJobsList.PerformLayout();
             groupLog.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
             groupBoxSystemandSettings.ResumeLayout(false);
@@ -905,7 +902,6 @@
         private Button buttonExportJobList;
         private Button buttonImportJobList;
         private Button buttonClearJobList;
-        private TextBox textBoxJobList;
         private Button buttonAddEncoders;
         private Button buttonClearEncoders;
         private Button buttonAddAudioFiles;
@@ -938,5 +934,6 @@
         private ColumnHeader SizeEexe;
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;
+        private ListView listViewJobList;
     }
 }
