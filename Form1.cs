@@ -20,8 +20,6 @@ namespace FLAC_Benchmark_H
         private bool _isEncodingStopped = false;
         private string tempFolderPath; // Поле для хранения пути к временной папке
         private bool isCpuInfoLoaded = false;
-
-
         public Form1()
         {
             InitializeComponent();
@@ -87,7 +85,6 @@ namespace FLAC_Benchmark_H
         {
             // Загрузка пути к временной папке
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
-
             try
             {
                 string[] lines = File.ReadAllLines(SettingsFilePath);
@@ -98,7 +95,6 @@ namespace FLAC_Benchmark_H
                     {
                         var key = parts[0].Trim();
                         var value = parts[1].Trim();
-
                         // Загружаем значения в соответствующие поля
                         switch (key)
                         {
@@ -124,13 +120,11 @@ namespace FLAC_Benchmark_H
             catch
             {
             }
-
             // Продолжение выполнения независимо от того, был ли загружен файл настроек
             LoadExecutables(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobsQueue(); // Загружаем содержимое jobs.txt после загрузки других настроек
         }
-
         // Метод для сохранения настроек
         private void SaveSettings()
         {
@@ -138,12 +132,12 @@ namespace FLAC_Benchmark_H
             {
                 var settings = new[]
                 {
-            $"CompressionLevel={textBoxCompressionLevel.Text}",
-            $"Threads={textBoxThreads.Text}",
-            $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
-            $"HighPriority={checkBoxHighPriority.Checked}",
-            $"TempFolderPath={tempFolderPath}" // Сохраняем путь к временной папке
-        };
+                    $"CompressionLevel={textBoxCompressionLevel.Text}",
+                    $"Threads={textBoxThreads.Text}",
+                    $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
+                    $"HighPriority={checkBoxHighPriority.Checked}",
+                    $"TempFolderPath={tempFolderPath}" // Сохраняем путь к временной папке
+                };
                 File.WriteAllLines(SettingsFilePath, settings);
                 SaveExecutables(); // Сохранение исполняемых файлов
                 SaveAudioFiles(); // Сохранение аудиофайлов
@@ -235,18 +229,15 @@ namespace FLAC_Benchmark_H
             listViewFlacExecutables.AllowDrop = true;
             listViewFlacExecutables.DragEnter += ListViewFlacExecutables_DragEnter;
             listViewFlacExecutables.DragDrop += ListViewFlacExecutables_DragDrop;
-
             // Разрешаем перетаскивание файлов в ListView для аудиофайлов
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
-
             // Разрешаем перетаскивание файлов в TextBox для очереди задач
             textBoxJobList.AllowDrop = true;
             textBoxJobList.DragEnter += TextBoxJobList_DragEnter;
             textBoxJobList.DragDrop += TextBoxJobList_DragDrop;
         }
-
         // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
@@ -254,8 +245,8 @@ namespace FLAC_Benchmark_H
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 bool hasExeFiles = files.Any(file =>
-                    Directory.Exists(file) ||
-                    Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                Directory.Exists(file) ||
+                Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -263,7 +254,6 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-
         // Обработчик DragDrop для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragDrop(object? sender, DragEventArgs e)
         {
@@ -280,7 +270,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Рекурсивный метод для добавления исполняемых файлов в ListView
         private void AddExecutableFiles(string directory)
         {
@@ -288,7 +277,6 @@ namespace FLAC_Benchmark_H
             {
                 // Находим все аудиофайлы с заданными расширениями exe в текущей директории
                 var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
-
                 foreach (var exeFile in exeFiles)
                 {
                     AddExecutableFileToListView(exeFile); // Используем общий метод
@@ -299,7 +287,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Загрузка исполняемых файлов из файла txt
         private void LoadExecutables()
         {
@@ -326,28 +313,22 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Общий метод добавления исполняемых файлов в ListView
         private void AddExecutableFileToListView(string executable, bool isChecked = true)
         {
             var version = GetExecutableInfo(executable); // Получаем версию исполняемого файла
             long fileSize = new FileInfo(executable).Length; // Получаем размер файла
             DateTime lastModifiedDate = new FileInfo(executable).LastWriteTime; // Получаем дату изменения файла
-
             var item = new ListViewItem(Path.GetFileName(executable))
             {
                 Tag = executable, // Полный путь хранится в Tag
                 Checked = isChecked // Устанавливаем выделение по умолчанию
             };
-
             item.SubItems.Add(version); // Добавляем версию в вторую колонку
             item.SubItems.Add($"{fileSize:n0} bytes"); // Добавляем размер в третью колонку
             item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm")); // Добавляем дату изменения в четвёртую колонку
-
             listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
-
-
         private string GetExecutableInfo(string executablePath)
         {
             using (Process process = new Process())
@@ -357,15 +338,12 @@ namespace FLAC_Benchmark_H
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
                 process.StartInfo.CreateNoWindow = true;
-
                 process.Start();
                 string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
                 process.WaitForExit();
-
                 return version; // Возвращаем только версию
             }
         }
-
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
@@ -373,9 +351,9 @@ namespace FLAC_Benchmark_H
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 bool hasAudioFiles = files.Any(file =>
-                    Directory.Exists(file) ||
-                    Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                    Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
+                Directory.Exists(file) ||
+                Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasAudioFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -383,7 +361,6 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-
         // Обработчик DragDrop для ListViewAudioFiles
         private void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
@@ -395,13 +372,12 @@ namespace FLAC_Benchmark_H
                     AddAudioFiles(file);
                 }
                 else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                         Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                 {
                     AddAudioFileToListView(file); // Используем общий метод
                 }
             }
         }
-
         // Рекурсивный метод для добавления аудиофайлов из директории в ListView
         private void AddAudioFiles(string directory)
         {
@@ -409,8 +385,7 @@ namespace FLAC_Benchmark_H
             {
                 // Находим все аудиофайлы с заданными расширениями в текущей директории
                 var audioFiles = Directory.GetFiles(directory, "*.wav", SearchOption.AllDirectories)
-                    .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
-
+                .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
                 foreach (var audioFile in audioFiles)
                 {
                     AddAudioFileToListView(audioFile); // Используем общий метод
@@ -421,7 +396,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Метод для загрузки аудиофайлов из файла txt
         private void LoadAudioFiles()
         {
@@ -448,7 +422,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Общий метод добавления аудиофайлов в ListView
         private void AddAudioFileToListView(string audioFile, bool isChecked = true)
         {
@@ -457,34 +430,25 @@ namespace FLAC_Benchmark_H
                 Tag = audioFile, // Полный путь хранится в Tag
                 Checked = isChecked // Устанавливаем выделение по умолчанию
             };
-
             var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile); // Получаем информацию о файле
-
             item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Длительность
             item.SubItems.Add(bitDepth + " bit"); // Разрядность
             item.SubItems.Add(samplingRate); // Частота дискретизации
             item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
-
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
-
         // Метод для получения длительности и разрядности аудиофайла
         private (string duration, string bitDepth, string samplingRate, string size) GetAudioInfo(string audioFile)
         {
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFile);
-
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
             string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
-
             mediaInfo.Close();
-
             return (duration, bitDepth, samplingRate, fileSize);
         }
-
-
         // Обработчик DragEnter для TextBoxJobList
         private void TextBoxJobList_DragEnter(object? sender, DragEventArgs e)
         {
@@ -542,20 +506,17 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Executable", "Binary");
             dataGridViewLog.Columns.Add("Version", "Version");
-
             // Установка выравнивания для колонок
             dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-
         }
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
-
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
@@ -576,7 +537,6 @@ namespace FLAC_Benchmark_H
                 openFileDialog.Title = "Select Executable Files";
                 openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
                 openFileDialog.Multiselect = true;
-
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     foreach (var file in openFileDialog.FileNames)
@@ -699,7 +659,6 @@ namespace FLAC_Benchmark_H
         private void buttonClearCommandLineDecoder_Click(object? sender, EventArgs e)
         {
             textBoxCommandLineOptionsDecoder.Clear(); // Очищаем textCommandLineOptions
-
         }
         private void buttonepr8_Click(object? sender, EventArgs e)
         {
@@ -759,18 +718,14 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             foreach (var executable in selectedExecutables)
             {
-
                 foreach (var audioFile in selectedAudioFiles)
                 {
-
                     if (_isEncodingStopped)
                     {
                         return; // Выходим, если остановка запроса
                     }
-
                     // Получаем информацию об аудиофайле
                     var (duration, _, _, _) = GetAudioInfo(audioFile);
                     long durationMs = Convert.ToInt64(duration);
@@ -778,18 +733,16 @@ namespace FLAC_Benchmark_H
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
-
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                     string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
-
                     // Добавляем аргумент -j{threads} только если threads больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
-                        arguments += $" -j{threads}"; // Добавляем -j{threads}
+                        arguments += $" -j{threads}";
                     }
-                    arguments += $" -f -o \"{outputFilePath}\""; // Добавляем остальные аргументы
-
+                    // Добавляем остальные аргументы
+                    arguments += $" -f -o \"{outputFilePath}\"";
                     // Добавляем параметры (без входящих и исходящих файлов)
                     string parameters = $"-{compressionLevel} {commandLine}";
                     if (threadCount > 1)
@@ -833,19 +786,14 @@ namespace FLAC_Benchmark_H
                         {
                             long outputSize = outputFile.Length; // Размер выходного файла
                             TimeSpan timeTaken = stopwatch.Elapsed;
-
                             // Вычисление процента сжатия
                             double compressionPercentage = ((double)outputSize / inputSize) * 100;
-
                             // Рассчитываем отношение скорости кодирования к длительности
                             double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
-
                             // Формируем короткое имя файла
                             string audioFileNameShort;
-
                             if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
                             {
                                 string startName = audioFileName.Substring(0, 15);
@@ -857,25 +805,22 @@ namespace FLAC_Benchmark_H
                                 // Если имя файла 24 символа или меньше, используем его целиком и добавляем пробелы до 24
                                 audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
                             }
-
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                // Получаем информацию о версии exe файла 
+                                // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
-
                                 // Добавление записи в лог DataGridView
                                 int rowIndex = dataGridViewLog.Rows.Add(
-                                    audioFileName,
-                                    $"{inputSize:n0}",
-                                    $"{outputSize:n0}",
-                                    $"{compressionPercentage:F3}%",
-                                    $"{timeTaken.TotalMilliseconds:F3}",
-                                    $"{encodingSpeed:F3}x",
-                                    parameters,
-                                    Path.GetFileName(executable),
-                                    version);
-
+                                audioFileName,
+                                $"{inputSize:n0}",
+                                $"{outputSize:n0}",
+                                $"{compressionPercentage:F3}%",
+                                $"{timeTaken.TotalMilliseconds:F3}",
+                                $"{encodingSpeed:F3}x",
+                                parameters,
+                                Path.GetFileName(executable),
+                                version);
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
                                 if (outputSize > inputSize)
                                 {
@@ -885,12 +830,10 @@ namespace FLAC_Benchmark_H
                                 {
                                     dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
                                 }
-
                                 // Прокручиваем DataGridView вниз к последней добавленной строке
                                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
                                 dataGridViewLog.ClearSelection();
-
                                 // Логирование в файл
                                 File.AppendAllText("log.txt", $"{DateTime.Now}: {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tEncoding Speed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoded with: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
                             }
@@ -949,7 +892,6 @@ namespace FLAC_Benchmark_H
                     string arguments = $"\"{audioFile}\" -d {commandLine} -f -o \"{outputFilePath}\"";
                     // Добавляем параметры (без входящих и исходящих файлов)
                     string parameters = $"{commandLine}";
-
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -991,10 +933,8 @@ namespace FLAC_Benchmark_H
                             double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
                             // Получаем только имя файла для логирования
                             string audioFileName = Path.GetFileName(audioFile);
-
                             // Формируем короткое имя файла
                             string audioFileNameShort;
-
                             if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
                             {
                                 string startName = audioFileName.Substring(0, 15);
@@ -1006,13 +946,11 @@ namespace FLAC_Benchmark_H
                                 // Если имя файла 24 символа или меньше, используем его целиком и добавляем пробелы до 24
                                 audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
                             }
-
                             // Условие: записывать в лог только если процесс не был остановлен
                             if (!_isEncodingStopped)
                             {
-                                // Получаем информацию о версии exe файла 
+                                // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
-
                                 // Добавление записи в лог DataGridView
                                 int rowIndex = dataGridViewLog.Rows.Add(
                                 audioFileName,
@@ -1024,8 +962,6 @@ namespace FLAC_Benchmark_H
                                 parameters,
                                 Path.GetFileName(executable),
                                 version);
-
-
                                 // Прокручиваем DataGridView вниз к последней добавленной строке
                                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
@@ -1172,7 +1108,6 @@ namespace FLAC_Benchmark_H
         private void buttonStop_Click(object sender, EventArgs e)
         {
             _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
-
             if (_process != null)
             {
                 try
@@ -1201,34 +1136,27 @@ namespace FLAC_Benchmark_H
             {
             }
         }
-
         private void checkBoxClearTempFolder_CheckedChanged(object? sender, EventArgs e)
         {
         }
-
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
             {
                 folderBrowserDialog.Description = "Select temp folder";
-
                 // Если путь сохранён в настройках, устанавливаем его
                 if (Directory.Exists(tempFolderPath))
                 {
                     folderBrowserDialog.SelectedPath = tempFolderPath;
                 }
-
                 if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
                     // Получаем выбранный путь
                     tempFolderPath = folderBrowserDialog.SelectedPath;
-
                     // Сохраняем путь в настройках
                     SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
                 }
             }
         }
-
-
     }
 }
