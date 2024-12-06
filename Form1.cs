@@ -113,6 +113,9 @@ namespace FLAC_Benchmark_H
                             case "TempFolderPath": // Загружаем путь к временной папке
                                 tempFolderPath = value;
                                 break;
+                            case "ClearTempFolderOnExit":
+                                checkBoxClearTempFolder.Checked = bool.Parse(value);
+                                break;
                         }
                     }
                 }
@@ -136,7 +139,9 @@ namespace FLAC_Benchmark_H
                     $"Threads={textBoxThreads.Text}",
                     $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
                     $"HighPriority={checkBoxHighPriority.Checked}",
-                    $"TempFolderPath={tempFolderPath}" // Сохраняем путь к временной папке
+                    $"TempFolderPath={tempFolderPath}", // Сохраняем путь к временной папке
+                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
+
                 };
                 File.WriteAllLines(SettingsFilePath, settings);
                 SaveExecutables(); // Сохранение исполняемых файлов
@@ -520,9 +525,16 @@ namespace FLAC_Benchmark_H
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            SaveSettings(); // Сохранение настроек
+            // Сохранение настроек перед закрытием
+            SaveSettings();
+            // Остановка таймера
             cpuUsageTimer.Stop();
             cpuUsageTimer.Dispose();
+            if (checkBoxClearTempFolder.Checked)
+            {
+                // Удаляем папку и все содержимое, если она существует
+                if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
+            }
         }
         private void groupBoxEncoders_Enter(object? sender, EventArgs e)
         {

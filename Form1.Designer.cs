@@ -765,7 +765,6 @@
             // checkBoxClearTempFolder
             // 
             checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Enabled = false;
             checkBoxClearTempFolder.Location = new Point(6, 106);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
