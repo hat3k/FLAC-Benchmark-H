@@ -81,6 +81,74 @@ namespace FLAC_Benchmark_H
             float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
             labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}\nCPU Usage: {cpuUsage:F2}%";
         }
+        private string GetExecutableInfo(string executablePath)
+        {
+            using (Process process = new Process())
+            {
+                process.StartInfo.FileName = executablePath;
+                process.StartInfo.Arguments = "--version";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+                string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
+                process.WaitForExit();
+                return version; // Возвращаем только версию
+            }
+        }
+        // Метод для получения длительности и разрядности аудиофайла
+        private (string duration, string bitDepth, string samplingRate, string size) GetAudioInfo(string audioFile)
+        {
+            var mediaInfo = new MediaInfoLib.MediaInfo();
+            mediaInfo.Open(audioFile);
+            string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
+            string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
+            string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
+            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
+            mediaInfo.Close();
+            return (duration, bitDepth, samplingRate, fileSize);
+        }
+        private void BackupJobsFile()
+        {
+            try
+            {
+                if (File.Exists(JobsFilePath))
+                {
+                    string backupPath = $"{JobsFilePath}.bak";
+                    File.Copy(JobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Метод для сохранения настроек
+        private void SaveSettings()
+        {
+            try
+            {
+                var settings = new[]
+                {
+                    $"CompressionLevel={textBoxCompressionLevel.Text}",
+                    $"Threads={textBoxThreads.Text}",
+                    $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
+                    $"HighPriority={checkBoxHighPriority.Checked}",
+                    $"TempFolderPath={tempFolderPath}", // Сохраняем путь к временной папке
+                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
+
+                };
+                File.WriteAllLines(SettingsFilePath, settings);
+                SaveExecutables(); // Сохранение исполняемых файлов
+                SaveAudioFiles(); // Сохранение аудиофайлов
+                SaveJobsQueue(); // Сохраняем содержимое textBoxJobList
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         // Метод для загрузки настроек
         private void LoadSettings()
         {
@@ -129,31 +197,33 @@ namespace FLAC_Benchmark_H
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobsQueue(); // Загружаем содержимое jobs.txt после загрузки других настроек
         }
-        // Метод для сохранения настроек
-        private void SaveSettings()
+        // Метод для загрузки Job List
+        private void LoadJobsQueue()
         {
-            try
+            BackupJobsFile();
+            if (File.Exists(JobsFilePath))
             {
-                var settings = new[]
+                try
                 {
-                    $"CompressionLevel={textBoxCompressionLevel.Text}",
-                    $"Threads={textBoxThreads.Text}",
-                    $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
-                    $"HighPriority={checkBoxHighPriority.Checked}",
-                    $"TempFolderPath={tempFolderPath}", // Сохраняем путь к временной папке
-                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
-
-                };
-                File.WriteAllLines(SettingsFilePath, settings);
-                SaveExecutables(); // Сохранение исполняемых файлов
-                SaveAudioFiles(); // Сохранение аудиофайлов
-                SaveJobsQueue(); // Сохраняем содержимое textBoxJobList
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    string[] lines = File.ReadAllLines(JobsFilePath);
+                    listViewJobList.Items.Clear(); // Очищаем список перед загрузкой
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем текст на текст и состояние чекбокса
+                        if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
+                            listViewJobList.Items.Add(item);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
+
         // Сохранение исполняемых файлов
         private void SaveExecutables()
         {
@@ -183,46 +253,6 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private void LoadJobsQueue()
-        {
-            BackupJobsFile();
-            if (File.Exists(JobsFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(JobsFilePath);
-                    listViewJobList.Items.Clear(); // Очищаем список перед загрузкой
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~'); // Разделяем текст на текст и состояние чекбокса
-                        if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
-                            listViewJobList.Items.Add(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-        private void BackupJobsFile()
-        {
-            try
-            {
-                if (File.Exists(JobsFilePath))
-                {
-                    string backupPath = $"{JobsFilePath}.bak";
-                    File.Copy(JobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveJobsQueue()
@@ -255,6 +285,7 @@ namespace FLAC_Benchmark_H
             listViewJobList.DragDrop += TextBoxJobList_DragDrop;
         }
         // Обработчик DragEnter для ListViewFlacExecutables
+
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -345,21 +376,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm")); // Добавляем дату изменения в четвёртую колонку
             listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
-        private string GetExecutableInfo(string executablePath)
-        {
-            using (Process process = new Process())
-            {
-                process.StartInfo.FileName = executablePath;
-                process.StartInfo.Arguments = "--version";
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
-                process.WaitForExit();
-                return version; // Возвращаем только версию
-            }
-        }
+
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
@@ -453,20 +470,9 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
-        // Метод для получения длительности и разрядности аудиофайла
-        private (string duration, string bitDepth, string samplingRate, string size) GetAudioInfo(string audioFile)
-        {
-            var mediaInfo = new MediaInfoLib.MediaInfo();
-            mediaInfo.Open(audioFile);
-            string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
-            string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
-            string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
-            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
-            mediaInfo.Close();
-            return (duration, bitDepth, samplingRate, fileSize);
-        }
-        // Обработчик DragEnter для TextBoxJobList
-        private void TextBoxJobList_DragEnter(object? sender, DragEventArgs e)
+
+        // Обработчик DragEnter для ListViewJobList
+        private void ListViewJobList_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -479,9 +485,8 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-
-        // Обработчик DragDrop для TextBoxJobList
-        private void TextBoxJobList_DragDrop(object? sender, DragEventArgs e)
+        // Обработчик DragDrop для ListViewJobList
+        private void ListViewJobList_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             listViewJobList.Items.Clear(); // Очищаем ListView перед добавлением
@@ -509,6 +514,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -592,9 +598,6 @@ namespace FLAC_Benchmark_H
         {
             listViewFlacExecutables.Items.Clear();
         }
-        private void groupBoxAudioFiles_Enter(object? sender, EventArgs e)
-        {
-        }
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -641,9 +644,6 @@ namespace FLAC_Benchmark_H
         private void buttonSetMaxCores_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = physicalCores.ToString(); // Устанавливаем максимальное количество ядер
-        }
-        private void labelSetThreads_Click(object? sender, EventArgs e)
-        {
         }
         private void buttonSetHalfThreads_Click(object? sender, EventArgs e)
         {
@@ -1133,6 +1133,51 @@ namespace FLAC_Benchmark_H
                     SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
                 }
             }
+        }
+
+        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string compressionLevel = textBoxCompressionLevel.Text;
+            string threads = textBoxThreads.Text;
+            string commandLine = textBoxCommandLineOptionsEncoder.Text;
+
+            // Формируем строку с параметрами
+            string parameters = $"-{compressionLevel} {commandLine}";
+
+            // Добавляем количество потоков, если оно больше 1
+            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+            {
+                parameters += $" -j{threads}"; // добавляем флаг -j{threads}
+            }
+
+            // Создаем новый элемент списка для кодирования
+            var item = new ListViewItem("Encode") // Первая колонка - Encode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+
+            // Добавляем элемент в listViewJobList
+            listViewJobList.Items.Add(item);
+        }
+        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string commandLine = textBoxCommandLineOptionsDecoder.Text;
+
+            // Формируем строку с параметрами
+            string parameters = commandLine; // Параметры для декодирования
+
+            // Создаем новый элемент списка для декодирования
+            var item = new ListViewItem("Decode") // Первая колонка - Decode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+
+            // Добавляем элемент в listViewJobList
+            listViewJobList.Items.Add(item);
         }
     }
 }

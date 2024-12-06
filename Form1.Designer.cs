@@ -76,6 +76,7 @@
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
             listViewJobList = new ListView();
+            JobType = new ColumnHeader();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -92,6 +93,7 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            Parameters = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -163,6 +165,7 @@
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
+            buttonAddJobToJobListEncoder.Click += buttonAddJobToJobListEncoder_Click;
             // 
             // labelFlacUsedVersion
             // 
@@ -613,11 +616,19 @@
             // listViewJobList
             // 
             listViewJobList.CheckBoxes = true;
+            listViewJobList.Columns.AddRange(new ColumnHeader[] { JobType, Parameters });
+            listViewJobList.FullRowSelect = true;
             listViewJobList.Location = new Point(6, 22);
             listViewJobList.Name = "listViewJobList";
             listViewJobList.Size = new Size(765, 336);
             listViewJobList.TabIndex = 25;
             listViewJobList.UseCompatibleStateImageBehavior = false;
+            listViewJobList.View = View.Details;
+            // 
+            // JobType
+            // 
+            JobType.Tag = "JobType";
+            JobType.Text = "Job Type";
             // 
             // buttonStartJobList
             // 
@@ -782,6 +793,7 @@
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
+            buttonAddJobToJobListDecoder.Click += buttonAddJobToJobListDecoder_Click;
             // 
             // textBoxCommandLineOptionsDecoder
             // 
@@ -808,6 +820,12 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
+            // Parameters
+            // 
+            Parameters.Tag = "Parameters";
+            Parameters.Text = "Parameters";
+            Parameters.Width = 701;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -822,7 +840,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241204.2]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241206.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -910,5 +928,7 @@
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;
         private ListView listViewJobList;
+        private ColumnHeader JobType;
+        private ColumnHeader Parameters;
     }
 }
