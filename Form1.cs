@@ -39,6 +39,58 @@ namespace FLAC_Benchmark_H
             InitializedataGridViewLog();
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
             _process = new Process(); // Initialize _process to avoid nullability warning
+
+            // Включаем пользовательскую отрисовку для listViewJobs
+            listViewJobs.OwnerDraw = true;
+            listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
+            listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
+        }
+        private void ListViewJobs_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void ListViewJobs_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            if (e.ColumnIndex == 0) // Колонка с типом задачи (Encode/Decode)
+            {
+                e.DrawBackground();
+
+                // Отрисовка чекбокса
+                if (listViewJobs.CheckBoxes)
+                {
+                    CheckBoxRenderer.DrawCheckBox(e.Graphics,
+                        new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
+                        e.Item.Checked ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
+                                       : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
+                }
+
+                Color textColor = e.SubItem?.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase) == true
+                    ? Color.Green
+                    : e.SubItem?.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase) == true
+                        ? Color.Red
+                        : e.Item?.ForeColor ?? Color.Black;
+
+                using (var brush = new SolidBrush(textColor))
+                {
+                    // Смещаем текст вправо, чтобы не перекрывать чекбокс
+                    Rectangle textBounds = new Rectangle(
+                        e.Bounds.Left + (listViewJobs.CheckBoxes ? 20 : 0),
+                        e.Bounds.Top,
+                        e.Bounds.Width - (listViewJobs.CheckBoxes ? 20 : 0),
+                        e.Bounds.Height);
+
+                    e.Graphics.DrawString(e.SubItem?.Text ?? string.Empty,
+                        e.SubItem?.Font ?? e.Item?.Font ?? this.Font,
+                        brush, textBounds, StringFormat.GenericDefault);
+                }
+
+                e.DrawFocusRectangle(e.Bounds);
+            }
+            else
+            {
+                e.DrawDefault = true;
+            }
         }
         // Метод для загрузки информации о процессоре
         private void LoadCPUInfo()
@@ -54,8 +106,11 @@ namespace FLAC_Benchmark_H
                     {
                         foreach (ManagementObject obj in searcher.Get())
                         {
-                            physicalCores += int.Parse(obj["NumberOfCores"].ToString());
-                            threadCount += int.Parse(obj["ThreadCount"].ToString());
+                            if (obj["NumberOfCores"] != null && obj["ThreadCount"] != null)
+                            {
+                                physicalCores += int.Parse(obj["NumberOfCores"].ToString()!);
+                                threadCount += int.Parse(obj["ThreadCount"].ToString()!);
+                            }
                         }
                     }
                     // Обновляем метку с информацией о процессоре
@@ -1225,6 +1280,45 @@ namespace FLAC_Benchmark_H
 
             // Добавляем элемент в listViewJobList
             listViewJobs.Items.Add(item);
+        }
+
+private void buttonCopyJobs_Click(object sender, EventArgs e)
+{
+    StringBuilder jobsText = new StringBuilder();
+    
+    // Проверяем, есть ли выделенные элементы
+    if (listViewJobs.SelectedItems.Count > 0)
+    {
+        // Копируем только выделенные задачи
+        foreach (ListViewItem item in listViewJobs.SelectedItems)
+        {
+            jobsText.AppendLine($"{item.SubItems[0].Text}\t{item.SubItems[1].Text}");
+        }
+    }
+    else
+    {
+        // Если ничего не выделено, копируем все задачи
+        foreach (ListViewItem item in listViewJobs.Items)
+        {
+            jobsText.AppendLine($"{item.SubItems[0].Text}\t{item.SubItems[1].Text}");
+        }
+    }
+
+    // Копируем текст в буфер обмена
+    if (jobsText.Length > 0)
+    {
+        Clipboard.SetText(jobsText.ToString());
+    //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    else
+    {
+        MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+}
+
+        private void buttonPasteJobs_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

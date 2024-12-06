@@ -75,6 +75,8 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
+            buttonCopyJobs = new Button();
+            buttonPasteJobs = new Button();
             listViewJobs = new ListView();
             JobType = new ColumnHeader();
             Parameters = new ColumnHeader();
@@ -94,8 +96,6 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            buttonPasteJobs = new Button();
-            buttonCopyJobs = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -601,10 +601,10 @@
             // 
             // groupBoxJobsList
             // 
-            groupBoxJobsList.Controls.Add(listViewJobs);
-            groupBoxJobsList.Controls.Add(buttonStartJobList);
             groupBoxJobsList.Controls.Add(buttonCopyJobs);
             groupBoxJobsList.Controls.Add(buttonPasteJobs);
+            groupBoxJobsList.Controls.Add(listViewJobs);
+            groupBoxJobsList.Controls.Add(buttonStartJobList);
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
             groupBoxJobsList.Controls.Add(buttonClearJobList);
@@ -615,6 +615,26 @@
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             // 
+            // buttonCopyJobs
+            // 
+            buttonCopyJobs.Location = new Point(534, 364);
+            buttonCopyJobs.Name = "buttonCopyJobs";
+            buttonCopyJobs.Size = new Size(75, 23);
+            buttonCopyJobs.TabIndex = 27;
+            buttonCopyJobs.Text = "Copy";
+            buttonCopyJobs.UseVisualStyleBackColor = true;
+            buttonCopyJobs.Click += buttonCopyJobs_Click;
+            // 
+            // buttonPasteJobs
+            // 
+            buttonPasteJobs.Location = new Point(615, 364);
+            buttonPasteJobs.Name = "buttonPasteJobs";
+            buttonPasteJobs.Size = new Size(75, 23);
+            buttonPasteJobs.TabIndex = 26;
+            buttonPasteJobs.Text = "Paste";
+            buttonPasteJobs.UseVisualStyleBackColor = true;
+            buttonPasteJobs.Click += buttonPasteJobs_Click;
+            // 
             // listViewJobs
             // 
             listViewJobs.CheckBoxes = true;
@@ -622,6 +642,7 @@
             listViewJobs.FullRowSelect = true;
             listViewJobs.Location = new Point(6, 22);
             listViewJobs.Name = "listViewJobs";
+            listViewJobs.OwnerDraw = true;
             listViewJobs.Size = new Size(765, 336);
             listViewJobs.TabIndex = 25;
             listViewJobs.UseCompatibleStateImageBehavior = false;
@@ -631,13 +652,13 @@
             // 
             JobType.Tag = "JobType";
             JobType.Text = "Job Type";
-            JobType.Width = 64;
+            JobType.Width = 66;
             // 
             // Parameters
             // 
             Parameters.Tag = "Parameters";
             Parameters.Text = "Parameters";
-            Parameters.Width = 697;
+            Parameters.Width = 695;
             // 
             // buttonStartJobList
             // 
@@ -829,28 +850,6 @@
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
-            // 
-            // buttonPasteJobs
-            // 
-            buttonPasteJobs.Enabled = false;
-            buttonPasteJobs.Location = new Point(354, 364);
-            buttonPasteJobs.Name = "buttonPasteJobs";
-            buttonPasteJobs.Size = new Size(110, 23);
-            buttonPasteJobs.TabIndex = 3;
-            buttonPasteJobs.Text = "Paste";
-            buttonPasteJobs.UseVisualStyleBackColor = true;
-            buttonPasteJobs.Click += buttonExportJobList_Click;
-            // 
-            // buttonCopyJobs
-            // 
-            buttonCopyJobs.Enabled = false;
-            buttonCopyJobs.Location = new Point(470, 364);
-            buttonCopyJobs.Name = "buttonCopyJobs";
-            buttonCopyJobs.Size = new Size(110, 23);
-            buttonCopyJobs.TabIndex = 3;
-            buttonCopyJobs.Text = "Copy";
-            buttonCopyJobs.UseVisualStyleBackColor = true;
-            buttonCopyJobs.Click += buttonExportJobList_Click;
             // 
             // Form1
             // 
