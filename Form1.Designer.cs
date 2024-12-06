@@ -75,8 +75,9 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
-            listViewJobList = new ListView();
+            listViewJobs = new ListView();
             JobType = new ColumnHeader();
+            Parameters = new ColumnHeader();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -93,7 +94,8 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            Parameters = new ColumnHeader();
+            buttonPasteJobs = new Button();
+            buttonCopyJobs = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -205,7 +207,6 @@
             labelSetThreads.Size = new Size(51, 15);
             labelSetThreads.TabIndex = 21;
             labelSetThreads.Text = "Threads:";
-            labelSetThreads.Click += labelSetThreads_Click;
             // 
             // labelSetCores
             // 
@@ -521,7 +522,6 @@
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
-            groupBoxAudioFiles.Enter += groupBoxAudioFiles_Enter;
             // 
             // listViewAudioFiles
             // 
@@ -601,8 +601,10 @@
             // 
             // groupBoxJobsList
             // 
-            groupBoxJobsList.Controls.Add(listViewJobList);
+            groupBoxJobsList.Controls.Add(listViewJobs);
             groupBoxJobsList.Controls.Add(buttonStartJobList);
+            groupBoxJobsList.Controls.Add(buttonCopyJobs);
+            groupBoxJobsList.Controls.Add(buttonPasteJobs);
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
             groupBoxJobsList.Controls.Add(buttonClearJobList);
@@ -613,25 +615,33 @@
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             // 
-            // listViewJobList
+            // listViewJobs
             // 
-            listViewJobList.CheckBoxes = true;
-            listViewJobList.Columns.AddRange(new ColumnHeader[] { JobType, Parameters });
-            listViewJobList.FullRowSelect = true;
-            listViewJobList.Location = new Point(6, 22);
-            listViewJobList.Name = "listViewJobList";
-            listViewJobList.Size = new Size(765, 336);
-            listViewJobList.TabIndex = 25;
-            listViewJobList.UseCompatibleStateImageBehavior = false;
-            listViewJobList.View = View.Details;
+            listViewJobs.CheckBoxes = true;
+            listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Parameters });
+            listViewJobs.FullRowSelect = true;
+            listViewJobs.Location = new Point(6, 22);
+            listViewJobs.Name = "listViewJobs";
+            listViewJobs.Size = new Size(765, 336);
+            listViewJobs.TabIndex = 25;
+            listViewJobs.UseCompatibleStateImageBehavior = false;
+            listViewJobs.View = View.Details;
             // 
             // JobType
             // 
             JobType.Tag = "JobType";
             JobType.Text = "Job Type";
+            JobType.Width = 64;
+            // 
+            // Parameters
+            // 
+            Parameters.Tag = "Parameters";
+            Parameters.Text = "Parameters";
+            Parameters.Width = 697;
             // 
             // buttonStartJobList
             // 
+            buttonStartJobList.Enabled = false;
             buttonStartJobList.Location = new Point(6, 364);
             buttonStartJobList.Name = "buttonStartJobList";
             buttonStartJobList.Size = new Size(110, 23);
@@ -820,11 +830,27 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
-            // Parameters
+            // buttonPasteJobs
             // 
-            Parameters.Tag = "Parameters";
-            Parameters.Text = "Parameters";
-            Parameters.Width = 701;
+            buttonPasteJobs.Enabled = false;
+            buttonPasteJobs.Location = new Point(354, 364);
+            buttonPasteJobs.Name = "buttonPasteJobs";
+            buttonPasteJobs.Size = new Size(110, 23);
+            buttonPasteJobs.TabIndex = 3;
+            buttonPasteJobs.Text = "Paste";
+            buttonPasteJobs.UseVisualStyleBackColor = true;
+            buttonPasteJobs.Click += buttonExportJobList_Click;
+            // 
+            // buttonCopyJobs
+            // 
+            buttonCopyJobs.Enabled = false;
+            buttonCopyJobs.Location = new Point(470, 364);
+            buttonCopyJobs.Name = "buttonCopyJobs";
+            buttonCopyJobs.Size = new Size(110, 23);
+            buttonCopyJobs.TabIndex = 3;
+            buttonCopyJobs.Text = "Copy";
+            buttonCopyJobs.UseVisualStyleBackColor = true;
+            buttonCopyJobs.Click += buttonExportJobList_Click;
             // 
             // Form1
             // 
@@ -840,7 +866,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.8 build 20241206.1]";
+            Text = "FLAC Benchmark-H [beta 0.8 build 20241206.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -927,8 +953,10 @@
         private ColumnHeader SizeEexe;
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;
-        private ListView listViewJobList;
+        private ListView listViewJobs;
         private ColumnHeader JobType;
         private ColumnHeader Parameters;
+        private Button buttonCopyJobs;
+        private Button buttonPasteJobs;
     }
 }

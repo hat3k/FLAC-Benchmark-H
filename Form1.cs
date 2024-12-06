@@ -11,7 +11,7 @@ namespace FLAC_Benchmark_H
         private int threadCount;
         private Process _process; // Поле для хранения текущего процесса
         private const string SettingsFilePath = "Settings_general.txt"; // Путь к файлу настроек
-        private const string JobsFilePath = "Settings_joblist.txt"; // Путь к файлу jobs
+        private const string JobsFilePath = "Settings_jobs.txt"; // Путь к файлу jobs
         private const string executablesFilePath = "Settings_flac_executables.txt"; // Путь к файлу для сохранения исполняемых файлов
         private const string audioFilesFilePath = "Settings_audio_files.txt"; // Путь к файлу для сохранения аудиофайлов
         private Stopwatch stopwatch;
@@ -27,7 +27,7 @@ namespace FLAC_Benchmark_H
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.listViewFlacExecutables.KeyDown += ListViewFlacExecutables_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
-            this.listViewJobList.KeyDown += ListViewJobList_KeyDown;
+            this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
             LoadCPUInfo(); // Загружаем информацию о процессоре
             this.KeyPreview = true;
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
@@ -135,20 +135,20 @@ namespace FLAC_Benchmark_H
                     $"Threads={textBoxThreads.Text}",
                     $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
                     $"HighPriority={checkBoxHighPriority.Checked}",
-                    $"TempFolderPath={tempFolderPath}", // Сохраняем путь к временной папке
+                    $"TempFolderPath={tempFolderPath}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
-
-                };
+            };
                 File.WriteAllLines(SettingsFilePath, settings);
-                SaveExecutables(); // Сохранение исполняемых файлов
+                SaveExecutables();
                 SaveAudioFiles(); // Сохранение аудиофайлов
-                SaveJobsQueue(); // Сохраняем содержимое textBoxJobList
+                SaveJobs(); // Сохраняем содержимое jobList
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         // Метод для загрузки настроек
         private void LoadSettings()
         {
@@ -195,36 +195,9 @@ namespace FLAC_Benchmark_H
             // Продолжение выполнения независимо от того, был ли загружен файл настроек
             LoadExecutables(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
-            LoadJobsQueue(); // Загружаем содержимое jobs.txt после загрузки других настроек
-        }
-        // Метод для загрузки Job List
-        private void LoadJobsQueue()
-        {
-            BackupJobsFile();
-            if (File.Exists(JobsFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(JobsFilePath);
-                    listViewJobList.Items.Clear(); // Очищаем список перед загрузкой
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~'); // Разделяем текст на текст и состояние чекбокса
-                        if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
-                            listViewJobList.Items.Add(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            LoadJobs(); // Загружаем содержимое Settings_joblist.txt после загрузки других настроек
         }
 
-        // Сохранение исполняемых файлов
         private void SaveExecutables()
         {
             try
@@ -255,12 +228,13 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void SaveJobsQueue()
+        private void SaveJobs()
         {
             try
             {
-                var jobList = listViewJobList.Items.Cast<ListViewItem>()
-                    .Select(item => $"{item.Text}~{item.Checked}").ToArray(); // Сохраняем текст и состояние чекбокса
+                var jobList = listViewJobs.Items.Cast<ListViewItem>()
+                    .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
+                    .ToArray();
                 File.WriteAllLines(JobsFilePath, jobList);
             }
             catch (Exception ex)
@@ -268,6 +242,8 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
 
         private void InitializeDragAndDrop()
         {
@@ -279,13 +255,13 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
-            // Разрешаем перетаскивание файлов в TextBox для очереди задач
-            listViewJobList.AllowDrop = true;
-            listViewJobList.DragEnter += TextBoxJobList_DragEnter;
-            listViewJobList.DragDrop += TextBoxJobList_DragDrop;
+            // Разрешаем перетаскивание файлов в ListView для очереди задач
+            listViewJobs.AllowDrop = true;
+            listViewJobs.DragEnter += ListViewJobs_DragEnter;
+            listViewJobs.DragDrop += ListViewJobs_DragDrop;
         }
-        // Обработчик DragEnter для ListViewFlacExecutables
 
+        // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -471,13 +447,15 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
 
-        // Обработчик DragEnter для ListViewJobList
-        private void ListViewJobList_DragEnter(object? sender, DragEventArgs e)
+        // Обработчик DragEnter для ListViewJobs
+        private void ListViewJobs_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                bool hasTxtFiles = files.Any(file => Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase));
+                bool hasTxtFiles = files.Any(file =>
+                    Directory.Exists(file) ||
+                    Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasTxtFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -485,35 +463,103 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-        // Обработчик DragDrop для ListViewJobList
-        private void ListViewJobList_DragDrop(object? sender, DragEventArgs e)
+        // Обработчик DragDrop для ListViewJobs
+        private void ListViewJobs_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            listViewJobList.Items.Clear(); // Очищаем ListView перед добавлением
             foreach (var file in files)
             {
-                if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                if (Directory.Exists(file)) // Если это папка, ищем .txt файлы внутри рекурсивно
                 {
-                    try
-                    {
-                        string content = File.ReadAllText(file);
-                        string[] lines = content.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-
-                        foreach (var line in lines)
-                        {
-                            if (!string.IsNullOrWhiteSpace(line)) // Пропускаем пустые строки
-                            {
-                                listViewJobList.Items.Add(new ListViewItem(line)); // Добавляем каждую строку как новый элемент
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    AddJobsFromDirectory(file);
+                }
+                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    LoadJobsFromFile(file); // Используем общий метод
                 }
             }
         }
+        // Рекурсивный метод для добавления задач из директории в ListView
+        private void AddJobsFromDirectory(string directory)
+        {
+            try
+            {
+                // Находим все .txt файлы с заданным расширением в текущей директории
+                var txtFiles = Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories);
+                foreach (var txtFile in txtFiles)
+                {
+                    LoadJobsFromFile(txtFile); // Загружаем задачи из найденного .txt файла
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        // Метод загрузки задач из файла
+        private void LoadJobsFromFile(string filePath)
+        {
+            try
+            {
+                string[] lines = File.ReadAllLines(filePath);
+                foreach (var line in lines)
+                {
+                    var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
+                    if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                    {
+                        AddJobsToListView(parts[0], isChecked, parts[2]); // Загружаем с указанием параметров
+                    }
+                    else if (parts.Length == 2 && !string.IsNullOrWhiteSpace(line))
+                    {
+                        AddJobsToListView(parts[0], true); // По умолчанию параметр пустой
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        // Метод для загрузки задач из файла txt
+        private void LoadJobs()
+        {
+            BackupJobsFile();
+            if (File.Exists(JobsFilePath))
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(JobsFilePath);
+                    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
+                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
+                            item.SubItems.Add(parts[2]); // Вторая колонка: параметры
+                            listViewJobs.Items.Add(item);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // Общий метод добавления задач в ListView
+        private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
+        {
+            var item = new ListViewItem(job)
+            {
+                Checked = isChecked // Устанавливаем выделение по умолчанию 
+            };
+
+            item.SubItems.Add(parameters); // Добавляем параметры как второй элемент 
+            listViewJobs.Items.Add(item); // Добавляем элемент в ListView
+        }
+
 
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
@@ -525,11 +571,12 @@ namespace FLAC_Benchmark_H
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveAudiofile.PerformClick();
         }
-        private void ListViewJobList_KeyDown(object? sender, KeyEventArgs e)
+        private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveAudiofile.PerformClick();
         }
+
         private void InitializedataGridViewLog()
         {
             // Настройка DataGridView (по желанию)
@@ -994,14 +1041,14 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         string[] lines = File.ReadAllLines(openFileDialog.FileName);
-                        listViewJobList.Items.Clear(); // Очищаем существующий список
+                        listViewJobs.Items.Clear(); // Очищаем существующий список
                         foreach (var line in lines)
                         {
                             var parts = line.Split('~');
                             if (parts.Length == 2 && bool.TryParse(parts[1], out bool isChecked))
                             {
                                 var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
-                                listViewJobList.Items.Add(item);
+                                listViewJobs.Items.Add(item);
                             }
                         }
                         MessageBox.Show("Job list imported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1025,7 +1072,7 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        var jobList = listViewJobList.Items.Cast<ListViewItem>()
+                        var jobList = listViewJobs.Items.Cast<ListViewItem>()
                             .Select(item => $"{item.Text}~{item.Checked}").ToArray(); // Получаем текст и состояние чекбокса
                         File.WriteAllLines(saveFileDialog.FileName, jobList);
                         MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1039,7 +1086,7 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearJobList_Click(object? sender, EventArgs e)
         {
-            listViewJobList.Items.Clear(); // Очищаем listViewJobList
+            listViewJobs.Items.Clear(); // Очищаем listViewJobList
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
@@ -1159,7 +1206,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(parameters); // Вторая колонка - parameters
 
             // Добавляем элемент в listViewJobList
-            listViewJobList.Items.Add(item);
+            listViewJobs.Items.Add(item);
         }
         private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
         {
@@ -1177,7 +1224,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(parameters); // Вторая колонка - parameters
 
             // Добавляем элемент в listViewJobList
-            listViewJobList.Items.Add(item);
+            listViewJobs.Items.Add(item);
         }
     }
 }
