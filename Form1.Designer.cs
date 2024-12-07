@@ -750,7 +750,6 @@
             // 
             // buttonCopyLog
             // 
-            buttonCopyLog.Enabled = false;
             buttonCopyLog.Location = new Point(605, 364);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(85, 23);

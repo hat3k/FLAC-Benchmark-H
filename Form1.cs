@@ -1,5 +1,6 @@
 using MediaInfoLib;
 using System.Diagnostics;
+using System.Globalization;
 using System.Management;
 using System.Text;
 using System.Windows.Forms;
@@ -861,8 +862,6 @@ namespace FLAC_Benchmark_H
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
-                        FileInfo inputFileInfo = new FileInfo(audioFile);
-                        long inputSize = inputFileInfo.Length; // Размер входного файла
                         await Task.Run(() =>
                         {
                             using (_process = new Process()) // Сохраняем процесс в поле _process
@@ -889,41 +888,49 @@ namespace FLAC_Benchmark_H
                                 stopwatch.Stop();
                             }
                         });
-                        // После завершения процесса проверяем размер выходного файла
-                        FileInfo outputFile = new FileInfo(outputFilePath);
-                        if (outputFile.Exists)
+                        // Условие: записывать в лог только если процесс не был остановлен
+                        if (!_isEncodingStopped)
                         {
-                            long outputSize = outputFile.Length; // Размер выходного файла
-                            TimeSpan timeTaken = stopwatch.Elapsed;
-                            // Вычисление процента сжатия
-                            double compressionPercentage = ((double)outputSize / inputSize) * 100;
-                            // Рассчитываем отношение скорости кодирования к длительности
-                            double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-                            // Получаем только имя файла для логирования
-                            string audioFileName = Path.GetFileName(audioFile);
-                            // Формируем короткое имя файла
-                            string audioFileNameShort;
-                            if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                            // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                            numberFormat.NumberGroupSeparator = ".";
+
+                            FileInfo inputFileInfo = new FileInfo(audioFile);
+                            long inputSize = inputFileInfo.Length; // Размер входного файла
+                            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                            FileInfo outputFile = new FileInfo(outputFilePath);
+                            if (outputFile.Exists)
                             {
-                                string startName = audioFileName.Substring(0, 15);
-                                string endName = audioFileName.Substring(audioFileName.Length - 15);
-                                audioFileNameShort = $"{startName}...{endName}";
-                            }
-                            else
-                            {
-                                // Если имя файла 24 символа или меньше, используем его целиком и добавляем пробелы до 24
-                                audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
-                            }
-                            // Условие: записывать в лог только если процесс не был остановлен
-                            if (!_isEncodingStopped)
-                            {
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Вычисление процента сжатия
+                                double compressionPercentage = ((double)outputSize / inputSize) * 100;
+                                // Рассчитываем отношение скорости кодирования к длительности
+                                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+                                // Получаем только имя файла для логирования
+                                string audioFileName = Path.GetFileName(audioFile);
+                                // Формируем короткое имя файла
+                                string audioFileNameShort;
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                                {
+                                    string startName = audioFileName.Substring(0, 15);
+                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
+                                    audioFileNameShort = $"{startName}...{endName}";
+                                }
+                                else
+                                {
+                                    // Если имя файла 33 символа или меньше, используем его целиком и добавляем пробелы до 24
+                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
+                                }
                                 // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
                                 // Добавление записи в лог DataGridView
                                 int rowIndex = dataGridViewLog.Rows.Add(
                                 audioFileName,
-                                $"{inputSize:n0}",
-                                $"{outputSize:n0}",
+                                inputSizeFormatted,
+                                outputSizeFormatted,
                                 $"{compressionPercentage:F3}%",
                                 $"{timeTaken.TotalMilliseconds:F3}",
                                 $"{encodingSpeed:F3}x",
@@ -1004,8 +1011,6 @@ namespace FLAC_Benchmark_H
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
-                        FileInfo inputFileInfo = new FileInfo(audioFile);
-                        long inputSize = inputFileInfo.Length; // Размер входного файла
                         await Task.Run(() =>
                         {
                             using (_process = new Process()) // Сохраняем процесс в поле _process
@@ -1032,39 +1037,47 @@ namespace FLAC_Benchmark_H
                                 stopwatch.Stop();
                             }
                         });
-                        // После завершения процесса проверяем размер выходного файла
-                        FileInfo outputFile = new FileInfo(outputFilePath);
-                        if (outputFile.Exists)
+                        // Условие: записывать в лог только если процесс не был остановлен
+                        if (!_isEncodingStopped)
                         {
-                            long outputSize = outputFile.Length; // Размер выходного файла
-                            TimeSpan timeTaken = stopwatch.Elapsed;
-                            // Рассчитываем отношение скорости декодирования к длительности
-                            double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-                            // Получаем только имя файла для логирования
-                            string audioFileName = Path.GetFileName(audioFile);
-                            // Формируем короткое имя файла
-                            string audioFileNameShort;
-                            if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                            // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                            numberFormat.NumberGroupSeparator = ".";
+
+                            FileInfo inputFileInfo = new FileInfo(audioFile);
+                            long inputSize = inputFileInfo.Length; // Размер входного файла
+                            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                            FileInfo outputFile = new FileInfo(outputFilePath);
+                            if (outputFile.Exists)
                             {
-                                string startName = audioFileName.Substring(0, 15);
-                                string endName = audioFileName.Substring(audioFileName.Length - 15);
-                                audioFileNameShort = $"{startName}...{endName}";
-                            }
-                            else
-                            {
-                                // Если имя файла 24 символа или меньше, используем его целиком и добавляем пробелы до 24
-                                audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
-                            }
-                            // Условие: записывать в лог только если процесс не был остановлен
-                            if (!_isEncodingStopped)
-                            {
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Рассчитываем отношение скорости декодирования к длительности
+                                double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+                                // Получаем только имя файла для логирования
+                                string audioFileName = Path.GetFileName(audioFile);
+                                // Формируем короткое имя файла
+                                string audioFileNameShort;
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                                {
+                                    string startName = audioFileName.Substring(0, 15);
+                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
+                                    audioFileNameShort = $"{startName}...{endName}";
+                                }
+                                else
+                                {
+                                    // Если имя файла 33 символа или меньше, используем его целиком и добавляем пробелы до 24
+                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
+                                }
                                 // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
                                 // Добавление записи в лог DataGridView
                                 int rowIndex = dataGridViewLog.Rows.Add(
                                 audioFileName,
-                                $"{inputSize:n0}",
-                                $"{outputSize:n0}",
+                                inputSizeFormatted,
+                                outputSizeFormatted,
                                 "",
                                 $"{timeTaken.TotalMilliseconds:F3}",
                                 $"{decodingSpeed:F3}x",
@@ -1183,11 +1196,24 @@ namespace FLAC_Benchmark_H
         }
         private void buttonCopyLog_Click(object? sender, EventArgs e)
         {
-            // Копируем текст из textBoxLog в буфер обмена
-            if (!string.IsNullOrWhiteSpace(textBoxLog.Text))
+            // Создаем StringBuilder для сбора текста логов
+            StringBuilder logText = new StringBuilder();
+
+            // Проходим по строкам в DataGridView и собираем текст
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                Clipboard.SetText(textBoxLog.Text);
-                //MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Предполагаем, что вы хотите собирать текст из всех ячеек строки
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    logText.Append(cell.Value?.ToString() + "\t"); // Используем табуляцию для разделения ячеек
+                }
+                logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
+            }
+
+            if (logText.Length > 0)
+            {
+                Clipboard.SetText(logText.ToString());
+                MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
