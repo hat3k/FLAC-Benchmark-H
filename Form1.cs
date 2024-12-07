@@ -835,29 +835,26 @@ namespace FLAC_Benchmark_H
                     {
                         return; // Выходим, если остановка запроса
                     }
-                    // Получаем информацию об аудиофайле
-                    var (duration, _, _, _) = GetAudioInfo(audioFile);
-                    long durationMs = Convert.ToInt64(duration);
+
                     // Получаем значения из текстовых полей и формируем аргументы...
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
-                    // Формируем аргументы для запуска
-                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                    string arguments = $"\"{audioFile}\" -{compressionLevel} {commandLine}";
-                    // Добавляем аргумент -j{threads} только если threads больше 1
+
+                    // Формируем строку с параметрами
+                    string parameters = $"-{compressionLevel} {commandLine}";
+
+                    // Добавляем количество потоков, если оно больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
-                        arguments += $" -j{threads}";
+                        parameters += $" -j{threads}"; // добавляем флаг -j{threads}
                     }
-                    // Добавляем остальные аргументы
-                    arguments += $" -f -o \"{outputFilePath}\"";
-                    // Добавляем параметры (без входящих и исходящих файлов)
-                    string parameters = $"-{compressionLevel} {commandLine}";
-                    if (threadCount > 1)
-                    {
-                        parameters += $" -j{threads}";
-                    }
+
+
+                    // Формируем аргументы для запуска
+                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+                    string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -890,29 +887,29 @@ namespace FLAC_Benchmark_H
                         // Условие: записывать в лог только если процесс не был остановлен
                         if (!_isEncodingStopped)
                         {
-                            // Создаем CultureInfo для форматирования с точками как разделителями разрядов
-                            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                            numberFormat.NumberGroupSeparator = ".";
 
-                            FileInfo inputFileInfo = new FileInfo(audioFile);
-                            long inputSize = inputFileInfo.Length; // Размер входного файла
-                            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
 
                             FileInfo outputFile = new FileInfo(outputFilePath);
                             if (outputFile.Exists)
                             {
-                                long outputSize = outputFile.Length; // Размер выходного файла
-                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
-                                TimeSpan timeTaken = stopwatch.Elapsed;
-                                // Вычисление процента сжатия
-                                double compressionPercentage = ((double)outputSize / inputSize) * 100;
-                                // Рассчитываем отношение скорости кодирования к длительности
-                                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-                                // Получаем только имя файла для логирования
+
+
+                                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                                numberFormat.NumberGroupSeparator = ".";
+
+                                // Получаем информацию о входящем аудиофайле
+                                FileInfo inputFileInfo = new FileInfo(audioFile);
+                                long inputSize = inputFileInfo.Length; // Размер входного файла
+                                var (duration, _, _, _) = GetAudioInfo(audioFile);
+                                long durationMs = Convert.ToInt64(duration);
+                                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                                // Получаем только имя входящего файла для логирования
                                 string audioFileName = Path.GetFileName(audioFile);
-                                // Формируем короткое имя файла
+                                // Формируем короткое имя входящего файла
                                 string audioFileNameShort;
-                                if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
                                 {
                                     string startName = audioFileName.Substring(0, 15);
                                     string endName = audioFileName.Substring(audioFileName.Length - 15);
@@ -920,9 +917,19 @@ namespace FLAC_Benchmark_H
                                 }
                                 else
                                 {
-                                    // Если имя файла 33 символа или меньше, используем его целиком и добавляем пробелы до 24
+                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
                                     audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
                                 }
+
+                                // Получаем информацию о выходящем аудиофайле
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Вычисление процента сжатия
+                                double compressionPercentage = ((double)outputSize / inputSize) * 100;
+                                // Рассчитываем отношение скорости кодирования к длительности
+                                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+
                                 // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
                                 // Добавление записи в лог DataGridView
@@ -996,17 +1003,15 @@ namespace FLAC_Benchmark_H
                     {
                         return; // Выходим, если остановка запроса
                     }
-                    // Получаем информацию об аудиофайле
-                    var (duration, _, _, _) = GetAudioInfo(audioFile);
-                    long durationMs = Convert.ToInt64(duration);
+
                     // Получаем значения из текстовых полей и формируем аргументы...
-                    string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsDecoder.Text;
+                    // Формируем строку с параметрами
+                    string parameters = $"{commandLine}";
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                    string arguments = $"\"{audioFile}\" -d {commandLine} -f -o \"{outputFilePath}\"";
-                    // Добавляем параметры (без входящих и исходящих файлов)
-                    string parameters = $"{commandLine}";
+                    string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -1039,27 +1044,25 @@ namespace FLAC_Benchmark_H
                         // Условие: записывать в лог только если процесс не был остановлен
                         if (!_isEncodingStopped)
                         {
-                            // Создаем CultureInfo для форматирования с точками как разделителями разрядов
-                            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                            numberFormat.NumberGroupSeparator = ".";
-
-                            FileInfo inputFileInfo = new FileInfo(audioFile);
-                            long inputSize = inputFileInfo.Length; // Размер входного файла
-                            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
-
                             FileInfo outputFile = new FileInfo(outputFilePath);
                             if (outputFile.Exists)
                             {
-                                long outputSize = outputFile.Length; // Размер выходного файла
-                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
-                                TimeSpan timeTaken = stopwatch.Elapsed;
-                                // Рассчитываем отношение скорости декодирования к длительности
-                                double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-                                // Получаем только имя файла для логирования
+                                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                                numberFormat.NumberGroupSeparator = ".";
+
+                                // Получаем информацию о входящем аудиофайле
+                                FileInfo inputFileInfo = new FileInfo(audioFile);
+                                long inputSize = inputFileInfo.Length; // Размер входного файла
+                                var (duration, _, _, _) = GetAudioInfo(audioFile);
+                                long durationMs = Convert.ToInt64(duration);
+                                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                                // Получаем только имя входящего файла для логирования
                                 string audioFileName = Path.GetFileName(audioFile);
-                                // Формируем короткое имя файла
+                                // Формируем короткое имя входящего файла
                                 string audioFileNameShort;
-                                if (audioFileName.Length > 30) // Если имя файла длиннее 24 символов
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
                                 {
                                     string startName = audioFileName.Substring(0, 15);
                                     string endName = audioFileName.Substring(audioFileName.Length - 15);
@@ -1067,9 +1070,15 @@ namespace FLAC_Benchmark_H
                                 }
                                 else
                                 {
-                                    // Если имя файла 33 символа или меньше, используем его целиком и добавляем пробелы до 24
+                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
                                     audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
                                 }
+                                // Получаем информацию о выходящем аудиофайле
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Рассчитываем отношение скорости кодирования к длительности
+                                double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
                                 // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
                                 // Добавление записи в лог DataGridView
