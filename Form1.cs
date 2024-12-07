@@ -1212,7 +1212,7 @@ namespace FLAC_Benchmark_H
             if (logText.Length > 0)
             {
                 Clipboard.SetText(logText.ToString());
-            //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -1390,5 +1390,9 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void buttonStartJobList_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

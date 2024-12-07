@@ -662,13 +662,13 @@
             // 
             // buttonStartJobList
             // 
-            buttonStartJobList.Enabled = false;
             buttonStartJobList.Location = new Point(6, 364);
             buttonStartJobList.Name = "buttonStartJobList";
             buttonStartJobList.Size = new Size(110, 23);
             buttonStartJobList.TabIndex = 24;
             buttonStartJobList.Text = "Start Job List";
             buttonStartJobList.UseVisualStyleBackColor = true;
+            buttonStartJobList.Click += buttonStartJobList_Click;
             // 
             // buttonExportJobList
             // 
