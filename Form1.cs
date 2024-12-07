@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 using System.Text;
-using System.Windows.Forms;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
@@ -561,7 +560,7 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = File.ReadAllLines(filePath);
-            //   listViewJobs.Items.Clear(); // Очищаем существующие элементы перед загрузкой новых
+                //   listViewJobs.Items.Clear(); // Очищаем существующие элементы перед загрузкой новых
 
                 foreach (var line in lines)
                 {
@@ -635,8 +634,8 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
-         //   if (e.KeyCode == Keys.Delete)
-         //       buttonRemoveAudiofile.PerformClick();
+            //   if (e.KeyCode == Keys.Delete)
+            //       buttonRemoveAudiofile.PerformClick();
         }
 
         private void InitializedataGridViewLog()
@@ -1115,7 +1114,7 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
-                    //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
+                                                                                     //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
 
                         foreach (var line in lines)
                         {
@@ -1155,7 +1154,7 @@ namespace FLAC_Benchmark_H
                             .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
                             .ToArray(); // Сохраняем в одном формате
                         File.WriteAllLines(saveFileDialog.FileName, jobList);
-                    //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)
                     {
@@ -1213,7 +1212,7 @@ namespace FLAC_Benchmark_H
             if (logText.Length > 0)
             {
                 Clipboard.SetText(logText.ToString());
-                MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -1346,7 +1345,7 @@ namespace FLAC_Benchmark_H
             if (jobsText.Length > 0)
             {
                 Clipboard.SetText(jobsText.ToString());
-            //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
