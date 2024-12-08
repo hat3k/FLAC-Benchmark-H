@@ -1407,12 +1407,304 @@ namespace FLAC_Benchmark_H
                 // Проверяем, отмечена ли задача
                 if (item.Checked)
                 {
-                    string jobName = item.Text;
-                    if (string.Equals(jobName, "Encode", StringComparison.OrdinalIgnoreCase))
+                    string jobType = item.Text;
+                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
                     {
+                                    // Устанавливаем флаг остановки
+            _isEncodingStopped = false;
+            // Создаём временную директорию для выходного файла
+            Directory.CreateDirectory(tempFolderPath);
+            // Получаем выделенные .exe файлы
+            var selectedExecutables = listViewFlacExecutables.CheckedItems
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
+            // Получаем выделенные аудиофайлы
+            var selectedAudioFiles = listViewAudioFiles.CheckedItems
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
+            // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+            if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+            {
+                MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            foreach (var executable in selectedExecutables)
+            {
+                foreach (var audioFile in selectedAudioFiles)
+                {
+                    if (_isEncodingStopped)
+                    {
+                        return; // Выходим, если остановка запроса
                     }
-                    else if (string.Equals(jobName, "Decode", StringComparison.OrdinalIgnoreCase))
+
+                    // Получаем значения из текстовых полей и формируем аргументы...
+                    string compressionLevel = textBoxCompressionLevel.Text;
+                    string threads = textBoxThreads.Text;
+                    string commandLine = textBoxCommandLineOptionsEncoder.Text;
+
+                    // Формируем строку с параметрами
+                    string parameters = item.SubItems[1].Text;
+
+                    // Формируем аргументы для запуска
+                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+                    string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+
+                    // Запускаем процесс и дожидаемся завершения
+                    try
                     {
+                        await Task.Run(() =>
+                        {
+                            using (_process = new Process()) // Сохраняем процесс в поле _process
+                            {
+                                _process.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = executable,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
+                                // Запускаем отсчет времени
+                                stopwatch.Reset();
+                                stopwatch.Start();
+                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+                                {
+                                    _process.Start();
+                                }
+                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
+                                _process.PriorityClass = checkBoxHighPriority.Checked
+                                ? ProcessPriorityClass.High
+                                : ProcessPriorityClass.Normal;
+                                _process.WaitForExit(); // Дождаться завершения процесса
+                                stopwatch.Stop();
+                            }
+                        });
+                        // Условие: записывать в лог только если процесс не был остановлен
+                        if (!_isEncodingStopped)
+                        {
+
+
+                            FileInfo outputFile = new FileInfo(outputFilePath);
+                            if (outputFile.Exists)
+                            {
+
+
+                                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                                numberFormat.NumberGroupSeparator = ".";
+
+                                // Получаем информацию о входящем аудиофайле
+                                FileInfo inputFileInfo = new FileInfo(audioFile);
+                                long inputSize = inputFileInfo.Length; // Размер входного файла
+                                var (duration, _, _, _) = GetAudioInfo(audioFile);
+                                long durationMs = Convert.ToInt64(duration);
+                                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                                // Получаем только имя входящего файла для логирования
+                                string audioFileName = Path.GetFileName(audioFile);
+                                // Формируем короткое имя входящего файла
+                                string audioFileNameShort;
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
+                                {
+                                    string startName = audioFileName.Substring(0, 15);
+                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
+                                    audioFileNameShort = $"{startName}...{endName}";
+                                }
+                                else
+                                {
+                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
+                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
+                                }
+
+                                // Получаем информацию о выходящем аудиофайле
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Вычисление процента сжатия
+                                double compressionPercentage = ((double)outputSize / inputSize) * 100;
+                                // Рассчитываем отношение скорости кодирования к длительности
+                                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+
+                                // Получаем информацию о версии exe файла
+                                var version = GetExecutableInfo(executable);
+                                // Добавление записи в лог DataGridView
+                                int rowIndex = dataGridViewLog.Rows.Add(
+                                audioFileName,
+                                inputSizeFormatted,
+                                outputSizeFormatted,
+                                $"{compressionPercentage:F3}%",
+                                $"{timeTaken.TotalMilliseconds:F3}",
+                                $"{encodingSpeed:F3}x",
+                                parameters,
+                                Path.GetFileName(executable),
+                                version);
+                                // Установка цвета текста в зависимости от сравнения размеров файлов
+                                if (outputSize > inputSize)
+                                {
+                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Red; // Выходной размер больше
+                                }
+                                else if (outputSize < inputSize)
+                                {
+                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
+                                }
+                                // Прокручиваем DataGridView вниз к последней добавленной строке
+                                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
+                                // Очищаем выделение, чтобы убрать фокус с первой строки
+                                dataGridViewLog.ClearSelection();
+                                // Логирование в файл
+                                File.AppendAllText("log.txt", $"{DateTime.Now}: {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tEncoding Speed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoded with: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+                    }
+                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
+                    {
+                    // Устанавливаем флаг остановки
+            _isEncodingStopped = false;
+            // Создаём временную директорию для выходного файла
+            Directory.CreateDirectory(tempFolderPath);
+            // Получаем выделенные .exe файлы
+            var selectedExecutables = listViewFlacExecutables.CheckedItems
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
+            // Получаем выделенные аудиофайлы, но только с расширением .flac
+            var selectedAudioFiles = listViewAudioFiles.CheckedItems
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+            .ToList();
+            // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+            if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+            {
+                MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            foreach (var executable in selectedExecutables)
+            {
+                foreach (var audioFile in selectedAudioFiles)
+                {
+                    if (_isEncodingStopped)
+                    {
+                        return; // Выходим, если остановка запроса
+                    }
+
+                    // Формируем строку с параметрами
+                    string parameters = item.SubItems[1].Text;
+                    // Формируем аргументы для запуска
+                    string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
+                    string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+
+                    // Запускаем процесс и дожидаемся завершения
+                    try
+                    {
+                        await Task.Run(() =>
+                        {
+                            using (_process = new Process()) // Сохраняем процесс в поле _process
+                            {
+                                _process.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = executable,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
+                                // Запускаем отсчет времени
+                                stopwatch.Reset();
+                                stopwatch.Start();
+                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+                                {
+                                    _process.Start();
+                                }
+                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
+                                _process.PriorityClass = checkBoxHighPriority.Checked
+                                ? ProcessPriorityClass.High
+                                : ProcessPriorityClass.Normal;
+                                _process.WaitForExit(); // Дождаться завершения процесса
+                                stopwatch.Stop();
+                            }
+                        });
+                        // Условие: записывать в лог только если процесс не был остановлен
+                        if (!_isEncodingStopped)
+                        {
+                            FileInfo outputFile = new FileInfo(outputFilePath);
+                            if (outputFile.Exists)
+                            {
+                                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                                numberFormat.NumberGroupSeparator = ".";
+
+                                // Получаем информацию о входящем аудиофайле
+                                FileInfo inputFileInfo = new FileInfo(audioFile);
+                                long inputSize = inputFileInfo.Length; // Размер входного файла
+                                var (duration, _, _, _) = GetAudioInfo(audioFile);
+                                long durationMs = Convert.ToInt64(duration);
+                                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
+                                // Получаем только имя входящего файла для логирования
+                                string audioFileName = Path.GetFileName(audioFile);
+                                // Формируем короткое имя входящего файла
+                                string audioFileNameShort;
+                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
+                                {
+                                    string startName = audioFileName.Substring(0, 15);
+                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
+                                    audioFileNameShort = $"{startName}...{endName}";
+                                }
+                                else
+                                {
+                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
+                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
+                                }
+                                // Получаем информацию о выходящем аудиофайле
+                                long outputSize = outputFile.Length; // Размер выходного файла
+                                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                                TimeSpan timeTaken = stopwatch.Elapsed;
+                                // Рассчитываем отношение скорости кодирования к длительности
+                                double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+                                // Получаем информацию о версии exe файла
+                                var version = GetExecutableInfo(executable);
+                                // Добавление записи в лог DataGridView
+                                int rowIndex = dataGridViewLog.Rows.Add(
+                                audioFileName,
+                                inputSizeFormatted,
+                                outputSizeFormatted,
+                                "",
+                                $"{timeTaken.TotalMilliseconds:F3}",
+                                $"{decodingSpeed:F3}x",
+                                parameters,
+                                Path.GetFileName(executable),
+                                version);
+                                // Прокручиваем DataGridView вниз к последней добавленной строке
+                                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
+                                // Очищаем выделение, чтобы убрать фокус с первой строки
+                                dataGridViewLog.ClearSelection();
+                                // Логирование в файл
+                                File.AppendAllText("log.txt", $"{DateTime.Now}: {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\t\tTime: {timeTaken.TotalMilliseconds:F3} ms\tDecoding Speed: {decodingSpeed:F3}x\tParameters: {parameters.Trim()}\tDecoded with: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
                     }
                 }
             }
