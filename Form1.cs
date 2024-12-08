@@ -1468,16 +1468,37 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+                                if (!_isEncodingStopped)
                                 {
                                     _process.Start();
+
+                                    // Set process priority only if the process has started successfully
+                                    try
+                                    {
+                                        if (!_process.HasExited)
+                                        {
+                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                ? ProcessPriorityClass.High
+                                                : ProcessPriorityClass.Normal;
+                                        }
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                        // Process has exited, log or handle as needed
+                                    }
+
+                                    if (!_process.HasExited)
+                                    {
+                                        _process.WaitForExit();
+                                    }
+                                    else
+                                    {
+                                        // Process has already exited, handle accordingly
+                                        // For example, you might want to log this information
+                                        Console.WriteLine("Process exited before WaitForExit could be called.");
+                                    }
+                                    stopwatch.Stop();
                                 }
-                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
-                                _process.PriorityClass = checkBoxHighPriority.Checked
-                                ? ProcessPriorityClass.High
-                                : ProcessPriorityClass.Normal;
-                                _process.WaitForExit(); // Дождаться завершения процесса
-                                stopwatch.Stop();
                             }
                         });
                         // Условие: записывать в лог только если процесс не был остановлен
@@ -1623,16 +1644,37 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+                                if (!_isEncodingStopped)
                                 {
                                     _process.Start();
+
+                                    // Set process priority only if the process has started successfully
+                                    try
+                                    {
+                                        if (!_process.HasExited)
+                                        {
+                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                ? ProcessPriorityClass.High
+                                                : ProcessPriorityClass.Normal;
+                                        }
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                        // Process has exited, log or handle as needed
+                                    }
+
+                                    if (!_process.HasExited)
+                                    {
+                                        _process.WaitForExit();
+                                    }
+                                    else
+                                    {
+                                        // Process has already exited, handle accordingly
+                                        // For example, you might want to log this information
+                                        Console.WriteLine("Process exited before WaitForExit could be called.");
+                                    }
+                                    stopwatch.Stop();
                                 }
-                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
-                                _process.PriorityClass = checkBoxHighPriority.Checked
-                                ? ProcessPriorityClass.High
-                                : ProcessPriorityClass.Normal;
-                                _process.WaitForExit(); // Дождаться завершения процесса
-                                stopwatch.Stop();
                             }
                         });
                         // Условие: записывать в лог только если процесс не был остановлен
