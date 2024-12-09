@@ -643,10 +643,10 @@ namespace FLAC_Benchmark_H
         private void InitializedataGridViewLog()
         {
             // Настройка DataGridView (по желанию)
-            dataGridViewLog.Columns.Add("FileName", "File Name");
-            dataGridViewLog.Columns.Add("InputFileSize", "Input File Size");
-            dataGridViewLog.Columns.Add("OutputFileSize", "Output File Size");
-            dataGridViewLog.Columns.Add("Compression", "Compression");
+            dataGridViewLog.Columns.Add("FileName", "Name");
+            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
+            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
+            dataGridViewLog.Columns.Add("Compression", "Compr.");
             dataGridViewLog.Columns.Add("Time", "Time");
             dataGridViewLog.Columns.Add("Speed", "Speed");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
