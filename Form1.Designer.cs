@@ -28,7 +28,6 @@
             buttonStop = new Button();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
-            labelFlacUsedVersion = new Label();
             buttonStartEncode = new Button();
             progressBarEncoder = new ProgressBar();
             labelSetThreads = new Label();
@@ -75,6 +74,7 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
+            buttonRemoveJob = new Button();
             buttonCopyJobs = new Button();
             buttonPasteJobs = new Button();
             listViewJobs = new ListView();
@@ -96,7 +96,6 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            buttonRemoveJob = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -112,7 +111,6 @@
             groupBoxEncoderSettings.Controls.Add(buttonStop);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
-            groupBoxEncoderSettings.Controls.Add(labelFlacUsedVersion);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
@@ -169,18 +167,6 @@
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
             buttonAddJobToJobListEncoder.Click += buttonAddJobToJobListEncoder_Click;
-            // 
-            // labelFlacUsedVersion
-            // 
-            labelFlacUsedVersion.AutoSize = true;
-            labelFlacUsedVersion.Enabled = false;
-            labelFlacUsedVersion.Font = new Font("Segoe UI", 9F);
-            labelFlacUsedVersion.Location = new Point(540, -3);
-            labelFlacUsedVersion.Name = "labelFlacUsedVersion";
-            labelFlacUsedVersion.Size = new Size(81, 15);
-            labelFlacUsedVersion.TabIndex = 15;
-            labelFlacUsedVersion.Text = "Using version:";
-            labelFlacUsedVersion.Visible = false;
             // 
             // buttonStartEncode
             // 
@@ -619,6 +605,16 @@
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             // 
+            // buttonRemoveJob
+            // 
+            buttonRemoveJob.Location = new Point(354, 364);
+            buttonRemoveJob.Name = "buttonRemoveJob";
+            buttonRemoveJob.Size = new Size(110, 23);
+            buttonRemoveJob.TabIndex = 28;
+            buttonRemoveJob.Text = "Remove Job";
+            buttonRemoveJob.UseVisualStyleBackColor = true;
+            buttonRemoveJob.Click += buttonRemoveJob_Click;
+            // 
             // buttonCopyJobs
             // 
             buttonCopyJobs.Location = new Point(534, 364);
@@ -858,16 +854,6 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
-            // buttonRemoveJob
-            // 
-            buttonRemoveJob.Location = new Point(354, 364);
-            buttonRemoveJob.Name = "buttonRemoveJob";
-            buttonRemoveJob.Size = new Size(110, 23);
-            buttonRemoveJob.TabIndex = 28;
-            buttonRemoveJob.Text = "Remove Job";
-            buttonRemoveJob.UseVisualStyleBackColor = true;
-            buttonRemoveJob.Click += buttonRemoveJob_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -882,7 +868,7 @@
             Controls.Add(groupBoxEncoderSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241209.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241209.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -916,7 +902,6 @@
         private Button buttonNoSeektable;
         private Button buttonClearCommandLineEncoder;
         private Button buttonClearLog;
-        private Label labelFlacUsedVersion;
         private GroupBox groupBoxEncoders;
         private Button buttonOpenLogtxt;
         private Label labelCPUinfo;
