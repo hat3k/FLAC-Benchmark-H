@@ -878,18 +878,35 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+
+                                if (!_isEncodingStopped)
                                 {
                                     _process.Start();
+
+                                    // Устанавливаем приоритет процесса, если он начал успешно
+                                    try
+                                    {
+                                        if (!_process.HasExited)
+                                        {
+                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                ? ProcessPriorityClass.High
+                                                : ProcessPriorityClass.Normal;
+                                        }
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                        // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                    }
+
+                                    if (!_process.HasExited)
+                                    {
+                                        _process.WaitForExit();
+                                    }
+                                    stopwatch.Stop();
                                 }
-                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
-                                _process.PriorityClass = checkBoxHighPriority.Checked
-                                ? ProcessPriorityClass.High
-                                : ProcessPriorityClass.Normal;
-                                _process.WaitForExit(); // Дождаться завершения процесса
-                                stopwatch.Stop();
                             }
                         });
+
                         // Условие: записывать в лог только если процесс не был остановлен
                         if (!_isEncodingStopped)
                         {
@@ -914,18 +931,9 @@ namespace FLAC_Benchmark_H
                                 // Получаем только имя входящего файла для логирования
                                 string audioFileName = Path.GetFileName(audioFile);
                                 // Формируем короткое имя входящего файла
-                                string audioFileNameShort;
-                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
-                                {
-                                    string startName = audioFileName.Substring(0, 15);
-                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
-                                    audioFileNameShort = $"{startName}...{endName}";
-                                }
-                                else
-                                {
-                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
-                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
-                                }
+                                string audioFileNameShort = audioFileName.Length > 30
+                                    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
+                                    : audioFileName.PadRight(33);
 
                                 // Получаем информацию о выходящем аудиофайле
                                 long outputSize = outputFile.Length; // Размер выходного файла
@@ -954,6 +962,8 @@ namespace FLAC_Benchmark_H
                                 dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
                                 // Установка цвета текста для скорости кодирования
                                 dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
+                                // Прокручиваем DataGridView вниз к последней добавленной строке
+                                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
                                 dataGridViewLog.ClearSelection();
                                 // Логирование в файл
@@ -1037,16 +1047,33 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-                                if (!_isEncodingStopped) // Добавляем проверку перед запуском
+
+                                if (!_isEncodingStopped)
                                 {
                                     _process.Start();
+
+                                    // Устанавливаем приоритет процесса, если он начал успешно
+                                    try
+                                    {
+                                        if (!_process.HasExited)
+                                        {
+                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                ? ProcessPriorityClass.High
+                                                : ProcessPriorityClass.Normal;
+                                        }
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                        // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                    }
+
+                                    if (!_process.HasExited)
+                                    {
+                                        _process.WaitForExit();
+                                    }
+
+                                    stopwatch.Stop();
                                 }
-                                // Устанавливаем приоритет процесса на высокий, если чекбокс включен
-                                _process.PriorityClass = checkBoxHighPriority.Checked
-                                ? ProcessPriorityClass.High
-                                : ProcessPriorityClass.Normal;
-                                _process.WaitForExit(); // Дождаться завершения процесса
-                                stopwatch.Stop();
                             }
                         });
                         // Условие: записывать в лог только если процесс не был остановлен
@@ -1069,18 +1096,10 @@ namespace FLAC_Benchmark_H
                                 // Получаем только имя входящего файла для логирования
                                 string audioFileName = Path.GetFileName(audioFile);
                                 // Формируем короткое имя входящего файла
-                                string audioFileNameShort;
-                                if (audioFileName.Length > 30) // Если имя файла длиннее 30 символов
-                                {
-                                    string startName = audioFileName.Substring(0, 15);
-                                    string endName = audioFileName.Substring(audioFileName.Length - 15);
-                                    audioFileNameShort = $"{startName}...{endName}";
-                                }
-                                else
-                                {
-                                    // Если имя файла 30 символов или меньше, используем его целиком и добавляем пробелы до 30
-                                    audioFileNameShort = audioFileName + new string(' ', 33 - audioFileName.Length);
-                                }
+                                string audioFileNameShort = audioFileName.Length > 30
+                                    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
+                                    : audioFileName.PadRight(33);
+
                                 // Получаем информацию о выходящем аудиофайле
                                 long outputSize = outputFile.Length; // Размер выходного файла
                                 string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
@@ -1126,275 +1145,6 @@ namespace FLAC_Benchmark_H
             // Сбрасываем флаг выполнения после завершения
             isExecuting = false;
         }
-
-        private void buttonImportJobList_Click(object? sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                openFileDialog.Title = "Open Job List";
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
-                                                                                     //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
-
-                        foreach (var line in lines)
-                        {
-                            var parts = line.Split('~'); // Разделяем строку на части
-                            if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                            {
-                                string jobName = parts[0];
-                                string parameters = parts[2];
-                                AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
-                            }
-                            else
-                            {
-                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-        }
-        private void buttonExportJobList_Click(object? sender, EventArgs e)
-        {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-            {
-                saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                saveFileDialog.Title = "Save Job List";
-                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYY-MM-DD
-                saveFileDialog.FileName = fileName; // Устанавливаем начальное имя файла
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
-                            .ToArray(); // Сохраняем в одном формате
-                        File.WriteAllLines(saveFileDialog.FileName, jobList);
-                        //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-        }
-        private void buttonRemoveJob_Click(object sender, EventArgs e)
-        {
-            // Удаляем выделенные элементы из listViewJobs
-            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
-            {
-                if (listViewJobs.Items[i].Selected) // Проверяем, выделен ли элемент
-                {
-                    listViewJobs.Items.RemoveAt(i); // Удаляем элемент
-                }
-            }
-        }
-        private void buttonClearJobList_Click(object? sender, EventArgs e)
-        {
-            listViewJobs.Items.Clear(); // Очищаем listViewJobList
-        }
-        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
-        {
-            // Путь к файлу логирования
-            string logFilePath = "log.txt";
-            // Проверяем существует ли файл
-            if (File.Exists(logFilePath))
-            {
-                try
-                {
-                    // Открываем log.txt с помощью стандартного текстового редактора
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = logFilePath,
-                        UseShellExecute = true // Это откроет файл с помощью ассоциированного приложения
-                    });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-        private void buttonCopyLog_Click(object? sender, EventArgs e)
-        {
-            // Создаем StringBuilder для сбора текста логов
-            StringBuilder logText = new StringBuilder();
-
-            // Проходим по строкам в DataGridView и собираем текст
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
-            {
-                // Предполагаем, что вы хотите собирать текст из всех ячеек строки
-                foreach (DataGridViewCell cell in row.Cells)
-                {
-                    logText.Append(cell.Value?.ToString() + "\t"); // Используем табуляцию для разделения ячеек
-                }
-                logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
-            }
-
-            if (logText.Length > 0)
-            {
-                Clipboard.SetText(logText.ToString());
-                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-        private void buttonClearLog_Click(object? sender, EventArgs e)
-        {
-            dataGridViewLog.Rows.Clear();
-        }
-
-        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
-        {
-            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
-            {
-                folderBrowserDialog.Description = "Select temp folder";
-                // Если путь сохранён в настройках, устанавливаем его
-                if (Directory.Exists(tempFolderPath))
-                {
-                    folderBrowserDialog.SelectedPath = tempFolderPath;
-                }
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Получаем выбранный путь
-                    tempFolderPath = folderBrowserDialog.SelectedPath;
-                    // Сохраняем путь в настройках
-                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
-                }
-            }
-        }
-
-        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
-        {
-            // Получаем значения из текстовых полей и формируем параметры
-            string compressionLevel = textBoxCompressionLevel.Text;
-            string threads = textBoxThreads.Text;
-            string commandLine = textBoxCommandLineOptionsEncoder.Text;
-
-            // Формируем строку с параметрами
-            string parameters = $"-{compressionLevel} {commandLine}";
-
-            // Добавляем количество потоков, если оно больше 1
-            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
-            {
-                parameters += $" -j{threads}"; // добавляем флаг -j{threads}
-            }
-
-            // Создаем новый элемент списка для кодирования
-            var item = new ListViewItem("Encode") // Первая колонка - Encode
-            {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-
-            // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
-        }
-        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
-        {
-            // Получаем значения из текстовых полей и формируем параметры
-            string commandLine = textBoxCommandLineOptionsDecoder.Text;
-
-            // Формируем строку с параметрами
-            string parameters = commandLine; // Параметры для декодирования
-
-            // Создаем новый элемент списка для декодирования
-            var item = new ListViewItem("Decode") // Первая колонка - Decode
-            {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-
-            // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
-        }
-
-        private void buttonCopyJobs_Click(object sender, EventArgs e)
-        {
-            StringBuilder jobsText = new StringBuilder();
-
-            // Проверяем, есть ли выделенные элементы
-            if (listViewJobs.SelectedItems.Count > 0)
-            {
-                // Копируем только выделенные задачи
-                foreach (ListViewItem item in listViewJobs.SelectedItems)
-                {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
-                }
-            }
-            else
-            {
-                // Если ничего не выделено, копируем все задачи
-                foreach (ListViewItem item in listViewJobs.Items)
-                {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
-                }
-            }
-
-            // Копируем текст в буфер обмена
-            if (jobsText.Length > 0)
-            {
-                Clipboard.SetText(jobsText.ToString());
-                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-        private void buttonPasteJobs_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Получаем текст из буфера обмена
-                string clipboardText = Clipboard.GetText();
-
-                // Проверяем, если буфер не пустой
-                if (!string.IsNullOrEmpty(clipboardText))
-                {
-                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
-
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~'); // Разделяем строку на части
-                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            string jobName = parts[0];
-                            string parameters = parts[2];
-                            AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        }
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private async void buttonStartJobList_Click(object sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
@@ -1444,10 +1194,6 @@ namespace FLAC_Benchmark_H
                                     return; // Выходим, если остановка запроса
                                 }
 
-                                // Получаем значения из текстовых полей и формируем аргументы...
-                                string compressionLevel = textBoxCompressionLevel.Text;
-                                string threads = textBoxThreads.Text;
-                                string commandLine = textBoxCommandLineOptionsEncoder.Text;
 
                                 // Формируем строку с параметрами
                                 string parameters = item.SubItems[1].Text;
@@ -1768,6 +1514,276 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
+        private void buttonImportJobList_Click(object? sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.Title = "Open Job List";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
+                                                                                     //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
+
+                        foreach (var line in lines)
+                        {
+                            var parts = line.Split('~'); // Разделяем строку на части
+                            if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                            {
+                                string jobName = parts[0];
+                                string parameters = parts[2];
+                                AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        private void buttonExportJobList_Click(object? sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                saveFileDialog.Title = "Save Job List";
+                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYY-MM-DD
+                saveFileDialog.FileName = fileName; // Устанавливаем начальное имя файла
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var jobList = listViewJobs.Items.Cast<ListViewItem>()
+                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
+                            .ToArray(); // Сохраняем в одном формате
+                        File.WriteAllLines(saveFileDialog.FileName, jobList);
+                        //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        private void buttonRemoveJob_Click(object sender, EventArgs e)
+        {
+            // Удаляем выделенные элементы из listViewJobs
+            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
+            {
+                if (listViewJobs.Items[i].Selected) // Проверяем, выделен ли элемент
+                {
+                    listViewJobs.Items.RemoveAt(i); // Удаляем элемент
+                }
+            }
+        }
+        private void buttonClearJobList_Click(object? sender, EventArgs e)
+        {
+            listViewJobs.Items.Clear(); // Очищаем listViewJobList
+        }
+        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
+        {
+            // Путь к файлу логирования
+            string logFilePath = "log.txt";
+            // Проверяем существует ли файл
+            if (File.Exists(logFilePath))
+            {
+                try
+                {
+                    // Открываем log.txt с помощью стандартного текстового редактора
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = logFilePath,
+                        UseShellExecute = true // Это откроет файл с помощью ассоциированного приложения
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void buttonCopyLog_Click(object? sender, EventArgs e)
+        {
+            // Создаем StringBuilder для сбора текста логов
+            StringBuilder logText = new StringBuilder();
+
+            // Проходим по строкам в DataGridView и собираем текст
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                // Предполагаем, что вы хотите собирать текст из всех ячеек строки
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    logText.Append(cell.Value?.ToString() + "\t"); // Используем табуляцию для разделения ячеек
+                }
+                logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
+            }
+
+            if (logText.Length > 0)
+            {
+                Clipboard.SetText(logText.ToString());
+                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void buttonClearLog_Click(object? sender, EventArgs e)
+        {
+            dataGridViewLog.Rows.Clear();
+        }
+
+        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                folderBrowserDialog.Description = "Select temp folder";
+                // Если путь сохранён в настройках, устанавливаем его
+                if (Directory.Exists(tempFolderPath))
+                {
+                    folderBrowserDialog.SelectedPath = tempFolderPath;
+                }
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Получаем выбранный путь
+                    tempFolderPath = folderBrowserDialog.SelectedPath;
+                    // Сохраняем путь в настройках
+                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
+                }
+            }
+        }
+
+        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string compressionLevel = textBoxCompressionLevel.Text;
+            string threads = textBoxThreads.Text;
+            string commandLine = textBoxCommandLineOptionsEncoder.Text;
+
+            // Формируем строку с параметрами
+            string parameters = $"-{compressionLevel} {commandLine}";
+
+            // Добавляем количество потоков, если оно больше 1
+            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+            {
+                parameters += $" -j{threads}"; // добавляем флаг -j{threads}
+            }
+
+            // Создаем новый элемент списка для кодирования
+            var item = new ListViewItem("Encode") // Первая колонка - Encode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+
+            // Добавляем элемент в listViewJobList
+            listViewJobs.Items.Add(item);
+        }
+        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string commandLine = textBoxCommandLineOptionsDecoder.Text;
+
+            // Формируем строку с параметрами
+            string parameters = commandLine; // Параметры для декодирования
+
+            // Создаем новый элемент списка для декодирования
+            var item = new ListViewItem("Decode") // Первая колонка - Decode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+
+            // Добавляем элемент в listViewJobList
+            listViewJobs.Items.Add(item);
+        }
+
+        private void buttonCopyJobs_Click(object sender, EventArgs e)
+        {
+            StringBuilder jobsText = new StringBuilder();
+
+            // Проверяем, есть ли выделенные элементы
+            if (listViewJobs.SelectedItems.Count > 0)
+            {
+                // Копируем только выделенные задачи
+                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+            else
+            {
+                // Если ничего не выделено, копируем все задачи
+                foreach (ListViewItem item in listViewJobs.Items)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+
+            // Копируем текст в буфер обмена
+            if (jobsText.Length > 0)
+            {
+                Clipboard.SetText(jobsText.ToString());
+                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        private void buttonPasteJobs_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Получаем текст из буфера обмена
+                string clipboardText = Clipboard.GetText();
+
+                // Проверяем, если буфер не пустой
+                if (!string.IsNullOrEmpty(clipboardText))
+                {
+                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
+
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем строку на части
+                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            string jobName = parts[0];
+                            string parameters = parts[2];
+                            AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
 
 
     }
