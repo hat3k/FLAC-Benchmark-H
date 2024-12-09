@@ -809,6 +809,9 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
+
+            isExecuting = true; // Устанавливаем флаг выполнения
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
             // Создаём временную директорию для выходного файла
@@ -827,6 +830,7 @@ namespace FLAC_Benchmark_H
             if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
             {
                 MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isExecuting = false; // Сбрасываем флаг, если нет файлов
                 return;
             }
             foreach (var executable in selectedExecutables)
@@ -835,6 +839,7 @@ namespace FLAC_Benchmark_H
                 {
                     if (_isEncodingStopped)
                     {
+                        isExecuting = false; // Сбрасываем флаг перед выходом
                         return; // Выходим, если остановка запроса
                     }
 
@@ -967,9 +972,15 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+
+            // Сбрасываем флаг выполнения после завершения
+            isExecuting = false;
         }
         private async void buttonStartDecode_Click(object? sender, EventArgs e)
         {
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
+
+            isExecuting = true; // Устанавливаем флаг выполнения
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
             // Создаём временную директорию для выходного файла
@@ -989,6 +1000,7 @@ namespace FLAC_Benchmark_H
             if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
             {
                 MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isExecuting = false; // Сбрасываем флаг, если нет файлов
                 return;
             }
             foreach (var executable in selectedExecutables)
@@ -997,6 +1009,7 @@ namespace FLAC_Benchmark_H
                 {
                     if (_isEncodingStopped)
                     {
+                        isExecuting = false; // Сбрасываем флаг перед выходом
                         return; // Выходим, если остановка запроса
                     }
 
@@ -1073,7 +1086,7 @@ namespace FLAC_Benchmark_H
                                 long outputSize = outputFile.Length; // Размер выходного файла
                                 string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
                                 TimeSpan timeTaken = stopwatch.Elapsed;
-                                // Рассчитываем отношение скорости кодирования к длительности
+                                // Рассчитываем отношение скорости декодирования к длительности
                                 double decodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
                                 // Получаем информацию о версии exe файла
                                 var version = GetExecutableInfo(executable);
@@ -1111,7 +1124,10 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            // Сбрасываем флаг выполнения после завершения
+            isExecuting = false;
         }
+
         private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
