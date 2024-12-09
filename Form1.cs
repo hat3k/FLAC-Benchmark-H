@@ -507,10 +507,10 @@ namespace FLAC_Benchmark_H
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                bool hasTxtFiles = files.Any(file =>
-                    Directory.Exists(file) ||
-                    Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase));
-                e.Effect = hasTxtFiles ? DragDropEffects.Copy : DragDropEffects.None;
+                // Проверяем наличие .txt файлов или директорий
+                e.Effect = files.Any(file => Directory.Exists(file) ||
+                                              Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                        ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
             {
@@ -523,13 +523,14 @@ namespace FLAC_Benchmark_H
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (var file in files)
             {
-                if (Directory.Exists(file)) // Если это папка, ищем .txt файлы внутри рекурсивно
+                // Если это папка, ищем .txt файлы внутри рекурсивно
+                if (Directory.Exists(file))
                 {
                     AddJobsFromDirectory(file);
                 }
                 else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
                 {
-                    LoadJobsFromFile(file); // Используем общий метод
+                    LoadJobsFromFile(file); // Загружаем задачи из файла
                 }
             }
         }
@@ -538,7 +539,7 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                // Находим все .txt файлы с заданным расширением в текущей директории
+                // Ищем все .txt файлы с заданным расширением в текущей директории
                 var txtFiles = Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories);
                 foreach (var txtFile in txtFiles)
                 {
@@ -562,8 +563,6 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = File.ReadAllLines(filePath);
-                //   listViewJobs.Items.Clear(); // Очищаем существующие элементы перед загрузкой новых
-
                 foreach (var line in lines)
                 {
                     var parts = line.Split('~'); // Разделяем строку на части
@@ -584,7 +583,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Метод для загрузки задач из файла txt
         private void LoadJobs()
         {
@@ -600,7 +598,7 @@ namespace FLAC_Benchmark_H
                         var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
                         if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
                         {
-                            var item = new ListViewItem(parts[0]) { Checked = isChecked }; // Устанавливаем состояние чекбокса
+                            var item = new ListViewItem(parts[0]) { Checked = isChecked };
                             item.SubItems.Add(parts[2]); // Вторая колонка: параметры
                             listViewJobs.Items.Add(item);
                         }
@@ -615,12 +613,8 @@ namespace FLAC_Benchmark_H
         // Общий метод добавления задач в ListView
         private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
         {
-            var item = new ListViewItem(job)
-            {
-                Checked = isChecked // Устанавливаем выделение по умолчанию 
-            };
-
-            item.SubItems.Add(parameters); // Добавляем параметры как второй элемент 
+            var item = new ListViewItem(job) { Checked = isChecked };
+            item.SubItems.Add(parameters); // Добавляем параметры
             listViewJobs.Items.Add(item); // Добавляем элемент в ListView
         }
 
@@ -1799,9 +1793,5 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
-
     }
 }
