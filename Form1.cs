@@ -946,16 +946,10 @@ namespace FLAC_Benchmark_H
                                 Path.GetFileName(executable),
                                 version);
                                 // Установка цвета текста в зависимости от сравнения размеров файлов
-                                if (outputSize > inputSize)
-                                {
-                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Red; // Выходной размер больше
-                                }
-                                else if (outputSize < inputSize)
-                                {
-                                    dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = Color.Green; // Выходной размер меньше
-                                }
-                                // Прокручиваем DataGridView вниз к последней добавленной строке
-                                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
+                                dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
+                                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
+                                // Установка цвета текста для скорости кодирования
+                                dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
                                 dataGridViewLog.ClearSelection();
                                 // Логирование в файл
@@ -1094,6 +1088,10 @@ namespace FLAC_Benchmark_H
                                 parameters,
                                 Path.GetFileName(executable),
                                 version);
+                                // Установка цвета текста в зависимости от сравнения размеров файлов
+                                dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
+                                // Установка цвета текста для скорости декодирования
+                                dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = decodingSpeed > 1 ? Color.Green : (decodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
                                 // Прокручиваем DataGridView вниз к последней добавленной строке
                                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                 // Очищаем выделение, чтобы убрать фокус с первой строки
@@ -1525,10 +1523,11 @@ namespace FLAC_Benchmark_H
                                                 parameters,
                                                 Path.GetFileName(executable),
                                                 version);
-
                                             // Установка цвета текста в зависимости от сравнения размеров файлов
-                                            dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize > inputSize ? Color.Red : Color.Green;
-
+                                            dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
+                                            dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
+                                            // Установка цвета текста для скорости кодирования
+                                            dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
                                             // Прокручиваем DataGridView вниз к последней добавленной строке
                                             dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                             // Очищаем выделение, чтобы убрать фокус с первой строки
@@ -1683,7 +1682,10 @@ namespace FLAC_Benchmark_H
                                                 parameters,
                                                 Path.GetFileName(executable),
                                                 version);
-
+                                            // Установка цвета текста в зависимости от сравнения размеров файлов
+                                            dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
+                                            // Установка цвета текста для скорости декодирования
+                                            dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = decodingSpeed > 1 ? Color.Green : (decodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
                                             // Прокручиваем DataGridView вниз к последней добавленной строке
                                             dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                                             // Очищаем выделение, чтобы убрать фокус с первой строки

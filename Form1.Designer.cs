@@ -639,6 +639,7 @@
             // 
             // listViewJobs
             // 
+            listViewJobs.AllowDrop = true;
             listViewJobs.CheckBoxes = true;
             listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Parameters });
             listViewJobs.FullRowSelect = true;
