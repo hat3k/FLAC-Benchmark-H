@@ -808,18 +808,11 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
-            if (isExecuting)
-            {
-                // Если уже выполняется, начинаем остановку
-                _isEncodingStopped = true;
-                buttonStartEncode.Text = "Stopping..."; // Возможно добавить текст "Stopping..."
-                return;
-            }
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
 
             isExecuting = true; // Устанавливаем флаг выполнения
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
-            buttonStartEncode.Text = "Stop"; // Меняем текст кнопки на "Stop"
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
@@ -837,7 +830,6 @@ namespace FLAC_Benchmark_H
             {
                 MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 isExecuting = false; // Сбрасываем флаг, если нет файлов
-                buttonStartEncode.Text = "Encode"; // Меняем текст кнопки обратно
                 return;
             }
             foreach (var executable in selectedExecutables)
@@ -847,7 +839,6 @@ namespace FLAC_Benchmark_H
                     if (_isEncodingStopped)
                     {
                         isExecuting = false; // Сбрасываем флаг перед выходом
-                        buttonStartEncode.Text = "Encode"; // Меняем текст кнопки обратно
                         return; // Выходим, если остановка запроса
                     }
 
@@ -983,22 +974,14 @@ namespace FLAC_Benchmark_H
 
             // Сбрасываем флаг выполнения после завершения
             isExecuting = false;
-            buttonStartEncode.Text = "Encode"; // Меняем текст кнопки обратно
         }
         private async void buttonStartDecode_Click(object? sender, EventArgs e)
         {
-            if (isExecuting)
-            {
-                // Если уже выполняется, начинаем остановку
-                _isEncodingStopped = true;
-                buttonStartDecode.Text = "Stopping...";
-                return;
-            }
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
 
             isExecuting = true; // Устанавливаем флаг выполнения
             // Устанавливаем флаг остановки
             _isEncodingStopped = false;
-            buttonStartDecode.Text = "Stop"; // Меняем текст кнопки на "Stop"
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
@@ -1017,7 +1000,6 @@ namespace FLAC_Benchmark_H
             {
                 MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 isExecuting = false; // Сбрасываем флаг, если нет файлов
-                buttonStartDecode.Text = "Decode"; // Меняем текст кнопки обратно
                 return;
             }
             foreach (var executable in selectedExecutables)
@@ -1027,7 +1009,6 @@ namespace FLAC_Benchmark_H
                     if (_isEncodingStopped)
                     {
                         isExecuting = false; // Сбрасываем флаг перед выходом
-                        buttonStartDecode.Text = "Decode"; // Меняем текст кнопки обратно
                         return; // Выходим, если остановка запроса
                     }
 
@@ -1144,7 +1125,6 @@ namespace FLAC_Benchmark_H
             }
             // Сбрасываем флаг выполнения после завершения
             isExecuting = false;
-            buttonStartDecode.Text = "Decode"; // Меняем текст кнопки обратно
         }
 
         private void buttonImportJobList_Click(object? sender, EventArgs e)
