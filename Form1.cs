@@ -636,10 +636,9 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
-            //   if (e.KeyCode == Keys.Delete)
-            //       buttonRemoveAudiofile.PerformClick();
+            if (e.KeyCode == Keys.Delete)
+                buttonRemoveJob.PerformClick();
         }
-
         private void InitializedataGridViewLog()
         {
             // Настройка DataGridView (по желанию)
@@ -1185,6 +1184,17 @@ namespace FLAC_Benchmark_H
                     {
                         MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                }
+            }
+        }
+        private void buttonRemoveJob_Click(object sender, EventArgs e)
+        {
+            // Удаляем выделенные элементы из listViewJobs
+            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
+            {
+                if (listViewJobs.Items[i].Selected) // Проверяем, выделен ли элемент
+                {
+                    listViewJobs.Items.RemoveAt(i); // Удаляем элемент
                 }
             }
         }
@@ -1749,7 +1759,7 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                //    MessageBox.Show($"Error stopping process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    //    MessageBox.Show($"Error stopping process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 finally
                 {
@@ -1758,6 +1768,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
 
     }
 }

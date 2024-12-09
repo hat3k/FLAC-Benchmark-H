@@ -96,6 +96,7 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            buttonRemoveJob = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -603,6 +604,7 @@
             // 
             // groupBoxJobsList
             // 
+            groupBoxJobsList.Controls.Add(buttonRemoveJob);
             groupBoxJobsList.Controls.Add(buttonCopyJobs);
             groupBoxJobsList.Controls.Add(buttonPasteJobs);
             groupBoxJobsList.Controls.Add(listViewJobs);
@@ -856,6 +858,16 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
+            // buttonRemoveJob
+            // 
+            buttonRemoveJob.Location = new Point(354, 364);
+            buttonRemoveJob.Name = "buttonRemoveJob";
+            buttonRemoveJob.Size = new Size(110, 23);
+            buttonRemoveJob.TabIndex = 28;
+            buttonRemoveJob.Text = "Remove Job";
+            buttonRemoveJob.UseVisualStyleBackColor = true;
+            buttonRemoveJob.Click += buttonRemoveJob_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -962,5 +974,6 @@
         private ColumnHeader Parameters;
         private Button buttonCopyJobs;
         private Button buttonPasteJobs;
+        private Button buttonRemoveJob;
     }
 }
