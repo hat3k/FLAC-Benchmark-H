@@ -973,11 +973,15 @@ namespace FLAC_Benchmark_H
                         else
                         {
                             MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                            return;
                         }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                        return;
                     }
                 }
             }
@@ -1134,11 +1138,15 @@ namespace FLAC_Benchmark_H
                         else
                         {
                             MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                            return;
                         }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                        return;
                     }
                 }
             }
@@ -1311,11 +1319,15 @@ namespace FLAC_Benchmark_H
                                     else
                                     {
                                         MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                                        return;
                                     }
                                 }
                                 catch (Exception ex)
                                 {
                                     MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    isExecuting = false; // Сбрасываем флаг перед возвратом
+                                    return;
                                 }
                             }
                         }
@@ -1344,6 +1356,7 @@ namespace FLAC_Benchmark_H
                         if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
                         {
                             MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
 
@@ -1470,11 +1483,15 @@ namespace FLAC_Benchmark_H
                                     else
                                     {
                                         MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                                        return;
                                     }
                                 }
                                 catch (Exception ex)
                                 {
                                     MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    isExecuting = false; // Сбрасываем флаг перед возвратом
+                                    return;
                                 }
                             }
                         }
