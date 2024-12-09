@@ -409,6 +409,7 @@
             // 
             // buttonOpenLogtxt
             // 
+            buttonOpenLogtxt.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonOpenLogtxt.Location = new Point(514, 364);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
@@ -419,6 +420,7 @@
             // 
             // buttonClearLog
             // 
+            buttonClearLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonClearLog.Location = new Point(696, 364);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(75, 23);
@@ -702,6 +704,7 @@
             // 
             // groupLog
             // 
+            groupLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupLog.Controls.Add(dataGridViewLog);
             groupLog.Controls.Add(buttonClearLog);
             groupLog.Controls.Add(buttonCopyLog);
@@ -718,6 +721,7 @@
             dataGridViewLog.AllowUserToAddRows = false;
             dataGridViewLog.AllowUserToOrderColumns = true;
             dataGridViewLog.AllowUserToResizeRows = false;
+            dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
@@ -750,6 +754,7 @@
             // 
             // buttonCopyLog
             // 
+            buttonCopyLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCopyLog.Location = new Point(605, 364);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(85, 23);
