@@ -25,7 +25,6 @@
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
-            buttonStop = new Button();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             buttonStartEncode = new Button();
@@ -49,6 +48,7 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
+            buttonStop = new Button();
             checkBoxHighPriority = new CheckBox();
             buttonStartDecode = new Button();
             labelCPUinfo = new Label();
@@ -108,7 +108,6 @@
             // 
             // groupBoxEncoderSettings
             // 
-            groupBoxEncoderSettings.Controls.Add(buttonStop);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
@@ -138,16 +137,6 @@
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
-            // 
-            // buttonStop
-            // 
-            buttonStop.Location = new Point(616, 141);
-            buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(155, 23);
-            buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop Encoding/Decoding";
-            buttonStop.UseVisualStyleBackColor = true;
-            buttonStop.Click += buttonStop_Click;
             // 
             // labelCommandLineEncoder
             // 
@@ -365,6 +354,17 @@
             textBoxThreads.TabIndex = 3;
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
+            // 
+            // buttonStop
+            // 
+            buttonStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonStop.Location = new Point(6, 364);
+            buttonStop.Name = "buttonStop";
+            buttonStop.Size = new Size(155, 23);
+            buttonStop.TabIndex = 25;
+            buttonStop.Text = "Stop Encoding/Decoding";
+            buttonStop.UseVisualStyleBackColor = true;
+            buttonStop.Click += buttonStop_Click;
             // 
             // checkBoxHighPriority
             // 
@@ -704,6 +704,7 @@
             // groupLog
             // 
             groupLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupLog.Controls.Add(buttonStop);
             groupLog.Controls.Add(dataGridViewLog);
             groupLog.Controls.Add(buttonClearLog);
             groupLog.Controls.Add(buttonCopyLog);
