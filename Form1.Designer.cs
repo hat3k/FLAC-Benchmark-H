@@ -896,7 +896,6 @@
         private TextBox textBoxCommandLineOptionsEncoder;
         private ProgressBar progressBarEncoder;
         private Button buttonStartEncode;
-        private TextBox textBoxLog;
         private Button buttonepr8;
         private Button buttonAsubdividetukey5flattop;
         private Button buttonNoPadding;
