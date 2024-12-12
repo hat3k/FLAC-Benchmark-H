@@ -681,7 +681,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        // Метод для перемещения выделенных элементов
         private void MoveSelectedItems(int direction)
         {
             // Получаем выделенные элементы и сортируем их по индексам
@@ -693,38 +692,33 @@ namespace FLAC_Benchmark_H
             if (selectedItems.Count == 0)
                 return;
 
-            // Создаем список новых индексов
-            List<int> newIndices = new List<int>();
+            // Если перемещение вниз, мы будем взимать элементы в обратном порядке
+            if (direction > 0)
+            {
+                selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
+            }
 
-            // Находим новые индексы для каждого элемента
+            // Перемещение элементов
             foreach (var item in selectedItems)
             {
                 int currentIndex = item.Index;
                 int newIndex = currentIndex + direction;
 
                 // Проверяем границы
-                if ((direction > 0 && newIndex < listViewFlacExecutables.Items.Count) ||
-                    (direction < 0 && newIndex >= 0))
-                {
-                    newIndices.Add(newIndex);
-                }
-            }
+                if (newIndex < 0 || newIndex >= listViewFlacExecutables.Items.Count)
+                    return; // Если выход за пределы, выходим из метода
 
-            // Удаляем элементы из списка, чтобы избежать путаницы с индексами
-            foreach (var item in selectedItems)
-            {
+                // Удаляем элемент из текущего места
                 listViewFlacExecutables.Items.Remove(item);
-            }
 
-            // Вставляем элементы на новые позиции
-            for (int i = 0; i < selectedItems.Count; i++)
-            {
-                listViewFlacExecutables.Items.Insert(newIndices[i] - i, selectedItems[i]);
+                // Вставляем элемент на новое место
+                listViewFlacExecutables.Items.Insert(newIndex, item);
             }
 
             // Обновляем выделение
             UpdateSelection(selectedItems);
         }
+
 
         private void UpdateSelection(List<ListViewItem> selectedItems)
         {
@@ -742,6 +736,7 @@ namespace FLAC_Benchmark_H
 
             listViewFlacExecutables.Focus(); // Ставим фокус на список
         }
+
 
         // Обработка нажатия кнопки "Вверх"
         private void buttonUpEncoder_Click(object sender, EventArgs e)
