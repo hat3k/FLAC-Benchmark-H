@@ -221,7 +221,7 @@
             // 
             // buttonSetHalfThreads
             // 
-            buttonSetHalfThreads.Location = new Point(379, 50);
+            buttonSetHalfThreads.Location = new Point(379, 51);
             buttonSetHalfThreads.Name = "buttonSetHalfThreads";
             buttonSetHalfThreads.Size = new Size(53, 23);
             buttonSetHalfThreads.TabIndex = 18;
@@ -241,7 +241,7 @@
             // 
             // buttonSetMaxThreads
             // 
-            buttonSetMaxThreads.Location = new Point(438, 50);
+            buttonSetMaxThreads.Location = new Point(438, 51);
             buttonSetMaxThreads.Name = "buttonSetMaxThreads";
             buttonSetMaxThreads.Size = new Size(53, 23);
             buttonSetMaxThreads.TabIndex = 18;
@@ -281,7 +281,7 @@
             // 
             // buttonSetMaxCores
             // 
-            buttonSetMaxCores.Location = new Point(261, 50);
+            buttonSetMaxCores.Location = new Point(261, 51);
             buttonSetMaxCores.Name = "buttonSetMaxCores";
             buttonSetMaxCores.Size = new Size(53, 23);
             buttonSetMaxCores.TabIndex = 18;
@@ -301,7 +301,7 @@
             // 
             // buttonMaxCompressionLevel
             // 
-            buttonMaxCompressionLevel.Location = new Point(261, 20);
+            buttonMaxCompressionLevel.Location = new Point(261, 21);
             buttonMaxCompressionLevel.Name = "buttonMaxCompressionLevel";
             buttonMaxCompressionLevel.Size = new Size(53, 23);
             buttonMaxCompressionLevel.TabIndex = 18;
@@ -311,7 +311,7 @@
             // 
             // button5CompressionLevel
             // 
-            button5CompressionLevel.Location = new Point(202, 20);
+            button5CompressionLevel.Location = new Point(202, 21);
             button5CompressionLevel.Name = "button5CompressionLevel";
             button5CompressionLevel.Size = new Size(53, 23);
             button5CompressionLevel.TabIndex = 18;
