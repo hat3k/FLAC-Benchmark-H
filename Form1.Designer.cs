@@ -55,6 +55,8 @@
             buttonOpenLogtxt = new Button();
             buttonClearLog = new Button();
             groupBoxEncoders = new GroupBox();
+            buttonDownEncoder = new Button();
+            buttonUpEncoder = new Button();
             buttonRemoveEncoder = new Button();
             listViewFlacExecutables = new ListView();
             FileNameExe = new ColumnHeader();
@@ -64,6 +66,8 @@
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
+            buttonDownAudioFile = new Button();
+            buttonUpAudioFile = new Button();
             listViewAudioFiles = new ListView();
             FileName = new ColumnHeader();
             Duration = new ColumnHeader();
@@ -74,6 +78,8 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
+            buttonDownJob = new Button();
+            buttonГзОщи = new Button();
             buttonRemoveJob = new Button();
             buttonCopyJobs = new Button();
             buttonPasteJobs = new Button();
@@ -151,7 +157,7 @@
             // 
             buttonAddJobToJobListEncoder.Location = new Point(122, 141);
             buttonAddJobToJobListEncoder.Name = "buttonAddJobToJobListEncoder";
-            buttonAddJobToJobListEncoder.Size = new Size(110, 23);
+            buttonAddJobToJobListEncoder.Size = new Size(100, 23);
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
@@ -170,9 +176,9 @@
             // progressBarEncoder
             // 
             progressBarEncoder.Enabled = false;
-            progressBarEncoder.Location = new Point(238, 141);
+            progressBarEncoder.Location = new Point(228, 141);
             progressBarEncoder.Name = "progressBarEncoder";
-            progressBarEncoder.Size = new Size(324, 23);
+            progressBarEncoder.Size = new Size(334, 23);
             progressBarEncoder.TabIndex = 4;
             // 
             // labelSetThreads
@@ -293,7 +299,7 @@
             // 
             buttonClearCommandLineEncoder.Location = new Point(568, 80);
             buttonClearCommandLineEncoder.Name = "buttonClearCommandLineEncoder";
-            buttonClearCommandLineEncoder.Size = new Size(75, 23);
+            buttonClearCommandLineEncoder.Size = new Size(55, 23);
             buttonClearCommandLineEncoder.TabIndex = 11;
             buttonClearCommandLineEncoder.Text = "Clear";
             buttonClearCommandLineEncoder.UseVisualStyleBackColor = true;
@@ -360,9 +366,9 @@
             buttonStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonStop.Location = new Point(6, 364);
             buttonStop.Name = "buttonStop";
-            buttonStop.Size = new Size(155, 23);
+            buttonStop.Size = new Size(110, 23);
             buttonStop.TabIndex = 25;
-            buttonStop.Text = "Stop Encoding/Decoding";
+            buttonStop.Text = "Stop all";
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += buttonStop_Click;
             // 
@@ -397,7 +403,7 @@
             // buttonOpenLogtxt
             // 
             buttonOpenLogtxt.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonOpenLogtxt.Location = new Point(514, 364);
+            buttonOpenLogtxt.Location = new Point(564, 364);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
             buttonOpenLogtxt.TabIndex = 16;
@@ -408,16 +414,18 @@
             // buttonClearLog
             // 
             buttonClearLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonClearLog.Location = new Point(696, 364);
+            buttonClearLog.Location = new Point(716, 364);
             buttonClearLog.Name = "buttonClearLog";
-            buttonClearLog.Size = new Size(75, 23);
+            buttonClearLog.Size = new Size(55, 23);
             buttonClearLog.TabIndex = 12;
-            buttonClearLog.Text = "Clear Log";
+            buttonClearLog.Text = "Clear";
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
             // 
             // groupBoxEncoders
             // 
+            groupBoxEncoders.Controls.Add(buttonDownEncoder);
+            groupBoxEncoders.Controls.Add(buttonUpEncoder);
             groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
             groupBoxEncoders.Controls.Add(listViewFlacExecutables);
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
@@ -429,14 +437,32 @@
             groupBoxEncoders.TabStop = false;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available)";
             // 
+            // buttonDownEncoder
+            // 
+            buttonDownEncoder.Location = new Point(152, 230);
+            buttonDownEncoder.Name = "buttonDownEncoder";
+            buttonDownEncoder.Size = new Size(24, 23);
+            buttonDownEncoder.TabIndex = 27;
+            buttonDownEncoder.Text = "▼";
+            buttonDownEncoder.UseVisualStyleBackColor = true;
+            // 
+            // buttonUpEncoder
+            // 
+            buttonUpEncoder.Location = new Point(122, 230);
+            buttonUpEncoder.Name = "buttonUpEncoder";
+            buttonUpEncoder.Size = new Size(24, 23);
+            buttonUpEncoder.TabIndex = 26;
+            buttonUpEncoder.Text = "▲";
+            buttonUpEncoder.UseVisualStyleBackColor = true;
+            // 
             // buttonRemoveEncoder
             // 
             buttonRemoveEncoder.Font = new Font("Segoe UI", 9F);
-            buttonRemoveEncoder.Location = new Point(122, 230);
+            buttonRemoveEncoder.Location = new Point(182, 230);
             buttonRemoveEncoder.Name = "buttonRemoveEncoder";
-            buttonRemoveEncoder.Size = new Size(110, 23);
+            buttonRemoveEncoder.Size = new Size(24, 23);
             buttonRemoveEncoder.TabIndex = 11;
-            buttonRemoveEncoder.Text = "Remove file";
+            buttonRemoveEncoder.Text = "❌";
             buttonRemoveEncoder.UseVisualStyleBackColor = true;
             buttonRemoveEncoder.Click += buttonRemoveEncoder_Click;
             // 
@@ -484,16 +510,16 @@
             buttonAddEncoders.Name = "buttonAddEncoders";
             buttonAddEncoders.Size = new Size(110, 23);
             buttonAddEncoders.TabIndex = 11;
-            buttonAddEncoders.Text = "Add encoders";
+            buttonAddEncoders.Text = "➕ Уncoders";
             buttonAddEncoders.UseVisualStyleBackColor = true;
             buttonAddEncoders.Click += buttonAddEncoders_Click;
             // 
             // buttonClearEncoders
             // 
             buttonClearEncoders.Font = new Font("Segoe UI", 9F);
-            buttonClearEncoders.Location = new Point(696, 230);
+            buttonClearEncoders.Location = new Point(716, 230);
             buttonClearEncoders.Name = "buttonClearEncoders";
-            buttonClearEncoders.Size = new Size(75, 23);
+            buttonClearEncoders.Size = new Size(55, 23);
             buttonClearEncoders.TabIndex = 11;
             buttonClearEncoders.Text = "Clear";
             buttonClearEncoders.UseVisualStyleBackColor = true;
@@ -501,6 +527,8 @@
             // 
             // groupBoxAudioFiles
             // 
+            groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonRemoveAudiofile);
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
@@ -511,6 +539,24 @@
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
+            // 
+            // buttonDownAudioFile
+            // 
+            buttonDownAudioFile.Location = new Point(152, 230);
+            buttonDownAudioFile.Name = "buttonDownAudioFile";
+            buttonDownAudioFile.Size = new Size(24, 23);
+            buttonDownAudioFile.TabIndex = 27;
+            buttonDownAudioFile.Text = "▼";
+            buttonDownAudioFile.UseVisualStyleBackColor = true;
+            // 
+            // buttonUpAudioFile
+            // 
+            buttonUpAudioFile.Location = new Point(122, 230);
+            buttonUpAudioFile.Name = "buttonUpAudioFile";
+            buttonUpAudioFile.Size = new Size(24, 23);
+            buttonUpAudioFile.TabIndex = 26;
+            buttonUpAudioFile.Text = "▲";
+            buttonUpAudioFile.UseVisualStyleBackColor = true;
             // 
             // listViewAudioFiles
             // 
@@ -560,11 +606,11 @@
             // 
             // buttonRemoveAudiofile
             // 
-            buttonRemoveAudiofile.Location = new Point(122, 230);
+            buttonRemoveAudiofile.Location = new Point(182, 230);
             buttonRemoveAudiofile.Name = "buttonRemoveAudiofile";
-            buttonRemoveAudiofile.Size = new Size(110, 23);
+            buttonRemoveAudiofile.Size = new Size(24, 23);
             buttonRemoveAudiofile.TabIndex = 11;
-            buttonRemoveAudiofile.Text = "Remove file";
+            buttonRemoveAudiofile.Text = "❌";
             buttonRemoveAudiofile.UseVisualStyleBackColor = true;
             buttonRemoveAudiofile.Click += buttonRemoveAudiofile_Click;
             // 
@@ -580,9 +626,9 @@
             // 
             // buttonClearAudioFiles
             // 
-            buttonClearAudioFiles.Location = new Point(696, 230);
+            buttonClearAudioFiles.Location = new Point(716, 230);
             buttonClearAudioFiles.Name = "buttonClearAudioFiles";
-            buttonClearAudioFiles.Size = new Size(75, 23);
+            buttonClearAudioFiles.Size = new Size(55, 23);
             buttonClearAudioFiles.TabIndex = 11;
             buttonClearAudioFiles.Text = "Clear";
             buttonClearAudioFiles.UseVisualStyleBackColor = true;
@@ -590,6 +636,8 @@
             // 
             // groupBoxJobsList
             // 
+            groupBoxJobsList.Controls.Add(buttonDownJob);
+            groupBoxJobsList.Controls.Add(buttonГзОщи);
             groupBoxJobsList.Controls.Add(buttonRemoveJob);
             groupBoxJobsList.Controls.Add(buttonCopyJobs);
             groupBoxJobsList.Controls.Add(buttonPasteJobs);
@@ -605,21 +653,39 @@
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             // 
+            // buttonDownJob
+            // 
+            buttonDownJob.Location = new Point(151, 364);
+            buttonDownJob.Name = "buttonDownJob";
+            buttonDownJob.Size = new Size(24, 23);
+            buttonDownJob.TabIndex = 30;
+            buttonDownJob.Text = "▼";
+            buttonDownJob.UseVisualStyleBackColor = true;
+            // 
+            // buttonГзОщи
+            // 
+            buttonГзОщи.Location = new Point(122, 364);
+            buttonГзОщи.Name = "buttonГзОщи";
+            buttonГзОщи.Size = new Size(24, 23);
+            buttonГзОщи.TabIndex = 29;
+            buttonГзОщи.Text = "▲";
+            buttonГзОщи.UseVisualStyleBackColor = true;
+            // 
             // buttonRemoveJob
             // 
-            buttonRemoveJob.Location = new Point(354, 364);
+            buttonRemoveJob.Location = new Point(181, 364);
             buttonRemoveJob.Name = "buttonRemoveJob";
-            buttonRemoveJob.Size = new Size(110, 23);
+            buttonRemoveJob.Size = new Size(24, 23);
             buttonRemoveJob.TabIndex = 28;
-            buttonRemoveJob.Text = "Remove Job";
+            buttonRemoveJob.Text = "❌";
             buttonRemoveJob.UseVisualStyleBackColor = true;
             buttonRemoveJob.Click += buttonRemoveJob_Click;
             // 
             // buttonCopyJobs
             // 
-            buttonCopyJobs.Location = new Point(534, 364);
+            buttonCopyJobs.Location = new Point(594, 364);
             buttonCopyJobs.Name = "buttonCopyJobs";
-            buttonCopyJobs.Size = new Size(75, 23);
+            buttonCopyJobs.Size = new Size(55, 23);
             buttonCopyJobs.TabIndex = 27;
             buttonCopyJobs.Text = "Copy";
             buttonCopyJobs.UseVisualStyleBackColor = true;
@@ -627,9 +693,9 @@
             // 
             // buttonPasteJobs
             // 
-            buttonPasteJobs.Location = new Point(615, 364);
+            buttonPasteJobs.Location = new Point(655, 364);
             buttonPasteJobs.Name = "buttonPasteJobs";
-            buttonPasteJobs.Size = new Size(75, 23);
+            buttonPasteJobs.Size = new Size(55, 23);
             buttonPasteJobs.TabIndex = 26;
             buttonPasteJobs.Text = "Paste";
             buttonPasteJobs.UseVisualStyleBackColor = true;
@@ -673,9 +739,9 @@
             // 
             // buttonExportJobList
             // 
-            buttonExportJobList.Location = new Point(238, 364);
+            buttonExportJobList.Location = new Point(488, 364);
             buttonExportJobList.Name = "buttonExportJobList";
-            buttonExportJobList.Size = new Size(110, 23);
+            buttonExportJobList.Size = new Size(100, 23);
             buttonExportJobList.TabIndex = 3;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
@@ -683,9 +749,9 @@
             // 
             // buttonImportJobList
             // 
-            buttonImportJobList.Location = new Point(122, 364);
+            buttonImportJobList.Location = new Point(382, 364);
             buttonImportJobList.Name = "buttonImportJobList";
-            buttonImportJobList.Size = new Size(110, 23);
+            buttonImportJobList.Size = new Size(100, 23);
             buttonImportJobList.TabIndex = 3;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
@@ -693,9 +759,9 @@
             // 
             // buttonClearJobList
             // 
-            buttonClearJobList.Location = new Point(696, 364);
+            buttonClearJobList.Location = new Point(716, 364);
             buttonClearJobList.Name = "buttonClearJobList";
-            buttonClearJobList.Size = new Size(75, 23);
+            buttonClearJobList.Size = new Size(55, 23);
             buttonClearJobList.TabIndex = 11;
             buttonClearJobList.Text = "Clear";
             buttonClearJobList.UseVisualStyleBackColor = true;
@@ -755,11 +821,11 @@
             // buttonCopyLog
             // 
             buttonCopyLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonCopyLog.Location = new Point(605, 364);
+            buttonCopyLog.Location = new Point(655, 364);
             buttonCopyLog.Name = "buttonCopyLog";
-            buttonCopyLog.Size = new Size(85, 23);
+            buttonCopyLog.Size = new Size(55, 23);
             buttonCopyLog.TabIndex = 16;
-            buttonCopyLog.Text = "Copy Log";
+            buttonCopyLog.Text = "Copy";
             buttonCopyLog.UseVisualStyleBackColor = true;
             buttonCopyLog.Click += buttonCopyLog_Click;
             // 
@@ -824,7 +890,7 @@
             // 
             buttonAddJobToJobListDecoder.Location = new Point(122, 141);
             buttonAddJobToJobListDecoder.Name = "buttonAddJobToJobListDecoder";
-            buttonAddJobToJobListDecoder.Size = new Size(110, 23);
+            buttonAddJobToJobListDecoder.Size = new Size(100, 23);
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
@@ -834,22 +900,22 @@
             // 
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
-            textBoxCommandLineOptionsDecoder.Size = new Size(395, 23);
+            textBoxCommandLineOptionsDecoder.Size = new Size(415, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 4;
             // 
             // progressBarDecoder
             // 
             progressBarDecoder.Enabled = false;
-            progressBarDecoder.Location = new Point(238, 141);
+            progressBarDecoder.Location = new Point(228, 141);
             progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(360, 23);
+            progressBarDecoder.Size = new Size(370, 23);
             progressBarDecoder.TabIndex = 4;
             // 
             // buttonClearCommandLineDecoder
             // 
-            buttonClearCommandLineDecoder.Location = new Point(523, 21);
+            buttonClearCommandLineDecoder.Location = new Point(543, 21);
             buttonClearCommandLineDecoder.Name = "buttonClearCommandLineDecoder";
-            buttonClearCommandLineDecoder.Size = new Size(75, 23);
+            buttonClearCommandLineDecoder.Size = new Size(55, 23);
             buttonClearCommandLineDecoder.TabIndex = 11;
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
@@ -960,5 +1026,11 @@
         private Button buttonCopyJobs;
         private Button buttonPasteJobs;
         private Button buttonRemoveJob;
+        private Button buttonDownEncoder;
+        private Button buttonUpEncoder;
+        private Button buttonDownAudioFile;
+        private Button buttonUpAudioFile;
+        private Button buttonDownJob;
+        private Button buttonГзОщи;
     }
 }
