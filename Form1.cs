@@ -644,6 +644,27 @@ namespace FLAC_Benchmark_H
                 if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
             }
         }
+
+        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                folderBrowserDialog.Description = "Select temp folder";
+                // Если путь сохранён в настройках, устанавливаем его
+                if (Directory.Exists(tempFolderPath))
+                {
+                    folderBrowserDialog.SelectedPath = tempFolderPath;
+                }
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Получаем выбранный путь
+                    tempFolderPath = folderBrowserDialog.SelectedPath;
+                    // Сохраняем путь в настройках
+                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
+                }
+            }
+        }
+
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -660,6 +681,81 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+        // Метод для перемещения выделенных элементов
+        private void MoveSelectedItems(int direction)
+        {
+            // Получаем выделенные элементы и сортируем их по индексам
+            var selectedItems = listViewFlacExecutables.SelectedItems.Cast<ListViewItem>()
+                .OrderBy(item => item.Index)
+                .ToList();
+
+            // Если выделенных элементов нет, выходим из метода
+            if (selectedItems.Count == 0)
+                return;
+
+            // Создаем список новых индексов
+            List<int> newIndices = new List<int>();
+
+            // Находим новые индексы для каждого элемента
+            foreach (var item in selectedItems)
+            {
+                int currentIndex = item.Index;
+                int newIndex = currentIndex + direction;
+
+                // Проверяем границы
+                if ((direction > 0 && newIndex < listViewFlacExecutables.Items.Count) ||
+                    (direction < 0 && newIndex >= 0))
+                {
+                    newIndices.Add(newIndex);
+                }
+            }
+
+            // Удаляем элементы из списка, чтобы избежать путаницы с индексами
+            foreach (var item in selectedItems)
+            {
+                listViewFlacExecutables.Items.Remove(item);
+            }
+
+            // Вставляем элементы на новые позиции
+            for (int i = 0; i < selectedItems.Count; i++)
+            {
+                listViewFlacExecutables.Items.Insert(newIndices[i] - i, selectedItems[i]);
+            }
+
+            // Обновляем выделение
+            UpdateSelection(selectedItems);
+        }
+
+        private void UpdateSelection(List<ListViewItem> selectedItems)
+        {
+            // Снимаем выделение со всех элементов
+            foreach (ListViewItem item in listViewFlacExecutables.Items)
+            {
+                item.Selected = false;
+            }
+
+            // Выделяем перемещенные элементы
+            foreach (var item in selectedItems)
+            {
+                item.Selected = true; // Устанавливаем выделение на перемещенные элементы
+            }
+
+            listViewFlacExecutables.Focus(); // Ставим фокус на список
+        }
+
+        // Обработка нажатия кнопки "Вверх"
+        private void buttonUpEncoder_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItems(-1); // Передаём -1 для перемещения вверх
+        }
+
+        // Обработка нажатия кнопки "Вниз"
+        private void buttonDownEncoder_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItems(1); // Передаём 1 для перемещения вниз
+        }
+
+
         private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewFlacExecutables
@@ -675,6 +771,7 @@ namespace FLAC_Benchmark_H
         {
             listViewFlacExecutables.Items.Clear();
         }
+
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -688,6 +785,42 @@ namespace FLAC_Benchmark_H
                     {
                         AddAudioFileToListView(file); // Используем общий метод
                     }
+                }
+            }
+        }
+        private void buttonUpAudioFile_Click(object sender, EventArgs e)
+        {
+            // Получаем выбранный элемент
+            if (listViewAudioFiles.SelectedItems.Count > 0)
+            {
+                int selectedIndex = listViewAudioFiles.SelectedItems[0].Index;
+
+                // Проверяем, не является ли выбранный элемент первым
+                if (selectedIndex > 0)
+                {
+                    // Сохраняем элемент и его текущее местоположение
+                    ListViewItem selectedItem = listViewAudioFiles.SelectedItems[0];
+                    listViewAudioFiles.Items.RemoveAt(selectedIndex);
+                    listViewAudioFiles.Items.Insert(selectedIndex - 1, selectedItem);
+                    selectedItem.Selected = true; // Выбираем перемещённый элемент
+                }
+            }
+        }
+        private void buttonDownAudioFile_Click(object sender, EventArgs e)
+        {
+            // Получаем выбранный элемент
+            if (listViewAudioFiles.SelectedItems.Count > 0)
+            {
+                int selectedIndex = listViewAudioFiles.SelectedItems[0].Index;
+
+                // Проверяем, не является ли выбранный элемент последним
+                if (selectedIndex < listViewAudioFiles.Items.Count - 1)
+                {
+                    // Сохраняем элемент и его текущее местоположение
+                    ListViewItem selectedItem = listViewAudioFiles.SelectedItems[0];
+                    listViewAudioFiles.Items.RemoveAt(selectedIndex);
+                    listViewAudioFiles.Items.Insert(selectedIndex + 1, selectedItem);
+                    selectedItem.Selected = true; // Выбираем перемещённый элемент
                 }
             }
         }
@@ -706,6 +839,7 @@ namespace FLAC_Benchmark_H
         {
             listViewAudioFiles.Items.Clear();
         }
+
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
@@ -1432,6 +1566,42 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+        private void buttonUpJob_Click(object sender, EventArgs e)
+        {
+            // Получаем выбранный элемент
+            if (listViewJobs.SelectedItems.Count > 0)
+            {
+                int selectedIndex = listViewJobs.SelectedItems[0].Index;
+
+                // Проверяем, не является ли выбранный элемент первым
+                if (selectedIndex > 0)
+                {
+                    // Сохраняем элемент и его текущее местоположение
+                    ListViewItem selectedItem = listViewJobs.SelectedItems[0];
+                    listViewJobs.Items.RemoveAt(selectedIndex);
+                    listViewJobs.Items.Insert(selectedIndex - 1, selectedItem);
+                    selectedItem.Selected = true; // Выбираем перемещённый элемент
+                }
+            }
+        }
+        private void buttonDownJob_Click(object sender, EventArgs e)
+        {
+            // Получаем выбранный элемент
+            if (listViewJobs.SelectedItems.Count > 0)
+            {
+                int selectedIndex = listViewJobs.SelectedItems[0].Index;
+
+                // Проверяем, не является ли выбранный элемент последним
+                if (selectedIndex < listViewJobs.Items.Count - 1)
+                {
+                    // Сохраняем элемент и его текущее местоположение
+                    ListViewItem selectedItem = listViewJobs.SelectedItems[0];
+                    listViewJobs.Items.RemoveAt(selectedIndex);
+                    listViewJobs.Items.Insert(selectedIndex + 1, selectedItem);
+                    selectedItem.Selected = true; // Выбираем перемещённый элемент
+                }
+            }
+        }
         private void buttonRemoveJob_Click(object sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewJobs
@@ -1447,6 +1617,7 @@ namespace FLAC_Benchmark_H
         {
             listViewJobs.Items.Clear(); // Очищаем listViewJobList
         }
+
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Путь к файлу логирования
@@ -1502,26 +1673,6 @@ namespace FLAC_Benchmark_H
         private void buttonClearLog_Click(object? sender, EventArgs e)
         {
             dataGridViewLog.Rows.Clear();
-        }
-
-        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
-        {
-            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
-            {
-                folderBrowserDialog.Description = "Select temp folder";
-                // Если путь сохранён в настройках, устанавливаем его
-                if (Directory.Exists(tempFolderPath))
-                {
-                    folderBrowserDialog.SelectedPath = tempFolderPath;
-                }
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Получаем выбранный путь
-                    tempFolderPath = folderBrowserDialog.SelectedPath;
-                    // Сохраняем путь в настройках
-                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
-                }
-            }
         }
 
         private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)

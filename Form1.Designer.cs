@@ -21,8 +21,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
             labelCommandLineEncoder = new Label();
@@ -79,7 +79,7 @@
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
             buttonDownJob = new Button();
-            buttonГзОщи = new Button();
+            buttonUpJob = new Button();
             buttonRemoveJob = new Button();
             buttonCopyJobs = new Button();
             buttonPasteJobs = new Button();
@@ -445,6 +445,7 @@
             buttonDownEncoder.TabIndex = 27;
             buttonDownEncoder.Text = "▼";
             buttonDownEncoder.UseVisualStyleBackColor = true;
+            buttonDownEncoder.Click += buttonDownEncoder_Click;
             // 
             // buttonUpEncoder
             // 
@@ -454,6 +455,7 @@
             buttonUpEncoder.TabIndex = 26;
             buttonUpEncoder.Text = "▲";
             buttonUpEncoder.UseVisualStyleBackColor = true;
+            buttonUpEncoder.Click += buttonUpEncoder_Click;
             // 
             // buttonRemoveEncoder
             // 
@@ -510,7 +512,7 @@
             buttonAddEncoders.Name = "buttonAddEncoders";
             buttonAddEncoders.Size = new Size(110, 23);
             buttonAddEncoders.TabIndex = 11;
-            buttonAddEncoders.Text = "➕ Уncoders";
+            buttonAddEncoders.Text = "Add encoders";
             buttonAddEncoders.UseVisualStyleBackColor = true;
             buttonAddEncoders.Click += buttonAddEncoders_Click;
             // 
@@ -548,6 +550,7 @@
             buttonDownAudioFile.TabIndex = 27;
             buttonDownAudioFile.Text = "▼";
             buttonDownAudioFile.UseVisualStyleBackColor = true;
+            buttonDownAudioFile.Click += buttonDownAudioFile_Click;
             // 
             // buttonUpAudioFile
             // 
@@ -557,6 +560,7 @@
             buttonUpAudioFile.TabIndex = 26;
             buttonUpAudioFile.Text = "▲";
             buttonUpAudioFile.UseVisualStyleBackColor = true;
+            buttonUpAudioFile.Click += buttonUpAudioFile_Click;
             // 
             // listViewAudioFiles
             // 
@@ -637,7 +641,7 @@
             // groupBoxJobsList
             // 
             groupBoxJobsList.Controls.Add(buttonDownJob);
-            groupBoxJobsList.Controls.Add(buttonГзОщи);
+            groupBoxJobsList.Controls.Add(buttonUpJob);
             groupBoxJobsList.Controls.Add(buttonRemoveJob);
             groupBoxJobsList.Controls.Add(buttonCopyJobs);
             groupBoxJobsList.Controls.Add(buttonPasteJobs);
@@ -661,15 +665,17 @@
             buttonDownJob.TabIndex = 30;
             buttonDownJob.Text = "▼";
             buttonDownJob.UseVisualStyleBackColor = true;
+            buttonDownJob.Click += buttonDownJob_Click;
             // 
-            // buttonГзОщи
+            // buttonUpJob
             // 
-            buttonГзОщи.Location = new Point(122, 364);
-            buttonГзОщи.Name = "buttonГзОщи";
-            buttonГзОщи.Size = new Size(24, 23);
-            buttonГзОщи.TabIndex = 29;
-            buttonГзОщи.Text = "▲";
-            buttonГзОщи.UseVisualStyleBackColor = true;
+            buttonUpJob.Location = new Point(122, 364);
+            buttonUpJob.Name = "buttonUpJob";
+            buttonUpJob.Size = new Size(24, 23);
+            buttonUpJob.TabIndex = 29;
+            buttonUpJob.Text = "▲";
+            buttonUpJob.UseVisualStyleBackColor = true;
+            buttonUpJob.Click += buttonUpJob_Click;
             // 
             // buttonRemoveJob
             // 
@@ -791,23 +797,23 @@
             dataGridViewLog.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1031,6 +1037,6 @@
         private Button buttonDownAudioFile;
         private Button buttonUpAudioFile;
         private Button buttonDownJob;
-        private Button buttonГзОщи;
+        private Button buttonUpJob;
     }
 }
