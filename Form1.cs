@@ -681,85 +681,14 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void MoveSelectedItems(int direction)
-        {
-            // Получаем выделенные элементы и сортируем их по индексам
-            var selectedItems = listViewFlacExecutables.SelectedItems.Cast<ListViewItem>()
-                .OrderBy(item => item.Index)
-                .ToList();
-
-            // Если выделенных элементов нет, выходим из метода
-            if (selectedItems.Count == 0)
-                return;
-
-            // Если перемещение вниз, мы будем взимать элементы в обратном порядке
-            if (direction > 0)
-            {
-                selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
-            }
-
-            // Приостанавливаем обновление ListView для снижения мерцания
-            listViewFlacExecutables.BeginUpdate();
-
-            try
-            {
-                // Перемещение элементов
-                foreach (var item in selectedItems)
-                {
-                    int currentIndex = item.Index;
-                    int newIndex = currentIndex + direction;
-
-                    // Проверяем границы
-                    if (newIndex < 0 || newIndex >= listViewFlacExecutables.Items.Count)
-                        return; // Если выход за пределы, выходим из метода
-
-                    // Удаляем элемент из текущего места
-                    listViewFlacExecutables.Items.Remove(item);
-
-                    // Вставляем элемент на новое место
-                    listViewFlacExecutables.Items.Insert(newIndex, item);
-                }
-
-                // Обновляем выделение
-                UpdateSelection(selectedItems);
-            }
-            finally
-            {
-                // Возобновляем обновление ListView
-                listViewFlacExecutables.EndUpdate();
-            }
-        }
-
-        private void UpdateSelection(List<ListViewItem> selectedItems)
-        {
-            // Снимаем выделение со всех элементов
-            foreach (ListViewItem item in listViewFlacExecutables.Items)
-            {
-                item.Selected = false;
-            }
-
-            // Выделяем перемещенные элементы
-            foreach (var item in selectedItems)
-            {
-                item.Selected = true; // Устанавливаем выделение на перемещенные элементы
-            }
-
-            listViewFlacExecutables.Focus(); // Ставим фокус на список
-        }
-
-        // Обработка нажатия кнопки "Вверх"
         private void buttonUpEncoder_Click(object sender, EventArgs e)
         {
-            MoveSelectedItems(-1); // Передаём -1 для перемещения вверх
+            MoveSelectedItems(listViewFlacExecutables,- 1); // Передаём -1 для перемещения вверх
         }
-
-        // Обработка нажатия кнопки "Вниз"
         private void buttonDownEncoder_Click(object sender, EventArgs e)
         {
-            MoveSelectedItems(1); // Передаём 1 для перемещения вниз
+            MoveSelectedItems(listViewFlacExecutables, 1); // Передаём 1 для перемещения вниз
         }
-
-
         private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewFlacExecutables
@@ -794,39 +723,11 @@ namespace FLAC_Benchmark_H
         }
         private void buttonUpAudioFile_Click(object sender, EventArgs e)
         {
-            // Получаем выбранный элемент
-            if (listViewAudioFiles.SelectedItems.Count > 0)
-            {
-                int selectedIndex = listViewAudioFiles.SelectedItems[0].Index;
-
-                // Проверяем, не является ли выбранный элемент первым
-                if (selectedIndex > 0)
-                {
-                    // Сохраняем элемент и его текущее местоположение
-                    ListViewItem selectedItem = listViewAudioFiles.SelectedItems[0];
-                    listViewAudioFiles.Items.RemoveAt(selectedIndex);
-                    listViewAudioFiles.Items.Insert(selectedIndex - 1, selectedItem);
-                    selectedItem.Selected = true; // Выбираем перемещённый элемент
-                }
-            }
+            MoveSelectedItems(listViewAudioFiles, -1); // Передаём -1 для перемещения вверх
         }
         private void buttonDownAudioFile_Click(object sender, EventArgs e)
         {
-            // Получаем выбранный элемент
-            if (listViewAudioFiles.SelectedItems.Count > 0)
-            {
-                int selectedIndex = listViewAudioFiles.SelectedItems[0].Index;
-
-                // Проверяем, не является ли выбранный элемент последним
-                if (selectedIndex < listViewAudioFiles.Items.Count - 1)
-                {
-                    // Сохраняем элемент и его текущее местоположение
-                    ListViewItem selectedItem = listViewAudioFiles.SelectedItems[0];
-                    listViewAudioFiles.Items.RemoveAt(selectedIndex);
-                    listViewAudioFiles.Items.Insert(selectedIndex + 1, selectedItem);
-                    selectedItem.Selected = true; // Выбираем перемещённый элемент
-                }
-            }
+            MoveSelectedItems(listViewAudioFiles, 1); // Передаём 1 для перемещения вниз
         }
         private void buttonRemoveAudiofile_Click(object? sender, EventArgs e)
         {
@@ -842,6 +743,155 @@ namespace FLAC_Benchmark_H
         private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
+        }
+
+        private void buttonImportJobList_Click(object? sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.Title = "Open Job List";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
+                                                                                     //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
+
+                        foreach (var line in lines)
+                        {
+                            var parts = line.Split('~'); // Разделяем строку на части
+                            if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                            {
+                                string jobName = parts[0];
+                                string parameters = parts[2];
+                                AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                            }
+                            else
+                            {
+                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        private void buttonExportJobList_Click(object? sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                saveFileDialog.Title = "Save Job List";
+                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYY-MM-DD
+                saveFileDialog.FileName = fileName; // Устанавливаем начальное имя файла
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var jobList = listViewJobs.Items.Cast<ListViewItem>()
+                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
+                            .ToArray(); // Сохраняем в одном формате
+                        File.WriteAllLines(saveFileDialog.FileName, jobList);
+                        //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+        private void buttonUpJob_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItems(listViewJobs, -1); // Передаём -1 для перемещения вверх
+        }
+        private void buttonDownJob_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItems(listViewJobs, 1); // Передаём 1 для перемещения вниз
+        }
+        private void buttonRemoveJob_Click(object sender, EventArgs e)
+        {
+            // Удаляем выделенные элементы из listViewJobs
+            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
+            {
+                if (listViewJobs.Items[i].Selected) // Проверяем, выделен ли элемент
+                {
+                    listViewJobs.Items.RemoveAt(i); // Удаляем элемент
+                }
+            }
+        }
+        private void buttonClearJobList_Click(object? sender, EventArgs e)
+        {
+            listViewJobs.Items.Clear(); // Очищаем listViewJobs
+        }
+
+        private void MoveSelectedItems(ListView listView, int direction)
+        {
+            // Получаем выделенные элементы и сортируем их по индексам
+            var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
+                .OrderBy(item => item.Index)
+                .ToList();
+
+            // Если выделенных элементов нет, выходим из метода
+            if (selectedItems.Count == 0)
+                return;
+
+            // Если перемещение вниз, мы будем взимать элементы в обратном порядке
+            if (direction > 0)
+            {
+                selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
+            }
+
+            // Приостанавливаем обновление ListView для снижения мерцания
+            listView.BeginUpdate();
+
+            try
+            {
+                // Перемещение элементов
+                foreach (var item in selectedItems)
+                {
+                    int currentIndex = item.Index;
+                    int newIndex = currentIndex + direction;
+
+                    // Проверяем границы
+                    if (newIndex < 0 || newIndex >= listView.Items.Count)
+                        return; // Если выход за пределы, выходим из метода
+
+                    // Удаляем элемент из текущего места
+                    listView.Items.Remove(item);
+
+                    // Вставляем элемент на новое место
+                    listView.Items.Insert(newIndex, item);
+                }
+
+                // Обновляем выделение
+                UpdateSelection(selectedItems, listView);
+            }
+            finally
+            {
+                // Возобновляем обновление ListView
+                listView.EndUpdate();
+            }
+        }
+        private void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
+        {
+            // Снимаем выделение со всех элементов
+            foreach (ListViewItem item in listView.Items)
+            {
+                item.Selected = false;
+            }
+
+            // Выделяем перемещенные элементы
+            foreach (var item in selectedItems)
+            {
+                item.Selected = true; // Устанавливаем выделение на перемещенные элементы
+            }
+
+            listView.Focus(); // Ставим фокус на список
         }
 
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
@@ -1510,117 +1560,6 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonImportJobList_Click(object? sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                openFileDialog.Title = "Open Job List";
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
-                                                                                     //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
-
-                        foreach (var line in lines)
-                        {
-                            var parts = line.Split('~'); // Разделяем строку на части
-                            if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                            {
-                                string jobName = parts[0];
-                                string parameters = parts[2];
-                                AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
-                            }
-                            else
-                            {
-                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-        }
-        private void buttonExportJobList_Click(object? sender, EventArgs e)
-        {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-            {
-                saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                saveFileDialog.Title = "Save Job List";
-                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt"; // Формат YYYY-MM-DD
-                saveFileDialog.FileName = fileName; // Устанавливаем начальное имя файла
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
-                            .ToArray(); // Сохраняем в одном формате
-                        File.WriteAllLines(saveFileDialog.FileName, jobList);
-                        //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-        }
-        private void buttonUpJob_Click(object sender, EventArgs e)
-        {
-            // Получаем выбранный элемент
-            if (listViewJobs.SelectedItems.Count > 0)
-            {
-                int selectedIndex = listViewJobs.SelectedItems[0].Index;
-
-                // Проверяем, не является ли выбранный элемент первым
-                if (selectedIndex > 0)
-                {
-                    // Сохраняем элемент и его текущее местоположение
-                    ListViewItem selectedItem = listViewJobs.SelectedItems[0];
-                    listViewJobs.Items.RemoveAt(selectedIndex);
-                    listViewJobs.Items.Insert(selectedIndex - 1, selectedItem);
-                    selectedItem.Selected = true; // Выбираем перемещённый элемент
-                }
-            }
-        }
-        private void buttonDownJob_Click(object sender, EventArgs e)
-        {
-            // Получаем выбранный элемент
-            if (listViewJobs.SelectedItems.Count > 0)
-            {
-                int selectedIndex = listViewJobs.SelectedItems[0].Index;
-
-                // Проверяем, не является ли выбранный элемент последним
-                if (selectedIndex < listViewJobs.Items.Count - 1)
-                {
-                    // Сохраняем элемент и его текущее местоположение
-                    ListViewItem selectedItem = listViewJobs.SelectedItems[0];
-                    listViewJobs.Items.RemoveAt(selectedIndex);
-                    listViewJobs.Items.Insert(selectedIndex + 1, selectedItem);
-                    selectedItem.Selected = true; // Выбираем перемещённый элемент
-                }
-            }
-        }
-        private void buttonRemoveJob_Click(object sender, EventArgs e)
-        {
-            // Удаляем выделенные элементы из listViewJobs
-            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
-            {
-                if (listViewJobs.Items[i].Selected) // Проверяем, выделен ли элемент
-                {
-                    listViewJobs.Items.RemoveAt(i); // Удаляем элемент
-                }
-            }
-        }
-        private void buttonClearJobList_Click(object? sender, EventArgs e)
-        {
-            listViewJobs.Items.Clear(); // Очищаем listViewJobList
-        }
 
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
