@@ -78,6 +78,9 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
+            labelPasses = new Label();
+            buttonMinusPass = new Button();
+            buttonPlusPass = new Button();
             buttonDownJob = new Button();
             buttonUpJob = new Button();
             buttonRemoveJob = new Button();
@@ -104,9 +107,6 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            buttonPlusPass = new Button();
-            buttonMinusPass = new Button();
-            labelPasses = new Label();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -380,7 +380,7 @@
             // checkBoxHighPriority
             // 
             checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Location = new Point(6, 82);
+            checkBoxHighPriority.Location = new Point(6, 91);
             checkBoxHighPriority.Name = "checkBoxHighPriority";
             checkBoxHighPriority.Size = new Size(93, 19);
             checkBoxHighPriority.TabIndex = 22;
@@ -401,7 +401,7 @@
             // 
             labelCPUinfo.Location = new Point(6, 24);
             labelCPUinfo.Name = "labelCPUinfo";
-            labelCPUinfo.Size = new Size(155, 50);
+            labelCPUinfo.Size = new Size(155, 64);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "CPU Info";
             // 
@@ -665,6 +665,35 @@
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
             // 
+            // labelPasses
+            // 
+            labelPasses.AutoSize = true;
+            labelPasses.Location = new Point(270, 368);
+            labelPasses.Name = "labelPasses";
+            labelPasses.Size = new Size(44, 15);
+            labelPasses.TabIndex = 33;
+            labelPasses.Text = "Passes:";
+            // 
+            // buttonMinusPass
+            // 
+            buttonMinusPass.Location = new Point(350, 364);
+            buttonMinusPass.Name = "buttonMinusPass";
+            buttonMinusPass.Size = new Size(24, 23);
+            buttonMinusPass.TabIndex = 32;
+            buttonMinusPass.Text = "➖";
+            buttonMinusPass.UseVisualStyleBackColor = true;
+            buttonMinusPass.Click += buttonMinusPass_Click;
+            // 
+            // buttonPlusPass
+            // 
+            buttonPlusPass.Location = new Point(320, 364);
+            buttonPlusPass.Name = "buttonPlusPass";
+            buttonPlusPass.Size = new Size(24, 23);
+            buttonPlusPass.TabIndex = 31;
+            buttonPlusPass.Text = "➕";
+            buttonPlusPass.UseVisualStyleBackColor = true;
+            buttonPlusPass.Click += buttonPlusPass_Click;
+            // 
             // buttonDownJob
             // 
             buttonDownJob.Location = new Point(151, 364);
@@ -886,7 +915,7 @@
             // checkBoxClearTempFolder
             // 
             checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Location = new Point(6, 106);
+            checkBoxClearTempFolder.Location = new Point(6, 116);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
             checkBoxClearTempFolder.TabIndex = 18;
@@ -951,35 +980,6 @@
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
-            // 
-            // buttonPlusPass
-            // 
-            buttonPlusPass.Location = new Point(320, 364);
-            buttonPlusPass.Name = "buttonPlusPass";
-            buttonPlusPass.Size = new Size(24, 23);
-            buttonPlusPass.TabIndex = 31;
-            buttonPlusPass.Text = "➕";
-            buttonPlusPass.UseVisualStyleBackColor = true;
-            buttonPlusPass.Click += buttonPlusPass_Click;
-            // 
-            // buttonMinusPass
-            // 
-            buttonMinusPass.Location = new Point(350, 364);
-            buttonMinusPass.Name = "buttonMinusPass";
-            buttonMinusPass.Size = new Size(24, 23);
-            buttonMinusPass.TabIndex = 32;
-            buttonMinusPass.Text = "➖";
-            buttonMinusPass.UseVisualStyleBackColor = true;
-            buttonMinusPass.Click += buttonMinusPass_Click;
-            // 
-            // labelPasses
-            // 
-            labelPasses.AutoSize = true;
-            labelPasses.Location = new Point(270, 368);
-            labelPasses.Name = "labelPasses";
-            labelPasses.Size = new Size(44, 15);
-            labelPasses.TabIndex = 33;
-            labelPasses.Text = "Passes:";
             // 
             // Form1
             // 
