@@ -40,7 +40,7 @@ namespace FLAC_Benchmark_H
             InitializedataGridViewLog();
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
             _process = new Process(); // Initialize _process to avoid nullability warning
-                                      
+
             // Включаем пользовательскую отрисовку для listViewJobs
             listViewJobs.OwnerDraw = true;
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
@@ -433,7 +433,6 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
 
-
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -468,6 +467,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
+
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
@@ -858,6 +858,45 @@ namespace FLAC_Benchmark_H
                 newItem.SubItems.Add("1"); // Устанавливаем количество проходов по умолчанию
                 newItem.SubItems.Add(parameters);
                 listViewJobs.Items.Add(newItem);
+            }
+        }
+        private void buttonPlusPass_Click(object sender, EventArgs e)
+        {
+            listViewJobs.BeginUpdate(); // Отключаем перерисовку
+
+            try
+            {
+                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                {
+                    int currentPasses = int.Parse(item.SubItems[1].Text); // Получаем текущее значение
+                    currentPasses++; // Увеличиваем на 1
+                    item.SubItems[1].Text = currentPasses.ToString(); // Обновляем значение в ячейке
+                }
+            }
+            finally
+            {
+                listViewJobs.EndUpdate(); // Включаем перерисовку
+            }
+        }
+        private void buttonMinusPass_Click(object sender, EventArgs e)
+        {
+            listViewJobs.BeginUpdate(); // Отключаем перерисовку
+
+            try
+            {
+                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                {
+                    int currentPasses = int.Parse(item.SubItems[1].Text); // Получаем текущее значение
+                    if (currentPasses > 1) // Убеждаемся, что значение больше 1
+                    {
+                        currentPasses--; // Уменьшаем на 1
+                        item.SubItems[1].Text = currentPasses.ToString(); // Обновляем значение в ячейке
+                    }
+                }
+            }
+            finally
+            {
+                listViewJobs.EndUpdate(); // Включаем перерисовку
             }
         }
         private void buttonCopyJobs_Click(object sender, EventArgs e)

@@ -85,8 +85,8 @@
             buttonPasteJobs = new Button();
             listViewJobs = new ListView();
             JobType = new ColumnHeader();
-            Parameters = new ColumnHeader();
             Passes = new ColumnHeader();
+            Parameters = new ColumnHeader();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -104,6 +104,9 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            buttonPlusPass = new Button();
+            buttonMinusPass = new Button();
+            labelPasses = new Label();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -642,6 +645,9 @@
             // 
             // groupBoxJobsList
             // 
+            groupBoxJobsList.Controls.Add(labelPasses);
+            groupBoxJobsList.Controls.Add(buttonMinusPass);
+            groupBoxJobsList.Controls.Add(buttonPlusPass);
             groupBoxJobsList.Controls.Add(buttonDownJob);
             groupBoxJobsList.Controls.Add(buttonUpJob);
             groupBoxJobsList.Controls.Add(buttonRemoveJob);
@@ -729,18 +735,18 @@
             JobType.Text = "Job Type";
             JobType.Width = 66;
             // 
-            // Parameters
-            // 
-            Parameters.Tag = "Parameters";
-            Parameters.Text = "Parameters";
-            Parameters.Width = 680;
-            // 
             // Passes
             // 
             Passes.Tag = "Passes";
             Passes.Text = "Passes";
             Passes.TextAlign = HorizontalAlignment.Center;
             Passes.Width = 46;
+            // 
+            // Parameters
+            // 
+            Parameters.Tag = "Parameters";
+            Parameters.Text = "Parameters";
+            Parameters.Width = 680;
             // 
             // buttonStartJobList
             // 
@@ -754,9 +760,9 @@
             // 
             // buttonExportJobList
             // 
-            buttonExportJobList.Location = new Point(488, 364);
+            buttonExportJobList.Location = new Point(507, 364);
             buttonExportJobList.Name = "buttonExportJobList";
-            buttonExportJobList.Size = new Size(100, 23);
+            buttonExportJobList.Size = new Size(55, 23);
             buttonExportJobList.TabIndex = 3;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
@@ -764,9 +770,9 @@
             // 
             // buttonImportJobList
             // 
-            buttonImportJobList.Location = new Point(382, 364);
+            buttonImportJobList.Location = new Point(446, 364);
             buttonImportJobList.Name = "buttonImportJobList";
-            buttonImportJobList.Size = new Size(100, 23);
+            buttonImportJobList.Size = new Size(55, 23);
             buttonImportJobList.TabIndex = 3;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
@@ -946,6 +952,35 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
+            // buttonPlusPass
+            // 
+            buttonPlusPass.Location = new Point(320, 364);
+            buttonPlusPass.Name = "buttonPlusPass";
+            buttonPlusPass.Size = new Size(24, 23);
+            buttonPlusPass.TabIndex = 31;
+            buttonPlusPass.Text = "➕";
+            buttonPlusPass.UseVisualStyleBackColor = true;
+            buttonPlusPass.Click += buttonPlusPass_Click;
+            // 
+            // buttonMinusPass
+            // 
+            buttonMinusPass.Location = new Point(350, 364);
+            buttonMinusPass.Name = "buttonMinusPass";
+            buttonMinusPass.Size = new Size(24, 23);
+            buttonMinusPass.TabIndex = 32;
+            buttonMinusPass.Text = "➖";
+            buttonMinusPass.UseVisualStyleBackColor = true;
+            buttonMinusPass.Click += buttonMinusPass_Click;
+            // 
+            // labelPasses
+            // 
+            labelPasses.AutoSize = true;
+            labelPasses.Location = new Point(270, 368);
+            labelPasses.Name = "labelPasses";
+            labelPasses.Size = new Size(44, 15);
+            labelPasses.TabIndex = 33;
+            labelPasses.Text = "Passes:";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -970,6 +1005,7 @@
             groupBoxEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxJobsList.ResumeLayout(false);
+            groupBoxJobsList.PerformLayout();
             groupLog.ResumeLayout(false);
             groupLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
@@ -1063,5 +1099,8 @@
         private Button buttonUpJob;
         private Label labelStopped;
         private ColumnHeader Passes;
+        private Button buttonMinusPass;
+        private Button buttonPlusPass;
+        private Label labelPasses;
     }
 }
