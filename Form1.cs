@@ -131,21 +131,7 @@ namespace FLAC_Benchmark_H
             float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
             labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}\nCPU Usage: {cpuUsage:F2}%";
         }
-        private void BackupJobsFile()
-        {
-            try
-            {
-                if (File.Exists(JobsFilePath))
-                {
-                    string backupPath = $"{JobsFilePath}.bak";
-                    File.Copy(JobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+
         // Метод для сохранения настроек
         private void SaveSettings()
         {
@@ -245,20 +231,6 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private void SaveJobs()
-        {
-            try
-            {
-                var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
-                .ToArray();
-                File.WriteAllLines(JobsFilePath, jobList);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void InitializeDragAndDrop()
@@ -460,121 +432,8 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
-        // Обработчик DragEnter для ListViewJobs
-        private void ListViewJobs_DragEnter(object? sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                // Проверяем наличие .txt файлов или директорий
-                e.Effect = files.Any(file => Directory.Exists(file) ||
-                Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
-                ? DragDropEffects.Copy : DragDropEffects.None;
-            }
-            else
-            {
-                e.Effect = DragDropEffects.None;
-            }
-        }
-        // Обработчик DragDrop для ListViewJobs
-        private void ListViewJobs_DragDrop(object? sender, DragEventArgs e)
-        {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (var file in files)
-            {
-                // Если это папка, ищем .txt файлы внутри рекурсивно
-                if (Directory.Exists(file))
-                {
-                    AddJobsFromDirectory(file);
-                }
-                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
-                {
-                    LoadJobsFromFile(file); // Загружаем задачи из файла
-                }
-            }
-        }
-        // Рекурсивный метод для добавления задач из директории в ListView
-        private void AddJobsFromDirectory(string directory)
-        {
-            try
-            {
-                // Ищем все .txt файлы с заданным расширением в текущей директории
-                var txtFiles = Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories);
-                foreach (var txtFile in txtFiles)
-                {
-                    LoadJobsFromFile(txtFile); // Загружаем задачи из найденного .txt файла
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        // Метод загрузки задач из файла
-        private void LoadJobsFromFile(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                foreach (var line in lines)
-                {
-                    var parts = line.Split('~'); // Разделяем строку на части
-                    if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                    {
-                        string jobName = parts[0];
-                        string parameters = parts[2];
-                        AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        // Метод для загрузки задач из файла txt
-        private void LoadJobs()
-        {
-            BackupJobsFile();
-            if (File.Exists(JobsFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(JobsFilePath);
-                    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
-                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            var item = new ListViewItem(parts[0]) { Checked = isChecked };
-                            item.SubItems.Add(parts[2]); // Вторая колонка: параметры
-                            listViewJobs.Items.Add(item);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-        // Общий метод добавления задач в ListView
-        private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
-        {
-            var item = new ListViewItem(job) { Checked = isChecked };
-            item.SubItems.Add(parameters); // Добавляем параметры
-            listViewJobs.Items.Add(item); // Добавляем элемент в ListView
-        }
+
+
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -628,25 +487,8 @@ namespace FLAC_Benchmark_H
                 if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
             }
         }
-        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
-        {
-            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
-            {
-                folderBrowserDialog.Description = "Select temp folder";
-                // Если путь сохранён в настройках, устанавливаем его
-                if (Directory.Exists(tempFolderPath))
-                {
-                    folderBrowserDialog.SelectedPath = tempFolderPath;
-                }
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Получаем выбранный путь
-                    tempFolderPath = folderBrowserDialog.SelectedPath;
-                    // Сохраняем путь в настройках
-                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
-                }
-            }
-        }
+
+        //Encoders
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -686,6 +528,7 @@ namespace FLAC_Benchmark_H
         {
             listViewFlacExecutables.Items.Clear();
         }
+        //Audio files
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -724,6 +567,131 @@ namespace FLAC_Benchmark_H
         private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
+        }
+        // Jobs
+        private void ListViewJobs_DragEnter(object? sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                // Проверяем наличие .txt файлов или директорий
+                e.Effect = files.Any(file => Directory.Exists(file) ||
+                Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                ? DragDropEffects.Copy : DragDropEffects.None;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+        private void ListViewJobs_DragDrop(object? sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (var file in files)
+            {
+                // Если это папка, ищем .txt файлы внутри рекурсивно
+                if (Directory.Exists(file))
+                {
+                    AddJobsFromDirectory(file);
+                }
+                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    LoadJobsFromFile(file); // Загружаем задачи из файла
+                }
+            }
+        }
+        private void AddJobsFromDirectory(string directory)
+        {
+            try
+            {
+                // Ищем все .txt файлы с заданным расширением в текущей директории
+                var txtFiles = Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories);
+                foreach (var txtFile in txtFiles)
+                {
+                    LoadJobsFromFile(txtFile); // Загружаем задачи из найденного .txt файла
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void LoadJobsFromFile(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            try
+            {
+                string[] lines = File.ReadAllLines(filePath);
+                foreach (var line in lines)
+                {
+                    var parts = line.Split('~'); // Разделяем строку на части
+                    if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                    {
+                        string jobName = parts[0];
+                        string parameters = parts[2];
+                        AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void LoadJobs()
+        {
+            BackupJobsFile();
+            if (File.Exists(JobsFilePath))
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(JobsFilePath);
+                    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
+                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            var item = new ListViewItem(parts[0]) { Checked = isChecked };
+                            item.SubItems.Add(parts[2]); // Вторая колонка: параметры
+                            listViewJobs.Items.Add(item);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void BackupJobsFile()
+        {
+            try
+            {
+                if (File.Exists(JobsFilePath))
+                {
+                    string backupPath = $"{JobsFilePath}.bak";
+                    File.Copy(JobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
+        {
+            var item = new ListViewItem(job) { Checked = isChecked };
+            item.SubItems.Add(parameters); // Добавляем параметры
+            listViewJobs.Items.Add(item); // Добавляем элемент в ListView
         }
         private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
@@ -807,6 +775,338 @@ namespace FLAC_Benchmark_H
         {
             listViewJobs.Items.Clear(); // Очищаем listViewJobs
         }
+        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string compressionLevel = textBoxCompressionLevel.Text;
+            string threads = textBoxThreads.Text;
+            string commandLine = textBoxCommandLineOptionsEncoder.Text;
+            // Формируем строку с параметрами
+            string parameters = $"-{compressionLevel} {commandLine}";
+            // Добавляем количество потоков, если оно больше 1
+            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+            {
+                parameters += $" -j{threads}"; // добавляем флаг -j{threads}
+            }
+            // Создаем новый элемент списка для кодирования
+            var item = new ListViewItem("Encode") // Первая колонка - Encode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+                                           // Добавляем элемент в listViewJobList
+            listViewJobs.Items.Add(item);
+        }
+        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
+        {
+            // Получаем значения из текстовых полей и формируем параметры
+            string commandLine = textBoxCommandLineOptionsDecoder.Text;
+            // Формируем строку с параметрами
+            string parameters = commandLine; // Параметры для декодирования
+                                             // Создаем новый элемент списка для декодирования
+            var item = new ListViewItem("Decode") // Первая колонка - Decode
+            {
+                Checked = true // Устанавливаем чекбокс в состояние "проверено"
+            };
+            item.SubItems.Add(parameters); // Вторая колонка - parameters
+                                           // Добавляем элемент в listViewJobList
+            listViewJobs.Items.Add(item);
+        }
+        private void buttonCopyJobs_Click(object sender, EventArgs e)
+        {
+            StringBuilder jobsText = new StringBuilder();
+            // Проверяем, есть ли выделенные элементы
+            if (listViewJobs.SelectedItems.Count > 0)
+            {
+                // Копируем только выделенные задачи
+                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+            else
+            {
+                // Если ничего не выделено, копируем все задачи
+                foreach (ListViewItem item in listViewJobs.Items)
+                {
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                }
+            }
+            // Копируем текст в буфер обмена
+            if (jobsText.Length > 0)
+            {
+                Clipboard.SetText(jobsText.ToString());
+                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        private void buttonPasteJobs_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Получаем текст из буфера обмена
+                string clipboardText = Clipboard.GetText();
+                // Проверяем, если буфер не пустой
+                if (!string.IsNullOrEmpty(clipboardText))
+                {
+                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~'); // Разделяем строку на части
+                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            string jobName = parts[0];
+                            string parameters = parts[2];
+                            AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void SaveJobs()
+        {
+            try
+            {
+                var jobList = listViewJobs.Items.Cast<ListViewItem>()
+                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
+                .ToArray();
+                File.WriteAllLines(JobsFilePath, jobList);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private async void buttonStartJobList_Click(object sender, EventArgs e)
+        {
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
+            isExecuting = true; // Устанавливаем флаг выполнения
+            foreach (ListViewItem item in listViewJobs.Items)
+            {
+                // Проверяем, отмечена ли задача
+                if (item.Checked)
+                {
+                    string jobType = item.Text;
+                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Устанавливаем флаг остановки
+                        _isEncodingStopped = false;
+                        // Создаём временную директорию для выходного файла
+                        Directory.CreateDirectory(tempFolderPath);
+                        // Получаем выделенные .exe файлы
+                        var selectedExecutables = listViewFlacExecutables.CheckedItems
+                        .Cast<ListViewItem>()
+                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
+                        // Получаем выделенные аудиофайлы
+                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                        .Cast<ListViewItem>()
+                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
+                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+                        {
+                            MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                            return;
+                        }
+                        foreach (var executable in selectedExecutables)
+                        {
+                            foreach (var audioFile in selectedAudioFiles)
+                            {
+                                if (_isEncodingStopped)
+                                {
+                                    isExecuting = false; // Сбрасываем флаг перед возвратом
+                                    return; // Выходим, если остановка запроса
+                                }
+                                // Формируем строку с параметрами
+                                string parameters = item.SubItems[1].Text;
+                                // Формируем аргументы для запуска
+                                string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+                                string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+                                // Запускаем процесс и дожидаемся завершения
+                                try
+                                {
+                                    await Task.Run(() =>
+                                    {
+                                        using (_process = new Process()) // Сохраняем процесс в поле _process
+                                        {
+                                            _process.StartInfo = new ProcessStartInfo
+                                            {
+                                                FileName = executable,
+                                                Arguments = arguments,
+                                                UseShellExecute = false,
+                                                CreateNoWindow = true,
+                                            };
+                                            // Запускаем отсчет времени
+                                            stopwatch.Reset();
+                                            stopwatch.Start();
+                                            if (!_isEncodingStopped)
+                                            {
+                                                _process.Start();
+                                                // Устанавливаем приоритет процесса, если он начал успешно
+                                                try
+                                                {
+                                                    if (!_process.HasExited)
+                                                    {
+                                                        _process.PriorityClass = checkBoxHighPriority.Checked
+                                                        ? ProcessPriorityClass.High
+                                                        : ProcessPriorityClass.Normal;
+                                                    }
+                                                }
+                                                catch (InvalidOperationException)
+                                                {
+                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                                }
+                                                if (!_process.HasExited)
+                                                {
+                                                    _process.WaitForExit();
+                                                }
+                                                stopwatch.Stop();
+                                            }
+                                        }
+                                    });
+                                    // Условие: записывать в лог только если процесс не был остановлен
+                                    if (!_isEncodingStopped)
+                                    {
+                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
+                                    }
+                                    else
+                                    {
+                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                                        return;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    isExecuting = false; // Сбрасываем флаг перед возвратом
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Устанавливаем флаг остановки
+                        _isEncodingStopped = false;
+                        // Создаём временную директорию для выходного файла
+                        Directory.CreateDirectory(tempFolderPath);
+                        // Получаем выделенные .exe файлы
+                        var selectedExecutables = listViewFlacExecutables.CheckedItems
+                        .Cast<ListViewItem>()
+                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
+                        // Получаем выделенные аудиофайлы, но только с расширением .flac
+                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                        .Cast<ListViewItem>()
+                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                        .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+                        .ToList();
+                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+                        {
+                            MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                            return;
+                        }
+                        foreach (var executable in selectedExecutables)
+                        {
+                            foreach (var audioFile in selectedAudioFiles)
+                            {
+                                if (_isEncodingStopped)
+                                {
+                                    return; // Выходим, если остановка запроса
+                                }
+                                // Формируем строку с параметрами
+                                string parameters = item.SubItems[1].Text;
+                                // Формируем аргументы для запуска
+                                string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
+                                string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+                                // Запускаем процесс и дожидаемся завершения
+                                try
+                                {
+                                    await Task.Run(() =>
+                                    {
+                                        using (_process = new Process()) // Сохраняем процесс в поле _process
+                                        {
+                                            _process.StartInfo = new ProcessStartInfo
+                                            {
+                                                FileName = executable,
+                                                Arguments = arguments,
+                                                UseShellExecute = false,
+                                                CreateNoWindow = true,
+                                            };
+                                            // Запускаем отсчет времени
+                                            stopwatch.Reset();
+                                            stopwatch.Start();
+                                            if (!_isEncodingStopped)
+                                            {
+                                                _process.Start();
+                                                // Устанавливаем приоритет процесса, если он начал успешно
+                                                try
+                                                {
+                                                    if (!_process.HasExited)
+                                                    {
+                                                        _process.PriorityClass = checkBoxHighPriority.Checked
+                                                        ? ProcessPriorityClass.High
+                                                        : ProcessPriorityClass.Normal;
+                                                    }
+                                                }
+                                                catch (InvalidOperationException)
+                                                {
+                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                                }
+                                                if (!_process.HasExited)
+                                                {
+                                                    _process.WaitForExit();
+                                                }
+                                                stopwatch.Stop();
+                                            }
+                                        }
+                                    });
+                                    // Условие: записывать в лог только если процесс не был остановлен
+                                    if (!_isEncodingStopped)
+                                    {
+                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
+                                    }
+                                    else
+                                    {
+                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                                        return;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    isExecuting = false; // Сбрасываем флаг перед возвратом
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            isExecuting = false; // Сбрасываем флаг после завершения
+        }
+
         private void MoveSelectedItems(ListView listView, int direction)
         {
             // Получаем выделенные элементы и сортируем их по индексам
@@ -861,6 +1161,7 @@ namespace FLAC_Benchmark_H
             }
             listView.Focus(); // Ставим фокус на список
         }
+
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
@@ -929,6 +1230,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" --no-seektable"); // Добавляем с пробелом перед текстом
             }
         }
+
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
@@ -1146,220 +1448,6 @@ namespace FLAC_Benchmark_H
             }
             isExecuting = false; // Сбрасываем флаг после завершения
         }
-        private async void buttonStartJobList_Click(object sender, EventArgs e)
-        {
-            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-            isExecuting = true; // Устанавливаем флаг выполнения
-            foreach (ListViewItem item in listViewJobs.Items)
-            {
-                // Проверяем, отмечена ли задача
-                if (item.Checked)
-                {
-                    string jobType = item.Text;
-                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Устанавливаем флаг остановки
-                        _isEncodingStopped = false;
-                        // Создаём временную директорию для выходного файла
-                        Directory.CreateDirectory(tempFolderPath);
-                        // Получаем выделенные .exe файлы
-                        var selectedExecutables = listViewFlacExecutables.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Получаем выделенные аудиофайлы
-                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
-                        {
-                            MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false; // Сбрасываем флаг перед возвратом
-                            return;
-                        }
-                        foreach (var executable in selectedExecutables)
-                        {
-                            foreach (var audioFile in selectedAudioFiles)
-                            {
-                                if (_isEncodingStopped)
-                                {
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return; // Выходим, если остановка запроса
-                                }
-                                // Формируем строку с параметрами
-                                string parameters = item.SubItems[1].Text;
-                                // Формируем аргументы для запуска
-                                string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                                string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
-                                // Запускаем процесс и дожидаемся завершения
-                                try
-                                {
-                                    await Task.Run(() =>
-                                    {
-                                        using (_process = new Process()) // Сохраняем процесс в поле _process
-                                        {
-                                            _process.StartInfo = new ProcessStartInfo
-                                            {
-                                                FileName = executable,
-                                                Arguments = arguments,
-                                                UseShellExecute = false,
-                                                CreateNoWindow = true,
-                                            };
-                                            // Запускаем отсчет времени
-                                            stopwatch.Reset();
-                                            stopwatch.Start();
-                                            if (!_isEncodingStopped)
-                                            {
-                                                _process.Start();
-                                                // Устанавливаем приоритет процесса, если он начал успешно
-                                                try
-                                                {
-                                                    if (!_process.HasExited)
-                                                    {
-                                                        _process.PriorityClass = checkBoxHighPriority.Checked
-                                                        ? ProcessPriorityClass.High
-                                                        : ProcessPriorityClass.Normal;
-                                                    }
-                                                }
-                                                catch (InvalidOperationException)
-                                                {
-                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                                }
-                                                if (!_process.HasExited)
-                                                {
-                                                    _process.WaitForExit();
-                                                }
-                                                stopwatch.Stop();
-                                            }
-                                        }
-                                    });
-                                    // Условие: записывать в лог только если процесс не был остановлен
-                                    if (!_isEncodingStopped)
-                                    {
-                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
-                                    }
-                                    else
-                                    {
-                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                        isExecuting = false; // Сбрасываем флаг перед возвратом
-                                        return;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Устанавливаем флаг остановки
-                        _isEncodingStopped = false;
-                        // Создаём временную директорию для выходного файла
-                        Directory.CreateDirectory(tempFolderPath);
-                        // Получаем выделенные .exe файлы
-                        var selectedExecutables = listViewFlacExecutables.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Получаем выделенные аудиофайлы, но только с расширением .flac
-                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                        .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                        .ToList();
-                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
-                        {
-                            MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false; // Сбрасываем флаг перед возвратом
-                            return;
-                        }
-                        foreach (var executable in selectedExecutables)
-                        {
-                            foreach (var audioFile in selectedAudioFiles)
-                            {
-                                if (_isEncodingStopped)
-                                {
-                                    return; // Выходим, если остановка запроса
-                                }
-                                // Формируем строку с параметрами
-                                string parameters = item.SubItems[1].Text;
-                                // Формируем аргументы для запуска
-                                string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                                string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
-                                // Запускаем процесс и дожидаемся завершения
-                                try
-                                {
-                                    await Task.Run(() =>
-                                    {
-                                        using (_process = new Process()) // Сохраняем процесс в поле _process
-                                        {
-                                            _process.StartInfo = new ProcessStartInfo
-                                            {
-                                                FileName = executable,
-                                                Arguments = arguments,
-                                                UseShellExecute = false,
-                                                CreateNoWindow = true,
-                                            };
-                                            // Запускаем отсчет времени
-                                            stopwatch.Reset();
-                                            stopwatch.Start();
-                                            if (!_isEncodingStopped)
-                                            {
-                                                _process.Start();
-                                                // Устанавливаем приоритет процесса, если он начал успешно
-                                                try
-                                                {
-                                                    if (!_process.HasExited)
-                                                    {
-                                                        _process.PriorityClass = checkBoxHighPriority.Checked
-                                                        ? ProcessPriorityClass.High
-                                                        : ProcessPriorityClass.Normal;
-                                                    }
-                                                }
-                                                catch (InvalidOperationException)
-                                                {
-                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                                }
-                                                if (!_process.HasExited)
-                                                {
-                                                    _process.WaitForExit();
-                                                }
-                                                stopwatch.Stop();
-                                            }
-                                        }
-                                    });
-                                    // Условие: записывать в лог только если процесс не был остановлен
-                                    if (!_isEncodingStopped)
-                                    {
-                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
-                                    }
-                                    else
-                                    {
-                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                        isExecuting = false; // Сбрасываем флаг перед возвратом
-                                        return;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            isExecuting = false; // Сбрасываем флаг после завершения
-        }
         private void LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
@@ -1410,6 +1498,7 @@ namespace FLAC_Benchmark_H
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
         }
+
         private string GetExecutableInfo(string executablePath)
         {
             using (Process process = new Process())
@@ -1467,7 +1556,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         private void ShowTemporaryStoppedMessage(string message)
         {
             labelStopped.Text = message; // Устанавливаем текст сообщения
@@ -1483,6 +1571,7 @@ namespace FLAC_Benchmark_H
             };
             timer.Start(); // Запускаем таймер
         }
+
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Путь к файлу логирования
@@ -1537,107 +1626,24 @@ namespace FLAC_Benchmark_H
         {
             dataGridViewLog.Rows.Clear();
         }
-        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
+
+        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
-            // Получаем значения из текстовых полей и формируем параметры
-            string compressionLevel = textBoxCompressionLevel.Text;
-            string threads = textBoxThreads.Text;
-            string commandLine = textBoxCommandLineOptionsEncoder.Text;
-            // Формируем строку с параметрами
-            string parameters = $"-{compressionLevel} {commandLine}";
-            // Добавляем количество потоков, если оно больше 1
-            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
             {
-                parameters += $" -j{threads}"; // добавляем флаг -j{threads}
-            }
-            // Создаем новый элемент списка для кодирования
-            var item = new ListViewItem("Encode") // Первая колонка - Encode
-            {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-                                           // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
-        }
-        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
-        {
-            // Получаем значения из текстовых полей и формируем параметры
-            string commandLine = textBoxCommandLineOptionsDecoder.Text;
-            // Формируем строку с параметрами
-            string parameters = commandLine; // Параметры для декодирования
-                                             // Создаем новый элемент списка для декодирования
-            var item = new ListViewItem("Decode") // Первая колонка - Decode
-            {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-                                           // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
-        }
-        private void buttonCopyJobs_Click(object sender, EventArgs e)
-        {
-            StringBuilder jobsText = new StringBuilder();
-            // Проверяем, есть ли выделенные элементы
-            if (listViewJobs.SelectedItems.Count > 0)
-            {
-                // Копируем только выделенные задачи
-                foreach (ListViewItem item in listViewJobs.SelectedItems)
+                folderBrowserDialog.Description = "Select temp folder";
+                // Если путь сохранён в настройках, устанавливаем его
+                if (Directory.Exists(tempFolderPath))
                 {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                    folderBrowserDialog.SelectedPath = tempFolderPath;
                 }
-            }
-            else
-            {
-                // Если ничего не выделено, копируем все задачи
-                foreach (ListViewItem item in listViewJobs.Items)
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
                 {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                    // Получаем выбранный путь
+                    tempFolderPath = folderBrowserDialog.SelectedPath;
+                    // Сохраняем путь в настройках
+                    SaveSettings(); // Это также нужно будет изменить, чтобы сохранить путь
                 }
-            }
-            // Копируем текст в буфер обмена
-            if (jobsText.Length > 0)
-            {
-                Clipboard.SetText(jobsText.ToString());
-                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-        private void buttonPasteJobs_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Получаем текст из буфера обмена
-                string clipboardText = Clipboard.GetText();
-                // Проверяем, если буфер не пустой
-                if (!string.IsNullOrEmpty(clipboardText))
-                {
-                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~'); // Разделяем строку на части
-                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            string jobName = parts[0];
-                            string parameters = parts[2];
-                            AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        }
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
