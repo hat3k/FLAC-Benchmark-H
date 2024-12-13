@@ -951,209 +951,213 @@ namespace FLAC_Benchmark_H
                 if (item.Checked)
                 {
                     string jobType = item.Text;
-                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                    int passes = int.Parse(item.SubItems[1].Text); // Получаем количество проходов
+                    for (int i = 0; i < passes; i++) // Цикл для количества проходов
                     {
-                        // Устанавливаем флаг остановки
-                        _isEncodingStopped = false;
-                        // Создаём временную директорию для выходного файла
-                        Directory.CreateDirectory(tempFolderPath);
-                        // Получаем выделенные .exe файлы
-                        var selectedExecutables = listViewFlacExecutables.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Получаем выделенные аудиофайлы
-                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+                        if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false; // Сбрасываем флаг перед возвратом
-                            return;
-                        }
-                        foreach (var executable in selectedExecutables)
-                        {
-                            foreach (var audioFile in selectedAudioFiles)
+                            // Устанавливаем флаг остановки
+                            _isEncodingStopped = false;
+                            // Создаём временную директорию для выходного файла
+                            Directory.CreateDirectory(tempFolderPath);
+                            // Получаем выделенные .exe файлы
+                            var selectedExecutables = listViewFlacExecutables.CheckedItems
+                            .Cast<ListViewItem>()
+                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                            .ToList();
+                            // Получаем выделенные аудиофайлы
+                            var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                            .Cast<ListViewItem>()
+                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                            .ToList();
+                            // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+                            if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
                             {
-                                if (_isEncodingStopped)
+                                MessageBox.Show("Please select at least one executable and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                isExecuting = false; // Сбрасываем флаг перед возвратом
+                                return;
+                            }
+                            foreach (var executable in selectedExecutables)
+                            {
+                                foreach (var audioFile in selectedAudioFiles)
                                 {
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return; // Выходим, если остановка запроса
-                                }
-                                // Формируем строку с параметрами
-                                string parameters = item.SubItems[1].Text;
-                                // Формируем аргументы для запуска
-                                string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                                string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
-                                // Запускаем процесс и дожидаемся завершения
-                                try
-                                {
-                                    await Task.Run(() =>
+                                    if (_isEncodingStopped)
                                     {
-                                        using (_process = new Process()) // Сохраняем процесс в поле _process
+                                        isExecuting = false; // Сбрасываем флаг перед возвратом
+                                        return; // Выходим, если остановка запроса
+                                    }
+                                    // Формируем строку с параметрами
+                                    string parameters = item.SubItems[2].Text;
+                                    // Формируем аргументы для запуска
+                                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+                                    string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+                                    // Запускаем процесс и дожидаемся завершения
+                                    try
+                                    {
+                                        await Task.Run(() =>
                                         {
-                                            _process.StartInfo = new ProcessStartInfo
+                                            using (_process = new Process()) // Сохраняем процесс в поле _process
                                             {
-                                                FileName = executable,
-                                                Arguments = arguments,
-                                                UseShellExecute = false,
-                                                CreateNoWindow = true,
-                                            };
-                                            // Запускаем отсчет времени
-                                            stopwatch.Reset();
-                                            stopwatch.Start();
-                                            if (!_isEncodingStopped)
-                                            {
-                                                _process.Start();
-                                                // Устанавливаем приоритет процесса, если он начал успешно
-                                                try
+                                                _process.StartInfo = new ProcessStartInfo
                                                 {
+                                                    FileName = executable,
+                                                    Arguments = arguments,
+                                                    UseShellExecute = false,
+                                                    CreateNoWindow = true,
+                                                };
+                                                // Запускаем отсчет времени
+                                                stopwatch.Reset();
+                                                stopwatch.Start();
+                                                if (!_isEncodingStopped)
+                                                {
+                                                    _process.Start();
+                                                    // Устанавливаем приоритет процесса, если он начал успешно
+                                                    try
+                                                    {
+                                                        if (!_process.HasExited)
+                                                        {
+                                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                            ? ProcessPriorityClass.High
+                                                            : ProcessPriorityClass.Normal;
+                                                        }
+                                                    }
+                                                    catch (InvalidOperationException)
+                                                    {
+                                                        // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                                    }
                                                     if (!_process.HasExited)
                                                     {
-                                                        _process.PriorityClass = checkBoxHighPriority.Checked
-                                                        ? ProcessPriorityClass.High
-                                                        : ProcessPriorityClass.Normal;
+                                                        _process.WaitForExit();
                                                     }
+                                                    stopwatch.Stop();
                                                 }
-                                                catch (InvalidOperationException)
-                                                {
-                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                                }
-                                                if (!_process.HasExited)
-                                                {
-                                                    _process.WaitForExit();
-                                                }
-                                                stopwatch.Stop();
                                             }
+                                        });
+                                        // Условие: записывать в лог только если процесс не был остановлен
+                                        if (!_isEncodingStopped)
+                                        {
+                                            LogProcessResults(outputFilePath, audioFile, parameters, executable);
                                         }
-                                    });
-                                    // Условие: записывать в лог только если процесс не был остановлен
-                                    if (!_isEncodingStopped)
-                                    {
-                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
+                                        else
+                                        {
+                                            // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                                            return;
+                                        }
                                     }
-                                    else
+                                    catch (Exception ex)
                                     {
-                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         isExecuting = false; // Сбрасываем флаг перед возвратом
                                         return;
                                     }
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return;
                                 }
                             }
                         }
-                    }
-                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Устанавливаем флаг остановки
-                        _isEncodingStopped = false;
-                        // Создаём временную директорию для выходного файла
-                        Directory.CreateDirectory(tempFolderPath);
-                        // Получаем выделенные .exe файлы
-                        var selectedExecutables = listViewFlacExecutables.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                        .ToList();
-                        // Получаем выделенные аудиофайлы, но только с расширением .flac
-                        var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                        .Cast<ListViewItem>()
-                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                        .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                        .ToList();
-                        // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                        if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
+                        else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false; // Сбрасываем флаг перед возвратом
-                            return;
-                        }
-                        foreach (var executable in selectedExecutables)
-                        {
-                            foreach (var audioFile in selectedAudioFiles)
+                            // Устанавливаем флаг остановки
+                            _isEncodingStopped = false;
+                            // Создаём временную директорию для выходного файла
+                            Directory.CreateDirectory(tempFolderPath);
+                            // Получаем выделенные .exe файлы
+                            var selectedExecutables = listViewFlacExecutables.CheckedItems
+                            .Cast<ListViewItem>()
+                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                            .ToList();
+                            // Получаем выделенные аудиофайлы, но только с расширением .flac
+                            var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                            .Cast<ListViewItem>()
+                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+                            .ToList();
+                            // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+                            if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
                             {
-                                if (_isEncodingStopped)
+                                MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                isExecuting = false; // Сбрасываем флаг перед возвратом
+                                return;
+                            }
+                            foreach (var executable in selectedExecutables)
+                            {
+                                foreach (var audioFile in selectedAudioFiles)
                                 {
-                                    return; // Выходим, если остановка запроса
-                                }
-                                // Формируем строку с параметрами
-                                string parameters = item.SubItems[1].Text;
-                                // Формируем аргументы для запуска
-                                string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                                string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
-                                // Запускаем процесс и дожидаемся завершения
-                                try
-                                {
-                                    await Task.Run(() =>
+                                    if (_isEncodingStopped)
                                     {
-                                        using (_process = new Process()) // Сохраняем процесс в поле _process
+                                        return; // Выходим, если остановка запроса
+                                    }
+                                    // Формируем строку с параметрами
+                                    string parameters = item.SubItems[2].Text;
+                                    // Формируем аргументы для запуска
+                                    string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
+                                    string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+                                    // Запускаем процесс и дожидаемся завершения
+                                    try
+                                    {
+                                        await Task.Run(() =>
                                         {
-                                            _process.StartInfo = new ProcessStartInfo
+                                            using (_process = new Process()) // Сохраняем процесс в поле _process
                                             {
-                                                FileName = executable,
-                                                Arguments = arguments,
-                                                UseShellExecute = false,
-                                                CreateNoWindow = true,
-                                            };
-                                            // Запускаем отсчет времени
-                                            stopwatch.Reset();
-                                            stopwatch.Start();
-                                            if (!_isEncodingStopped)
-                                            {
-                                                _process.Start();
-                                                // Устанавливаем приоритет процесса, если он начал успешно
-                                                try
+                                                _process.StartInfo = new ProcessStartInfo
                                                 {
+                                                    FileName = executable,
+                                                    Arguments = arguments,
+                                                    UseShellExecute = false,
+                                                    CreateNoWindow = true,
+                                                };
+                                                // Запускаем отсчет времени
+                                                stopwatch.Reset();
+                                                stopwatch.Start();
+                                                if (!_isEncodingStopped)
+                                                {
+                                                    _process.Start();
+                                                    // Устанавливаем приоритет процесса, если он начал успешно
+                                                    try
+                                                    {
+                                                        if (!_process.HasExited)
+                                                        {
+                                                            _process.PriorityClass = checkBoxHighPriority.Checked
+                                                            ? ProcessPriorityClass.High
+                                                            : ProcessPriorityClass.Normal;
+                                                        }
+                                                    }
+                                                    catch (InvalidOperationException)
+                                                    {
+                                                        // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                                    }
                                                     if (!_process.HasExited)
                                                     {
-                                                        _process.PriorityClass = checkBoxHighPriority.Checked
-                                                        ? ProcessPriorityClass.High
-                                                        : ProcessPriorityClass.Normal;
+                                                        _process.WaitForExit();
                                                     }
+                                                    stopwatch.Stop();
                                                 }
-                                                catch (InvalidOperationException)
-                                                {
-                                                    // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                                }
-                                                if (!_process.HasExited)
-                                                {
-                                                    _process.WaitForExit();
-                                                }
-                                                stopwatch.Stop();
                                             }
+                                        });
+                                        // Условие: записывать в лог только если процесс не был остановлен
+                                        if (!_isEncodingStopped)
+                                        {
+                                            LogProcessResults(outputFilePath, audioFile, parameters, executable);
                                         }
-                                    });
-                                    // Условие: записывать в лог только если процесс не был остановлен
-                                    if (!_isEncodingStopped)
-                                    {
-                                        LogProcessResults(outputFilePath, audioFile, parameters, executable);
+                                        else
+                                        {
+                                            // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                            isExecuting = false; // Сбрасываем флаг перед возвратом
+                                            return;
+                                        }
                                     }
-                                    else
+                                    catch (Exception ex)
                                     {
-                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         isExecuting = false; // Сбрасываем флаг перед возвратом
                                         return;
                                     }
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    isExecuting = false; // Сбрасываем флаг перед возвратом
-                                    return;
                                 }
                             }
                         }
                     }
                 }
+                isExecuting = false; // Сбрасываем флаг после завершения
             }
-            isExecuting = false; // Сбрасываем флаг после завершения
         }
 
         private void MoveSelectedItems(ListView listView, int direction)
