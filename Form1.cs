@@ -30,7 +30,6 @@ namespace FLAC_Benchmark_H
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
             LoadCPUInfo(); // Загружаем информацию о процессоре
-            this.KeyPreview = true;
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             cpuUsageTimer = new System.Windows.Forms.Timer(); // Явно указываем System.Windows.Forms.Timer
@@ -40,8 +39,7 @@ namespace FLAC_Benchmark_H
             InitializedataGridViewLog();
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
             _process = new Process(); // Initialize _process to avoid nullability warning
-            this.buttonStartJobList.Click += new EventHandler(buttonStartJobList_Click);
-
+                                      
             // Включаем пользовательскую отрисовку для listViewJobs
             listViewJobs.OwnerDraw = true;
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
@@ -56,36 +54,31 @@ namespace FLAC_Benchmark_H
             if (e.ColumnIndex == 0) // Колонка с типом задачи (Encode/Decode)
             {
                 e.DrawBackground();
-
                 // Отрисовка чекбокса
                 if (listViewJobs.CheckBoxes)
                 {
                     CheckBoxRenderer.DrawCheckBox(e.Graphics,
-                        new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
-                        e.Item.Checked ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
-                                       : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
+                    new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
+                    e.Item.Checked ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
+                    : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
                 }
-
                 Color textColor = e.SubItem?.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase) == true
-                    ? Color.Green
-                    : e.SubItem?.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase) == true
-                        ? Color.Red
-                        : e.Item?.ForeColor ?? Color.Black;
-
+                ? Color.Green
+                : e.SubItem?.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase) == true
+                ? Color.Red
+                : e.Item?.ForeColor ?? Color.Black;
                 using (var brush = new SolidBrush(textColor))
                 {
                     // Смещаем текст вправо, чтобы не перекрывать чекбокс
                     Rectangle textBounds = new Rectangle(
-                        e.Bounds.Left + (listViewJobs.CheckBoxes ? 20 : 0),
-                        e.Bounds.Top,
-                        e.Bounds.Width - (listViewJobs.CheckBoxes ? 20 : 0),
-                        e.Bounds.Height);
-
+                    e.Bounds.Left + (listViewJobs.CheckBoxes ? 20 : 0),
+                    e.Bounds.Top,
+                    e.Bounds.Width - (listViewJobs.CheckBoxes ? 20 : 0),
+                    e.Bounds.Height);
                     e.Graphics.DrawString(e.SubItem?.Text ?? string.Empty,
-                        e.SubItem?.Font ?? e.Item?.Font ?? this.Font,
-                        brush, textBounds, StringFormat.GenericDefault);
+                    e.SubItem?.Font ?? e.Item?.Font ?? this.Font,
+                    brush, textBounds, StringFormat.GenericDefault);
                 }
-
                 e.DrawFocusRectangle(e.Bounds);
             }
             else
@@ -137,7 +130,6 @@ namespace FLAC_Benchmark_H
             float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
             labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}\nCPU Usage: {cpuUsage:F2}%";
         }
-
         private void BackupJobsFile()
         {
             try
@@ -153,7 +145,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Метод для сохранения настроек
         private void SaveSettings()
         {
@@ -167,7 +158,7 @@ namespace FLAC_Benchmark_H
                     $"HighPriority={checkBoxHighPriority.Checked}",
                     $"TempFolderPath={tempFolderPath}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
-            };
+                };
                 File.WriteAllLines(SettingsFilePath, settings);
                 SaveExecutables();
                 SaveAudioFiles(); // Сохранение аудиофайлов
@@ -178,7 +169,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Метод для загрузки настроек
         private void LoadSettings()
         {
@@ -222,12 +212,10 @@ namespace FLAC_Benchmark_H
             catch
             {
             }
-            // Продолжение выполнения независимо от того, был ли загружен файл настроек
             LoadExecutables(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobs(); // Загружаем содержимое Settings_joblist.txt после загрузки других настроек
         }
-
         private void SaveExecutables()
         {
             try
@@ -263,8 +251,8 @@ namespace FLAC_Benchmark_H
             try
             {
                 var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                    .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
-                    .ToArray();
+                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
+                .ToArray();
                 File.WriteAllLines(JobsFilePath, jobList);
             }
             catch (Exception ex)
@@ -272,7 +260,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void InitializeDragAndDrop()
         {
             // Разрешаем перетаскивание файлов в ListView для программ
@@ -288,7 +275,6 @@ namespace FLAC_Benchmark_H
             listViewJobs.DragEnter += ListViewJobs_DragEnter;
             listViewJobs.DragDrop += ListViewJobs_DragDrop;
         }
-
         // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
@@ -380,7 +366,6 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm")); // Добавляем дату изменения в четвёртую колонку
             listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
-
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
@@ -474,7 +459,6 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
-
         // Обработчик DragEnter для ListViewJobs
         private void ListViewJobs_DragEnter(object? sender, DragEventArgs e)
         {
@@ -483,8 +467,8 @@ namespace FLAC_Benchmark_H
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 // Проверяем наличие .txt файлов или директорий
                 e.Effect = files.Any(file => Directory.Exists(file) ||
-                                              Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
-                        ? DragDropEffects.Copy : DragDropEffects.None;
+                Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
             {
@@ -533,7 +517,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
             try
             {
                 string[] lines = File.ReadAllLines(filePath);
@@ -591,7 +574,6 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(parameters); // Добавляем параметры
             listViewJobs.Items.Add(item); // Добавляем элемент в ListView
         }
-
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -630,6 +612,7 @@ namespace FLAC_Benchmark_H
         private void Form1_Load(object? sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
+            this.ActiveControl = null; // Снимаем фокус с всех элементов
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
@@ -644,7 +627,6 @@ namespace FLAC_Benchmark_H
                 if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
             }
         }
-
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -664,7 +646,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -683,7 +664,7 @@ namespace FLAC_Benchmark_H
         }
         private void buttonUpEncoder_Click(object sender, EventArgs e)
         {
-            MoveSelectedItems(listViewFlacExecutables,- 1); // Передаём -1 для перемещения вверх
+            MoveSelectedItems(listViewFlacExecutables, -1); // Передаём -1 для перемещения вверх
         }
         private void buttonDownEncoder_Click(object sender, EventArgs e)
         {
@@ -704,7 +685,6 @@ namespace FLAC_Benchmark_H
         {
             listViewFlacExecutables.Items.Clear();
         }
-
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -744,7 +724,6 @@ namespace FLAC_Benchmark_H
         {
             listViewAudioFiles.Items.Clear();
         }
-
         private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -757,7 +736,6 @@ namespace FLAC_Benchmark_H
                     {
                         string[] lines = File.ReadAllLines(openFileDialog.FileName); // Используем выбранный файл
                                                                                      //    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой новых
-
                         foreach (var line in lines)
                         {
                             var parts = line.Split('~'); // Разделяем строку на части
@@ -793,8 +771,8 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
-                            .ToArray(); // Сохраняем в одном формате
+                        .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Получаем текст, состояние чекбокса и параметры
+                        .ToArray(); // Сохраняем в одном формате
                         File.WriteAllLines(saveFileDialog.FileName, jobList);
                         //    MessageBox.Show("Job list exported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -828,27 +806,22 @@ namespace FLAC_Benchmark_H
         {
             listViewJobs.Items.Clear(); // Очищаем listViewJobs
         }
-
         private void MoveSelectedItems(ListView listView, int direction)
         {
             // Получаем выделенные элементы и сортируем их по индексам
             var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
-                .OrderBy(item => item.Index)
-                .ToList();
-
+            .OrderBy(item => item.Index)
+            .ToList();
             // Если выделенных элементов нет, выходим из метода
             if (selectedItems.Count == 0)
                 return;
-
             // Если перемещение вниз, мы будем взимать элементы в обратном порядке
             if (direction > 0)
             {
                 selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
             }
-
             // Приостанавливаем обновление ListView для снижения мерцания
             listView.BeginUpdate();
-
             try
             {
                 // Перемещение элементов
@@ -856,18 +829,14 @@ namespace FLAC_Benchmark_H
                 {
                     int currentIndex = item.Index;
                     int newIndex = currentIndex + direction;
-
                     // Проверяем границы
                     if (newIndex < 0 || newIndex >= listView.Items.Count)
                         return; // Если выход за пределы, выходим из метода
-
-                    // Удаляем элемент из текущего места
+                                // Удаляем элемент из текущего места
                     listView.Items.Remove(item);
-
                     // Вставляем элемент на новое место
                     listView.Items.Insert(newIndex, item);
                 }
-
                 // Обновляем выделение
                 UpdateSelection(selectedItems, listView);
             }
@@ -884,16 +853,13 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = false;
             }
-
             // Выделяем перемещенные элементы
             foreach (var item in selectedItems)
             {
                 item.Selected = true; // Устанавливаем выделение на перемещенные элементы
             }
-
             listView.Focus(); // Ставим фокус на список
         }
-
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
@@ -962,11 +928,9 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" --no-seektable"); // Добавляем с пробелом перед текстом
             }
         }
-
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-
             isExecuting = true; // Устанавливаем флаг выполнения
                                 // Устанавливаем флаг остановки
             _isEncodingStopped = false;
@@ -974,14 +938,14 @@ namespace FLAC_Benchmark_H
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
             var selectedExecutables = listViewFlacExecutables.CheckedItems
-                .Cast<ListViewItem>()
-                .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                .ToList();
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
             // Получаем выделенные аудиофайлы
             var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                .Cast<ListViewItem>()
-                .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                .ToList();
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
             if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
             {
@@ -998,25 +962,20 @@ namespace FLAC_Benchmark_H
                         isExecuting = false; // Сбрасываем флаг перед выходом
                         return; // Выходим, если остановка запроса
                     }
-
                     // Получаем значения из текстовых полей и формируем аргументы...
                     string compressionLevel = textBoxCompressionLevel.Text;
                     string threads = textBoxThreads.Text;
                     string commandLine = textBoxCommandLineOptionsEncoder.Text;
-
                     // Формируем строку с параметрами
                     string parameters = $"-{compressionLevel} {commandLine}";
-
                     // Добавляем количество потоков, если оно больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
                         parameters += $" -j{threads}"; // добавляем флаг -j{threads}
                     }
-
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                     string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
-
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -1034,26 +993,23 @@ namespace FLAC_Benchmark_H
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-
                                 if (!_isEncodingStopped)
                                 {
                                     _process.Start();
-
                                     // Устанавливаем приоритет процесса, если он начал успешно
                                     try
                                     {
                                         if (!_process.HasExited)
                                         {
                                             _process.PriorityClass = checkBoxHighPriority.Checked
-                                                ? ProcessPriorityClass.High
-                                                : ProcessPriorityClass.Normal;
+                                            ? ProcessPriorityClass.High
+                                            : ProcessPriorityClass.Normal;
                                         }
                                     }
                                     catch (InvalidOperationException)
                                     {
                                         // Процесс завершён, логируем или обрабатываем по мере необходимости
                                     }
-
                                     if (!_process.HasExited)
                                     {
                                         _process.WaitForExit();
@@ -1062,7 +1018,6 @@ namespace FLAC_Benchmark_H
                                 }
                             }
                         });
-
                         // Условие: записывать в лог только если процесс не был остановлен
                         if (!_isEncodingStopped)
                         {
@@ -1070,7 +1025,7 @@ namespace FLAC_Benchmark_H
                         }
                         else
                         {
-                            MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
@@ -1083,15 +1038,12 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-
             // Сбрасываем флаг выполнения после завершения
             isExecuting = false;
         }
-
         private async void buttonStartDecode_Click(object? sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-
             isExecuting = true; // Устанавливаем флаг выполнения
                                 // Устанавливаем флаг остановки
             _isEncodingStopped = false;
@@ -1099,15 +1051,15 @@ namespace FLAC_Benchmark_H
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
             var selectedExecutables = listViewFlacExecutables.CheckedItems
-                .Cast<ListViewItem>()
-                .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                .ToList();
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .ToList();
             // Получаем выделенные аудиофайлы, но только с расширением .flac
             var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                .Cast<ListViewItem>()
-                .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                .ToList();
+            .Cast<ListViewItem>()
+            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+            .ToList();
             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
             if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
             {
@@ -1124,13 +1076,11 @@ namespace FLAC_Benchmark_H
                         isExecuting = false; // Сбрасываем флаг перед выходом
                         return; // Выходим, если остановка запроса
                     }
-
                     // Формируем строку с параметрами
                     string commandLine = textBoxCommandLineOptionsDecoder.Text;
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
                     string arguments = $"\"{audioFile}\" -d {commandLine} -f -o \"{outputFilePath}\"";
-
                     // Запускаем процесс и дожидаемся завершения
                     try
                     {
@@ -1145,40 +1095,34 @@ namespace FLAC_Benchmark_H
                                     UseShellExecute = false,
                                     CreateNoWindow = true,
                                 };
-
                                 // Запускаем отсчет времени
                                 stopwatch.Reset();
                                 stopwatch.Start();
-
                                 if (!_isEncodingStopped)
                                 {
                                     _process.Start();
-
                                     // Устанавливаем приоритет процесса, если он начал успешно
                                     try
                                     {
                                         if (!_process.HasExited)
                                         {
                                             _process.PriorityClass = checkBoxHighPriority.Checked
-                                                ? ProcessPriorityClass.High
-                                                : ProcessPriorityClass.Normal;
+                                            ? ProcessPriorityClass.High
+                                            : ProcessPriorityClass.Normal;
                                         }
                                     }
                                     catch (InvalidOperationException)
                                     {
                                         // Процесс завершён, логируем или обрабатываем по мере необходимости
                                     }
-
                                     if (!_process.HasExited)
                                     {
                                         _process.WaitForExit();
                                     }
-
                                     stopwatch.Stop();
                                 }
                             }
                         });
-
                         // Условие: записывать в лог только если процесс не был остановлен
                         if (!_isEncodingStopped)
                         {
@@ -1186,7 +1130,7 @@ namespace FLAC_Benchmark_H
                         }
                         else
                         {
-                            MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
@@ -1199,14 +1143,11 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-
             isExecuting = false; // Сбрасываем флаг после завершения
         }
-
         private async void buttonStartJobList_Click(object sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-
             isExecuting = true; // Устанавливаем флаг выполнения
             foreach (ListViewItem item in listViewJobs.Items)
             {
@@ -1214,26 +1155,22 @@ namespace FLAC_Benchmark_H
                 if (item.Checked)
                 {
                     string jobType = item.Text;
-
                     if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
                     {
                         // Устанавливаем флаг остановки
                         _isEncodingStopped = false;
                         // Создаём временную директорию для выходного файла
                         Directory.CreateDirectory(tempFolderPath);
-
                         // Получаем выделенные .exe файлы
                         var selectedExecutables = listViewFlacExecutables.CheckedItems
-                            .Cast<ListViewItem>()
-                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                            .ToList();
-
+                        .Cast<ListViewItem>()
+                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
                         // Получаем выделенные аудиофайлы
                         var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                            .Cast<ListViewItem>()
-                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
-                            .ToList();
-
+                        .Cast<ListViewItem>()
+                        .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
                         // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
                         if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
                         {
@@ -1241,7 +1178,6 @@ namespace FLAC_Benchmark_H
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
-
                         foreach (var executable in selectedExecutables)
                         {
                             foreach (var audioFile in selectedAudioFiles)
@@ -1251,14 +1187,11 @@ namespace FLAC_Benchmark_H
                                     isExecuting = false; // Сбрасываем флаг перед возвратом
                                     return; // Выходим, если остановка запроса
                                 }
-
                                 // Формируем строку с параметрами
                                 string parameters = item.SubItems[1].Text;
-
                                 // Формируем аргументы для запуска
                                 string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                                 string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
-
                                 // Запускаем процесс и дожидаемся завершения
                                 try
                                 {
@@ -1276,26 +1209,23 @@ namespace FLAC_Benchmark_H
                                             // Запускаем отсчет времени
                                             stopwatch.Reset();
                                             stopwatch.Start();
-
                                             if (!_isEncodingStopped)
                                             {
                                                 _process.Start();
-
                                                 // Устанавливаем приоритет процесса, если он начал успешно
                                                 try
                                                 {
                                                     if (!_process.HasExited)
                                                     {
                                                         _process.PriorityClass = checkBoxHighPriority.Checked
-                                                            ? ProcessPriorityClass.High
-                                                            : ProcessPriorityClass.Normal;
+                                                        ? ProcessPriorityClass.High
+                                                        : ProcessPriorityClass.Normal;
                                                     }
                                                 }
                                                 catch (InvalidOperationException)
                                                 {
                                                     // Процесс завершён, логируем или обрабатываем по мере необходимости
                                                 }
-
                                                 if (!_process.HasExited)
                                                 {
                                                     _process.WaitForExit();
@@ -1304,7 +1234,6 @@ namespace FLAC_Benchmark_H
                                             }
                                         }
                                     });
-
                                     // Условие: записывать в лог только если процесс не был остановлен
                                     if (!_isEncodingStopped)
                                     {
@@ -1312,7 +1241,7 @@ namespace FLAC_Benchmark_H
                                     }
                                     else
                                     {
-                                        MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         isExecuting = false; // Сбрасываем флаг перед возвратом
                                         return;
                                     }
@@ -1332,20 +1261,17 @@ namespace FLAC_Benchmark_H
                         _isEncodingStopped = false;
                         // Создаём временную директорию для выходного файла
                         Directory.CreateDirectory(tempFolderPath);
-
                         // Получаем выделенные .exe файлы
                         var selectedExecutables = listViewFlacExecutables.CheckedItems
-                            .Cast<ListViewItem>()
-                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                            .ToList();
-
+                        .Cast<ListViewItem>()
+                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                        .ToList();
                         // Получаем выделенные аудиофайлы, но только с расширением .flac
                         var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                            .Cast<ListViewItem>()
-                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                            .ToList();
-
+                        .Cast<ListViewItem>()
+                        .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                        .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+                        .ToList();
                         // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
                         if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
                         {
@@ -1353,7 +1279,6 @@ namespace FLAC_Benchmark_H
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
-
                         foreach (var executable in selectedExecutables)
                         {
                             foreach (var audioFile in selectedAudioFiles)
@@ -1362,13 +1287,11 @@ namespace FLAC_Benchmark_H
                                 {
                                     return; // Выходим, если остановка запроса
                                 }
-
                                 // Формируем строку с параметрами
                                 string parameters = item.SubItems[1].Text;
                                 // Формируем аргументы для запуска
                                 string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
                                 string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
-
                                 // Запускаем процесс и дожидаемся завершения
                                 try
                                 {
@@ -1383,40 +1306,34 @@ namespace FLAC_Benchmark_H
                                                 UseShellExecute = false,
                                                 CreateNoWindow = true,
                                             };
-
                                             // Запускаем отсчет времени
                                             stopwatch.Reset();
                                             stopwatch.Start();
-
                                             if (!_isEncodingStopped)
                                             {
                                                 _process.Start();
-
                                                 // Устанавливаем приоритет процесса, если он начал успешно
                                                 try
                                                 {
                                                     if (!_process.HasExited)
                                                     {
                                                         _process.PriorityClass = checkBoxHighPriority.Checked
-                                                            ? ProcessPriorityClass.High
-                                                            : ProcessPriorityClass.Normal;
+                                                        ? ProcessPriorityClass.High
+                                                        : ProcessPriorityClass.Normal;
                                                     }
                                                 }
                                                 catch (InvalidOperationException)
                                                 {
                                                     // Процесс завершён, логируем или обрабатываем по мере необходимости
                                                 }
-
                                                 if (!_process.HasExited)
                                                 {
                                                     _process.WaitForExit();
                                                 }
-
                                                 stopwatch.Stop();
                                             }
                                         }
                                     });
-
                                     // Условие: записывать в лог только если процесс не был остановлен
                                     if (!_isEncodingStopped)
                                     {
@@ -1424,7 +1341,7 @@ namespace FLAC_Benchmark_H
                                     }
                                     else
                                     {
-                                        MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        // MessageBox.Show("Output file was not created.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         isExecuting = false; // Сбрасываем флаг перед возвратом
                                         return;
                                     }
@@ -1440,10 +1357,8 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-
             isExecuting = false; // Сбрасываем флаг после завершения
         }
-
         private void LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
@@ -1452,56 +1367,48 @@ namespace FLAC_Benchmark_H
                 // Создаем CultureInfo для форматирования с точками как разделителями разрядов
                 NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
                 numberFormat.NumberGroupSeparator = ".";
-
                 // Получаем информацию о входящем аудиофайле
                 FileInfo inputFileInfo = new FileInfo(audioFile);
                 long inputSize = inputFileInfo.Length; // Размер входного файла
                 var (duration, _, _, _) = GetAudioInfo(audioFile);
                 long durationMs = Convert.ToInt64(duration);
                 string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
-
                 // Получаем только имя входящего файла для логирования
                 string audioFileName = Path.GetFileName(audioFile);
                 // Формируем короткое имя входящего файла
                 string audioFileNameShort = audioFileName.Length > 30
-                    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
-                    : audioFileName.PadRight(33);
-
+                ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
+                : audioFileName.PadRight(33);
                 // Получаем информацию о выходящем аудиофайле
                 long outputSize = outputFile.Length; // Размер выходного файла
                 string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
                 TimeSpan timeTaken = stopwatch.Elapsed;
                 double compressionPercentage = ((double)outputSize / inputSize) * 100;
                 double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-
                 // Получаем информацию о версии exe файла
                 var version = GetExecutableInfo(executable);
                 // Добавление записи в лог DataGridView
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    audioFileName,
-                    inputSizeFormatted,
-                    outputSizeFormatted,
-                    $"{compressionPercentage:F3}%",
-                    $"{timeTaken.TotalMilliseconds:F3}",
-                    $"{encodingSpeed:F3}x",
-                    parameters,
-                    Path.GetFileName(executable),
-                    version);
-
+                audioFileName,
+                inputSizeFormatted,
+                outputSizeFormatted,
+                $"{compressionPercentage:F3}%",
+                $"{timeTaken.TotalMilliseconds:F3}",
+                $"{encodingSpeed:F3}x",
+                parameters,
+                Path.GetFileName(executable),
+                version);
                 // Установка цвета текста в зависимости от сравнения размеров файлов
                 dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
                 dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
                 dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
-
                 // Прокручиваем DataGridView вниз к последней добавленной строке
                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                 dataGridViewLog.ClearSelection(); // Очищаем выделение
-
-                // Логирование в файл
+                                                  // Логирование в файл
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
         }
-
         private string GetExecutableInfo(string executablePath)
         {
             using (Process process = new Process())
@@ -1529,7 +1436,6 @@ namespace FLAC_Benchmark_H
             mediaInfo.Close();
             return (duration, bitDepth, samplingRate, fileSize);
         }
-
         private void buttonStop_Click(object sender, EventArgs e)
         {
             _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
@@ -1559,8 +1465,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Путь к файлу логирования
@@ -1591,7 +1495,6 @@ namespace FLAC_Benchmark_H
         {
             // Создаем StringBuilder для сбора текста логов
             StringBuilder logText = new StringBuilder();
-
             // Проходим по строкам в DataGridView и собираем текст
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
@@ -1602,7 +1505,6 @@ namespace FLAC_Benchmark_H
                 }
                 logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
             }
-
             if (logText.Length > 0)
             {
                 Clipboard.SetText(logText.ToString());
@@ -1617,56 +1519,46 @@ namespace FLAC_Benchmark_H
         {
             dataGridViewLog.Rows.Clear();
         }
-
         private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
             string compressionLevel = textBoxCompressionLevel.Text;
             string threads = textBoxThreads.Text;
             string commandLine = textBoxCommandLineOptionsEncoder.Text;
-
             // Формируем строку с параметрами
             string parameters = $"-{compressionLevel} {commandLine}";
-
             // Добавляем количество потоков, если оно больше 1
             if (int.TryParse(threads, out int threadCount) && threadCount > 1)
             {
                 parameters += $" -j{threads}"; // добавляем флаг -j{threads}
             }
-
             // Создаем новый элемент списка для кодирования
             var item = new ListViewItem("Encode") // Первая колонка - Encode
             {
                 Checked = true // Устанавливаем чекбокс в состояние "проверено"
             };
             item.SubItems.Add(parameters); // Вторая колонка - parameters
-
-            // Добавляем элемент в listViewJobList
+                                           // Добавляем элемент в listViewJobList
             listViewJobs.Items.Add(item);
         }
         private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
             string commandLine = textBoxCommandLineOptionsDecoder.Text;
-
             // Формируем строку с параметрами
             string parameters = commandLine; // Параметры для декодирования
-
-            // Создаем новый элемент списка для декодирования
+                                             // Создаем новый элемент списка для декодирования
             var item = new ListViewItem("Decode") // Первая колонка - Decode
             {
                 Checked = true // Устанавливаем чекбокс в состояние "проверено"
             };
             item.SubItems.Add(parameters); // Вторая колонка - parameters
-
-            // Добавляем элемент в listViewJobList
+                                           // Добавляем элемент в listViewJobList
             listViewJobs.Items.Add(item);
         }
-
         private void buttonCopyJobs_Click(object sender, EventArgs e)
         {
             StringBuilder jobsText = new StringBuilder();
-
             // Проверяем, есть ли выделенные элементы
             if (listViewJobs.SelectedItems.Count > 0)
             {
@@ -1684,7 +1576,6 @@ namespace FLAC_Benchmark_H
                     jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
                 }
             }
-
             // Копируем текст в буфер обмена
             if (jobsText.Length > 0)
             {
@@ -1702,12 +1593,10 @@ namespace FLAC_Benchmark_H
             {
                 // Получаем текст из буфера обмена
                 string clipboardText = Clipboard.GetText();
-
                 // Проверяем, если буфер не пустой
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
-
                     foreach (var line in lines)
                     {
                         var parts = line.Split('~'); // Разделяем строку на части
