@@ -91,6 +91,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupLog = new GroupBox();
+            labelStopped = new Label();
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxSystemandSettings = new GroupBox();
@@ -776,6 +777,7 @@
             // groupLog
             // 
             groupLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupLog.Controls.Add(labelStopped);
             groupLog.Controls.Add(buttonStop);
             groupLog.Controls.Add(dataGridViewLog);
             groupLog.Controls.Add(buttonClearLog);
@@ -787,6 +789,15 @@
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
+            // 
+            // labelStopped
+            // 
+            labelStopped.AutoSize = true;
+            labelStopped.ForeColor = Color.Red;
+            labelStopped.Location = new Point(122, 368);
+            labelStopped.Name = "labelStopped";
+            labelStopped.Size = new Size(0, 15);
+            labelStopped.TabIndex = 26;
             // 
             // dataGridViewLog
             // 
@@ -952,6 +963,7 @@
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxJobsList.ResumeLayout(false);
             groupLog.ResumeLayout(false);
+            groupLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
             groupBoxSystemandSettings.ResumeLayout(false);
             groupBoxSystemandSettings.PerformLayout();
@@ -1041,5 +1053,6 @@
         private Button buttonUpAudioFile;
         private Button buttonDownJob;
         private Button buttonUpJob;
+        private Label labelStopped;
     }
 }

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 using System.Text;
+using System.Windows.Forms;
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
@@ -1436,6 +1437,7 @@ namespace FLAC_Benchmark_H
             mediaInfo.Close();
             return (duration, bitDepth, samplingRate, fileSize);
         }
+
         private void buttonStop_Click(object sender, EventArgs e)
         {
             _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
@@ -1447,16 +1449,16 @@ namespace FLAC_Benchmark_H
                     if (!_process.HasExited)
                     {
                         _process.Kill(); // Завершаем процесс
-                        MessageBox.Show("Encoding process has been stopped.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ShowTemporaryStoppedMessage("Encoding process has been stopped.");
                     }
                     else
                     {
-                        MessageBox.Show("The encoding process has already exited.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ShowTemporaryStoppedMessage("The encoding process has already exited.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    //    MessageBox.Show($"Error stopping process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowTemporaryStoppedMessage($"Error stopping process: {ex.Message}");
                 }
                 finally
                 {
@@ -1464,6 +1466,22 @@ namespace FLAC_Benchmark_H
                     _process = null; // Обнуляем ссылку на процесс
                 }
             }
+        }
+
+        private void ShowTemporaryStoppedMessage(string message)
+        {
+            labelStopped.Text = message; // Устанавливаем текст сообщения
+            labelStopped.Visible = true; // Делаем метку видимой
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer(); // Явно используем пространство имен
+            timer.Interval = 4000; // Задаем интервал 2 секунды
+            timer.Tick += (s, e) =>
+            {
+                labelStopped.Visible = false; // Скрываем метку
+                timer.Stop(); // Останавливаем таймер
+                timer.Dispose(); // Освобождаем ресурсы
+            };
+            timer.Start(); // Запускаем таймер
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
