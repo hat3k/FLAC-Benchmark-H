@@ -86,6 +86,7 @@
             listViewJobs = new ListView();
             JobType = new ColumnHeader();
             Parameters = new ColumnHeader();
+            Passes = new ColumnHeader();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -712,7 +713,7 @@
             // 
             listViewJobs.AllowDrop = true;
             listViewJobs.CheckBoxes = true;
-            listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Parameters });
+            listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Passes, Parameters });
             listViewJobs.FullRowSelect = true;
             listViewJobs.Location = new Point(6, 22);
             listViewJobs.Name = "listViewJobs";
@@ -732,7 +733,14 @@
             // 
             Parameters.Tag = "Parameters";
             Parameters.Text = "Parameters";
-            Parameters.Width = 695;
+            Parameters.Width = 680;
+            // 
+            // Passes
+            // 
+            Passes.Tag = "Passes";
+            Passes.Text = "Passes";
+            Passes.TextAlign = HorizontalAlignment.Center;
+            Passes.Width = 46;
             // 
             // buttonStartJobList
             // 
@@ -1054,5 +1062,6 @@
         private Button buttonDownJob;
         private Button buttonUpJob;
         private Label labelStopped;
+        private ColumnHeader Passes;
     }
 }

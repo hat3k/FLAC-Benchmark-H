@@ -629,11 +629,12 @@ namespace FLAC_Benchmark_H
                 foreach (var line in lines)
                 {
                     var parts = line.Split('~'); // Разделяем строку на части
-                    if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                    if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                     {
                         string jobName = parts[0];
-                        string parameters = parts[2];
-                        AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                        string passes = parts[2];
+                        string parameters = parts[3];
+                        AddJobsToListView(jobName, isChecked, passes, parameters); // Добавляем задачу в ListView
                     }
                     else
                     {
@@ -657,12 +658,17 @@ namespace FLAC_Benchmark_H
                     listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
                     foreach (var line in lines)
                     {
-                        var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса и параметры
-                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса, количество проходов и параметры
+                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
                             var item = new ListViewItem(parts[0]) { Checked = isChecked };
-                            item.SubItems.Add(parts[2]); // Вторая колонка: параметры
+                            item.SubItems.Add(parts[2]); // Вторая колонка: количество проходов
+                            item.SubItems.Add(parts[3]); // Третья колонка: параметры
                             listViewJobs.Items.Add(item);
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
                 }
@@ -671,6 +677,13 @@ namespace FLAC_Benchmark_H
                     MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+        private void AddJobsToListView(string job, bool isChecked = true, string passes = "", string parameters = "")
+        {
+            var item = new ListViewItem(job) { Checked = isChecked };
+            item.SubItems.Add(passes); // Добавляем количество проходов
+            item.SubItems.Add(parameters); // Добавляем параметры
+            listViewJobs.Items.Add(item); // Добавляем элемент в ListView
         }
         private void BackupJobsFile()
         {
@@ -686,12 +699,6 @@ namespace FLAC_Benchmark_H
             {
                 MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void AddJobsToListView(string job, bool isChecked = true, string parameters = "")
-        {
-            var item = new ListViewItem(job) { Checked = isChecked };
-            item.SubItems.Add(parameters); // Добавляем параметры
-            listViewJobs.Items.Add(item); // Добавляем элемент в ListView
         }
         private void buttonImportJobList_Click(object? sender, EventArgs e)
         {
@@ -781,36 +788,77 @@ namespace FLAC_Benchmark_H
             string compressionLevel = textBoxCompressionLevel.Text;
             string threads = textBoxThreads.Text;
             string commandLine = textBoxCommandLineOptionsEncoder.Text;
+
             // Формируем строку с параметрами
             string parameters = $"-{compressionLevel} {commandLine}";
+
             // Добавляем количество потоков, если оно больше 1
             if (int.TryParse(threads, out int threadCount) && threadCount > 1)
             {
                 parameters += $" -j{threads}"; // добавляем флаг -j{threads}
             }
-            // Создаем новый элемент списка для кодирования
-            var item = new ListViewItem("Encode") // Первая колонка - Encode
+
+            // Проверяем, существует ли уже задача в последнем элементе
+            string jobName = "Encode";
+            ListViewItem existingItem = null;
+
+            if (listViewJobs.Items.Count > 0)
             {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-                                           // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
+                ListViewItem lastItem = listViewJobs.Items[listViewJobs.Items.Count - 1];
+                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == parameters)
+                {
+                    existingItem = lastItem;
+                }
+            }
+
+            // Если такая задача уже существует, увеличиваем количество проходов
+            if (existingItem != null)
+            {
+                int currentPasses = int.Parse(existingItem.SubItems[1].Text);
+                existingItem.SubItems[1].Text = (currentPasses + 1).ToString();
+            }
+            else
+            {
+                // Если задачи ещё не существует, добавляем новую с 1 проходом
+                var newItem = new ListViewItem(jobName) { Checked = true };
+                newItem.SubItems.Add("1"); // Устанавливаем количество проходов по умолчанию
+                newItem.SubItems.Add(parameters);
+                listViewJobs.Items.Add(newItem);
+            }
         }
         private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
             string commandLine = textBoxCommandLineOptionsDecoder.Text;
-            // Формируем строку с параметрами
             string parameters = commandLine; // Параметры для декодирования
-                                             // Создаем новый элемент списка для декодирования
-            var item = new ListViewItem("Decode") // Первая колонка - Decode
+
+            // Проверяем, существует ли уже задача в последнем элементе
+            string jobName = "Decode";
+            ListViewItem existingItem = null;
+
+            if (listViewJobs.Items.Count > 0)
             {
-                Checked = true // Устанавливаем чекбокс в состояние "проверено"
-            };
-            item.SubItems.Add(parameters); // Вторая колонка - parameters
-                                           // Добавляем элемент в listViewJobList
-            listViewJobs.Items.Add(item);
+                ListViewItem lastItem = listViewJobs.Items[listViewJobs.Items.Count - 1];
+                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == commandLine)
+                {
+                    existingItem = lastItem;
+                }
+            }
+
+            // Если такая задача уже существует, увеличиваем количество проходов
+            if (existingItem != null)
+            {
+                int currentPasses = int.Parse(existingItem.SubItems[1].Text);
+                existingItem.SubItems[1].Text = (currentPasses + 1).ToString();
+            }
+            else
+            {
+                // Если задачи ещё не существует, добавляем новую с 1 проходом
+                var newItem = new ListViewItem(jobName) { Checked = true };
+                newItem.SubItems.Add("1"); // Устанавливаем количество проходов по умолчанию
+                newItem.SubItems.Add(parameters);
+                listViewJobs.Items.Add(newItem);
+            }
         }
         private void buttonCopyJobs_Click(object sender, EventArgs e)
         {
@@ -821,7 +869,7 @@ namespace FLAC_Benchmark_H
                 // Копируем только выделенные задачи
                 foreach (ListViewItem item in listViewJobs.SelectedItems)
                 {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}");
                 }
             }
             else
@@ -829,7 +877,7 @@ namespace FLAC_Benchmark_H
                 // Если ничего не выделено, копируем все задачи
                 foreach (ListViewItem item in listViewJobs.Items)
                 {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}");
+                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}");
                 }
             }
             // Копируем текст в буфер обмена
@@ -856,11 +904,12 @@ namespace FLAC_Benchmark_H
                     foreach (var line in lines)
                     {
                         var parts = line.Split('~'); // Разделяем строку на части
-                        if (parts.Length == 3 && bool.TryParse(parts[1], out bool isChecked))
+                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
                             string jobName = parts[0];
-                            string parameters = parts[2];
-                            AddJobsToListView(jobName, isChecked, parameters); // Добавляем задачу в ListView
+                            string passes = parts[2];
+                            string parameters = parts[3];
+                            AddJobsToListView(jobName, isChecked, passes, parameters); // Добавляем задачу в ListView
                         }
                         else
                         {
@@ -883,7 +932,7 @@ namespace FLAC_Benchmark_H
             try
             {
                 var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}") // Сохраняем текст, состояние чекбокса и параметры
+                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}") // Сохраняем текст, состояние чекбокса, количество проходов и параметры
                 .ToArray();
                 File.WriteAllLines(JobsFilePath, jobList);
             }
