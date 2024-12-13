@@ -998,7 +998,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241213.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241213.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
