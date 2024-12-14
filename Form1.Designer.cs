@@ -775,7 +775,7 @@
             // 
             Parameters.Tag = "Parameters";
             Parameters.Text = "Parameters";
-            Parameters.Width = 680;
+            Parameters.Width = 649;
             // 
             // buttonStartJobList
             // 
@@ -835,6 +835,7 @@
             // 
             // labelStopped
             // 
+            labelStopped.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelStopped.AutoSize = true;
             labelStopped.ForeColor = Color.Red;
             labelStopped.Location = new Point(122, 368);
