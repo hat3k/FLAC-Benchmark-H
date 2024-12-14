@@ -95,6 +95,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupLog = new GroupBox();
+            buttonAnalyzeLog = new Button();
             labelStopped = new Label();
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
@@ -820,6 +821,7 @@
             // groupLog
             // 
             groupLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupLog.Controls.Add(buttonAnalyzeLog);
             groupLog.Controls.Add(labelStopped);
             groupLog.Controls.Add(buttonStop);
             groupLog.Controls.Add(dataGridViewLog);
@@ -832,6 +834,17 @@
             groupLog.TabIndex = 6;
             groupLog.TabStop = false;
             groupLog.Text = "Log";
+            // 
+            // buttonAnalyzeLog
+            // 
+            buttonAnalyzeLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonAnalyzeLog.Location = new Point(473, 364);
+            buttonAnalyzeLog.Name = "buttonAnalyzeLog";
+            buttonAnalyzeLog.Size = new Size(85, 23);
+            buttonAnalyzeLog.TabIndex = 27;
+            buttonAnalyzeLog.Text = "Analyze log";
+            buttonAnalyzeLog.UseVisualStyleBackColor = true;
+            buttonAnalyzeLog.Click += buttonAnalyzeLog_Click;
             // 
             // labelStopped
             // 
@@ -1103,5 +1116,6 @@
         private Button buttonMinusPass;
         private Button buttonPlusPass;
         private Label labelPasses;
+        private Button buttonAnalyzeLog;
     }
 }

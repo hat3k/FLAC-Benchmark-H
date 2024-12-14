@@ -448,25 +448,6 @@ namespace FLAC_Benchmark_H
             if (e.KeyCode == Keys.Delete)
                 buttonRemoveJob.PerformClick();
         }
-        private void InitializedataGridViewLog()
-        {
-            // Настройка DataGridView (по желанию)
-            dataGridViewLog.Columns.Add("FileName", "Name");
-            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
-            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
-            dataGridViewLog.Columns.Add("Compression", "Compr.");
-            dataGridViewLog.Columns.Add("Time", "Time");
-            dataGridViewLog.Columns.Add("Speed", "Speed");
-            dataGridViewLog.Columns.Add("Parameters", "Parameters");
-            dataGridViewLog.Columns.Add("Executable", "Binary");
-            dataGridViewLog.Columns.Add("Version", "Version");
-            // Установка выравнивания для колонок
-            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-        }
 
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
@@ -1540,6 +1521,28 @@ namespace FLAC_Benchmark_H
             }
             isExecuting = false; // Сбрасываем флаг после завершения
         }
+
+        private void InitializedataGridViewLog()
+        {
+            // Настройка DataGridView (по желанию)
+            dataGridViewLog.Columns.Add("FileName", "Name");
+            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
+            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
+            dataGridViewLog.Columns.Add("Compression", "Compr.");
+            dataGridViewLog.Columns.Add("Time", "Time");
+            dataGridViewLog.Columns.Add("Speed", "Speed");
+            dataGridViewLog.Columns.Add("Parameters", "Parameters");
+            dataGridViewLog.Columns.Add("Executable", "Binary");
+            dataGridViewLog.Columns.Add("Version", "Version");
+            dataGridViewLog.Columns.Add("BestSize", "Best Size");
+
+            // Установка выравнивания для колонок
+            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        }
         private void LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
@@ -1590,7 +1593,64 @@ namespace FLAC_Benchmark_H
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
         }
+        private void AnalyzeBestSize()
+        {
+            // Создаем словарь для хранения минимальных размеров выходных файлов
+            Dictionary<string, long> smallestSizes = new();
 
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                string fileName = row.Cells["FileName"].Value.ToString();
+                string outputSizeStr = row.Cells["OutputFileSize"].Value.ToString();
+
+                // Удаляем все символы, кроме цифр, из строки с размером
+                outputSizeStr = outputSizeStr.Replace(".", "").Trim();
+
+                if (long.TryParse(outputSizeStr, out long outputSize))
+                {
+                    // Проверяем, является ли текущий размер меньшим, чем уже сохраненный
+                    if (!smallestSizes.ContainsKey(fileName) || outputSize < smallestSizes[fileName])
+                    {
+                        smallestSizes[fileName] = outputSize;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Не удалось преобразовать {outputSizeStr} в long.");
+                }
+            }
+
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                string fileName = row.Cells["FileName"].Value.ToString();
+                string outputSizeStr = row.Cells["OutputFileSize"].Value.ToString();
+
+                // Удаляем все символы, кроме цифр, из строки с размером
+                outputSizeStr = outputSizeStr.Replace(".", "").Trim();
+
+                if (long.TryParse(outputSizeStr, out long outputSize))
+                {
+                    // Устанавливаем текст в колонке "Best Size"
+                    if (outputSize == smallestSizes[fileName])
+                    {
+                        row.Cells["BestSize"].Value = "smallest size";
+                    }
+                    else
+                    {
+                        row.Cells["BestSize"].Value = string.Empty; // Или можно оставить пустым
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Не удалось преобразовать {outputSizeStr} в long.");
+                }
+            }
+        }
+
+        private void buttonAnalyzeLog_Click(object sender, EventArgs e)
+        {
+            AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
+        }
         private string GetExecutableInfo(string executablePath)
         {
             using (Process process = new Process())
@@ -1738,5 +1798,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
+
     }
 }
