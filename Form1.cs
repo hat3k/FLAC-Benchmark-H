@@ -1,4 +1,5 @@
 using MediaInfoLib;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Management;
@@ -1593,56 +1594,71 @@ namespace FLAC_Benchmark_H
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
         }
-        private void AnalyzeBestSize()
+        private async void AnalyzeBestSize()
         {
-            // Создаем словарь для хранения минимальных размеров выходных файлов
-            Dictionary<string, long> smallestSizes = new();
-
+            // Сначала очищаем колонку "Best Size" и сбрасываем выделение
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                string fileName = row.Cells["FileName"].Value.ToString();
-                string outputSizeStr = row.Cells["OutputFileSize"].Value.ToString();
-
-                // Удаляем все символы, кроме цифр, из строки с размером
-                outputSizeStr = outputSizeStr.Replace(".", "").Trim();
-
-                if (long.TryParse(outputSizeStr, out long outputSize))
-                {
-                    // Проверяем, является ли текущий размер меньшим, чем уже сохраненный
-                    if (!smallestSizes.ContainsKey(fileName) || outputSize < smallestSizes[fileName])
-                    {
-                        smallestSizes[fileName] = outputSize;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Не удалось преобразовать {outputSizeStr} в long.");
-                }
+                row.Cells["BestSize"].Value = string.Empty; // Или null
+                row.Selected = false; // Сбрасываем выделение
             }
 
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            // Словарь для хранения минимальных размеров выходных файлов
+            var smallestSizes = new ConcurrentDictionary<string, long>();
+            // Словарь для хранения строк с наименьшими размерами
+            var fileRows = new ConcurrentDictionary<string, List<DataGridViewRow>>();
+
+            // Запускаем задачи для анализа в фоновом потоке
+            await Task.Run(() =>
             {
-                string fileName = row.Cells["FileName"].Value.ToString();
-                string outputSizeStr = row.Cells["OutputFileSize"].Value.ToString();
-
-                // Удаляем все символы, кроме цифр, из строки с размером
-                outputSizeStr = outputSizeStr.Replace(".", "").Trim();
-
-                if (long.TryParse(outputSizeStr, out long outputSize))
+                foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    // Устанавливаем текст в колонке "Best Size"
-                    if (outputSize == smallestSizes[fileName])
+                    string fileName = row.Cells["FileName"].Value.ToString();
+                    string outputSizeStr = row.Cells["OutputFileSize"].Value.ToString().Replace(".", "").Trim();
+
+                    if (long.TryParse(outputSizeStr, out long outputSize))
                     {
-                        row.Cells["BestSize"].Value = "smallest size";
+                        // Если размер меньший или файл не содержится в словаре, обновляем значение
+                        smallestSizes.AddOrUpdate(fileName, outputSize, (key, oldValue) => Math.Min(oldValue, outputSize));
+
+                        // Добавляем строку в соответствующий список
+                        fileRows.AddOrUpdate(fileName,
+                            new List<DataGridViewRow> { row },
+                            (key, oldValue) =>
+                            {
+                                oldValue.Add(row);
+                                return oldValue;
+                            });
                     }
                     else
                     {
-                        row.Cells["BestSize"].Value = string.Empty; // Или можно оставить пустым
+                        Console.WriteLine($"Не удалось преобразовать {outputSizeStr} в long.");
                     }
                 }
-                else
+            });
+
+            // Устанавливаем значения в колонке "Best Size" и выделяем строки
+            foreach (var entry in smallestSizes)
+            {
+                string fileName = entry.Key;
+                long smallestSize = entry.Value;
+
+                // Обрабатываем все строки с одноименным файлом
+                if (fileRows.TryGetValue(fileName, out var rows))
                 {
-                    Console.WriteLine($"Не удалось преобразовать {outputSizeStr} в long.");
+                    foreach (var objRow in rows)
+                    {
+                        long rowOutputSize = long.Parse(objRow.Cells["OutputFileSize"].Value.ToString().Replace(".", "").Trim());
+
+                        // Устанавливаем текст в колонке "Best Size"
+                        objRow.Cells["BestSize"].Value = rowOutputSize == smallestSize ? "smallest size" : string.Empty;
+
+                        // Если размер соответствует наименьшему, выделяем строку
+                        if (rowOutputSize == smallestSize)
+                        {
+                            objRow.Selected = true; // Выделяем строку мышкой
+                        }
+                    }
                 }
             }
         }
