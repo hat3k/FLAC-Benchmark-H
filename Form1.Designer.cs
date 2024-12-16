@@ -186,6 +186,7 @@
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(334, 23);
             progressBarEncoder.TabIndex = 4;
+            progressBarEncoder.Visible = false;
             // 
             // labelSetThreads
             // 
@@ -887,7 +888,6 @@
             dataGridViewLog.Name = "dataGridViewLog";
             dataGridViewLog.ReadOnly = true;
             dataGridViewLog.RowHeadersVisible = false;
-            dataGridViewLog.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
             dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLog.Size = new Size(765, 336);
             dataGridViewLog.TabIndex = 17;
@@ -984,6 +984,7 @@
             progressBarDecoder.Name = "progressBarDecoder";
             progressBarDecoder.Size = new Size(370, 23);
             progressBarDecoder.TabIndex = 4;
+            progressBarDecoder.Visible = false;
             // 
             // buttonClearCommandLineDecoder
             // 
@@ -1012,7 +1013,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241213.2]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241216.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

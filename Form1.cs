@@ -1686,8 +1686,6 @@ namespace FLAC_Benchmark_H
             }));
         }
 
-
-
         private void buttonAnalyzeLog_Click(object sender, EventArgs e)
         {
             AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
