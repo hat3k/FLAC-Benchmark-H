@@ -47,11 +47,11 @@ namespace FLAC_Benchmark_H
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
             listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
         }
-        private void ListViewJobs_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        private void ListViewJobs_DrawColumnHeader(object? sender, DrawListViewColumnHeaderEventArgs e)
         {
             e.DrawDefault = true;
         }
-        private void ListViewJobs_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        private void ListViewJobs_DrawSubItem(object? sender, DrawListViewSubItemEventArgs e)
         {
             if (e.ColumnIndex == 0) // Колонка с типом задачи (Encode/Decode)
             {
@@ -61,7 +61,7 @@ namespace FLAC_Benchmark_H
                 {
                     CheckBoxRenderer.DrawCheckBox(e.Graphics,
                     new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
-                    e.Item.Checked ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
+            e.Item?.Checked == true ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
                     : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
                 }
                 Color textColor = e.SubItem?.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase) == true
@@ -252,9 +252,9 @@ namespace FLAC_Benchmark_H
         // Обработчик DragEnter для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 bool hasExeFiles = files.Any(file =>
                 Directory.Exists(file) ||
                 Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
@@ -268,7 +268,7 @@ namespace FLAC_Benchmark_H
         // Обработчик DragDrop для ListViewFlacExecutables
         private void ListViewFlacExecutables_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             foreach (var file in files)
             {
                 if (Directory.Exists(file)) // Если это папка, ищем исполняемые файлы внутри рекурсивно
@@ -343,9 +343,9 @@ namespace FLAC_Benchmark_H
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 bool hasAudioFiles = files.Any(file =>
                 Directory.Exists(file) ||
                 Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
@@ -360,7 +360,7 @@ namespace FLAC_Benchmark_H
         // Обработчик DragDrop для ListViewAudioFiles
         private void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             foreach (var file in files)
             {
                 if (Directory.Exists(file)) // Если это папка, ищем аудиофайлы внутри рекурсивно
@@ -553,9 +553,9 @@ namespace FLAC_Benchmark_H
         // Jobs
         private void ListViewJobs_DragEnter(object? sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 // Проверяем наличие .txt файлов или директорий
                 e.Effect = files.Any(file => Directory.Exists(file) ||
                 Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
@@ -568,7 +568,7 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewJobs_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             foreach (var file in files)
             {
                 // Если это папка, ищем .txt файлы внутри рекурсивно
@@ -1603,10 +1603,10 @@ namespace FLAC_Benchmark_H
             for (int i = 0; i < rowCount; i++)
             {
                 var row = dataGridViewLog.Rows[i];
-                string fileName = row.Cells["FileName"]?.Value?.ToString();
-                string outputSizeStr = row.Cells["OutputFileSize"]?.Value?.ToString().Replace(".", "").Trim();
+                string? fileName = row.Cells["FileName"]?.Value?.ToString();
+                string? outputSizeStr = row.Cells["OutputFileSize"]?.Value?.ToString()?.Replace(".", "").Trim();
 
-                if (long.TryParse(outputSizeStr, out long outputSize))
+                if (!string.IsNullOrEmpty(fileName) && long.TryParse(outputSizeStr, out long outputSize))
                 {
                     dataRows.Add((fileName, outputSize, i));
                 }
@@ -1614,7 +1614,7 @@ namespace FLAC_Benchmark_H
 
             // Используем словарь для хранения минимальных размеров и количества их повторений
             var smallestSizes = new ConcurrentDictionary<string, (long minimumSize, int count)>();
-            var fileRows = new ConcurrentDictionary<string, ConcurrentBag<int>>();
+            var fileRows = new ConcurrentDictionary<string, List<int>>();
 
             // Параллельная обработка данных
             await Task.Run(() =>
@@ -1640,11 +1640,14 @@ namespace FLAC_Benchmark_H
                             return existing; // Если больше, ничего не меняем
                         });
 
-                    fileRows.AddOrUpdate(fileName, new ConcurrentBag<int> { rowIndex },
-                        (key, existingBag) =>
+                    fileRows.AddOrUpdate(fileName, new List<int> { rowIndex },
+                        (key, existingList) =>
                         {
-                            existingBag.Add(rowIndex);
-                            return existingBag;
+                            lock (existingList)
+                            {
+                                existingList.Add(rowIndex);
+                            }
+                            return existingList;
                         });
                 });
             });
@@ -1666,13 +1669,9 @@ namespace FLAC_Benchmark_H
                             long rowOutputSize = dataRows[index].outputSize; // используем локальный массив для доступа
 
                             // Логика для определения текста в BestSize
-                            if (count > 1 && rowOutputSize == smallestSize)
+                            if (rowOutputSize == smallestSize)
                             {
-                                objRow.Cells["BestSize"].Value = "equal smallest size";
-                            }
-                            else if (rowOutputSize == smallestSize)
-                            {
-                                objRow.Cells["BestSize"].Value = "smallest size";
+                                objRow.Cells["BestSize"].Value = count > 1 ? "equal smallest size" : "smallest size";
                             }
                             else
                             {
@@ -1837,7 +1836,5 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-
     }
 }
