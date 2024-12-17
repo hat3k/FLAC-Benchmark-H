@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 namespace FLAC_Benchmark_H
 {
@@ -88,6 +89,12 @@ namespace FLAC_Benchmark_H
                 e.DrawDefault = true;
             }
         }
+
+        private string NormalizeSpaces(string input)
+        {
+            return Regex.Replace(input.Trim(), @"\s+", " "); // Удаляем лишние пробелы внутри строки
+        }
+
         // Метод для загрузки информации о процессоре
         private void LoadCPUInfo()
         {
@@ -613,9 +620,9 @@ namespace FLAC_Benchmark_H
                     var parts = line.Split('~'); // Разделяем строку на части
                     if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                     {
-                        string jobName = parts[0];
-                        string passes = parts[2];
-                        string parameters = parts[3];
+                        string jobName = NormalizeSpaces(parts[0]);
+                        string passes = NormalizeSpaces(parts[2]);
+                        string parameters = NormalizeSpaces(parts[3]);
                         AddJobsToListView(jobName, isChecked, passes, parameters); // Добавляем задачу в ListView
                     }
                     else
@@ -643,9 +650,9 @@ namespace FLAC_Benchmark_H
                         var parts = line.Split('~'); // Разделяем текст на текст, состояние чекбокса, количество проходов и параметры
                         if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
-                            var item = new ListViewItem(parts[0]) { Checked = isChecked };
-                            item.SubItems.Add(parts[2]); // Вторая колонка: количество проходов
-                            item.SubItems.Add(parts[3]); // Третья колонка: параметры
+                            var item = new ListViewItem(NormalizeSpaces(parts[0])) { Checked = isChecked };
+                            item.SubItems.Add(NormalizeSpaces(parts[2])); // Вторая колонка: количество проходов
+                            item.SubItems.Add(NormalizeSpaces(parts[3])); // Третья колонка: параметры
                             listViewJobs.Items.Add(item);
                         }
                         else
@@ -767,12 +774,12 @@ namespace FLAC_Benchmark_H
         private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
-            string compressionLevel = textBoxCompressionLevel.Text;
-            string threads = textBoxThreads.Text;
-            string commandLine = textBoxCommandLineOptionsEncoder.Text;
+            string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
+            string threads = NormalizeSpaces(textBoxThreads.Text);
+            string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
 
             // Формируем строку с параметрами
-            string parameters = $"-{compressionLevel} {commandLine}";
+            string parameters = $"-{compressionLevel} {commandLine}".Trim();
 
             // Добавляем количество потоков, если оно больше 1
             if (int.TryParse(threads, out int threadCount) && threadCount > 1)
@@ -811,7 +818,7 @@ namespace FLAC_Benchmark_H
         private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
-            string commandLine = textBoxCommandLineOptionsDecoder.Text;
+            string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
             string parameters = commandLine; // Параметры для декодирования
 
             // Проверяем, существует ли уже задача в последнем элементе
@@ -890,7 +897,7 @@ namespace FLAC_Benchmark_H
                 // Копируем только выделенные задачи
                 foreach (ListViewItem item in listViewJobs.SelectedItems)
                 {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}");
+                    jobsText.AppendLine($"{NormalizeSpaces(item.Text)}~{item.Checked}~{NormalizeSpaces(item.SubItems[1].Text)}~{NormalizeSpaces(item.SubItems[2].Text)}");
                 }
             }
             else
@@ -971,8 +978,8 @@ namespace FLAC_Benchmark_H
                 // Проверяем, отмечена ли задача
                 if (item.Checked)
                 {
-                    string jobType = item.Text;
-                    int passes = int.Parse(item.SubItems[1].Text); // Получаем количество проходов
+                    string jobType = NormalizeSpaces(item.Text);
+                    int passes = int.Parse(item.SubItems[1].Text.Trim());
                     for (int i = 0; i < passes; i++) // Цикл для количества проходов
                     {
                         if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
@@ -984,12 +991,12 @@ namespace FLAC_Benchmark_H
                             // Получаем выделенные .exe файлы
                             var selectedExecutables = listViewFlacExecutables.CheckedItems
                             .Cast<ListViewItem>()
-                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                            .Select(i => NormalizeSpaces(i.Tag.ToString())) // Получаем полный путь из Tag
                             .ToList();
                             // Получаем выделенные аудиофайлы
                             var selectedAudioFiles = listViewAudioFiles.CheckedItems
                             .Cast<ListViewItem>()
-                            .Select(i => i.Tag.ToString()) // Получаем полный путь из Tag
+                            .Select(i => NormalizeSpaces(i.Tag.ToString())) // Получаем полный путь из Tag
                             .ToList();
                             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
                             if (selectedExecutables.Count == 0 || selectedAudioFiles.Count == 0)
@@ -1008,7 +1015,7 @@ namespace FLAC_Benchmark_H
                                         return; // Выходим, если остановка запроса
                                     }
                                     // Формируем строку с параметрами
-                                    string parameters = item.SubItems[2].Text;
+                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
                                     // Формируем аргументы для запуска
                                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
                                     string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
@@ -1084,12 +1091,12 @@ namespace FLAC_Benchmark_H
                             // Получаем выделенные .exe файлы
                             var selectedExecutables = listViewFlacExecutables.CheckedItems
                             .Cast<ListViewItem>()
-                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                            .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
                             .ToList();
                             // Получаем выделенные аудиофайлы, но только с расширением .flac
                             var selectedAudioFiles = listViewAudioFiles.CheckedItems
                             .Cast<ListViewItem>()
-                            .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                            .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
                             .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
                             .ToList();
                             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
@@ -1108,7 +1115,7 @@ namespace FLAC_Benchmark_H
                                         return; // Выходим, если остановка запроса
                                     }
                                     // Формируем строку с параметрами
-                                    string parameters = item.SubItems[2].Text;
+                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
                                     // Формируем аргументы для запуска
                                     string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
                                     string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
@@ -1309,7 +1316,8 @@ namespace FLAC_Benchmark_H
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
-                                // Устанавливаем флаг остановки
+
+            // Устанавливаем флаг остановки
             _isEncodingStopped = false;
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
@@ -1340,11 +1348,11 @@ namespace FLAC_Benchmark_H
                         return; // Выходим, если остановка запроса
                     }
                     // Получаем значения из текстовых полей и формируем аргументы...
-                    string compressionLevel = textBoxCompressionLevel.Text;
-                    string threads = textBoxThreads.Text;
-                    string commandLine = textBoxCommandLineOptionsEncoder.Text;
+                    string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
+                    string threads = NormalizeSpaces(textBoxThreads.Text);
+                    string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
                     // Формируем строку с параметрами
-                    string parameters = $"-{compressionLevel} {commandLine}";
+                    string parameters = $"-{compressionLevel} {commandLine}".Trim();
                     // Добавляем количество потоков, если оно больше 1
                     if (int.TryParse(threads, out int threadCount) && threadCount > 1)
                     {
@@ -1454,7 +1462,7 @@ namespace FLAC_Benchmark_H
                         return; // Выходим, если остановка запроса
                     }
                     // Формируем строку с параметрами
-                    string commandLine = textBoxCommandLineOptionsDecoder.Text;
+                    string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text).Trim();
                     // Формируем аргументы для запуска
                     string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
                     string arguments = $"\"{audioFile}\" -d {commandLine} -f -o \"{outputFilePath}\"";
