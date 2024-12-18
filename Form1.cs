@@ -1544,6 +1544,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Executable", "Binary");
             dataGridViewLog.Columns.Add("Version", "Version");
             dataGridViewLog.Columns.Add("BestSize", "Best Size");
+            dataGridViewLog.Columns.Add("SameSize", "Same Size");
 
             // Установка выравнивания для колонок
             dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -1604,94 +1605,101 @@ namespace FLAC_Benchmark_H
         }
         private async void AnalyzeBestSize()
         {
-            // Собираем данные
             var dataRows = new List<(string fileName, long outputSize, int rowIndex)>();
             int rowCount = dataGridViewLog.Rows.Count;
 
             for (int i = 0; i < rowCount; i++)
             {
                 var row = dataGridViewLog.Rows[i];
-                string? fileName = row.Cells["FileName"]?.Value?.ToString();
-                string? outputSizeStr = row.Cells["OutputFileSize"]?.Value?.ToString()?.Replace(".", "").Trim();
-
-                if (!string.IsNullOrEmpty(fileName) && long.TryParse(outputSizeStr, out long outputSize))
+                if (row.Cells["FileName"].Value is string fileName &&
+                    row.Cells["OutputFileSize"].Value is string outputSizeStr &&
+                    long.TryParse(outputSizeStr.Replace(".", "").Trim(), out long outputSize))
                 {
                     dataRows.Add((fileName, outputSize, i));
                 }
             }
 
-            // Используем словарь для хранения минимальных размеров и количества их повторений
-            var smallestSizes = new ConcurrentDictionary<string, (long minimumSize, int count)>();
-            var fileRows = new ConcurrentDictionary<string, List<int>>();
-
-            // Параллельная обработка данных
-            await Task.Run(() =>
+            // Словарь для группирования выходных размеров
+            var outputSizeGroups = new Dictionary<string, List<long>>();
+            foreach (var dataRow in dataRows)
             {
-                Parallel.ForEach(dataRows, dataRow =>
+                var (fileName, outputSize, rowIndex) = dataRow;
+
+                if (!outputSizeGroups.ContainsKey(fileName))
                 {
-                    var (fileName, outputSize, rowIndex) = dataRow;
+                    outputSizeGroups[fileName] = new List<long>();
+                }
+                outputSizeGroups[fileName].Add(outputSize);
+            }
 
-                    // Парсинг минимального размера
-                    smallestSizes.AddOrUpdate(fileName, (outputSize, 1),
-                        (key, existing) =>
-                        {
-                            // Если новый размер меньше существующего, обновляем
-                            if (outputSize < existing.minimumSize)
-                            {
-                                return (outputSize, 1);
-                            }
-                            else if (outputSize == existing.minimumSize)
-                            {
-                                return (existing.minimumSize, existing.count + 1);
-                            }
+            // Определяем минимальные размеры
+            var smallestSizes = new Dictionary<string, (long minSize, int count)>();
+            foreach (var dataRow in dataRows)
+            {
+                var (fileName, outputSize, rowIndex) = dataRow;
 
-                            return existing; // Если больше, ничего не меняем
-                        });
+                if (!smallestSizes.ContainsKey(fileName))
+                {
+                    smallestSizes[fileName] = (outputSize, 1);
+                }
+                else
+                {
+                    var (minSize, count) = smallestSizes[fileName];
+                    if (outputSize < minSize)
+                    {
+                        smallestSizes[fileName] = (outputSize, 1);
+                    }
+                    else if (outputSize == minSize)
+                    {
+                        smallestSizes[fileName] = (minSize, count + 1);
+                    }
+                }
+            }
 
-                    fileRows.AddOrUpdate(fileName, new List<int> { rowIndex },
-                        (key, existingList) =>
-                        {
-                            lock (existingList)
-                            {
-                                existingList.Add(rowIndex);
-                            }
-                            return existingList;
-                        });
-                });
-            });
-
-            // Обновляем интерфейс на UI-потоке
+            // Обновление интерфейса
             this.Invoke((Action)(() =>
             {
-                foreach (var entry in smallestSizes)
+                foreach (var fileEntry in smallestSizes)
                 {
-                    string fileName = entry.Key;
-                    long smallestSize = entry.Value.minimumSize;
-                    int count = entry.Value.count; // Количество одинаковых наименьших размеров
+                    string fileName = fileEntry.Key;
+                    long smallestSize = fileEntry.Value.minSize;
 
-                    if (fileRows.TryGetValue(fileName, out var indices))
+                    var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
+
+                    foreach (int index in indices)
                     {
-                        foreach (int index in indices)
+                        var objRow = dataGridViewLog.Rows[index];
+                        long rowOutputSize = dataRows[index].outputSize;
+
+                        // Обновление столбца BestSize
+                        if (rowOutputSize == smallestSize)
                         {
-                            var objRow = dataGridViewLog.Rows[index];
-                            long rowOutputSize = dataRows[index].outputSize; // используем локальный массив для доступа
+                            objRow.Cells["BestSize"].Value = "smallest size";
+                        }
+                        else
+                        {
+                            objRow.Cells["BestSize"].Value = string.Empty;
+                        }
+                    }
 
-                            // Логика для определения текста в BestSize
-                            if (rowOutputSize == smallestSize)
-                            {
-                                objRow.Cells["BestSize"].Value = count > 1 ? "equal smallest size" : "smallest size";
-                            }
-                            else
-                            {
-                                objRow.Cells["BestSize"].Value = string.Empty;
-                            }
-
-                            objRow.Selected = rowOutputSize == smallestSize;
+                    // Проверка на одинаковые размеры
+                    bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
+                    foreach (int index in indices)
+                    {
+                        var objRow = dataGridViewLog.Rows[index];
+                        if (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1)
+                        {
+                            objRow.Cells["SameSize"].Value = "has same size";
+                        }
+                        else
+                        {
+                            objRow.Cells["SameSize"].Value = string.Empty;
                         }
                     }
                 }
             }));
         }
+
 
         private void buttonAnalyzeLog_Click(object sender, EventArgs e)
         {
