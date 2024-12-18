@@ -150,7 +150,7 @@ namespace FLAC_Benchmark_H
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
                     $"Threads={textBoxThreads.Text}",
                     $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
-                    $"HighPriority={checkBoxHighPriority.Checked}",
+                    $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
                     $"TempFolderPath={tempFolderPath}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
                 };
@@ -191,10 +191,10 @@ namespace FLAC_Benchmark_H
                             case "CommandLineOptions":
                                 textBoxCommandLineOptionsEncoder.Text = value;
                                 break;
-                            case "HighPriority":
-                                checkBoxHighPriority.Checked = bool.Parse(value);
+                            case "CPUPriority":
+                                comboBoxCPUPriority.SelectedItem = value;
                                 break;
-                            case "TempFolderPath": // Загружаем путь к временной папке
+                            case "TempFolderPath":
                                 tempFolderPath = value;
                                 break;
                             case "ClearTempFolderOnExit":
@@ -241,6 +241,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void InitializeDragAndDrop()
         {
             // Разрешаем перетаскивание файлов в ListView для программ
@@ -1005,6 +1006,31 @@ namespace FLAC_Benchmark_H
                                 isExecuting = false; // Сбрасываем флаг перед возвратом
                                 return;
                             }
+                            ProcessPriorityClass priorityClass;
+                            switch (comboBoxCPUPriority.SelectedItem.ToString())
+                            {
+                                case "Low":
+                                    priorityClass = ProcessPriorityClass.Idle;
+                                    break;
+                                case "BelowNormal":
+                                    priorityClass = ProcessPriorityClass.BelowNormal;
+                                    break;
+                                case "Normal":
+                                    priorityClass = ProcessPriorityClass.Normal;
+                                    break;
+                                case "AboveNormal":
+                                    priorityClass = ProcessPriorityClass.AboveNormal;
+                                    break;
+                                case "High":
+                                    priorityClass = ProcessPriorityClass.High;
+                                    break;
+                                case "RealTime":
+                                    priorityClass = ProcessPriorityClass.RealTime;
+                                    break;
+                                default:
+                                    priorityClass = ProcessPriorityClass.Normal; // Значение по умолчанию
+                                    break;
+                            }
                             foreach (var executable in selectedExecutables)
                             {
                                 foreach (var audioFile in selectedAudioFiles)
@@ -1044,9 +1070,7 @@ namespace FLAC_Benchmark_H
                                                     {
                                                         if (!_process.HasExited)
                                                         {
-                                                            _process.PriorityClass = checkBoxHighPriority.Checked
-                                                            ? ProcessPriorityClass.High
-                                                            : ProcessPriorityClass.Normal;
+                                                            _process.PriorityClass = priorityClass;
                                                         }
                                                     }
                                                     catch (InvalidOperationException)
@@ -1106,6 +1130,31 @@ namespace FLAC_Benchmark_H
                                 isExecuting = false; // Сбрасываем флаг перед возвратом
                                 return;
                             }
+                            ProcessPriorityClass priorityClass;
+                            switch (comboBoxCPUPriority.SelectedItem.ToString())
+                            {
+                                case "Low":
+                                    priorityClass = ProcessPriorityClass.Idle;
+                                    break;
+                                case "BelowNormal":
+                                    priorityClass = ProcessPriorityClass.BelowNormal;
+                                    break;
+                                case "Normal":
+                                    priorityClass = ProcessPriorityClass.Normal;
+                                    break;
+                                case "AboveNormal":
+                                    priorityClass = ProcessPriorityClass.AboveNormal;
+                                    break;
+                                case "High":
+                                    priorityClass = ProcessPriorityClass.High;
+                                    break;
+                                case "RealTime":
+                                    priorityClass = ProcessPriorityClass.RealTime;
+                                    break;
+                                default:
+                                    priorityClass = ProcessPriorityClass.Normal; // Значение по умолчанию
+                                    break;
+                            }
                             foreach (var executable in selectedExecutables)
                             {
                                 foreach (var audioFile in selectedAudioFiles)
@@ -1144,9 +1193,7 @@ namespace FLAC_Benchmark_H
                                                     {
                                                         if (!_process.HasExited)
                                                         {
-                                                            _process.PriorityClass = checkBoxHighPriority.Checked
-                                                            ? ProcessPriorityClass.High
-                                                            : ProcessPriorityClass.Normal;
+                                                            _process.PriorityClass = priorityClass;
                                                         }
                                                     }
                                                     catch (InvalidOperationException)
@@ -1338,6 +1385,31 @@ namespace FLAC_Benchmark_H
                 isExecuting = false; // Сбрасываем флаг, если нет файлов
                 return;
             }
+            ProcessPriorityClass priorityClass;
+            switch (comboBoxCPUPriority.SelectedItem.ToString())
+            {
+                case "Low":
+                    priorityClass = ProcessPriorityClass.Idle;
+                    break;
+                case "BelowNormal":
+                    priorityClass = ProcessPriorityClass.BelowNormal;
+                    break;
+                case "Normal":
+                    priorityClass = ProcessPriorityClass.Normal;
+                    break;
+                case "AboveNormal":
+                    priorityClass = ProcessPriorityClass.AboveNormal;
+                    break;
+                case "High":
+                    priorityClass = ProcessPriorityClass.High;
+                    break;
+                case "RealTime":
+                    priorityClass = ProcessPriorityClass.RealTime;
+                    break;
+                default:
+                    priorityClass = ProcessPriorityClass.Normal; // Значение по умолчанию
+                    break;
+            }
             foreach (var executable in selectedExecutables)
             {
                 foreach (var audioFile in selectedAudioFiles)
@@ -1386,9 +1458,7 @@ namespace FLAC_Benchmark_H
                                     {
                                         if (!_process.HasExited)
                                         {
-                                            _process.PriorityClass = checkBoxHighPriority.Checked
-                                            ? ProcessPriorityClass.High
-                                            : ProcessPriorityClass.Normal;
+                                            _process.PriorityClass = priorityClass;
                                         }
                                     }
                                     catch (InvalidOperationException)
@@ -1452,6 +1522,31 @@ namespace FLAC_Benchmark_H
                 isExecuting = false; // Сбрасываем флаг, если нет файлов
                 return;
             }
+            ProcessPriorityClass priorityClass;
+            switch (comboBoxCPUPriority.SelectedItem.ToString())
+            {
+                case "Low":
+                    priorityClass = ProcessPriorityClass.Idle;
+                    break;
+                case "BelowNormal":
+                    priorityClass = ProcessPriorityClass.BelowNormal;
+                    break;
+                case "Normal":
+                    priorityClass = ProcessPriorityClass.Normal;
+                    break;
+                case "AboveNormal":
+                    priorityClass = ProcessPriorityClass.AboveNormal;
+                    break;
+                case "High":
+                    priorityClass = ProcessPriorityClass.High;
+                    break;
+                case "RealTime":
+                    priorityClass = ProcessPriorityClass.RealTime;
+                    break;
+                default:
+                    priorityClass = ProcessPriorityClass.Normal; // Значение по умолчанию
+                    break;
+            }
             foreach (var executable in selectedExecutables)
             {
                 foreach (var audioFile in selectedAudioFiles)
@@ -1491,9 +1586,7 @@ namespace FLAC_Benchmark_H
                                     {
                                         if (!_process.HasExited)
                                         {
-                                            _process.PriorityClass = checkBoxHighPriority.Checked
-                                            ? ProcessPriorityClass.High
-                                            : ProcessPriorityClass.Normal;
+                                            _process.PriorityClass = priorityClass;
                                         }
                                     }
                                     catch (InvalidOperationException)
@@ -1852,5 +1945,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
+
     }
 }

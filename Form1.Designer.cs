@@ -49,7 +49,6 @@
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
             buttonStop = new Button();
-            checkBoxHighPriority = new CheckBox();
             buttonStartDecode = new Button();
             labelCPUinfo = new Label();
             buttonOpenLogtxt = new Button();
@@ -100,6 +99,8 @@
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxSystemandSettings = new GroupBox();
+            labelCPUPriority = new Label();
+            comboBoxCPUPriority = new ComboBox();
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
@@ -378,16 +379,6 @@
             buttonStop.Text = "Stop all (Esc)";
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += buttonStop_Click;
-            // 
-            // checkBoxHighPriority
-            // 
-            checkBoxHighPriority.AutoSize = true;
-            checkBoxHighPriority.Location = new Point(6, 91);
-            checkBoxHighPriority.Name = "checkBoxHighPriority";
-            checkBoxHighPriority.Size = new Size(93, 19);
-            checkBoxHighPriority.TabIndex = 22;
-            checkBoxHighPriority.Text = "High Priority";
-            checkBoxHighPriority.UseVisualStyleBackColor = true;
             // 
             // buttonStartDecode
             // 
@@ -905,16 +896,36 @@
             // 
             // groupBoxSystemandSettings
             // 
+            groupBoxSystemandSettings.Controls.Add(labelCPUPriority);
+            groupBoxSystemandSettings.Controls.Add(comboBoxCPUPriority);
             groupBoxSystemandSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
-            groupBoxSystemandSettings.Controls.Add(checkBoxHighPriority);
             groupBoxSystemandSettings.Location = new Point(1405, 278);
             groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
             groupBoxSystemandSettings.Size = new Size(167, 171);
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
+            // 
+            // labelCPUPriority
+            // 
+            labelCPUPriority.AutoSize = true;
+            labelCPUPriority.Location = new Point(6, 90);
+            labelCPUPriority.Name = "labelCPUPriority";
+            labelCPUPriority.Size = new Size(48, 15);
+            labelCPUPriority.TabIndex = 26;
+            labelCPUPriority.Text = "Priority:";
+            // 
+            // comboBoxCPUPriority
+            // 
+            comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxCPUPriority.FormattingEnabled = true;
+            comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
+            comboBoxCPUPriority.Location = new Point(60, 87);
+            comboBoxCPUPriority.Name = "comboBoxCPUPriority";
+            comboBoxCPUPriority.Size = new Size(100, 23);
+            comboBoxCPUPriority.TabIndex = 25;
             // 
             // buttonSelectTempFolder
             // 
@@ -1061,7 +1072,6 @@
         private Label labelSetThreads;
         private GroupBox groupBoxAudioFiles;
         private ListView listViewAudioFiles;
-        private CheckBox checkBoxHighPriority;
         private Button buttonStartDecode;
         private GroupBox groupBoxJobsList;
         private GroupBox groupLog;
@@ -1118,5 +1128,7 @@
         private Button buttonPlusPass;
         private Label labelPasses;
         private Button buttonAnalyzeLog;
+        private ComboBox comboBoxCPUPriority;
+        private Label labelCPUPriority;
     }
 }
