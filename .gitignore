@@ -1,6 +1,4 @@
 /.vs
-/obj
-obj/
 *.user
 # OS Files #
 .directory
@@ -26,6 +24,4 @@ build/
 *.sdf
 .vs
 *.opensdf
-/libs
-/Mediainfo
-MediaInfo.dll
+
