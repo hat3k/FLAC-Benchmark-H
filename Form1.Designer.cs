@@ -65,6 +65,7 @@
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
+            buttonDetectDupesAudioFiles = new Button();
             buttonDownAudioFile = new Button();
             buttonUpAudioFile = new Button();
             listViewAudioFiles = new ListView();
@@ -109,6 +110,7 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            MD5Hash = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -527,6 +529,7 @@
             // 
             // groupBoxAudioFiles
             // 
+            groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
@@ -539,6 +542,16 @@
             groupBoxAudioFiles.TabIndex = 3;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
+            // 
+            // buttonDetectDupesAudioFiles
+            // 
+            buttonDetectDupesAudioFiles.Location = new Point(625, 230);
+            buttonDetectDupesAudioFiles.Name = "buttonDetectDupesAudioFiles";
+            buttonDetectDupesAudioFiles.Size = new Size(85, 23);
+            buttonDetectDupesAudioFiles.TabIndex = 28;
+            buttonDetectDupesAudioFiles.Text = "Detect dupes";
+            buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
+            buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
             // 
             // buttonDownAudioFile
             // 
@@ -563,7 +576,7 @@
             // listViewAudioFiles
             // 
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size, MD5Hash });
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
@@ -1007,6 +1020,11 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
+            // MD5Hash
+            // 
+            MD5Hash.Tag = "MD5Hash";
+            MD5Hash.Text = "MD5 Hash";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1130,5 +1148,7 @@
         private Button buttonAnalyzeLog;
         private ComboBox comboBoxCPUPriority;
         private Label labelCPUPriority;
+        private Button buttonDetectDupesAudioFiles;
+        private ColumnHeader MD5Hash;
     }
 }
