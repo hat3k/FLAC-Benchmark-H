@@ -74,6 +74,7 @@
             BitDepth = new ColumnHeader();
             SamplingRate = new ColumnHeader();
             Size = new ColumnHeader();
+            MD5Hash = new ColumnHeader();
             buttonRemoveAudiofile = new Button();
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
@@ -110,7 +111,6 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
-            MD5Hash = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -619,6 +619,11 @@
             Size.TextAlign = HorizontalAlignment.Right;
             Size.Width = 125;
             // 
+            // MD5Hash
+            // 
+            MD5Hash.Tag = "MD5Hash";
+            MD5Hash.Text = "MD5 Hash";
+            // 
             // buttonRemoveAudiofile
             // 
             buttonRemoveAudiofile.Location = new Point(182, 230);
@@ -1020,11 +1025,6 @@
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
             // 
-            // MD5Hash
-            // 
-            MD5Hash.Tag = "MD5Hash";
-            MD5Hash.Text = "MD5 Hash";
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1042,7 +1042,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241216.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241219.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

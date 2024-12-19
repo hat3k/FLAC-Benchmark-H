@@ -352,7 +352,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm")); // Добавляем дату изменения в четвёртую колонку
             listViewFlacExecutables.Items.Add(item); // Добавляем элемент в ListView
         }
-        
+
         //Audio files
         // Обработчик DragEnter для ListViewAudioFiles
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
@@ -361,9 +361,9 @@ namespace FLAC_Benchmark_H
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 bool hasAudioFiles = files.Any(file =>
-                Directory.Exists(file) ||
-                Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
+                    Directory.Exists(file) ||
+                    Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
                 e.Effect = hasAudioFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -382,7 +382,7 @@ namespace FLAC_Benchmark_H
                     AddAudioFiles(file);
                 }
                 else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                         Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                 {
                     AddAudioFileToListView(file); // Используем общий метод
                 }
@@ -395,7 +395,7 @@ namespace FLAC_Benchmark_H
             {
                 // Находим все аудиофайлы с заданными расширениями в текущей директории
                 var audioFiles = Directory.GetFiles(directory, "*.wav", SearchOption.AllDirectories)
-                .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
+                    .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories));
                 foreach (var audioFile in audioFiles)
                 {
                     AddAudioFileToListView(audioFile); // Используем общий метод
@@ -444,8 +444,8 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms"); // Длительность
             item.SubItems.Add(bitDepth + " bit"); // Разрядность
             item.SubItems.Add(samplingRate); // Частота дискретизации
-            item.SubItems.Add(Convert.ToInt64(fileSize).ToString("N0") + " bytes"); // Размер файла
-            item.SubItems.Add(md5Hash); // Если хотите отображать MD5
+            item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize); // Размер файла
+            item.SubItems.Add(!string.IsNullOrEmpty(md5Hash) ? md5Hash : "N/A"); // MD5
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
@@ -498,7 +498,6 @@ namespace FLAC_Benchmark_H
 
                 if (string.IsNullOrEmpty(md5Hash)) // Проверим на null или пустую строку
                 {
-                    MessageBox.Show($"MD5 hash could not be calculated for file: {filePath}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     continue; // Переходим к следующему элементу
                 }
 
@@ -535,69 +534,24 @@ namespace FLAC_Benchmark_H
                 listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
             }
         }
-
-        private string GetFileMD5Hash(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return null;
-            }
-
-            if (filePath.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
-            {
-                return GetFileMD5HashFlac(filePath); // Для файлов .flac
-            }
-            else if (filePath.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
-            {
-                return GetFileMD5HashWav(filePath); // Для файлов .wav
-            }
-            else
-            {
-                MessageBox.Show($"Unsupported file format: {filePath}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return null;
-            }
-        }
-
+        // Метод для получения MD5 хеша для АДФС файлов
         private string GetFileMD5HashFlac(string filePath)
         {
-            using (var process = new System.Diagnostics.Process())
-            {
-                process.StartInfo.FileName = "metaflac.exe"; // Убедитесь, что путь корректен
-                process.StartInfo.Arguments = $"--show-md5sum \"{filePath}\""; // Аргумент для получения MD5
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true; // Редиректируем вывод
-                process.StartInfo.CreateNoWindow = true; // Скрываем окно консоли
+            var mediaInfo = new MediaInfoLib.MediaInfo();
+            mediaInfo.Open(filePath);
+            string md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+            mediaInfo.Close();
 
-                try
-                {
-                    process.Start();
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit();
-
-                    // Обработка результата
-                    string[] lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (lines.Length > 0)
-                    {
-                        return lines[0].Split(' ')[0].Trim(); // Возвращаем только MD5 хеш
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error calculating MD5: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            return null; // Возвращаем null, если произошла ошибка
+            return md5Hash; // Возвращаем MD5 или "N/A"
         }
-
+        // Метод для получения MD5 хеша для WAV файлов
         private string GetFileMD5HashWav(string filePath)
         {
             using (var md5 = MD5.Create())
             {
                 using (var stream = File.OpenRead(filePath))
                 {
-                    var hash = md5.ComputeHash(stream);
-                    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
                 }
             }
         }
@@ -607,25 +561,23 @@ namespace FLAC_Benchmark_H
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFile);
 
+            // Собираем все необходимые параметры
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
             string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
 
-            // Устанавливаем MD5 через отдельные методы, в зависимости от типа файла
-            string md5Hash = null;
-            if (audioFile.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
-            {
-                md5Hash = GetFileMD5HashFlac(audioFile);
-            }
-            else if (audioFile.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
-            {
-                md5Hash = GetFileMD5HashWav(audioFile);
-            }
+            // Получаем MD5 через MediaInfo для FLAC и вычисляем для WAV
+            string md5Hash = audioFile.EndsWith(".flac", StringComparison.OrdinalIgnoreCase)
+                ? GetFileMD5HashFlac(audioFile)
+                : audioFile.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)
+                    ? GetFileMD5HashWav(audioFile)
+                    : "N/A"; // Для других форматов вернём "N/A"
 
             mediaInfo.Close();
             return (duration, bitDepth, samplingRate, fileSize, md5Hash);
         }
+
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
