@@ -589,7 +589,7 @@
             // 
             FileName.Tag = "FileName";
             FileName.Text = "File Name";
-            FileName.Width = 386;
+            FileName.Width = 387;
             // 
             // Duration
             // 
@@ -608,16 +608,16 @@
             // SamplingRate
             // 
             SamplingRate.Tag = "SamplingRate";
-            SamplingRate.Text = "Sampling Rate";
+            SamplingRate.Text = "Samp. Rate";
             SamplingRate.TextAlign = HorizontalAlignment.Right;
-            SamplingRate.Width = 88;
+            SamplingRate.Width = 71;
             // 
             // Size
             // 
             Size.Tag = "Size";
             Size.Text = "Size";
             Size.TextAlign = HorizontalAlignment.Right;
-            Size.Width = 125;
+            Size.Width = 124;
             // 
             // MD5Hash
             // 
@@ -1041,7 +1041,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241219.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241223.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

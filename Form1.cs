@@ -447,9 +447,113 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(bitDepth + " bit"); // Разрядность
             item.SubItems.Add(samplingRate); // Частота дискретизации
             item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize); // Размер файла
-            item.SubItems.Add("N/A"); // Устанавливаем "N/A" для MD5 по умолчанию
+            item.SubItems.Add(""); // Устанавливаем "N/A" для MD5 по умолчанию
             listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
         }
+        private void buttonDetectDupesAudioFiles_Click(object sender, EventArgs e)
+        {
+            var hashDict = new Dictionary<string, List<ListViewItem>>();
+
+            if (listViewAudioFiles.Columns[5].Width == 0)
+            {
+                listViewAudioFiles.Columns[5].Width = 220; // Показываем колонку MD5
+            }
+
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                string filePath = item.Tag.ToString();
+
+                // Вычисляем MD5
+                string md5Hash = GetFileMD5Hash(filePath);
+
+                if (string.IsNullOrEmpty(md5Hash))
+                {
+                    continue; // Переходим к следующему элементу
+                }
+
+                // Устанавливаем MD5 в подэлемент
+                item.SubItems[5].Text = md5Hash;
+
+                if (hashDict.ContainsKey(md5Hash))
+                {
+                    hashDict[md5Hash].Add(item);
+                }
+                else
+                {
+                    hashDict[md5Hash] = new List<ListViewItem> { item };
+                }
+            }
+
+            // Список дубликатов
+            List<ListViewItem> duplicates = new List<ListViewItem>();
+
+            // Перемещаем дубликаты вверх и снимаем с них чекбоксы
+            foreach (var kvp in hashDict)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    foreach (var item in kvp.Value)
+                    {
+                        duplicates.Add(item);
+                        item.Checked = false; // Снять чекбоксы у дубликатов
+                    }
+                }
+            }
+
+            // Перемещаем дубликаты в верхнюю часть ListView
+            MoveDuplicatesToTop(duplicates);
+        }
+
+        // Объединённый метод для получения MD5 хеша для аудиофайлов
+        private string GetFileMD5Hash(string filePath)
+        {
+            if (filePath.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
+            {
+                var mediaInfo = new MediaInfoLib.MediaInfo();
+                mediaInfo.Open(filePath);
+                string md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                mediaInfo.Close(); // Закрываем mediaInfo здесь
+                return md5Hash; // Возвращаем MD5 или "N/A"
+            }
+            else if (filePath.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                using (var md5 = MD5.Create())
+                {
+                    using (var stream = File.OpenRead(filePath))
+                    {
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                    }
+                }
+            }
+            return "N/A"; // Возвращаем "N/A" для других форматов
+        }
+
+        // Метод для перемещения дубликатов в верхнюю часть ListView
+        private void MoveDuplicatesToTop(List<ListViewItem> duplicates)
+        {
+            foreach (var dupItem in duplicates)
+            {
+                listViewAudioFiles.Items.Remove(dupItem);
+                listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
+            }
+        }
+
+        // Метод для получения длительности и разрядности аудиофайла
+        private (string duration, string bitDepth, string samplingRate, string fileSize) GetAudioInfo(string audioFile)
+        {
+            var mediaInfo = new MediaInfoLib.MediaInfo();
+            mediaInfo.Open(audioFile);
+
+            string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
+            string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
+            string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
+            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
+
+            mediaInfo.Close(); // Закрываем mediaInfo здесь
+
+            return (duration, bitDepth, samplingRate, fileSize);
+        }
+
         private void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -489,107 +593,7 @@ namespace FLAC_Benchmark_H
         {
             listViewAudioFiles.Items.Clear();
         }
-        private void buttonDetectDupesAudioFiles_Click(object sender, EventArgs e)
-        {
-            var hashDict = new Dictionary<string, List<ListViewItem>>();
 
-            foreach (ListViewItem item in listViewAudioFiles.Items)
-            {
-                string filePath = item.Tag.ToString();
-
-                // Вычисляем MD5 и другие параметры
-                var (duration, bitDepth, samplingRate, size, md5Hash) = GetAudioInfoWithMD5(filePath);
-
-                if (string.IsNullOrEmpty(md5Hash))
-                {
-                    continue; // Переходим к следующему элементу
-                }
-
-                // Устанавливаем MD5 в подэлемент
-                item.SubItems[5].Text = md5Hash;
-
-                if (hashDict.ContainsKey(md5Hash))
-                {
-                    hashDict[md5Hash].Add(item);
-                }
-                else
-                {
-                    hashDict[md5Hash] = new List<ListViewItem> { item };
-                }
-            }
-
-            // Список дубликатов
-            List<ListViewItem> duplicates = new List<ListViewItem>();
-
-            // Перемещаем дубликаты вверх и снимаем с них чекбоксы
-            foreach (var kvp in hashDict)
-            {
-                if (kvp.Value.Count > 1)
-                {
-                    foreach (var item in kvp.Value)
-                    {
-                        duplicates.Add(item);
-                        item.Checked = false; // Снять чекбоксы у дубликатов
-                    }
-                }
-            }
-
-            // Перемещаем дубликаты в верхнюю часть ListView
-            foreach (var dupItem in duplicates)
-            {
-                listViewAudioFiles.Items.Remove(dupItem);
-                listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
-            }
-        }
-        // Метод для получения MD5 хеша для АДФС файлов
-        private string GetFileMD5HashFlac(string filePath)
-        {
-            var mediaInfo = new MediaInfoLib.MediaInfo();
-            mediaInfo.Open(filePath);
-            string md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
-            mediaInfo.Close(); // Закрываем mediaInfo здесь
-
-            return md5Hash; // Возвращаем MD5 или "N/A"
-        }
-        // Метод для получения MD5 хеша для WAV файлов
-        private string GetFileMD5HashWav(string filePath)
-        {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(filePath))
-                {
-                    return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-                }
-            }
-        }
-        // Метод для получения длительности и разрядности аудиофайла
-        private (string duration, string bitDepth, string samplingRate, string fileSize) GetAudioInfo(string audioFile)
-        {
-            var mediaInfo = new MediaInfoLib.MediaInfo();
-            mediaInfo.Open(audioFile);
-
-            string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
-            string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
-            string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
-            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
-
-            mediaInfo.Close(); // Закрываем mediaInfo здесь
-
-            return (duration, bitDepth, samplingRate, fileSize);
-        }
-
-        // Метод для получения информации о файле с MD5
-        private (string duration, string bitDepth, string samplingRate, string fileSize, string md5Hash) GetAudioInfoWithMD5(string audioFile)
-        {
-            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile); // Получаем основную информацию
-            string md5Hash = audioFile.EndsWith(".flac", StringComparison.OrdinalIgnoreCase)
-                ? GetFileMD5HashFlac(audioFile)
-                : audioFile.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)
-                    ? GetFileMD5HashWav(audioFile)
-                    : "N/A"; // Возвращаем "N/A" для других форматов
-
-            return (duration, bitDepth, samplingRate, fileSize, md5Hash);
-        }
 
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
@@ -610,8 +614,10 @@ namespace FLAC_Benchmark_H
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
+            listViewAudioFiles.Columns[5].Width = 0; // Скрываем колонку MD5
             LoadSettings(); // Загрузка настроек
             this.ActiveControl = null; // Снимаем фокус с всех элементов
+
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
@@ -1887,8 +1893,6 @@ namespace FLAC_Benchmark_H
                 }));
             });
         }
-
-
 
         private void buttonAnalyzeLog_Click(object sender, EventArgs e)
         {
