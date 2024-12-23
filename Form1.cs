@@ -457,7 +457,7 @@ namespace FLAC_Benchmark_H
             // Проверка и отображение колонки MD5
             if (listViewAudioFiles.Columns[5].Width == 0)
             {
-                listViewAudioFiles.Columns[5].Width = 225; // Показываем колонку MD5
+                listViewAudioFiles.Columns[5].Width = 230; // Показываем колонку MD5
             }
 
             foreach (ListViewItem item in listViewAudioFiles.Items)
@@ -523,19 +523,70 @@ namespace FLAC_Benchmark_H
         {
             if (filePath.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
             {
-                var mediaInfo = new MediaInfoLib.MediaInfo();
-                mediaInfo.Open(filePath);
-                string md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
-                mediaInfo.Close(); // Закрываем mediaInfo здесь
-                return md5Hash; // Возвращаем MD5 или "N/A"
+                // Используем metaflac для получения MD5
+                using (var process = new Process())
+                {
+                    process.StartInfo.FileName = "metaflac.exe"; // Убедитесь, что путь корректен
+                    process.StartInfo.Arguments = $"--show-md5sum \"{filePath}\""; // Аргумент для получения MD5
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true; // Редиректируем вывод
+                    process.StartInfo.CreateNoWindow = true; // Скрываем окно консоли
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    // Обработка вывода для извлечения MD5
+                    string[] lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (lines.Length > 0)
+                    {
+                        return lines[0].Split(' ')[0].Trim().ToUpperInvariant(); // Возвращаем только MD5 хеш в верхнем регистре
+                    }
+                }
+                // Если MD5 не найден, возвращаем "N/A"
+                return "N/A";
             }
+
             else if (filePath.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
-                using (var md5 = MD5.Create())
+                using (var stream = File.OpenRead(filePath))
                 {
-                    using (var stream = File.OpenRead(filePath))
+                    using (var md5 = MD5.Create())
                     {
-                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToUpperInvariant();
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            // Проверяем заголовок RIFF
+                            if (reader.ReadUInt32() != 0x46464952) // "RIFF"
+                                return "Invalid WAV file";
+                            reader.ReadUInt32(); // Читаем общий размер файла (не используется)
+                            if (reader.ReadUInt32() != 0x45564157) // "WAVE"
+                                return "Invalid WAV file";
+
+                            // Читаем блоки
+                            while (reader.BaseStream.Position < reader.BaseStream.Length)
+                            {
+                                uint chunkId = reader.ReadUInt32();
+                                uint chunkSize = reader.ReadUInt32();
+
+                                if (chunkId == 0x20746D66) // "fmt "
+                                {
+                                    // Пропускаем блок "fmt "
+                                    reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                                }
+                                else if (chunkId == 0x61746164) // "data"
+                                {
+                                    // Читаем аудиоданные из блока "data"
+                                    byte[] audioData = reader.ReadBytes((int)chunkSize);
+
+                                    // Рассчитываем хэш
+                                    return BitConverter.ToString(md5.ComputeHash(audioData)).Replace("-", "").ToUpperInvariant();
+                                }
+                                else
+                                {
+                                    // Пропускаем блок
+                                    reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                                }
+                            }
+                        }
                     }
                 }
             }

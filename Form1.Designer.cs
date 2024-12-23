@@ -623,6 +623,7 @@
             // 
             MD5Hash.Tag = "MD5Hash";
             MD5Hash.Text = "MD5 Hash";
+            MD5Hash.Width = 230;
             // 
             // buttonRemoveAudiofile
             // 
