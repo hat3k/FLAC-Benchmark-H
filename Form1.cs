@@ -454,9 +454,10 @@ namespace FLAC_Benchmark_H
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
 
+            // Проверка и отображение колонки MD5
             if (listViewAudioFiles.Columns[5].Width == 0)
             {
-                listViewAudioFiles.Columns[5].Width = 220; // Показываем колонку MD5
+                listViewAudioFiles.Columns[5].Width = 225; // Показываем колонку MD5
             }
 
             foreach (ListViewItem item in listViewAudioFiles.Items)
@@ -485,25 +486,38 @@ namespace FLAC_Benchmark_H
             }
 
             // Список дубликатов
-            List<ListViewItem> duplicates = new List<ListViewItem>();
-
-            // Перемещаем дубликаты вверх и снимаем с них чекбоксы
             foreach (var kvp in hashDict)
             {
                 if (kvp.Value.Count > 1)
                 {
-                    foreach (var item in kvp.Value)
+                    // Делаем только первый элемент выделенным, остальные - невыделенными
+                    for (int i = 0; i < kvp.Value.Count; i++)
                     {
-                        duplicates.Add(item);
-                        item.Checked = false; // Снять чекбоксы у дубликатов
+                        if (i == 0)
+                        {
+                            kvp.Value[i].Checked = true; // Первый файл - выделяем
+                        }
+                        else
+                        {
+                            kvp.Value[i].Checked = false; // Остальные файлы - не выделяем
+                        }
                     }
                 }
             }
 
             // Перемещаем дубликаты в верхнюю часть ListView
-            MoveDuplicatesToTop(duplicates);
+            foreach (var kvp in hashDict)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    foreach (var dupItem in kvp.Value)
+                    {
+                        listViewAudioFiles.Items.Remove(dupItem);
+                        listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
+                    }
+                }
+            }
         }
-
         // Объединённый метод для получения MD5 хеша для аудиофайлов
         private string GetFileMD5Hash(string filePath)
         {
@@ -521,23 +535,12 @@ namespace FLAC_Benchmark_H
                 {
                     using (var stream = File.OpenRead(filePath))
                     {
-                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToUpperInvariant();
                     }
                 }
             }
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
-
-        // Метод для перемещения дубликатов в верхнюю часть ListView
-        private void MoveDuplicatesToTop(List<ListViewItem> duplicates)
-        {
-            foreach (var dupItem in duplicates)
-            {
-                listViewAudioFiles.Items.Remove(dupItem);
-                listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
-            }
-        }
-
         // Метод для получения длительности и разрядности аудиофайла
         private (string duration, string bitDepth, string samplingRate, string fileSize) GetAudioInfo(string audioFile)
         {
