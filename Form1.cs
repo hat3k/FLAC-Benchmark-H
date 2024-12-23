@@ -1811,6 +1811,7 @@ namespace FLAC_Benchmark_H
             var dataRows = new List<(string fileName, long outputSize, int rowIndex)>();
             int rowCount = dataGridViewLog.Rows.Count;
 
+            // Получаем данные в основном потоке
             for (int i = 0; i < rowCount; i++)
             {
                 var row = dataGridViewLog.Rows[i];
@@ -1822,86 +1823,72 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // Словарь для группирования выходных размеров
-            var outputSizeGroups = new Dictionary<string, List<long>>();
-            foreach (var dataRow in dataRows)
+            // Группируем выходные размеры параллельно
+            var outputSizeGroups = dataRows
+                .GroupBy(dataRow => dataRow.fileName)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.outputSize).ToList());
+
+            // Определяем минимальные размеры с использованием параллельного прохода
+            var smallestSizes = new ConcurrentDictionary<string, (long minSize, int count)>();
+
+            // Параллельно обрабатываем данные
+            Parallel.ForEach(dataRows, dataRow =>
             {
                 var (fileName, outputSize, rowIndex) = dataRow;
 
-                if (!outputSizeGroups.ContainsKey(fileName))
-                {
-                    outputSizeGroups[fileName] = new List<long>();
-                }
-                outputSizeGroups[fileName].Add(outputSize);
-            }
+                smallestSizes.AddOrUpdate(
+                    fileName,
+                    (outputSize, 1), // Если отсутствует, добавляет новую запись
+                    (key, existingValue) =>
+                    {
+                        var (minSize, count) = existingValue;
+                        if (outputSize < minSize)
+                        {
+                            return (outputSize, 1);
+                        }
+                        else if (outputSize == minSize)
+                        {
+                            return (minSize, count + 1);
+                        }
+                        return existingValue;
+                    }
+                );
+            });
 
-            // Определяем минимальные размеры
-            var smallestSizes = new Dictionary<string, (long minSize, int count)>();
-            foreach (var dataRow in dataRows)
+            // Обновляем интерфейс в основном потоке
+            await Task.Run(() =>
             {
-                var (fileName, outputSize, rowIndex) = dataRow;
-
-                if (!smallestSizes.ContainsKey(fileName))
+                this.Invoke((Action)(() =>
                 {
-                    smallestSizes[fileName] = (outputSize, 1);
-                }
-                else
-                {
-                    var (minSize, count) = smallestSizes[fileName];
-                    if (outputSize < minSize)
+                    foreach (var fileEntry in smallestSizes)
                     {
-                        smallestSizes[fileName] = (outputSize, 1);
-                    }
-                    else if (outputSize == minSize)
-                    {
-                        smallestSizes[fileName] = (minSize, count + 1);
-                    }
-                }
-            }
+                        string fileName = fileEntry.Key;
+                        long smallestSize = fileEntry.Value.minSize;
 
-            // Обновление интерфейса
-            this.Invoke((Action)(() =>
-            {
-                foreach (var fileEntry in smallestSizes)
-                {
-                    string fileName = fileEntry.Key;
-                    long smallestSize = fileEntry.Value.minSize;
+                        var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
 
-                    var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
-
-                    foreach (int index in indices)
-                    {
-                        var objRow = dataGridViewLog.Rows[index];
-                        long rowOutputSize = dataRows[index].outputSize;
-
-                        // Обновление столбца BestSize
-                        if (rowOutputSize == smallestSize)
+                        foreach (int index in indices)
                         {
-                            objRow.Cells["BestSize"].Value = "smallest size";
+                            var objRow = dataGridViewLog.Rows[index];
+                            long rowOutputSize = dataRows[index].outputSize;
+
+                            // Обновляем столбец BestSize
+                            objRow.Cells["BestSize"].Value = (rowOutputSize == smallestSize) ? "smallest size" : string.Empty;
                         }
-                        else
+
+                        // Проверка на одинаковые размеры
+                        bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
+                        foreach (int index in indices)
                         {
-                            objRow.Cells["BestSize"].Value = string.Empty;
+                            var objRow = dataGridViewLog.Rows[index];
+                            objRow.Cells["SameSize"].Value = (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1) ? "has same size" : string.Empty;
                         }
                     }
-
-                    // Проверка на одинаковые размеры
-                    bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
-                    foreach (int index in indices)
-                    {
-                        var objRow = dataGridViewLog.Rows[index];
-                        if (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1)
-                        {
-                            objRow.Cells["SameSize"].Value = "has same size";
-                        }
-                        else
-                        {
-                            objRow.Cells["SameSize"].Value = string.Empty;
-                        }
-                    }
-                }
-            }));
+                }));
+            });
         }
+
+
 
         private void buttonAnalyzeLog_Click(object sender, EventArgs e)
         {
