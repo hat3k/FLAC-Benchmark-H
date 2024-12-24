@@ -15,7 +15,6 @@ build/
 [Oo]bj/
 *.suo
 *.user
-*.exe
 *.zip
 *.7z
 *.ncb
