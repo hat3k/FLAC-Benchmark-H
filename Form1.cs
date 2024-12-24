@@ -438,27 +438,37 @@ namespace FLAC_Benchmark_H
             {
                 if (Directory.Exists(file))
                 {
-                    await AddAudioFiles(file); // Обработка директории будет выполняться последовательно.
+                    await AddAudioFiles(file); // Последовательная обработка директорий
                 }
-                else if (Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                         Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                else if (IsAudioFile(file))
                 {
-                    AddAudioFileToListView(file);  // Добавление в ListView в главным потоке.
+                    await AddAudioFiles(file); 
                 }
             }
         }
-        // Рекурсивный метод для добавления аудиофайлов из директории в ListView
+
+        private bool IsAudioFile(string file)
+        {
+            return Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                   Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Обновленный метод для добавления аудиофайлов из директории в ListView
         private async Task AddAudioFiles(string directory)
         {
             try
             {
                 var audioFiles = Directory.GetFiles(directory, "*.wav", SearchOption.AllDirectories)
-                    .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories)).ToList();
+                    .Concat(Directory.GetFiles(directory, "*.flac", SearchOption.AllDirectories))
+                    .ToList();
 
-                foreach (var file in audioFiles)
+                var tasks = audioFiles.Select(file => Task.Run(() => CreateListViewItem(file))); // Создаем задачи для создания элементов
+
+                var items = await Task.WhenAll(tasks); // Ждем завершения всех задач
+
+                foreach (var item in items)
                 {
-                    AddAudioFileToListView(file); // Добавление будет выполнено по порядку
-                    await Task.Yield(); // Позволяет другим задачам выполниться
+                    listViewAudioFiles.Items.Add(item); // Добавляем элементы в UI потоке
                 }
             }
             catch (Exception ex)
@@ -466,6 +476,27 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        // Метод для создания элемента ListViewItem
+        private ListViewItem CreateListViewItem(string audioFile)
+        {
+            var item = new ListViewItem(Path.GetFileName(audioFile))
+            {
+                Tag = audioFile, // Хранение полного пути
+                Checked = true // Устанавливаем выделение по умолчанию
+            };
+
+            // Получаем информацию о файле без MD5
+            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile);
+            item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms");
+            item.SubItems.Add(bitDepth + " bit");
+            item.SubItems.Add(samplingRate);
+            item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize);
+            item.SubItems.Add(""); // Устанавливаем для MD5 по умолчанию
+
+            return item;
+        }
+
         // Метод для загрузки аудиофайлов из файла txt
         private async void LoadAudioFiles()
         {
@@ -476,15 +507,24 @@ namespace FLAC_Benchmark_H
                     string[] lines = await File.ReadAllLinesAsync(audioFilesFilePath);
                     listViewAudioFiles.Items.Clear();
 
-                    foreach (var line in lines)
+                    var tasks = lines.Select(async line =>
                     {
                         var parts = line.Split('~');
                         if (parts.Length == 2)
                         {
                             string audioFilePath = parts[0]; // Полный путь
                             bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
-                            AddAudioFileToListView(audioFilePath, isChecked); // Добавление выполняется последовательно
+                            var item = await Task.Run(() => CreateListViewItem(audioFilePath)); // Создание элемента
+                            item.Checked = isChecked; // Установка статуса чекбокса
+                            return item;
                         }
+                        return null; // Возвращаем null, если не удалось создать элемент
+                    }).Where(item => item != null); // Фильтруем null
+
+                    var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
+                    foreach (var item in items)
+                    {
+                        listViewAudioFiles.Items.Add(item); // Добавляем только непустые элементы
                     }
                 }
                 catch (Exception ex)
@@ -493,6 +533,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
         // Общий метод добавления аудиофайлов в ListView
         private void AddAudioFileToListView(string audioFile, bool isChecked = true)
         {
@@ -509,7 +550,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(samplingRate); // Частота дискретизации
             item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize); // Размер файла
             item.SubItems.Add(""); // Устанавливаем "N/A" для MD5 по умолчанию
-            // Проверяем, что добавление элемента выполняется в UI потоке
+
             if (listViewAudioFiles.InvokeRequired)
             {
                 listViewAudioFiles.Invoke(new Action(() => listViewAudioFiles.Items.Add(item)));
@@ -519,6 +560,36 @@ namespace FLAC_Benchmark_H
                 listViewAudioFiles.Items.Add(item);
             }
         }
+        private async void buttonAddAudioFiles_Click(object? sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Select Audio Files";
+                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|All Files (*.*)|*.*";
+                openFileDialog.Multiselect = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var tasks = openFileDialog.FileNames.Select(async file =>
+                    {
+                        var item = await Task.Run(() => CreateListViewItem(file)); // Создание элемента списка
+                        item.Checked = true; // Устанавливаем статус "выделено"
+                        return item;
+                    });
+
+                    var items = await Task.WhenAll(tasks); // Ждем завершения всех задач
+
+                    foreach (var item in items)
+                    {
+                        if (item != null)
+                        {
+                            listViewAudioFiles.Items.Add(item); // Добавляем элементы в ListView
+                        }
+                    }
+                }
+            }
+        }
+
         // Метод для получения длительности и разрядности аудиофайла
         private (string duration, string bitDepth, string samplingRate, string fileSize) GetAudioInfo(string audioFile)
         {
@@ -634,23 +705,7 @@ namespace FLAC_Benchmark_H
             }
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
-        private async void buttonAddAudioFiles_Click(object? sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Title = "Select Audio Files";
-                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|All Files (*.*)|*.*";
-                openFileDialog.Multiselect = true;
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    foreach (var file in openFileDialog.FileNames)
-                    {
-                        AddAudioFileToListView(file); // Добавление будет выполнено по порядку
-                        await Task.Yield(); // Позволяет другим задачам выполниться
-                    }
-                }
-            }
-        }
+
         private void buttonUpAudioFile_Click(object sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Передаём -1 для перемещения вверх
