@@ -659,16 +659,51 @@ namespace FLAC_Benchmark_H
                         return lines[0].Split(' ')[0].Trim().ToUpperInvariant(); // Возвращаем только MD5 хеш в верхнем регистре
                     }
                 }
-                return "N/A"; // Если MD5 не найден, возвращаем "N/A"
+                // Если MD5 не найден, возвращаем "N/A"
+                return "N/A";
             }
+
             else if (filePath.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
                 using (var stream = File.OpenRead(filePath))
                 {
                     using (var md5 = MD5.Create())
                     {
-                        byte[] hash = md5.ComputeHash(stream); // Вычисляем хэш
-                        return BitConverter.ToString(hash).Replace("-", "").ToUpperInvariant(); // Возвращаем хэш в верхнем регистре
+                        using (BinaryReader reader = new BinaryReader(stream))
+                        {
+                            // Проверяем заголовок RIFF
+                            if (reader.ReadUInt32() != 0x46464952) // "RIFF"
+                                return "Invalid WAV file";
+                            reader.ReadUInt32(); // Читаем общий размер файла (не используется)
+                            if (reader.ReadUInt32() != 0x45564157) // "WAVE"
+                                return "Invalid WAV file";
+
+                            // Читаем блоки
+                            while (reader.BaseStream.Position < reader.BaseStream.Length)
+                            {
+                                uint chunkId = reader.ReadUInt32();
+                                uint chunkSize = reader.ReadUInt32();
+
+                                if (chunkId == 0x20746D66) // "fmt "
+                                {
+                                    // Пропускаем блок "fmt "
+                                    reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                                }
+                                else if (chunkId == 0x61746164) // "data"
+                                {
+                                    // Читаем аудиоданные из блока "data"
+                                    byte[] audioData = reader.ReadBytes((int)chunkSize);
+
+                                    // Рассчитываем хэш
+                                    return BitConverter.ToString(md5.ComputeHash(audioData)).Replace("-", "").ToUpperInvariant();
+                                }
+                                else
+                                {
+                                    // Пропускаем блок
+                                    reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                                }
+                            }
+                        }
                     }
                 }
             }
