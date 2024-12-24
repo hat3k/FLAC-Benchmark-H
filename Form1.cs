@@ -442,7 +442,7 @@ namespace FLAC_Benchmark_H
                 }
                 else if (IsAudioFile(file))
                 {
-                    await AddAudioFiles(file); 
+                    await Task.Run(() => AddAudioFileToListView(file)); // Асинхронная работа с интерфейсом, чтобы избежать блокировки
                 }
             }
         }
