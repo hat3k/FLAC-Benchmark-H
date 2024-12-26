@@ -9,11 +9,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-
-
 
 namespace FLAC_Benchmark_H
 {
@@ -56,6 +53,7 @@ namespace FLAC_Benchmark_H
             listViewJobs.OwnerDraw = true;
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
             listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
+            comboBoxCPUPriority.SelectedIndex = 3;
         }
         private void ListViewJobs_DrawColumnHeader(object? sender, DrawListViewColumnHeaderEventArgs e)
         {
@@ -413,7 +411,6 @@ namespace FLAC_Benchmark_H
         {
             listViewFlacExecutables.Items.Clear();
         }
-
 
         //Audio files
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
@@ -915,29 +912,34 @@ namespace FLAC_Benchmark_H
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Text files (*.txt)|*.txt|Backup files (*.bak)|*.bak|All files (*.*)|*.*";
-                openFileDialog.Title = "Open Job List";
+                openFileDialog.Filter = "Text and Backup files (*.txt;*.bak)|*.txt;*.bak|All files (*.*)|*.*";
+                openFileDialog.Title = "Import Job Lists";
+                openFileDialog.Multiselect = true;
+
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     try
                     {
-                        string[] lines = await Task.Run(() => File.ReadAllLines(openFileDialog.FileName));
-                        foreach (var line in lines)
+                        foreach (string fileName in openFileDialog.FileNames) // Обрабатываем каждый выбранный файл
                         {
-                            // Нормализуем строку
-                            string normalizedLine = NormalizeSpaces(line);
+                            string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
+                            foreach (var line in lines)
+                            {
+                                // Нормализуем строку
+                                string normalizedLine = NormalizeSpaces(line);
 
-                            var parts = normalizedLine.Split('~');
-                            if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                            {
-                                string jobName = parts[0];
-                                string passes = parts[2];
-                                string parameters = parts[3];
-                                AddJobsToListView(jobName, isChecked, passes, parameters);
-                            }
-                            else
-                            {
-                                MessageBox.Show($"Invalid line format: {normalizedLine}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                var parts = normalizedLine.Split('~');
+                                if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                                {
+                                    string jobName = parts[0];
+                                    string passes = parts[2];
+                                    string parameters = parts[3];
+                                    AddJobsToListView(jobName, isChecked, passes, parameters);
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"Invalid line format: {normalizedLine}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                }
                             }
                         }
                     }
@@ -948,6 +950,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
         private void buttonExportJobList_Click(object? sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())

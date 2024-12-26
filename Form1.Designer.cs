@@ -95,7 +95,7 @@
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
-            groupLog = new GroupBox();
+            groupBoxLog = new GroupBox();
             buttonAnalyzeLog = new Button();
             labelStopped = new Label();
             dataGridViewLog = new DataGridView();
@@ -115,7 +115,7 @@
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
-            groupLog.SuspendLayout();
+            groupBoxLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
             groupBoxSystemandSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
@@ -484,7 +484,7 @@
             // 
             FileNameExe.Tag = "FileNameExe";
             FileNameExe.Text = "File Name";
-            FileNameExe.Width = 391;
+            FileNameExe.Width = 381;
             // 
             // VersionExe
             // 
@@ -497,7 +497,7 @@
             SizeEexe.Tag = "SizeExe";
             SizeEexe.Text = "Size";
             SizeEexe.TextAlign = HorizontalAlignment.Right;
-            SizeEexe.Width = 100;
+            SizeEexe.Width = 93;
             // 
             // DateExe
             // 
@@ -657,6 +657,7 @@
             // 
             // groupBoxJobsList
             // 
+            groupBoxJobsList.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBoxJobsList.Controls.Add(labelPasses);
             groupBoxJobsList.Controls.Add(buttonMinusPass);
             groupBoxJobsList.Controls.Add(buttonPlusPass);
@@ -679,6 +680,7 @@
             // 
             // labelPasses
             // 
+            labelPasses.Anchor = AnchorStyles.Bottom;
             labelPasses.AutoSize = true;
             labelPasses.Location = new Point(270, 368);
             labelPasses.Name = "labelPasses";
@@ -688,6 +690,7 @@
             // 
             // buttonMinusPass
             // 
+            buttonMinusPass.Anchor = AnchorStyles.Bottom;
             buttonMinusPass.Location = new Point(350, 364);
             buttonMinusPass.Name = "buttonMinusPass";
             buttonMinusPass.Size = new Size(24, 23);
@@ -698,6 +701,7 @@
             // 
             // buttonPlusPass
             // 
+            buttonPlusPass.Anchor = AnchorStyles.Bottom;
             buttonPlusPass.Location = new Point(320, 364);
             buttonPlusPass.Name = "buttonPlusPass";
             buttonPlusPass.Size = new Size(24, 23);
@@ -708,6 +712,7 @@
             // 
             // buttonDownJob
             // 
+            buttonDownJob.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonDownJob.Location = new Point(151, 364);
             buttonDownJob.Name = "buttonDownJob";
             buttonDownJob.Size = new Size(24, 23);
@@ -718,6 +723,7 @@
             // 
             // buttonUpJob
             // 
+            buttonUpJob.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonUpJob.Location = new Point(122, 364);
             buttonUpJob.Name = "buttonUpJob";
             buttonUpJob.Size = new Size(24, 23);
@@ -728,6 +734,7 @@
             // 
             // buttonRemoveJob
             // 
+            buttonRemoveJob.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonRemoveJob.Location = new Point(181, 364);
             buttonRemoveJob.Name = "buttonRemoveJob";
             buttonRemoveJob.Size = new Size(24, 23);
@@ -738,6 +745,7 @@
             // 
             // buttonCopyJobs
             // 
+            buttonCopyJobs.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCopyJobs.Location = new Point(594, 364);
             buttonCopyJobs.Name = "buttonCopyJobs";
             buttonCopyJobs.Size = new Size(55, 23);
@@ -748,6 +756,7 @@
             // 
             // buttonPasteJobs
             // 
+            buttonPasteJobs.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonPasteJobs.Location = new Point(655, 364);
             buttonPasteJobs.Name = "buttonPasteJobs";
             buttonPasteJobs.Size = new Size(55, 23);
@@ -759,6 +768,7 @@
             // listViewJobs
             // 
             listViewJobs.AllowDrop = true;
+            listViewJobs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listViewJobs.CheckBoxes = true;
             listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Passes, Parameters });
             listViewJobs.FullRowSelect = true;
@@ -787,10 +797,11 @@
             // 
             Parameters.Tag = "Parameters";
             Parameters.Text = "Parameters";
-            Parameters.Width = 649;
+            Parameters.Width = 632;
             // 
             // buttonStartJobList
             // 
+            buttonStartJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonStartJobList.Location = new Point(6, 364);
             buttonStartJobList.Name = "buttonStartJobList";
             buttonStartJobList.Size = new Size(110, 23);
@@ -801,6 +812,7 @@
             // 
             // buttonExportJobList
             // 
+            buttonExportJobList.Anchor = AnchorStyles.Bottom;
             buttonExportJobList.Location = new Point(507, 364);
             buttonExportJobList.Name = "buttonExportJobList";
             buttonExportJobList.Size = new Size(55, 23);
@@ -811,6 +823,7 @@
             // 
             // buttonImportJobList
             // 
+            buttonImportJobList.Anchor = AnchorStyles.Bottom;
             buttonImportJobList.Location = new Point(446, 364);
             buttonImportJobList.Name = "buttonImportJobList";
             buttonImportJobList.Size = new Size(55, 23);
@@ -821,6 +834,7 @@
             // 
             // buttonClearJobList
             // 
+            buttonClearJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonClearJobList.Location = new Point(716, 364);
             buttonClearJobList.Name = "buttonClearJobList";
             buttonClearJobList.Size = new Size(55, 23);
@@ -829,22 +843,22 @@
             buttonClearJobList.UseVisualStyleBackColor = true;
             buttonClearJobList.Click += buttonClearJobList_Click;
             // 
-            // groupLog
+            // groupBoxLog
             // 
-            groupLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            groupLog.Controls.Add(buttonAnalyzeLog);
-            groupLog.Controls.Add(labelStopped);
-            groupLog.Controls.Add(buttonStop);
-            groupLog.Controls.Add(dataGridViewLog);
-            groupLog.Controls.Add(buttonClearLog);
-            groupLog.Controls.Add(buttonCopyLog);
-            groupLog.Controls.Add(buttonOpenLogtxt);
-            groupLog.Location = new Point(795, 455);
-            groupLog.Name = "groupLog";
-            groupLog.Size = new Size(777, 394);
-            groupLog.TabIndex = 6;
-            groupLog.TabStop = false;
-            groupLog.Text = "Log";
+            groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(buttonAnalyzeLog);
+            groupBoxLog.Controls.Add(labelStopped);
+            groupBoxLog.Controls.Add(buttonStop);
+            groupBoxLog.Controls.Add(dataGridViewLog);
+            groupBoxLog.Controls.Add(buttonClearLog);
+            groupBoxLog.Controls.Add(buttonCopyLog);
+            groupBoxLog.Controls.Add(buttonOpenLogtxt);
+            groupBoxLog.Location = new Point(795, 455);
+            groupBoxLog.Name = "groupBoxLog";
+            groupBoxLog.Size = new Size(777, 394);
+            groupBoxLog.TabIndex = 6;
+            groupBoxLog.TabStop = false;
+            groupBoxLog.Text = "Log";
             // 
             // buttonAnalyzeLog
             // 
@@ -940,7 +954,6 @@
             comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCPUPriority.FormattingEnabled = true;
             comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
-            comboBoxCPUPriority.SelectedIndex = 3;
             comboBoxCPUPriority.Location = new Point(60, 87);
             comboBoxCPUPriority.MaxDropDownItems = 6;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
@@ -1034,7 +1047,7 @@
             CancelButton = buttonStop;
             ClientSize = new Size(1584, 861);
             Controls.Add(groupBoxDecoderSettings);
-            Controls.Add(groupLog);
+            Controls.Add(groupBoxLog);
             Controls.Add(groupBoxSystemandSettings);
             Controls.Add(groupBoxJobsList);
             Controls.Add(groupBoxAudioFiles);
@@ -1044,7 +1057,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241226.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241226.2]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -1052,8 +1065,8 @@
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
-            groupLog.ResumeLayout(false);
-            groupLog.PerformLayout();
+            groupBoxLog.ResumeLayout(false);
+            groupBoxLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
             groupBoxSystemandSettings.ResumeLayout(false);
             groupBoxSystemandSettings.PerformLayout();
@@ -1152,5 +1165,6 @@
         private Label labelCPUPriority;
         private Button buttonDetectDupesAudioFiles;
         private ColumnHeader MD5Hash;
+        private GroupBox groupBoxLog;
     }
 }
