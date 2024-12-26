@@ -158,7 +158,8 @@ namespace FLAC_Benchmark_H
                 {
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
                     $"Threads={textBoxThreads.Text}",
-                    $"CommandLineOptions={textBoxCommandLineOptionsEncoder.Text}",
+                    $"CommandLineOptionsEncoder={textBoxCommandLineOptionsEncoder.Text}",
+                    $"CommandLineOptionsDecoder={textBoxCommandLineOptionsDecoder.Text}",
                     $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
                     $"TempFolderPath={tempFolderPath}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
@@ -197,8 +198,11 @@ namespace FLAC_Benchmark_H
                             case "Threads":
                                 textBoxThreads.Text = value;
                                 break;
-                            case "CommandLineOptions":
+                            case "CommandLineOptionsEncoder":
                                 textBoxCommandLineOptionsEncoder.Text = value;
+                                break;
+                            case "CommandLineOptionsDecoder":
+                                textBoxCommandLineOptionsDecoder.Text = value;
                                 break;
                             case "CPUPriority":
                                 comboBoxCPUPriority.SelectedItem = value;
@@ -515,7 +519,7 @@ namespace FLAC_Benchmark_H
 
             // Получаем информацию о файле без MD5
             var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile);
-            item.SubItems.Add(Convert.ToInt64(duration).ToString("N0") + " ms");
+            item.SubItems.Add(duration != "N/A" ? Convert.ToInt64(duration).ToString("N0") + " ms" : duration);
             item.SubItems.Add(bitDepth + " bit");
             item.SubItems.Add(samplingRate);
             item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize);
