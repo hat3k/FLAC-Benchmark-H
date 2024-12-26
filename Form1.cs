@@ -222,7 +222,7 @@ namespace FLAC_Benchmark_H
             }
             LoadExecutables(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
-            LoadJobs(); // Загружаем содержимое Settings_joblist.txt после загрузки других настроек
+            LoadJobs(); // Загружаем содержимое Settings_joblist.txt
         }
         private void SaveExecutables()
         {
@@ -518,11 +518,12 @@ namespace FLAC_Benchmark_H
             };
 
             // Получаем информацию о файле без MD5
-            var (duration, bitDepth, samplingRate, fileSize) = GetAudioInfo(audioFile);
+            var (duration, bitDepth, samplingRate) = GetAudioInfo(audioFile);
+            long fileSize = new FileInfo(audioFile).Length;
             item.SubItems.Add(duration != "N/A" ? Convert.ToInt64(duration).ToString("N0") + " ms" : duration);
             item.SubItems.Add(bitDepth + " bit");
             item.SubItems.Add(samplingRate);
-            item.SubItems.Add(fileSize != "N/A" ? Convert.ToInt64(fileSize).ToString("N0") + " bytes" : fileSize);
+            item.SubItems.Add($"{fileSize:n0} bytes");
             item.SubItems.Add(""); // Устанавливаем для MD5 по умолчанию
 
             return item;
@@ -564,7 +565,7 @@ namespace FLAC_Benchmark_H
             }
         }
         // Метод для получения длительности и разрядности аудиофайла
-        private (string duration, string bitDepth, string samplingRate, string fileSize) GetAudioInfo(string audioFile)
+        private (string duration, string bitDepth, string samplingRate) GetAudioInfo(string audioFile)
         {
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFile);
@@ -572,11 +573,10 @@ namespace FLAC_Benchmark_H
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
-            string fileSize = mediaInfo.Get(StreamKind.General, 0, "FileSize") ?? "N/A";
 
             mediaInfo.Close(); // Закрываем mediaInfo здесь
 
-            return (duration, bitDepth, samplingRate, fileSize);
+            return (duration, bitDepth, samplingRate);
         }
         private async void buttonDetectDupesAudioFiles_Click(object sender, EventArgs e)
         {
@@ -1877,7 +1877,7 @@ namespace FLAC_Benchmark_H
                 // Получаем информацию о входящем аудиофайле
                 FileInfo inputFileInfo = new FileInfo(audioFile);
                 long inputSize = inputFileInfo.Length; // Размер входного файла
-                var (duration, _, _, _) = GetAudioInfo(audioFile);
+                var (duration, _, _) = GetAudioInfo(audioFile);
                 long durationMs = Convert.ToInt64(duration);
                 string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
                 // Получаем только имя входящего файла для логирования

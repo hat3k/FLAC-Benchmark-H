@@ -940,7 +940,6 @@
             comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCPUPriority.FormattingEnabled = true;
             comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
-            comboBoxCPUPriority.SelectedIndex = 3;
             comboBoxCPUPriority.Location = new Point(60, 87);
             comboBoxCPUPriority.MaxDropDownItems = 6;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
@@ -1044,7 +1043,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241224.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241226.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
