@@ -915,7 +915,7 @@ namespace FLAC_Benchmark_H
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.Filter = "Text files (*.txt)|*.txt|Backup files (*.bak)|*.bak|All files (*.*)|*.*";
                 openFileDialog.Title = "Open Job List";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -924,7 +924,10 @@ namespace FLAC_Benchmark_H
                         string[] lines = await Task.Run(() => File.ReadAllLines(openFileDialog.FileName));
                         foreach (var line in lines)
                         {
-                            var parts = line.Split('~');
+                            // Нормализуем строку
+                            string normalizedLine = NormalizeSpaces(line);
+
+                            var parts = normalizedLine.Split('~');
                             if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                             {
                                 string jobName = parts[0];
@@ -934,7 +937,7 @@ namespace FLAC_Benchmark_H
                             }
                             else
                             {
-                                MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                MessageBox.Show($"Invalid line format: {normalizedLine}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
                         }
                     }
@@ -1148,8 +1151,11 @@ namespace FLAC_Benchmark_H
                 string clipboardText = Clipboard.GetText();
                 // Проверяем, если буфер не пустой
                 if (!string.IsNullOrEmpty(clipboardText))
-                {
-                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
+                {            
+                    // Нормализуем полученный текст
+                    string normalizedClipBoardText = NormalizeSpaces(clipboardText);
+                    // Разделяем на строки
+                    string[] lines = normalizedClipBoardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
                     foreach (var line in lines)
                     {
                         var parts = line.Split('~'); // Разделяем строку на части
