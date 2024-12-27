@@ -96,6 +96,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupBoxLog = new GroupBox();
+            buttonLogToExcel = new Button();
             buttonAnalyzeLog = new Button();
             labelStopped = new Label();
             dataGridViewLog = new DataGridView();
@@ -846,6 +847,7 @@
             // groupBoxLog
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(buttonLogToExcel);
             groupBoxLog.Controls.Add(buttonAnalyzeLog);
             groupBoxLog.Controls.Add(labelStopped);
             groupBoxLog.Controls.Add(buttonStop);
@@ -860,10 +862,21 @@
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
             // 
+            // buttonLogToExcel
+            // 
+            buttonLogToExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonLogToExcel.Location = new Point(473, 364);
+            buttonLogToExcel.Name = "buttonLogToExcel";
+            buttonLogToExcel.Size = new Size(85, 23);
+            buttonLogToExcel.TabIndex = 28;
+            buttonLogToExcel.Text = "Log to Excel";
+            buttonLogToExcel.UseVisualStyleBackColor = true;
+            buttonLogToExcel.Click += buttonLogToExcel_Click;
+            // 
             // buttonAnalyzeLog
             // 
             buttonAnalyzeLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonAnalyzeLog.Location = new Point(473, 364);
+            buttonAnalyzeLog.Location = new Point(382, 364);
             buttonAnalyzeLog.Name = "buttonAnalyzeLog";
             buttonAnalyzeLog.Size = new Size(85, 23);
             buttonAnalyzeLog.TabIndex = 27;
@@ -1057,7 +1070,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241226.2]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241227.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -1166,5 +1179,6 @@
         private Button buttonDetectDupesAudioFiles;
         private ColumnHeader MD5Hash;
         private GroupBox groupBoxLog;
+        private Button buttonLogToExcel;
     }
 }

@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
+using ClosedXML.Excel;
 
 namespace FLAC_Benchmark_H
 {
@@ -950,7 +951,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         private void buttonExportJobList_Click(object? sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
@@ -1154,7 +1154,7 @@ namespace FLAC_Benchmark_H
                 string clipboardText = Clipboard.GetText();
                 // Проверяем, если буфер не пустой
                 if (!string.IsNullOrEmpty(clipboardText))
-                {            
+                {
                     // Нормализуем полученный текст
                     string normalizedClipBoardText = NormalizeSpaces(clipboardText);
                     // Разделяем на строки
@@ -1855,8 +1855,9 @@ namespace FLAC_Benchmark_H
 
         private void InitializedataGridViewLog()
         {
-            // Настройка DataGridView (по желанию)
-            dataGridViewLog.Columns.Add("FileName", "Name");
+            // Настройка DataGridView
+            dataGridViewLog.Columns.Add("FilePath", "File Path"); // Скрытый столбец для папки файла
+            dataGridViewLog.Columns.Add("Name", "Name");
             dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
             dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
             dataGridViewLog.Columns.Add("Compression", "Compr.");
@@ -1874,6 +1875,9 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            // Скрываем столбец с полным путем
+            dataGridViewLog.Columns["FilePath"].Visible = false;
         }
         private void LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
         {
@@ -1882,19 +1886,25 @@ namespace FLAC_Benchmark_H
             {
                 // Создаем CultureInfo для форматирования с точками как разделителями разрядов
                 NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                numberFormat.NumberGroupSeparator = ".";
+                numberFormat.NumberGroupSeparator = " ";
+
                 // Получаем информацию о входящем аудиофайле
                 FileInfo inputFileInfo = new FileInfo(audioFile);
                 long inputSize = inputFileInfo.Length; // Размер входного файла
                 var (duration, _, _) = GetAudioInfo(audioFile);
                 long durationMs = Convert.ToInt64(duration);
                 string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+
                 // Получаем только имя входящего файла для логирования
                 string audioFileName = Path.GetFileName(audioFile);
+                // Получаем путь к директории файла
+                string audioFileDirectory = Path.GetDirectoryName(audioFile) ?? string.Empty;
+
                 // Формируем короткое имя входящего файла
                 string audioFileNameShort = audioFileName.Length > 30
                 ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
                 : audioFileName.PadRight(33);
+
                 // Получаем информацию о выходящем аудиофайле
                 long outputSize = outputFile.Length; // Размер выходного файла
                 string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
@@ -1905,6 +1915,7 @@ namespace FLAC_Benchmark_H
                 var version = GetExecutableInfo(executable);
                 // Добавление записи в лог DataGridView
                 int rowIndex = dataGridViewLog.Rows.Add(
+                audioFileDirectory,
                 audioFileName,
                 inputSizeFormatted,
                 outputSizeFormatted,
@@ -1915,15 +1926,19 @@ namespace FLAC_Benchmark_H
                 Path.GetFileName(executable),
                 version);
                 // Установка цвета текста в зависимости от сравнения размеров файлов
-                dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
-                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
-                dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
+                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
+                dataGridViewLog.Rows[rowIndex].Cells[4].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
+                dataGridViewLog.Rows[rowIndex].Cells[6].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
                 // Прокручиваем DataGridView вниз к последней добавленной строке
                 dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
                 dataGridViewLog.ClearSelection(); // Очищаем выделение
-                                                  // Логирование в файл
+                // Логирование в файл
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
+        }
+        private void buttonAnalyzeLog_Click(object sender, EventArgs e)
+        {
+            AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
         }
         private async void AnalyzeBestSize()
         {
@@ -1934,30 +1949,30 @@ namespace FLAC_Benchmark_H
             for (int i = 0; i < rowCount; i++)
             {
                 var row = dataGridViewLog.Rows[i];
-                if (row.Cells["FileName"].Value is string fileName &&
+                if (row.Cells["Name"].Value is string fileName &&
                     row.Cells["OutputFileSize"].Value is string outputSizeStr &&
-                    long.TryParse(outputSizeStr.Replace(".", "").Trim(), out long outputSize))
+                    long.TryParse(outputSizeStr.Replace(" ", "").Trim(), out long outputSize))
                 {
                     dataRows.Add((fileName, outputSize, i));
                 }
             }
 
-            // Группируем выходные размеры параллельно
+            // Группируем выходные размеры
             var outputSizeGroups = dataRows
                 .GroupBy(dataRow => dataRow.fileName)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.outputSize).ToList());
 
-            // Определяем минимальные размеры с использованием параллельного прохода
+            // Находим минимальные размеры
             var smallestSizes = new ConcurrentDictionary<string, (long minSize, int count)>();
 
-            // Параллельно обрабатываем данные
+            // Обрабатываем данные параллельно
             Parallel.ForEach(dataRows, dataRow =>
             {
                 var (fileName, outputSize, rowIndex) = dataRow;
 
                 smallestSizes.AddOrUpdate(
                     fileName,
-                    (outputSize, 1), // Если отсутствует, добавляет новую запись
+                    (outputSize, 1),
                     (key, existingValue) =>
                     {
                         var (minSize, count) = existingValue;
@@ -1974,7 +1989,7 @@ namespace FLAC_Benchmark_H
                 );
             });
 
-            // Обновляем интерфейс в основном потоке
+            // Обновляем интерфейс после обработки данных
             await Task.Run(() =>
             {
                 this.Invoke((Action)(() =>
@@ -2006,11 +2021,117 @@ namespace FLAC_Benchmark_H
                 }));
             });
         }
-
-        private void buttonAnalyzeLog_Click(object sender, EventArgs e)
+        private void buttonLogToExcel_Click(object sender, EventArgs e)
         {
-            AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
+            // Создаем новый Excel файл
+            using (var workbook = new XLWorkbook())
+            {
+                // Добавляем новый лист
+                var worksheet = workbook.Worksheets.Add("Log Data");
+
+                // Добавляем заголовки колонок
+                int columnCount = dataGridViewLog.Columns.Count;
+                for (int i = 0; i < columnCount; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = dataGridViewLog.Columns[i].HeaderText;
+                }
+
+                // Добавляем строки данных
+                for (int i = 0; i < dataGridViewLog.Rows.Count; i++)
+                {
+                    for (int j = 0; j < columnCount; j++)
+                    {
+                        var cellValue = dataGridViewLog.Rows[i].Cells[j].Value;
+
+                        // Записываем значения для размеров файлов
+                        if (j == dataGridViewLog.Columns["InputFileSize"].Index || j == dataGridViewLog.Columns["OutputFileSize"].Index)
+                        {
+                            if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long numericValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = numericValue; // Записываем как число
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Compression"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double compressionValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = compressionValue / 100; // Записываем значение в диапазоне от 0 до 1
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Time"].Index) // Обработка столбца Time
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString(), out double timeSpanValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = timeSpanValue; // Записываем общее количество секунд
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Speed"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = speedValue; // Записываем значение скорости
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Parameters"].Index) // Обработка столбца Parameters
+                        {
+                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как текст
+                        }
+                        else
+                        {
+                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как строку
+                        }
+                    }
+                }
+
+                // Установка формата с разделителем разрядов для столбцов с размерами файлов
+                int inputFileSizeIndex = dataGridViewLog.Columns["InputFileSize"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(inputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
+
+                int outputFileSizeIndex = dataGridViewLog.Columns["OutputFileSize"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(outputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
+
+                // Установка формата для столбца Compression как процент
+                int compressionIndex = dataGridViewLog.Columns["Compression"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(compressionIndex).Style.NumberFormat.Format = "0.000%"; // Формат числа с 3 знаками после запятой
+
+                // Установка формата для столбца Time
+                int timeIndex = dataGridViewLog.Columns["Time"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(timeIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения времени
+
+                // Установка формата для столбца Speed
+                int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения скорости
+
+                // Установка формата для столбца Parameters
+                int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Формат для отображения парметров
+
+                // Установка фильтра на заголовки
+                worksheet.RangeUsed().SetAutoFilter();
+
+                // Формируем имя файла на основе текущей даты и времени
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+                string fileName = $"Log {timestamp}.xlsx";
+
+                // Получаем путь к папке, где находится исполняемый файл
+                string folderPath = AppDomain.CurrentDomain.BaseDirectory;
+                string fullPath = Path.Combine(folderPath, fileName);
+
+                // Сохраняем файл
+                workbook.SaveAs(fullPath);
+
+                // Открываем файл по умолчанию
+                if (MessageBox.Show($"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?", "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        UseShellExecute = true // Убедитесь, что используется оболочка
+                    });
+                }
+            }
         }
+
         private string GetExecutableInfo(string executablePath)
         {
             using (Process process = new Process())
