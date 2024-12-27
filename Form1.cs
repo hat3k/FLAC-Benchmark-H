@@ -269,7 +269,8 @@ namespace FLAC_Benchmark_H
             listViewJobs.DragEnter += ListViewJobs_DragEnter;
             listViewJobs.DragDrop += ListViewJobs_DragDrop;
         }
-        // Обработчик DragEnter для ListViewFlacExecutables
+
+        // Executables
         private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
@@ -285,7 +286,6 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-        // Обработчик DragDrop для ListViewFlacExecutables
         private async void ListViewFlacExecutables_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
@@ -301,7 +301,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Рекурсивный метод для добавления исполняемых файлов в ListView
         private async Task AddExecutableFiles(string directory)
         {
@@ -318,7 +317,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Загрузка исполняемых файлов из файла txt
         private async void LoadExecutables()
         {
@@ -345,7 +343,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         // Общий метод добавления исполняемых файлов в ListView
         private void AddExecutableFileToListView(string executable, bool isChecked = true)
         {
@@ -372,7 +369,6 @@ namespace FLAC_Benchmark_H
 
             listViewFlacExecutables.Items.Add(item);
         }
-
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -411,6 +407,21 @@ namespace FLAC_Benchmark_H
         private void buttonClearEncoders_Click(object? sender, EventArgs e)
         {
             listViewFlacExecutables.Items.Clear();
+        }
+        private string GetExecutableInfo(string executablePath)
+        {
+            using (Process process = new Process())
+            {
+                process.StartInfo.FileName = executablePath;
+                process.StartInfo.Arguments = "--version";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+                string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
+                process.WaitForExit();
+                return version; // Возвращаем только версию
+            }
         }
 
         //Audio files
@@ -711,7 +722,6 @@ namespace FLAC_Benchmark_H
             }
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
-
         private void buttonUpAudioFile_Click(object sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Передаём -1 для перемещения вверх
@@ -736,41 +746,79 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.Items.Clear();
         }
 
+        // Действия клавиш
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
         {
+            // Проверяем, нажата ли клавиша Delete
             if (e.KeyCode == Keys.Delete)
-                buttonRemoveEncoder.PerformClick();
+            {
+                buttonRemoveAudiofile.PerformClick();
+            }
+
+            // Проверяем, нажаты ли Ctrl и A одновременно
+            if (e.Control && e.KeyCode == Keys.A)
+            {
+                e.Handled = true; // Отменяем стандартное поведение
+
+                // Выделяем все элементы
+                foreach (ListViewItem item in listViewAudioFiles.Items)
+                {
+                    item.Selected = true; // Устанавливаем выделение для каждого элемента
+                }
+            }
         }
         private void ListViewAudioFiles_KeyDown(object? sender, KeyEventArgs e)
         {
+            // Проверяем, нажата ли клавиша Delete
             if (e.KeyCode == Keys.Delete)
+            {
                 buttonRemoveAudiofile.PerformClick();
+            }
+
+            // Проверяем, нажаты ли Ctrl и A одновременно
+            if (e.Control && e.KeyCode == Keys.A)
+            {
+                e.Handled = true; // Отменяем стандартное поведение
+                
+                // Выделяем все элементы
+                foreach (ListViewItem item in listViewAudioFiles.Items)
+                {
+                    item.Selected = true; // Устанавливаем выделение для каждого элемента
+                }
+            }
         }
         private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
+            // Проверяем, нажата ли клавиша Delete
             if (e.KeyCode == Keys.Delete)
-                buttonRemoveJob.PerformClick();
-        }
-
-        // FORM LOAD
-        private void Form1_Load(object? sender, EventArgs e)
-        {
-            listViewAudioFiles.Columns[5].Width = 0; // Скрываем колонку MD5
-            LoadSettings(); // Загрузка настроек
-            this.ActiveControl = null; // Снимаем фокус с всех элементов
-
-        }
-        private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
-        {
-            // Сохранение настроек перед закрытием
-            SaveSettings();
-            // Остановка таймера
-            cpuUsageTimer.Stop();
-            cpuUsageTimer.Dispose();
-            if (checkBoxClearTempFolder.Checked)
             {
-                // Удаляем папку и все содержимое, если она существует
-                if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
+                buttonRemoveJob.PerformClick();
+            }
+
+            // Проверяем, нажаты ли Ctrl и A одновременно
+            if (e.Control && e.KeyCode == Keys.A)
+            {
+                e.Handled = true; // Отменяем стандартное поведение
+
+                // Выделяем все элементы
+                foreach (ListViewItem item in listViewJobs.Items)
+                {
+                    item.Selected = true; // Устанавливаем выделение для каждого элемента
+                }
+            }
+
+            // Обработка Ctrl+C (Копирование)
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                buttonCopyJobs.PerformClick();
+                e.Handled = true; // Отменяем стандартное поведение
+            }
+
+            // Обработка Ctrl+V (Вставка)
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                buttonPasteJobs.PerformClick();
+                e.Handled = true; // Отменяем стандартное поведение
             }
         }
 
@@ -780,9 +828,10 @@ namespace FLAC_Benchmark_H
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
-                // Проверяем наличие .txt файлов или директорий
+                // Проверяем наличие .txt или .bak файлов или директорий
                 e.Effect = files.Any(file => Directory.Exists(file) ||
-                Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetExtension(file).Equals(".bak", StringComparison.OrdinalIgnoreCase))
                 ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -799,22 +848,27 @@ namespace FLAC_Benchmark_H
                 {
                     AddJobsFromDirectory(file);
                 }
-                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
+                         Path.GetExtension(file).Equals(".bak", StringComparison.OrdinalIgnoreCase))
                 {
                     LoadJobsFromFile(file); // Загружаем задачи из файла
                 }
             }
         }
-
         private async void AddJobsFromDirectory(string directory)
         {
             try
             {
-                // Ищем все .txt файлы с заданным расширением в текущей директории
+                // Ищем все .txt и .bak файлы в текущей директории
                 var txtFiles = await Task.Run(() => Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories));
-                foreach (var txtFile in txtFiles)
+                var bakFiles = await Task.Run(() => Directory.GetFiles(directory, "*.bak", SearchOption.AllDirectories));
+
+                // Объединяем массивы файлов
+                var allFiles = txtFiles.Concat(bakFiles);
+
+                foreach (var file in allFiles)
                 {
-                    LoadJobsFromFile(txtFile); // Загружаем задачи из найденного .txt файла
+                    LoadJobsFromFile(file); // Загружаем задачи из найденного файла
                 }
             }
             catch (Exception ex)
@@ -854,7 +908,6 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void LoadJobs()
         {
             BackupJobsFile();
@@ -1118,28 +1171,21 @@ namespace FLAC_Benchmark_H
         private void buttonCopyJobs_Click(object sender, EventArgs e)
         {
             StringBuilder jobsText = new StringBuilder();
+
             // Проверяем, есть ли выделенные элементы
-            if (listViewJobs.SelectedItems.Count > 0)
+            var itemsToCopy = listViewJobs.SelectedItems.Count > 0
+                ? listViewJobs.SelectedItems.Cast<ListViewItem>()
+                : listViewJobs.Items.Cast<ListViewItem>();
+
+            foreach (var item in itemsToCopy)
             {
-                // Копируем только выделенные задачи
-                foreach (ListViewItem item in listViewJobs.SelectedItems)
-                {
-                    jobsText.AppendLine($"{NormalizeSpaces(item.Text)}~{item.Checked}~{NormalizeSpaces(item.SubItems[1].Text)}~{NormalizeSpaces(item.SubItems[2].Text)}");
-                }
+                jobsText.AppendLine($"{NormalizeSpaces(item.Text)}~{item.Checked}~{NormalizeSpaces(item.SubItems[1].Text)}~{NormalizeSpaces(item.SubItems[2].Text)}");
             }
-            else
-            {
-                // Если ничего не выделено, копируем все задачи
-                foreach (ListViewItem item in listViewJobs.Items)
-                {
-                    jobsText.AppendLine($"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}");
-                }
-            }
+
             // Копируем текст в буфер обмена
             if (jobsText.Length > 0)
             {
                 Clipboard.SetText(jobsText.ToString());
-                //    MessageBox.Show("Jobs copied to clipboard.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -1152,22 +1198,19 @@ namespace FLAC_Benchmark_H
             {
                 // Получаем текст из буфера обмена
                 string clipboardText = Clipboard.GetText();
-                // Проверяем, если буфер не пустой
+
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
-                    // Нормализуем полученный текст
-                    string normalizedClipBoardText = NormalizeSpaces(clipboardText);
-                    // Разделяем на строки
-                    string[] lines = normalizedClipBoardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries); // Разделяем на строки
+                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var line in lines)
                     {
-                        var parts = line.Split('~'); // Разделяем строку на части
+                        var parts = line.Split('~');
                         if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
                             string jobName = parts[0];
                             string passes = parts[2];
                             string parameters = parts[3];
-                            AddJobsToListView(jobName, isChecked, passes, parameters); // Добавляем задачу в ListView
+                            AddJobsToListView(jobName, isChecked, passes, parameters);
                         }
                         else
                         {
@@ -1464,61 +1507,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void MoveSelectedItems(ListView listView, int direction)
-        {
-            // Получаем выделенные элементы и сортируем их по индексам
-            var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
-            .OrderBy(item => item.Index)
-            .ToList();
-            // Если выделенных элементов нет, выходим из метода
-            if (selectedItems.Count == 0)
-                return;
-            // Если перемещение вниз, мы будем взимать элементы в обратном порядке
-            if (direction > 0)
-            {
-                selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
-            }
-            // Приостанавливаем обновление ListView для снижения мерцания
-            listView.BeginUpdate();
-            try
-            {
-                // Перемещение элементов
-                foreach (var item in selectedItems)
-                {
-                    int currentIndex = item.Index;
-                    int newIndex = currentIndex + direction;
-                    // Проверяем границы
-                    if (newIndex < 0 || newIndex >= listView.Items.Count)
-                        return; // Если выход за пределы, выходим из метода
-                                // Удаляем элемент из текущего места
-                    listView.Items.Remove(item);
-                    // Вставляем элемент на новое место
-                    listView.Items.Insert(newIndex, item);
-                }
-                // Обновляем выделение
-                UpdateSelection(selectedItems, listView);
-            }
-            finally
-            {
-                // Возобновляем обновление ListView
-                listView.EndUpdate();
-            }
-        }
-        private void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
-        {
-            // Снимаем выделение со всех элементов
-            foreach (ListViewItem item in listView.Items)
-            {
-                item.Selected = false;
-            }
-            // Выделяем перемещенные элементы
-            foreach (var item in selectedItems)
-            {
-                item.Selected = true; // Устанавливаем выделение на перемещенные элементы
-            }
-            listView.Focus(); // Ставим фокус на список
-        }
-
+        // Encoder and Decoder options
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
@@ -1588,6 +1577,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        //Actions
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
@@ -1853,6 +1843,7 @@ namespace FLAC_Benchmark_H
             isExecuting = false; // Сбрасываем флаг после завершения
         }
 
+        // Log
         private void InitializedataGridViewLog()
         {
             // Настройка DataGridView
@@ -2131,68 +2122,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-        private string GetExecutableInfo(string executablePath)
-        {
-            using (Process process = new Process())
-            {
-                process.StartInfo.FileName = executablePath;
-                process.StartInfo.Arguments = "--version";
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true; // Перенаправляем стандартный вывод
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                string version = process.StandardOutput.ReadLine(); // Читаем первую строку вывода
-                process.WaitForExit();
-                return version; // Возвращаем только версию
-            }
-        }
-
-        private void buttonStop_Click(object sender, EventArgs e)
-        {
-            _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
-            if (_process != null)
-            {
-                try
-                {
-                    // Проверяем, запущен ли процесс
-                    if (!_process.HasExited)
-                    {
-                        _process.Kill(); // Завершаем процесс
-                        ShowTemporaryStoppedMessage("Encoding process has been stopped.");
-                    }
-                    else
-                    {
-                        ShowTemporaryStoppedMessage("The encoding process has already exited.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ShowTemporaryStoppedMessage($"Error stopping process: {ex.Message}");
-                }
-                finally
-                {
-                    _process.Dispose(); // Освобождаем ресурсы
-                    _process = null; // Обнуляем ссылку на процесс
-                }
-            }
-        }
-        private void ShowTemporaryStoppedMessage(string message)
-        {
-            labelStopped.Text = message; // Устанавливаем текст сообщения
-            labelStopped.Visible = true; // Делаем метку видимой
-
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer(); // Явно используем пространство имен
-            timer.Interval = 4000; // Задаем интервал 2 секунды
-            timer.Tick += (s, e) =>
-            {
-                labelStopped.Visible = false; // Скрываем метку
-                timer.Stop(); // Останавливаем таймер
-                timer.Dispose(); // Освобождаем ресурсы
-            };
-            timer.Start(); // Запускаем таймер
-        }
-
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Путь к файлу логирования
@@ -2248,6 +2177,106 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Rows.Clear();
         }
 
+        // General methods
+        private void MoveSelectedItems(ListView listView, int direction)
+        {
+            // Получаем выделенные элементы и сортируем их по индексам
+            var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
+            .OrderBy(item => item.Index)
+            .ToList();
+            // Если выделенных элементов нет, выходим из метода
+            if (selectedItems.Count == 0)
+                return;
+            // Если перемещение вниз, мы будем взимать элементы в обратном порядке
+            if (direction > 0)
+            {
+                selectedItems.Reverse(); // Переворачиваем список для перемещения вниз
+            }
+            // Приостанавливаем обновление ListView для снижения мерцания
+            listView.BeginUpdate();
+            try
+            {
+                // Перемещение элементов
+                foreach (var item in selectedItems)
+                {
+                    int currentIndex = item.Index;
+                    int newIndex = currentIndex + direction;
+                    // Проверяем границы
+                    if (newIndex < 0 || newIndex >= listView.Items.Count)
+                        return; // Если выход за пределы, выходим из метода
+                                // Удаляем элемент из текущего места
+                    listView.Items.Remove(item);
+                    // Вставляем элемент на новое место
+                    listView.Items.Insert(newIndex, item);
+                }
+                // Обновляем выделение
+                UpdateSelection(selectedItems, listView);
+            }
+            finally
+            {
+                // Возобновляем обновление ListView
+                listView.EndUpdate();
+            }
+        }
+        private void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
+        {
+            // Снимаем выделение со всех элементов
+            foreach (ListViewItem item in listView.Items)
+            {
+                item.Selected = false;
+            }
+            // Выделяем перемещенные элементы
+            foreach (var item in selectedItems)
+            {
+                item.Selected = true; // Устанавливаем выделение на перемещенные элементы
+            }
+            listView.Focus(); // Ставим фокус на список
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
+            if (_process != null)
+            {
+                try
+                {
+                    // Проверяем, запущен ли процесс
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill(); // Завершаем процесс
+                        ShowTemporaryStoppedMessage("Encoding process has been stopped.");
+                    }
+                    else
+                    {
+                        ShowTemporaryStoppedMessage("The encoding process has already exited.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowTemporaryStoppedMessage($"Error stopping process: {ex.Message}");
+                }
+                finally
+                {
+                    _process.Dispose(); // Освобождаем ресурсы
+                    _process = null; // Обнуляем ссылку на процесс
+                }
+            }
+        }
+        private void ShowTemporaryStoppedMessage(string message)
+        {
+            labelStopped.Text = message; // Устанавливаем текст сообщения
+            labelStopped.Visible = true; // Делаем метку видимой
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer(); // Явно используем пространство имен
+            timer.Interval = 4000; // Задаем интервал 2 секунды
+            timer.Tick += (s, e) =>
+            {
+                labelStopped.Visible = false; // Скрываем метку
+                timer.Stop(); // Останавливаем таймер
+                timer.Dispose(); // Освобождаем ресурсы
+            };
+            timer.Start(); // Запускаем таймер
+        }
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -2268,6 +2297,26 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        // FORM LOAD
+        private void Form1_Load(object? sender, EventArgs e)
+        {
+            listViewAudioFiles.Columns[5].Width = 0; // Скрываем колонку MD5
+            LoadSettings(); // Загрузка настроек
+            this.ActiveControl = null; // Снимаем фокус с всех элементов
 
+        }
+        private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            // Сохранение настроек перед закрытием
+            SaveSettings();
+            // Остановка таймера
+            cpuUsageTimer.Stop();
+            cpuUsageTimer.Dispose();
+            if (checkBoxClearTempFolder.Checked)
+            {
+                // Удаляем папку и все содержимое, если она существует
+                if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
+            }
+        }
     }
 }
