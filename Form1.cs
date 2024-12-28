@@ -2041,6 +2041,7 @@ namespace FLAC_Benchmark_H
                             if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long numericValue))
                             {
                                 worksheet.Cell(i + 2, j + 1).Value = numericValue; // Записываем как число
+
                             }
                         }
                         else if (j == dataGridViewLog.Columns["Compression"].Index)
@@ -2072,6 +2073,12 @@ namespace FLAC_Benchmark_H
                         {
                             worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как строку
                         }
+                        // Копируем цвет текста, если он установлен
+                        if (dataGridViewLog.Rows[i].Cells[j].Style.ForeColor != Color.Empty)
+                        {
+                            var color = dataGridViewLog.Rows[i].Cells[j].Style.ForeColor;
+                            worksheet.Cell(i + 2, j + 1).Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
+                        }
                     }
                 }
 
@@ -2096,14 +2103,20 @@ namespace FLAC_Benchmark_H
 
                 // Установка формата для столбца Parameters
                 int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Формат для отображения парметров
+                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Формат для отображения параметров
 
                 // Установка фильтра на заголовки
                 worksheet.RangeUsed().SetAutoFilter();
 
-
                 // Замораживаем первую строку (заголовки)
                 worksheet.SheetView.FreezeRows(1);
+
+                // Настройка ширины столбцов на авто
+                worksheet.Columns().AdjustToContents();
+
+                // Задаем цвет заливки для первого ряда
+                worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
+                worksheet.Row(1).Style.Font.FontColor = XLColor.White; // Устанавливаем цвет шрифта в белый для контраста
 
                 // Формируем имя файла на основе текущей даты и времени
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
@@ -2122,7 +2135,7 @@ namespace FLAC_Benchmark_H
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = fullPath,
-                        UseShellExecute = true // Убедитесь, что используется оболочка
+                        UseShellExecute = true
                     });
                 }
             }
