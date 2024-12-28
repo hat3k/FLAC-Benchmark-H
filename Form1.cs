@@ -2025,6 +2025,7 @@ namespace FLAC_Benchmark_H
                 for (int i = 0; i < columnCount; i++)
                 {
                     worksheet.Cell(1, i + 1).Value = dataGridViewLog.Columns[i].HeaderText;
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true; // Устанавливаем жирный шрифт для заголовков
                 }
 
                 // Добавляем строки данных
@@ -2099,6 +2100,10 @@ namespace FLAC_Benchmark_H
 
                 // Установка фильтра на заголовки
                 worksheet.RangeUsed().SetAutoFilter();
+
+
+                // Замораживаем первую строку (заголовки)
+                worksheet.SheetView.FreezeRows(1);
 
                 // Формируем имя файла на основе текущей даты и времени
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
