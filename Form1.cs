@@ -39,6 +39,8 @@ namespace FLAC_Benchmark_H
             this.listViewFlacExecutables.KeyDown += ListViewFlacExecutables_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
+            this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
+            this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
             LoadCPUInfo(); // Загружаем информацию о процессоре
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
@@ -1577,6 +1579,25 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void textBoxCommandLineOptionsEncoder_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+
+                buttonAddJobToJobListEncoder_Click(sender, e);
+            }
+        }
+        private void textBoxCommandLineOptionsDecoder_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+
+                buttonAddJobToJobListEncoder_Click(sender, e);
+            }
+        }
+
         //Actions
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
@@ -2093,6 +2114,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewLog.Rows[rowIndex].Cells[4].Style.ForeColor = data.CompressionForeColor; // Compression
                 dataGridViewLog.Rows[rowIndex].Cells[6].Style.ForeColor = data.SpeedForeColor; // Speed
             }
+            dataGridViewLog.ClearSelection();
         }
         private void buttonLogToExcel_Click(object sender, EventArgs e)
         {
