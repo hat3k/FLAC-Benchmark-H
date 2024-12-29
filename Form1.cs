@@ -2011,6 +2011,88 @@ namespace FLAC_Benchmark_H
                     }
                 }));
             });
+            SortDataGridView();
+        }
+        private class LogEntry
+        {
+            public string FilePath { get; set; }
+            public string Name { get; set; }
+            public string InputFileSize { get; set; }
+            public string OutputFileSize { get; set; }
+            public string Compression { get; set; }
+            public string Time { get; set; }
+            public string Speed { get; set; }
+            public string Parameters { get; set; }
+            public string Executable { get; set; }
+            public string Version { get; set; }
+            public string BestSize { get; set; }
+            public string SameSize { get; set; }
+
+            public Color OutputForeColor { get; set; } // Цвет для OutputFileSize
+            public Color CompressionForeColor { get; set; } // Цвет для Compression
+            public Color SpeedForeColor { get; set; } // Цвет для Speed
+        }
+        private void SortDataGridView()
+        {
+            // Собираем данные из DataGridView в список
+            var dataToSort = new List<LogEntry>();
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                if (row.IsNewRow) continue; // Пропускаем новую строку
+
+                var logEntry = new LogEntry
+                {
+                    FilePath = row.Cells["FilePath"].Value?.ToString(),
+                    Name = row.Cells["Name"].Value?.ToString(),
+                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
+                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
+                    Compression = row.Cells["Compression"].Value?.ToString(),
+                    Time = row.Cells["Time"].Value?.ToString(),
+                    Speed = row.Cells["Speed"].Value?.ToString(),
+                    Parameters = row.Cells["Parameters"].Value?.ToString(),
+                    Executable = row.Cells["Executable"].Value?.ToString(),
+                    Version = row.Cells["Version"].Value?.ToString(),
+                    BestSize = row.Cells["BestSize"].Value?.ToString(),
+                    SameSize = row.Cells["SameSize"].Value?.ToString(),
+
+                    OutputForeColor = row.Cells[3].Style.ForeColor, // Цвет для OutputFileSize
+                    CompressionForeColor = row.Cells[4].Style.ForeColor, // Цвет для Compression
+                    SpeedForeColor = row.Cells[6].Style.ForeColor // Цвет для Speed
+                };
+
+                dataToSort.Add(logEntry);
+            }
+
+            // Выполняем многоуровневую сортировку
+            var sortedData = dataToSort
+                .OrderBy(x => x.Name)
+                .ThenBy(x => x.Parameters)
+                .ThenBy(x => x.Executable)
+                .ToList();
+
+            // Очищаем DataGridView и добавляем отсортированные данные
+            dataGridViewLog.Rows.Clear();
+            foreach (var data in sortedData)
+            {
+                int rowIndex = dataGridViewLog.Rows.Add(
+                    data.FilePath,
+                    data.Name,
+                    data.InputFileSize,
+                    data.OutputFileSize,
+                    data.Compression,
+                    data.Time,
+                    data.Speed,
+                    data.Parameters,
+                    data.Executable,
+                    data.Version,
+                    data.BestSize,
+                    data.SameSize);
+
+                // Установка цвета текста
+                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = data.OutputForeColor; // OutputFileSize
+                dataGridViewLog.Rows[rowIndex].Cells[4].Style.ForeColor = data.CompressionForeColor; // Compression
+                dataGridViewLog.Rows[rowIndex].Cells[6].Style.ForeColor = data.SpeedForeColor; // Speed
+            }
         }
         private void buttonLogToExcel_Click(object sender, EventArgs e)
         {
