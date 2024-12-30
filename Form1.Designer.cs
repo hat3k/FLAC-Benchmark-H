@@ -65,6 +65,7 @@
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
+            buttonClearUnchecked = new Button();
             buttonDetectDupesAudioFiles = new Button();
             buttonDownAudioFile = new Button();
             buttonUpAudioFile = new Button();
@@ -530,6 +531,7 @@
             // 
             // groupBoxAudioFiles
             // 
+            groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
             groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
@@ -544,11 +546,21 @@
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
             // 
+            // buttonClearUnchecked
+            // 
+            buttonClearUnchecked.Location = new Point(488, 230);
+            buttonClearUnchecked.Name = "buttonClearUnchecked";
+            buttonClearUnchecked.Size = new Size(110, 23);
+            buttonClearUnchecked.TabIndex = 29;
+            buttonClearUnchecked.Text = "Clear uncheked";
+            buttonClearUnchecked.UseVisualStyleBackColor = true;
+            buttonClearUnchecked.Click += buttonClearUnchecked_Click;
+            // 
             // buttonDetectDupesAudioFiles
             // 
-            buttonDetectDupesAudioFiles.Location = new Point(625, 230);
+            buttonDetectDupesAudioFiles.Location = new Point(616, 230);
             buttonDetectDupesAudioFiles.Name = "buttonDetectDupesAudioFiles";
-            buttonDetectDupesAudioFiles.Size = new Size(85, 23);
+            buttonDetectDupesAudioFiles.Size = new Size(94, 23);
             buttonDetectDupesAudioFiles.TabIndex = 28;
             buttonDetectDupesAudioFiles.Text = "Detect dupes";
             buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
@@ -1070,7 +1082,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241229.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20241230.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -1180,5 +1192,6 @@
         private ColumnHeader MD5Hash;
         private GroupBox groupBoxLog;
         private Button buttonLogToExcel;
+        private Button buttonClearUnchecked;
     }
 }

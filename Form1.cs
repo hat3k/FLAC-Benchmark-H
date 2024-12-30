@@ -39,6 +39,8 @@ namespace FLAC_Benchmark_H
             this.listViewFlacExecutables.KeyDown += ListViewFlacExecutables_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
+            this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.textBoxCompressionLevel_KeyDown);
+            this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
             LoadCPUInfo(); // Загружаем информацию о процессоре
@@ -387,11 +389,11 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonUpEncoder_Click(object sender, EventArgs e)
+        private void buttonUpEncoder_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewFlacExecutables, -1); // Передаём -1 для перемещения вверх
         }
-        private void buttonDownEncoder_Click(object sender, EventArgs e)
+        private void buttonDownEncoder_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewFlacExecutables, 1); // Передаём 1 для перемещения вниз
         }
@@ -589,7 +591,7 @@ namespace FLAC_Benchmark_H
 
             return (duration, bitDepth, samplingRate);
         }
-        private async void buttonDetectDupesAudioFiles_Click(object sender, EventArgs e)
+        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
 
@@ -724,11 +726,11 @@ namespace FLAC_Benchmark_H
             }
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
-        private void buttonUpAudioFile_Click(object sender, EventArgs e)
+        private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Передаём -1 для перемещения вверх
         }
-        private void buttonDownAudioFile_Click(object sender, EventArgs e)
+        private void buttonDownAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, 1); // Передаём 1 для перемещения вниз
         }
@@ -741,6 +743,26 @@ namespace FLAC_Benchmark_H
                 {
                     listViewAudioFiles.Items.RemoveAt(i); // Удаляем элемент
                 }
+            }
+        }
+        private void buttonClearUnchecked_Click(object? sender, EventArgs e)
+        {
+            // Сначала создаем массив индексов для удаления
+            List<int> itemsToRemove = new List<int>();
+
+            // Проходим по элементам списка и добавляем неотмеченные элементы в список на удаление
+            for (int i = 0; i < listViewAudioFiles.Items.Count; i++)
+            {
+                if (!listViewAudioFiles.Items[i].Checked)
+                {
+                    itemsToRemove.Add(i); // Запоминаем индекс неотмеченного элемента
+                }
+            }
+
+            // Удаляем элементы, начиная с конца списка, чтобы не сбить индексы
+            for (int i = itemsToRemove.Count - 1; i >= 0; i--)
+            {
+                listViewAudioFiles.Items.RemoveAt(itemsToRemove[i]); // Удаляем элемент
             }
         }
         private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
@@ -781,7 +803,7 @@ namespace FLAC_Benchmark_H
             if (e.Control && e.KeyCode == Keys.A)
             {
                 e.Handled = true; // Отменяем стандартное поведение
-                
+
                 // Выделяем все элементы
                 foreach (ListViewItem item in listViewAudioFiles.Items)
                 {
@@ -1030,15 +1052,15 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonUpJob_Click(object sender, EventArgs e)
+        private void buttonUpJob_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewJobs, -1); // Передаём -1 для перемещения вверх
         }
-        private void buttonDownJob_Click(object sender, EventArgs e)
+        private void buttonDownJob_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewJobs, 1); // Передаём 1 для перемещения вниз
         }
-        private void buttonRemoveJob_Click(object sender, EventArgs e)
+        private void buttonRemoveJob_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewJobs
             for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
@@ -1053,7 +1075,7 @@ namespace FLAC_Benchmark_H
         {
             listViewJobs.Items.Clear(); // Очищаем listViewJobs
         }
-        private void buttonAddJobToJobListEncoder_Click(object sender, EventArgs e)
+        private void buttonAddJobToJobListEncoder_Click(object? sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
             string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
@@ -1097,7 +1119,7 @@ namespace FLAC_Benchmark_H
                 listViewJobs.Items.Add(newItem);
             }
         }
-        private void buttonAddJobToJobListDecoder_Click(object sender, EventArgs e)
+        private void buttonAddJobToJobListDecoder_Click(object? sender, EventArgs e)
         {
             // Получаем значения из текстовых полей и формируем параметры
             string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
@@ -1131,7 +1153,7 @@ namespace FLAC_Benchmark_H
                 listViewJobs.Items.Add(newItem);
             }
         }
-        private void buttonPlusPass_Click(object sender, EventArgs e)
+        private void buttonPlusPass_Click(object? sender, EventArgs e)
         {
             listViewJobs.BeginUpdate(); // Отключаем перерисовку
 
@@ -1149,7 +1171,7 @@ namespace FLAC_Benchmark_H
                 listViewJobs.EndUpdate(); // Включаем перерисовку
             }
         }
-        private void buttonMinusPass_Click(object sender, EventArgs e)
+        private void buttonMinusPass_Click(object? sender, EventArgs e)
         {
             listViewJobs.BeginUpdate(); // Отключаем перерисовку
 
@@ -1170,7 +1192,7 @@ namespace FLAC_Benchmark_H
                 listViewJobs.EndUpdate(); // Включаем перерисовку
             }
         }
-        private void buttonCopyJobs_Click(object sender, EventArgs e)
+        private void buttonCopyJobs_Click(object? sender, EventArgs e)
         {
             StringBuilder jobsText = new StringBuilder();
 
@@ -1194,7 +1216,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private void buttonPasteJobs_Click(object sender, EventArgs e)
+        private void buttonPasteJobs_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -1244,7 +1266,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async void buttonStartJobList_Click(object sender, EventArgs e)
+        private async void buttonStartJobList_Click(object? sender, EventArgs e)
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
@@ -1579,7 +1601,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void textBoxCommandLineOptionsEncoder_KeyDown(object sender, KeyEventArgs e)
+        private void textBoxCompressionLevel_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
@@ -1588,7 +1610,25 @@ namespace FLAC_Benchmark_H
                 buttonAddJobToJobListEncoder_Click(sender, e);
             }
         }
-        private void textBoxCommandLineOptionsDecoder_KeyDown(object sender, KeyEventArgs e)
+        private void textBoxThreads_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+
+                buttonAddJobToJobListEncoder_Click(sender, e);
+            }
+        }
+        private void textBoxCommandLineOptionsEncoder_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+
+                buttonAddJobToJobListEncoder_Click(sender, e);
+            }
+        }
+        private void textBoxCommandLineOptionsDecoder_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
@@ -1948,7 +1988,7 @@ namespace FLAC_Benchmark_H
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
             }
         }
-        private void buttonAnalyzeLog_Click(object sender, EventArgs e)
+        private void buttonAnalyzeLog_Click(object? sender, EventArgs e)
         {
             AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
         }
@@ -2086,7 +2126,8 @@ namespace FLAC_Benchmark_H
 
             // Выполняем многоуровневую сортировку
             var sortedData = dataToSort
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.FilePath)
+                .ThenBy(x => x.Name)
                 .ThenBy(x => x.Parameters)
                 .ThenBy(x => x.Executable)
                 .ToList();
@@ -2116,7 +2157,7 @@ namespace FLAC_Benchmark_H
             }
             dataGridViewLog.ClearSelection();
         }
-        private void buttonLogToExcel_Click(object sender, EventArgs e)
+        private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
             // Создаем новый Excel файл
             using (var workbook = new XLWorkbook())
@@ -2355,7 +2396,7 @@ namespace FLAC_Benchmark_H
             listView.Focus(); // Ставим фокус на список
         }
 
-        private void buttonStop_Click(object sender, EventArgs e)
+        private void buttonStop_Click(object? sender, EventArgs e)
         {
             _isEncodingStopped = true; // Флаг о просьбе остановки кодирования
             if (_process != null)
