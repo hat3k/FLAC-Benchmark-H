@@ -581,6 +581,7 @@
             buttonTestForErrors.TabIndex = 1;
             buttonTestForErrors.Text = "Test for errors";
             buttonTestForErrors.UseVisualStyleBackColor = true;
+            buttonTestForErrors.Visible = false;
             // 
             // buttonDetectDupesAudioFiles
             // 
@@ -1106,7 +1107,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20250101.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20250104.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

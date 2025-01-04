@@ -452,7 +452,6 @@ namespace FLAC_Benchmark_H
         private async void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
-
             if (files.Length > 0)
             {
                 var tasks = files.Select(async file =>
@@ -604,9 +603,8 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(audioFileInfo.BitDepth + " bit");
             item.SubItems.Add(audioFileInfo.SamplingRate);
             item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes");
-            item.SubItems.Add(audioFileInfo.Md5Hash); // MD5
-            item.SubItems.Add(Path.GetDirectoryName(audioFile)); // Директория
-
+            item.SubItems.Add(audioFileInfo.Md5Hash);
+            item.SubItems.Add(audioFileInfo.DirectoryPath);
             return item;
         }
 
@@ -635,7 +633,7 @@ namespace FLAC_Benchmark_H
             }
             else if (Path.GetExtension(audioFile).Equals(".wav", StringComparison.OrdinalIgnoreCase))
             {
-                md5Hash = await CalculateWavMD5Async(audioFile); // Асинхронный метод для расчета MD5
+                md5Hash = await CalculateWavMD5Async(audioFile); // Асинхронный метод для расчета MD5 для WAV
             }
 
             mediaInfo.Close();
@@ -644,6 +642,8 @@ namespace FLAC_Benchmark_H
             var audioFileInfo = new AudioFileInfo
             {
                 FilePath = audioFile,
+                DirectoryPath = Path.GetDirectoryName(audioFile),
+                FileName = Path.GetFileName(audioFile),
                 Duration = duration,
                 BitDepth = bitDepth,
                 SamplingRate = samplingRate,
@@ -658,14 +658,16 @@ namespace FLAC_Benchmark_H
         // Класс для хранения информации об аудиофайле
         private class AudioFileInfo
         {
-            public string Name { get; set; }
+            public string FilePath { get; set; }
+            public string DirectoryPath { get; set; }
+            public string FileName { get; set; }
             public string Duration { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public long FileSize { get; set; }
             public string Md5Hash { get; set; }
-            public string FilePath { get; set; }
         }
+
         private List<AudioFileInfo> audioFileInfoList = new List<AudioFileInfo>();
         private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
 
@@ -1017,14 +1019,12 @@ namespace FLAC_Benchmark_H
                 // Получаем информацию о входящем аудиофайле из кэша
                 var audioFileInfo = await GetAudioInfo(audioFile);
 
+                // Извлекаем данные из кэша
                 long inputSize = audioFileInfo.FileSize; // Получаем размер из информации о файле
                 string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
                 long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Используем длительность из кэша
-
-                // Получаем только имя входящего файла для логирования
-                string audioFileName = Path.GetFileName(audioFile);
-                // Получаем путь к директории файла
-                string audioFileDirectory = Path.GetDirectoryName(audioFile) ?? string.Empty;
+                string audioFileName = audioFileInfo.FileName; // Используем имя файла из кэша
+                string audioFileDirectory = audioFileInfo.DirectoryPath;
 
                 // Формируем короткое имя входящего файла
                 string audioFileNameShort = audioFileName.Length > 30
