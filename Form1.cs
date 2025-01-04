@@ -802,12 +802,6 @@ namespace FLAC_Benchmark_H
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
 
-            // Проверка и отображение колонки MD5
-            if (listViewAudioFiles.Columns[5].Width == 0)
-            {
-                listViewAudioFiles.Columns[5].Width = 230; // Показываем колонку MD5
-            }
-
             var tasks = listViewAudioFiles.Items.Cast<ListViewItem>().Select(async item =>
             {
                 string filePath = item.Tag.ToString(); // Получаем путь файла
@@ -2690,7 +2684,6 @@ namespace FLAC_Benchmark_H
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
-            listViewAudioFiles.Columns[5].Width = 230; // Скрываем колонку MD5
             LoadSettings(); // Загрузка настроек
             this.ActiveControl = null; // Снимаем фокус с всех элементов
         }
@@ -2703,8 +2696,30 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Dispose();
             if (checkBoxClearTempFolder.Checked)
             {
-                // Удаляем папку и все содержимое, если она существует
-                if (Directory.Exists(tempFolderPath)) Directory.Delete(tempFolderPath, true);
+                // Проверяем, существует ли временная папка
+                if (Directory.Exists(tempFolderPath))
+                {
+                    var tempEncodedFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac");
+                    var tempDecodedFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav");
+
+                    // Удаляем временные файлы, если они существуют
+                    if (File.Exists(tempEncodedFilePath))
+                    {
+                        File.Delete(tempEncodedFilePath);
+                    }
+
+                    if (File.Exists(tempDecodedFilePath))
+                    {
+                        File.Delete(tempDecodedFilePath);
+                    }
+
+                    // Проверяем, если после удаления файлов в папке больше ничего не осталось
+                    if (Directory.GetFiles(tempFolderPath).Length == 0)
+                    {
+                        // Удаляем папку, если она пустая
+                        Directory.Delete(tempFolderPath);
+                    }
+                }
             }
         }
     }
