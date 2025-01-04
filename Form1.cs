@@ -51,8 +51,12 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
             cpuUsageTimer.Start();
             InitializedataGridViewLog();
+
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Инициализация пути к временной папке
             _process = new Process(); // Initialize _process to avoid nullability warning
+
+            dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
+
 
             // Включаем пользовательскую отрисовку для listViewJobs
             listViewJobs.OwnerDraw = true;
@@ -434,10 +438,10 @@ namespace FLAC_Benchmark_H
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+                // Проверим, есть ли хотя бы один аудиофайл
                 bool hasAudioFiles = files.Any(file =>
                     Directory.Exists(file) ||
-                    Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                    Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase));
+                    IsAudioFile(file)); // Используем функцию IsAudioFile
                 e.Effect = hasAudioFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -448,7 +452,41 @@ namespace FLAC_Benchmark_H
         private async void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
-            await AddAudioFiles(files); // Вызываем один общий метод для обработки файлов и папок
+
+            if (files.Length > 0)
+            {
+                var tasks = files.Select(async file =>
+                {
+                    if (Directory.Exists(file))
+                    {
+                        // Получаем все audio-файлы в директории
+                        var directoryFiles = Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
+                            .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
+
+                        // Создаем ListViewItem для каждого найденного аудиофайла
+                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewItem(f))));
+                        return items; // Возвращаем массив элементов ListViewItem
+                    }
+                    else if (IsAudioFile(file) && File.Exists(file))
+                    {
+                        var item = await Task.Run(() => CreateListViewItem(file)); // Создаем элемент списка
+                        return new[] { item }; // Возвращаем массив с одним элементом
+                    }
+
+                    return Array.Empty<ListViewItem>(); // Возвращаем пустой массив, если это не аудиофайл
+                });
+
+                var itemsList = await Task.WhenAll(tasks); // Ждем завершения всех задач
+
+                // Добавляем элементы в ListView
+                foreach (var itemList in itemsList)
+                {
+                    if (itemList != null && itemList.Length > 0)
+                    {
+                        listViewAudioFiles.Items.AddRange(itemList); // Добавляем массив элементов в ListView
+                    }
+                }
+            }
         }
         private async void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
@@ -481,65 +519,9 @@ namespace FLAC_Benchmark_H
         }
         private bool IsAudioFile(string file)
         {
-            return Path.GetExtension(file).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                   Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase);
-        }
-        // Метод для добавления аудиофайлов из директории в ListView
-        private async Task AddAudioFiles(IEnumerable<string> files)
-        {
-            try
-            {
-                var audioFiles = new List<string>();
-
-                foreach (var file in files)
-                {
-                    if (Directory.Exists(file))
-                    {
-                        // Если это директория, добавляем все аудиофайлы из неё
-                        var directoryFiles = Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
-                            .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
-                        audioFiles.AddRange(directoryFiles);
-                    }
-                    else if (IsAudioFile(file))
-                    {
-                        audioFiles.Add(file); // Если это файл, добавляем его в список
-                    }
-                }
-
-                // Создаем задачи для создания ListViewItem для всех найденных аудиофайлов
-                var tasks = audioFiles.Select(file => Task.Run(() => CreateListViewItem(file))).ToList();
-
-                var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
-
-                foreach (var item in items)
-                {
-                    listViewAudioFiles.Items.Add(item); // Добавляем элементы в UI потоке
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error accessing files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        // Метод для создания элемента ListViewItem
-        private ListViewItem CreateListViewItem(string audioFile)
-        {
-            var item = new ListViewItem(Path.GetFileName(audioFile))
-            {
-                Tag = audioFile, // Хранение полного пути
-                Checked = true // Устанавливаем выделение по умолчанию
-            };
-
-            // Получаем информацию о файле без MD5
-            var (duration, bitDepth, samplingRate) = GetAudioInfo(audioFile);
-            long fileSize = new FileInfo(audioFile).Length;
-            item.SubItems.Add(duration != "N/A" ? Convert.ToInt64(duration).ToString("N0") + " ms" : duration);
-            item.SubItems.Add(bitDepth + " bit");
-            item.SubItems.Add(samplingRate);
-            item.SubItems.Add($"{fileSize:n0} bytes");
-            item.SubItems.Add(""); // Устанавливаем для MD5 по умолчанию
-
-            return item;
+            string extension = Path.GetExtension(file);
+            return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
         // Метод для загрузки аудиофайлов из файла txt
         private async void LoadAudioFiles()
@@ -548,113 +530,201 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
+                    // Читаем все строки из файла
                     string[] lines = await File.ReadAllLinesAsync(audioFilesFilePath);
-                    listViewAudioFiles.Items.Clear();
+                    listViewAudioFiles.Items.Clear(); // Очищаем ListView
 
                     var tasks = lines.Select(async line =>
                     {
                         var parts = line.Split('~');
                         if (parts.Length == 2)
                         {
-                            string audioFilePath = parts[0]; // Полный путь
-                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
-                            var item = await Task.Run(() => CreateListViewItem(audioFilePath)); // Создание элемента
-                            item.Checked = isChecked; // Установка статуса чекбокса
-                            return item;
+                            string audioFilePath = parts[0].Trim(); // Удаляем лишние пробелы
+                            bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
+
+                            // Проверка на пустой путь
+                            if (!string.IsNullOrEmpty(audioFilePath))
+                            {
+                                // Создание элемента ListViewItem
+                                var item = await Task.Run(() => CreateListViewItem(audioFilePath));
+
+                                // Проверка, что элемент не равен null
+                                if (item != null)
+                                {
+                                    item.Checked = isChecked; // Устанавливаем статус чекбокса
+                                    return item; // Возвращаем созданный элемент
+                                }
+                            }
                         }
+
                         return null; // Возвращаем null, если не удалось создать элемент
                     }).Where(item => item != null); // Фильтруем null
 
                     var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
+
+                    // Добавляем только непустые элементы в ListView
                     foreach (var item in items)
                     {
-                        listViewAudioFiles.Items.Add(item); // Добавляем только непустые элементы
+                        if (item != null && listViewAudioFiles != null) // Проверяем, что listViewAudioFiles не null
+                        {
+                            listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
+                        }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) // Обрабатываем исключения
                 {
                     MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            else
+            {
+                MessageBox.Show($"File not found: {audioFilesFilePath}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
-        // Метод для получения длительности и разрядности аудиофайла
-        private (string duration, string bitDepth, string samplingRate) GetAudioInfo(string audioFile)
+        // Метод для создания элемента ListViewItem
+        private async Task<ListViewItem> CreateListViewItem(string audioFile)
         {
+            if (!File.Exists(audioFile))
+            {
+                throw new FileNotFoundException("Audio file not found", audioFile);
+            }
+
+            // Используем метод GetAudioInfo для получения информации о файле
+            var audioFileInfo = await GetAudioInfo(audioFile);
+
+            // Создаем элемент ListViewItem
+            var item = new ListViewItem(Path.GetFileName(audioFile))
+            {
+                Tag = audioFile,
+                Checked = true
+            };
+
+            // Заполняем подэлементы
+            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");
+            item.SubItems.Add(audioFileInfo.BitDepth + " bit");
+            item.SubItems.Add(audioFileInfo.SamplingRate);
+            item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes");
+            item.SubItems.Add(audioFileInfo.Md5Hash); // MD5
+            item.SubItems.Add(Path.GetDirectoryName(audioFile)); // Директория
+
+            return item;
+        }
+
+        // Метод для получения длительности и разрядности аудиофайла
+        private async Task<AudioFileInfo> GetAudioInfo(string audioFile)
+        {
+            // Проверка на наличие информации в кэше
+            if (audioInfoCache.TryGetValue(audioFile, out var cachedInfo))
+            {
+                return cachedInfo; // Возвращаем кэшированную информацию
+            }
+
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFile);
 
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
+            long fileSize = new FileInfo(audioFile).Length;
+            string md5Hash = "N/A"; // Значение по умолчанию для MD5
 
-            mediaInfo.Close(); // Закрываем mediaInfo здесь
+            // Определяем тип файла и получаем соответствующий MD5
+            if (Path.GetExtension(audioFile).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+            {
+                md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A"; // Получаем MD5 для FLAC
+            }
+            else if (Path.GetExtension(audioFile).Equals(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                md5Hash = await CalculateWavMD5Async(audioFile); // Асинхронный метод для расчета MD5
+            }
 
-            return (duration, bitDepth, samplingRate);
+            mediaInfo.Close();
+
+            // Добавляем новую информацию в кэш
+            var audioFileInfo = new AudioFileInfo
+            {
+                FilePath = audioFile,
+                Duration = duration,
+                BitDepth = bitDepth,
+                SamplingRate = samplingRate,
+                FileSize = fileSize,
+                Md5Hash = md5Hash
+            };
+
+            audioInfoCache[audioFile] = audioFileInfo; // Кэшируем информацию
+            return audioFileInfo;
         }
-        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
+
+        // Класс для хранения информации об аудиофайле
+        private class AudioFileInfo
         {
-            var hashDict = new Dictionary<string, List<ListViewItem>>();
-
-            // Проверка и отображение колонки MD5
-            if (listViewAudioFiles.Columns[5].Width == 0)
-            {
-                listViewAudioFiles.Columns[5].Width = 230; // Показываем колонку MD5
-            }
-
-            var tasks = listViewAudioFiles.Items.Cast<ListViewItem>().Select(async item =>
-            {
-                string filePath = item.Tag.ToString(); // Получаем путь файла
-
-                // Вычисляем MD5 асинхронно
-                string md5Hash = await Task.Run(() => GetFileMD5Hash(filePath));
-
-                if (!string.IsNullOrEmpty(md5Hash))
-                {
-                    // Устанавливаем MD5 в подэлемент
-                    item.SubItems[5].Text = md5Hash;
-
-                    if (hashDict.ContainsKey(md5Hash))
-                    {
-                        hashDict[md5Hash].Add(item);
-                    }
-                    else
-                    {
-                        hashDict[md5Hash] = new List<ListViewItem> { item }; // Создаем новый список дубликатов
-                    }
-                }
-            });
-
-            await Task.WhenAll(tasks); // Ждем завершения всех задач
-
-            // Список дубликатов
-            foreach (var kvp in hashDict)
-            {
-                if (kvp.Value.Count > 1)
-                {
-                    // Делаем только первый элемент выделенным, остальные - невыделенными
-                    for (int i = 0; i < kvp.Value.Count; i++)
-                    {
-                        kvp.Value[i].Checked = (i == 0); // Отметьте только первый файл
-                    }
-                }
-            }
-
-            // Перемещаем дубликаты в верхнюю часть ListView
-            foreach (var kvp in hashDict)
-            {
-                if (kvp.Value.Count > 1)
-                {
-                    foreach (var dupItem in kvp.Value)
-                    {
-                        listViewAudioFiles.Items.Remove(dupItem);
-                        listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
-                    }
-                }
-            }
+            public string Name { get; set; }
+            public string Duration { get; set; }
+            public string BitDepth { get; set; }
+            public string SamplingRate { get; set; }
+            public long FileSize { get; set; }
+            public string Md5Hash { get; set; }
+            public string FilePath { get; set; }
         }
-        // Объединённый метод для получения MD5 хеша
-        private string GetFileMD5Hash(string filePath)
+        private List<AudioFileInfo> audioFileInfoList = new List<AudioFileInfo>();
+        private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
+
+        private async Task<string> CalculateWavMD5Async(string filePath)
         {
+            using (var stream = File.OpenRead(filePath))
+            {
+                using (var md5 = MD5.Create())
+                {
+                    using (BinaryReader reader = new BinaryReader(stream))
+                    {
+                        // Проверяем заголовок RIFF
+                        if (reader.ReadUInt32() != 0x46464952) // "RIFF"
+                            return "Invalid WAV file";
+
+                        reader.ReadUInt32(); // Читаем общий размер файла (не используется)
+
+                        if (reader.ReadUInt32() != 0x45564157) // "WAVE"
+                            return "Invalid WAV file";
+
+                        // Читаем блоки
+                        while (reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            uint chunkId = reader.ReadUInt32();
+                            uint chunkSize = reader.ReadUInt32();
+
+                            if (chunkId == 0x20746D66) // "fmt "
+                            {
+                                // Пропускаем блок "fmt "
+                                reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                            }
+                            else if (chunkId == 0x61746164) // "data"
+                            {
+                                // Читаем аудиоданные из блока "data"
+                                byte[] audioData = reader.ReadBytes((int)chunkSize);
+
+                                // Рассчитываем хэш и возвращаем его
+                                return BitConverter.ToString(md5.ComputeHash(audioData)).Replace("-", "").ToUpperInvariant();
+                            }
+                            else
+                            {
+                                // Пропускаем блок
+                                reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "MD5 calculation failed"; // Если ничего не найдено
+        }
+        private string GetFileMD5Hash(string filePath, string existingMD5 = "N/A")
+        {
+            // Проверяем, есть ли существующий MD5 хеш, и если он не N/A, то возвращаем его
+            if (!string.IsNullOrEmpty(existingMD5) && existingMD5 != "N/A")
+            {
+                return existingMD5;
+            }
+
             if (filePath.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
             {
                 // Используем metaflac для получения MD5
@@ -679,7 +749,6 @@ namespace FLAC_Benchmark_H
                 // Если MD5 не найден, возвращаем "N/A"
                 return "N/A";
             }
-
             else if (filePath.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
                 using (var stream = File.OpenRead(filePath))
@@ -726,6 +795,72 @@ namespace FLAC_Benchmark_H
             }
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
+
+        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
+        {
+            var hashDict = new Dictionary<string, List<ListViewItem>>();
+
+            // Проверка и отображение колонки MD5
+            if (listViewAudioFiles.Columns[5].Width == 0)
+            {
+                listViewAudioFiles.Columns[5].Width = 230; // Показываем колонку MD5
+            }
+
+            var tasks = listViewAudioFiles.Items.Cast<ListViewItem>().Select(async item =>
+            {
+                string filePath = item.Tag.ToString(); // Получаем путь файла
+                string md5Hash = item.SubItems[5].Text; // Пытаемся получить MD5 из подэлемента
+
+                // Проверяем, если MD5 хеш отсутствует, вычисляем его
+                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000")
+                {
+                    md5Hash = await Task.Run(() => GetFileMD5Hash(filePath));
+                    item.SubItems[5].Text = md5Hash; // Устанавливаем вычисленный MD5 в подэлемент
+                }
+
+                // Проверяем, является ли хеш валидным
+                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000")
+                {
+                    if (hashDict.ContainsKey(md5Hash))
+                    {
+                        hashDict[md5Hash].Add(item);
+                    }
+                    else
+                    {
+                        hashDict[md5Hash] = new List<ListViewItem> { item }; // Создаем новый список дубликатов
+                    }
+                }
+            });
+
+            await Task.WhenAll(tasks); // Ждем завершения всех задач
+
+            // Список дубликатов
+            foreach (var kvp in hashDict)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    // Делаем только первый элемент выделенным, остальные - невыделенными
+                    for (int i = 0; i < kvp.Value.Count; i++)
+                    {
+                        kvp.Value[i].Checked = (i == 0); // Отметьте только первый файл
+                    }
+                }
+            }
+
+            // Перемещаем дубликаты в верхнюю часть ListView
+            foreach (var kvp in hashDict)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    foreach (var dupItem in kvp.Value)
+                    {
+                        listViewAudioFiles.Items.Remove(dupItem);
+                        listViewAudioFiles.Items.Insert(0, dupItem); // Вставляем в начало списка
+                    }
+                }
+            }
+        }
+
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Передаём -1 для перемещения вверх
@@ -747,28 +882,554 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearUnchecked_Click(object? sender, EventArgs e)
         {
-            // Сначала создаем массив индексов для удаления
-            List<int> itemsToRemove = new List<int>();
-
-            // Проходим по элементам списка и добавляем неотмеченные элементы в список на удаление
-            for (int i = 0; i < listViewAudioFiles.Items.Count; i++)
+            // Check if the Shift key is pressed
+            if (ModifierKeys == Keys.Shift)
             {
-                if (!listViewAudioFiles.Items[i].Checked)
+                MoveUncheckedToRecycleBin();
+            }
+            else
+            {
+                // Create a list to remember the indices of unchecked items
+                List<int> itemsToRemove = new List<int>();
+
+                // Iterate through the list items and add unchecked items to the removal list
+                for (int i = 0; i < listViewAudioFiles.Items.Count; i++)
                 {
-                    itemsToRemove.Add(i); // Запоминаем индекс неотмеченного элемента
+                    if (!listViewAudioFiles.Items[i].Checked)
+                    {
+                        itemsToRemove.Add(i); // Store the index of the unchecked item
+                    }
+                }
+
+                // Remove items starting from the end of the list to avoid index shifting
+                for (int i = itemsToRemove.Count - 1; i >= 0; i--)
+                {
+                    listViewAudioFiles.Items.RemoveAt(itemsToRemove[i]); // Remove the item
+                }
+            }
+        }
+        private void MoveUncheckedToRecycleBin()
+        {
+            var itemsToRemove = new List<string>();
+
+            // Gather the paths of unchecked items
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                if (!item.Checked)
+                {
+                    itemsToRemove.Add(item.Tag.ToString()); // Add the file path for removal
                 }
             }
 
-            // Удаляем элементы, начиная с конца списка, чтобы не сбить индексы
-            for (int i = itemsToRemove.Count - 1; i >= 0; i--)
+            // If there are no unchecked items, show a message and return
+            if (itemsToRemove.Count == 0)
             {
-                listViewAudioFiles.Items.RemoveAt(itemsToRemove[i]); // Удаляем элемент
+                MessageBox.Show("There are no unchecked audio files to delete.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Ask for user confirmation
+            var result = MessageBox.Show("Are you sure you want to move all unchecked files to the recycle bin?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                // Move the files to the recycle bin
+                foreach (var file in itemsToRemove)
+                {
+                    Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                }
+
+                // Remove entries from ListView
+                foreach (string file in itemsToRemove)
+                {
+                    var itemToRemove = listViewAudioFiles.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Tag.ToString() == file);
+                    if (itemToRemove != null)
+                    {
+                        listViewAudioFiles.Items.Remove(itemToRemove);
+                    }
+                }
+
+                MessageBox.Show("Unchecked audio files have been moved to the recycle bin.", "Deletion", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
         }
+
+        // Log
+        private void InitializedataGridViewLog()
+        {
+            // Настройка DataGridView
+            dataGridViewLog.Columns.Add("Name", "Name");
+            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
+            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
+            dataGridViewLog.Columns.Add("Compression", "Compr.");
+            dataGridViewLog.Columns.Add("Time", "Time");
+            dataGridViewLog.Columns.Add("Speed", "Speed");
+            dataGridViewLog.Columns.Add("Parameters", "Parameters");
+            dataGridViewLog.Columns.Add("Executable", "Binary");
+            dataGridViewLog.Columns.Add("Version", "Version");
+            dataGridViewLog.Columns.Add("BestSize", "Best Size");
+            dataGridViewLog.Columns.Add("SameSize", "Same Size");
+            var filePathColumn = new DataGridViewLinkColumn
+            {
+                Name = "FilePath",
+                HeaderText = "File Path",
+                DataPropertyName = "FilePath" // Связываем с колонкой FilePath
+            };
+            dataGridViewLog.Columns.Add(filePathColumn);
+
+            // Установка выравнивания для колонок
+            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            // Скрываем столбец с полным путем
+            //dataGridViewLog.Columns["FilePath"].Visible = false;
+        }
+        private void dataGridViewLog_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Проверяем, что кликнули по ячейке
+            if (e.RowIndex >= 0)
+            {
+                // Получаем полный путь к файлу или папке из ячейки
+                string path = dataGridViewLog.Rows[e.RowIndex].Cells["FilePath"].Value?.ToString();
+
+                // Открываем проводник с указанным путем
+                if (!string.IsNullOrEmpty(path))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", path);
+                }
+            }
+        }
+        private async Task LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
+        {
+            FileInfo outputFile = new FileInfo(outputFilePath);
+            if (outputFile.Exists)
+            {
+                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
+                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                numberFormat.NumberGroupSeparator = " ";
+
+                // Получаем информацию о входящем аудиофайле из кэша
+                var audioFileInfo = await GetAudioInfo(audioFile);
+
+                long inputSize = audioFileInfo.FileSize; // Получаем размер из информации о файле
+                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+                long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Используем длительность из кэша
+
+                // Получаем только имя входящего файла для логирования
+                string audioFileName = Path.GetFileName(audioFile);
+                // Получаем путь к директории файла
+                string audioFileDirectory = Path.GetDirectoryName(audioFile) ?? string.Empty;
+
+                // Формируем короткое имя входящего файла
+                string audioFileNameShort = audioFileName.Length > 30
+                    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
+                    : audioFileName.PadRight(33);
+
+                // Получаем информацию о выходящем аудиофайле
+                long outputSize = outputFile.Length; // Размер выходного файла
+                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+                TimeSpan timeTaken = stopwatch.Elapsed;
+                double compressionPercentage = ((double)outputSize / inputSize) * 100;
+                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+
+                // Получаем информацию о версии exe файла
+                var version = GetExecutableInfo(executable);
+
+                // Добавление записи в лог DataGridView
+                int rowIndex = dataGridViewLog.Rows.Add(
+                    audioFileName,             // 0
+                    inputSizeFormatted,        // 1
+                    outputSizeFormatted,       // 2
+                    $"{compressionPercentage:F3}%", // 3
+                    $"{timeTaken.TotalMilliseconds:F3}", // 4
+                    $"{encodingSpeed:F3}x",    // 5
+                    parameters,                // 6
+                    Path.GetFileName(executable), // 7
+                    version,                   // 8
+                    string.Empty,              // 9 (BestSize)
+                    string.Empty,              // 10 (SameSize)
+                    audioFileDirectory         // 11 (FilePath)
+                );
+
+                // Установка цвета текста в зависимости от сравнения размеров файлов
+                dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = outputSize < inputSize ? Color.Green :
+                    outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor;
+
+                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = compressionPercentage < 100 ? Color.Green :
+                    compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor;
+
+                dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = encodingSpeed > 1 ? Color.Green :
+                    encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor;
+
+                // Прокручиваем DataGridView вниз к последней добавленной строке
+                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
+                dataGridViewLog.ClearSelection(); // Очищаем выделение
+
+                // Логирование в файл
+                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
+            }
+        }
+
+
+        private void buttonAnalyzeLog_Click(object? sender, EventArgs e)
+        {
+            AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
+        }
+        private async void AnalyzeBestSize()
+        {
+            var dataRows = new List<(string fileName, long outputSize, int rowIndex)>();
+            int rowCount = dataGridViewLog.Rows.Count;
+
+            // Получаем данные в основном потоке
+            for (int i = 0; i < rowCount; i++)
+            {
+                var row = dataGridViewLog.Rows[i];
+                if (row.Cells["Name"].Value is string fileName &&
+                    row.Cells["OutputFileSize"].Value is string outputSizeStr &&
+                    long.TryParse(outputSizeStr.Replace(" ", "").Trim(), out long outputSize))
+                {
+                    dataRows.Add((fileName, outputSize, i));
+                }
+            }
+
+            // Группируем выходные размеры
+            var outputSizeGroups = dataRows
+                .GroupBy(dataRow => dataRow.fileName)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.outputSize).ToList());
+
+            // Находим минимальные размеры
+            var smallestSizes = new ConcurrentDictionary<string, (long minSize, int count)>();
+
+            // Обрабатываем данные параллельно
+            Parallel.ForEach(dataRows, dataRow =>
+            {
+                var (fileName, outputSize, rowIndex) = dataRow;
+
+                smallestSizes.AddOrUpdate(
+                    fileName,
+                    (outputSize, 1),
+                    (key, existingValue) =>
+                    {
+                        var (minSize, count) = existingValue;
+                        if (outputSize < minSize)
+                        {
+                            return (outputSize, 1);
+                        }
+                        else if (outputSize == minSize)
+                        {
+                            return (minSize, count + 1);
+                        }
+                        return existingValue;
+                    }
+                );
+            });
+
+            // Обновляем интерфейс после обработки данных
+            await Task.Run(() =>
+            {
+                this.Invoke((Action)(() =>
+                {
+                    foreach (var fileEntry in smallestSizes)
+                    {
+                        string fileName = fileEntry.Key;
+                        long smallestSize = fileEntry.Value.minSize;
+
+                        var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
+
+                        foreach (int index in indices)
+                        {
+                            var objRow = dataGridViewLog.Rows[index];
+                            long rowOutputSize = dataRows[index].outputSize;
+
+                            // Обновляем столбец BestSize
+                            objRow.Cells["BestSize"].Value = (rowOutputSize == smallestSize) ? "smallest size" : string.Empty;
+                        }
+
+                        // Проверка на одинаковые размеры
+                        bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
+                        foreach (int index in indices)
+                        {
+                            var objRow = dataGridViewLog.Rows[index];
+                            objRow.Cells["SameSize"].Value = (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1) ? "has same size" : string.Empty;
+                        }
+                    }
+                }));
+            });
+            SortDataGridView();
+        }
+        private class LogEntry
+        {
+            public string Name { get; set; }
+            public string InputFileSize { get; set; }
+            public string OutputFileSize { get; set; }
+            public string Compression { get; set; }
+            public string Time { get; set; }
+            public string Speed { get; set; }
+            public string Parameters { get; set; }
+            public string Executable { get; set; }
+            public string Version { get; set; }
+            public string BestSize { get; set; }
+            public string SameSize { get; set; }
+            public string FilePath { get; set; }
+
+            public Color OutputForeColor { get; set; } // Цвет для OutputFileSize
+            public Color CompressionForeColor { get; set; } // Цвет для Compression
+            public Color SpeedForeColor { get; set; } // Цвет для Speed
+        }
+        private void SortDataGridView()
+        {
+            // Собираем данные из DataGridView в список
+            var dataToSort = new List<LogEntry>();
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                if (row.IsNewRow) continue; // Пропускаем новую строку
+
+                var logEntry = new LogEntry
+                {
+                    Name = row.Cells["Name"].Value?.ToString(),
+                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
+                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
+                    Compression = row.Cells["Compression"].Value?.ToString(),
+                    Time = row.Cells["Time"].Value?.ToString(),
+                    Speed = row.Cells["Speed"].Value?.ToString(),
+                    Parameters = row.Cells["Parameters"].Value?.ToString(),
+                    Executable = row.Cells["Executable"].Value?.ToString(),
+                    Version = row.Cells["Version"].Value?.ToString(),
+                    BestSize = row.Cells["BestSize"].Value?.ToString(),
+                    SameSize = row.Cells["SameSize"].Value?.ToString(),
+                    FilePath = row.Cells["FilePath"].Value?.ToString(),
+
+                    OutputForeColor = row.Cells[2].Style.ForeColor, // Цвет для OutputFileSize
+                    CompressionForeColor = row.Cells[3].Style.ForeColor, // Цвет для Compression
+                    SpeedForeColor = row.Cells[5].Style.ForeColor // Цвет для Speed
+                };
+
+                dataToSort.Add(logEntry);
+            }
+
+            // Выполняем многоуровневую сортировку
+            var sortedData = dataToSort
+                .OrderBy(x => x.FilePath)
+                .ThenBy(x => x.Name)
+                .ThenBy(x => x.Parameters)
+                .ThenBy(x => x.Executable)
+                .ToList();
+
+            // Очищаем DataGridView и добавляем отсортированные данные
+            dataGridViewLog.Rows.Clear();
+            foreach (var data in sortedData)
+            {
+                int rowIndex = dataGridViewLog.Rows.Add(
+                    data.Name,
+                    data.InputFileSize,
+                    data.OutputFileSize,
+                    data.Compression,
+                    data.Time,
+                    data.Speed,
+                    data.Parameters,
+                    data.Executable,
+                    data.Version,
+                    data.BestSize,
+                    data.SameSize,
+                    data.FilePath);
+
+
+                // Установка цвета текста
+                dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor = data.OutputForeColor; // OutputFileSize
+                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = data.CompressionForeColor; // Compression
+                dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor = data.SpeedForeColor; // Speed
+            }
+            dataGridViewLog.ClearSelection();
+        }
+        private void buttonLogToExcel_Click(object? sender, EventArgs e)
+        {
+            // Создаем новый Excel файл
+            using (var workbook = new XLWorkbook())
+            {
+                // Добавляем новый лист
+                var worksheet = workbook.Worksheets.Add("Log Data");
+
+                // Добавляем заголовки колонок
+                int columnCount = dataGridViewLog.Columns.Count;
+                for (int i = 0; i < columnCount; i++)
+                {
+                    worksheet.Cell(1, i + 1).Value = dataGridViewLog.Columns[i].HeaderText;
+                    worksheet.Cell(1, i + 1).Style.Font.Bold = true; // Устанавливаем жирный шрифт для заголовков
+                }
+
+                // Добавляем строки данных
+                for (int i = 0; i < dataGridViewLog.Rows.Count; i++)
+                {
+                    for (int j = 0; j < columnCount; j++)
+                    {
+                        var cellValue = dataGridViewLog.Rows[i].Cells[j].Value;
+
+                        // Записываем значения для размеров файлов
+                        if (j == dataGridViewLog.Columns["InputFileSize"].Index || j == dataGridViewLog.Columns["OutputFileSize"].Index)
+                        {
+                            if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long numericValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = numericValue; // Записываем как число
+
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Compression"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double compressionValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = compressionValue / 100; // Записываем значение в диапазоне от 0 до 1
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Time"].Index) // Обработка столбца Time
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString(), out double timeSpanValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = timeSpanValue; // Записываем общее количество секунд
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Speed"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = speedValue; // Записываем значение скорости
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["Parameters"].Index) // Обработка столбца Parameters
+                        {
+                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как текст
+                        }
+                        else
+                        {
+                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как строку
+                        }
+                        // Копируем цвет текста, если он установлен
+                        if (dataGridViewLog.Rows[i].Cells[j].Style.ForeColor != Color.Empty)
+                        {
+                            var color = dataGridViewLog.Rows[i].Cells[j].Style.ForeColor;
+                            worksheet.Cell(i + 2, j + 1).Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
+                        }
+                    }
+                }
+
+                // Установка формата с разделителем разрядов для столбцов с размерами файлов
+                int inputFileSizeIndex = dataGridViewLog.Columns["InputFileSize"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(inputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
+
+                int outputFileSizeIndex = dataGridViewLog.Columns["OutputFileSize"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(outputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
+
+                // Установка формата для столбца Compression как процент
+                int compressionIndex = dataGridViewLog.Columns["Compression"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(compressionIndex).Style.NumberFormat.Format = "0.000%"; // Формат числа с 3 знаками после запятой
+
+                // Установка формата для столбца Time
+                int timeIndex = dataGridViewLog.Columns["Time"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(timeIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения времени
+
+                // Установка формата для столбца Speed
+                int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения скорости
+
+                // Установка формата для столбца Parameters
+                int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 для 1-основанных индексов
+                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Формат для отображения параметров
+
+                // Установка фильтра на заголовки
+                worksheet.RangeUsed().SetAutoFilter();
+
+                // Замораживаем первую строку (заголовки)
+                worksheet.SheetView.FreezeRows(1);
+
+                // Настройка ширины столбцов на авто
+                worksheet.Columns().AdjustToContents();
+
+                // Задаем цвет заливки для первого ряда
+                worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
+                worksheet.Row(1).Style.Font.FontColor = XLColor.White; // Устанавливаем цвет шрифта в белый для контраста
+
+                // Формируем имя файла на основе текущей даты и времени
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+                string fileName = $"Log {timestamp}.xlsx";
+
+                // Получаем путь к папке, где находится исполняемый файл
+                string folderPath = AppDomain.CurrentDomain.BaseDirectory;
+                string fullPath = Path.Combine(folderPath, fileName);
+
+                // Сохраняем файл
+                workbook.SaveAs(fullPath);
+
+                // Открываем файл по умолчанию
+                if (MessageBox.Show($"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?", "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        UseShellExecute = true
+                    });
+                }
+            }
+        }
+        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
+        {
+            // Путь к файлу логирования
+            string logFilePath = "log.txt";
+            // Проверяем существует ли файл
+            if (File.Exists(logFilePath))
+            {
+                try
+                {
+                    // Открываем log.txt с помощью стандартного текстового редактора
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = logFilePath,
+                        UseShellExecute = true // Это откроет файл с помощью ассоциированного приложения
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void buttonCopyLog_Click(object? sender, EventArgs e)
+        {
+            // Создаем StringBuilder для сбора текста логов
+            StringBuilder logText = new StringBuilder();
+            // Проходим по строкам в DataGridView и собираем текст
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                // Предполагаем, что вы хотите собирать текст из всех ячеек строки
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    logText.Append(cell.Value?.ToString() + "\t"); // Используем табуляцию для разделения ячеек
+                }
+                logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
+            }
+            if (logText.Length > 0)
+            {
+                Clipboard.SetText(logText.ToString());
+                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        private void buttonClearLog_Click(object? sender, EventArgs e)
+        {
+            dataGridViewLog.Rows.Clear();
+        }
+
 
         // Действия клавиш
         private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
@@ -1904,441 +2565,7 @@ namespace FLAC_Benchmark_H
             isExecuting = false; // Сбрасываем флаг после завершения
         }
 
-        // Log
-        private void InitializedataGridViewLog()
-        {
-            // Настройка DataGridView
-            dataGridViewLog.Columns.Add("FilePath", "File Path"); // Скрытый столбец для папки файла
-            dataGridViewLog.Columns.Add("Name", "Name");
-            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
-            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
-            dataGridViewLog.Columns.Add("Compression", "Compr.");
-            dataGridViewLog.Columns.Add("Time", "Time");
-            dataGridViewLog.Columns.Add("Speed", "Speed");
-            dataGridViewLog.Columns.Add("Parameters", "Parameters");
-            dataGridViewLog.Columns.Add("Executable", "Binary");
-            dataGridViewLog.Columns.Add("Version", "Version");
-            dataGridViewLog.Columns.Add("BestSize", "Best Size");
-            dataGridViewLog.Columns.Add("SameSize", "Same Size");
 
-            // Установка выравнивания для колонок
-            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-
-            // Скрываем столбец с полным путем
-            dataGridViewLog.Columns["FilePath"].Visible = false;
-        }
-        private void LogProcessResults(string outputFilePath, string audioFile, string parameters, string executable)
-        {
-            FileInfo outputFile = new FileInfo(outputFilePath);
-            if (outputFile.Exists)
-            {
-                // Создаем CultureInfo для форматирования с точками как разделителями разрядов
-                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                numberFormat.NumberGroupSeparator = " ";
-
-                // Получаем информацию о входящем аудиофайле
-                FileInfo inputFileInfo = new FileInfo(audioFile);
-                long inputSize = inputFileInfo.Length; // Размер входного файла
-                var (duration, _, _) = GetAudioInfo(audioFile);
-                long durationMs = Convert.ToInt64(duration);
-                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
-
-                // Получаем только имя входящего файла для логирования
-                string audioFileName = Path.GetFileName(audioFile);
-                // Получаем путь к директории файла
-                string audioFileDirectory = Path.GetDirectoryName(audioFile) ?? string.Empty;
-
-                // Формируем короткое имя входящего файла
-                string audioFileNameShort = audioFileName.Length > 30
-                ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
-                : audioFileName.PadRight(33);
-
-                // Получаем информацию о выходящем аудиофайле
-                long outputSize = outputFile.Length; // Размер выходного файла
-                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
-                TimeSpan timeTaken = stopwatch.Elapsed;
-                double compressionPercentage = ((double)outputSize / inputSize) * 100;
-                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
-                // Получаем информацию о версии exe файла
-                var version = GetExecutableInfo(executable);
-                // Добавление записи в лог DataGridView
-                int rowIndex = dataGridViewLog.Rows.Add(
-                audioFileDirectory,
-                audioFileName,
-                inputSizeFormatted,
-                outputSizeFormatted,
-                $"{compressionPercentage:F3}%",
-                $"{timeTaken.TotalMilliseconds:F3}",
-                $"{encodingSpeed:F3}x",
-                parameters,
-                Path.GetFileName(executable),
-                version);
-                // Установка цвета текста в зависимости от сравнения размеров файлов
-                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = outputSize < inputSize ? Color.Green : (outputSize > inputSize ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[2].Style.ForeColor);
-                dataGridViewLog.Rows[rowIndex].Cells[4].Style.ForeColor = compressionPercentage < 100 ? Color.Green : (compressionPercentage > 100 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor);
-                dataGridViewLog.Rows[rowIndex].Cells[6].Style.ForeColor = encodingSpeed > 1 ? Color.Green : (encodingSpeed < 1 ? Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor);
-                // Прокручиваем DataGridView вниз к последней добавленной строке
-                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
-                dataGridViewLog.ClearSelection(); // Очищаем выделение
-                // Логирование в файл
-                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {Path.GetFileName(executable)}\tVersion: {version}{Environment.NewLine}");
-            }
-        }
-        private void buttonAnalyzeLog_Click(object? sender, EventArgs e)
-        {
-            AnalyzeBestSize(); // Запускаем анализ при нажатии кнопки
-        }
-        private async void AnalyzeBestSize()
-        {
-            var dataRows = new List<(string fileName, long outputSize, int rowIndex)>();
-            int rowCount = dataGridViewLog.Rows.Count;
-
-            // Получаем данные в основном потоке
-            for (int i = 0; i < rowCount; i++)
-            {
-                var row = dataGridViewLog.Rows[i];
-                if (row.Cells["Name"].Value is string fileName &&
-                    row.Cells["OutputFileSize"].Value is string outputSizeStr &&
-                    long.TryParse(outputSizeStr.Replace(" ", "").Trim(), out long outputSize))
-                {
-                    dataRows.Add((fileName, outputSize, i));
-                }
-            }
-
-            // Группируем выходные размеры
-            var outputSizeGroups = dataRows
-                .GroupBy(dataRow => dataRow.fileName)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.outputSize).ToList());
-
-            // Находим минимальные размеры
-            var smallestSizes = new ConcurrentDictionary<string, (long minSize, int count)>();
-
-            // Обрабатываем данные параллельно
-            Parallel.ForEach(dataRows, dataRow =>
-            {
-                var (fileName, outputSize, rowIndex) = dataRow;
-
-                smallestSizes.AddOrUpdate(
-                    fileName,
-                    (outputSize, 1),
-                    (key, existingValue) =>
-                    {
-                        var (minSize, count) = existingValue;
-                        if (outputSize < minSize)
-                        {
-                            return (outputSize, 1);
-                        }
-                        else if (outputSize == minSize)
-                        {
-                            return (minSize, count + 1);
-                        }
-                        return existingValue;
-                    }
-                );
-            });
-
-            // Обновляем интерфейс после обработки данных
-            await Task.Run(() =>
-            {
-                this.Invoke((Action)(() =>
-                {
-                    foreach (var fileEntry in smallestSizes)
-                    {
-                        string fileName = fileEntry.Key;
-                        long smallestSize = fileEntry.Value.minSize;
-
-                        var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
-
-                        foreach (int index in indices)
-                        {
-                            var objRow = dataGridViewLog.Rows[index];
-                            long rowOutputSize = dataRows[index].outputSize;
-
-                            // Обновляем столбец BestSize
-                            objRow.Cells["BestSize"].Value = (rowOutputSize == smallestSize) ? "smallest size" : string.Empty;
-                        }
-
-                        // Проверка на одинаковые размеры
-                        bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
-                        foreach (int index in indices)
-                        {
-                            var objRow = dataGridViewLog.Rows[index];
-                            objRow.Cells["SameSize"].Value = (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1) ? "has same size" : string.Empty;
-                        }
-                    }
-                }));
-            });
-            SortDataGridView();
-        }
-        private class LogEntry
-        {
-            public string FilePath { get; set; }
-            public string Name { get; set; }
-            public string InputFileSize { get; set; }
-            public string OutputFileSize { get; set; }
-            public string Compression { get; set; }
-            public string Time { get; set; }
-            public string Speed { get; set; }
-            public string Parameters { get; set; }
-            public string Executable { get; set; }
-            public string Version { get; set; }
-            public string BestSize { get; set; }
-            public string SameSize { get; set; }
-
-            public Color OutputForeColor { get; set; } // Цвет для OutputFileSize
-            public Color CompressionForeColor { get; set; } // Цвет для Compression
-            public Color SpeedForeColor { get; set; } // Цвет для Speed
-        }
-        private void SortDataGridView()
-        {
-            // Собираем данные из DataGridView в список
-            var dataToSort = new List<LogEntry>();
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
-            {
-                if (row.IsNewRow) continue; // Пропускаем новую строку
-
-                var logEntry = new LogEntry
-                {
-                    FilePath = row.Cells["FilePath"].Value?.ToString(),
-                    Name = row.Cells["Name"].Value?.ToString(),
-                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
-                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
-                    Compression = row.Cells["Compression"].Value?.ToString(),
-                    Time = row.Cells["Time"].Value?.ToString(),
-                    Speed = row.Cells["Speed"].Value?.ToString(),
-                    Parameters = row.Cells["Parameters"].Value?.ToString(),
-                    Executable = row.Cells["Executable"].Value?.ToString(),
-                    Version = row.Cells["Version"].Value?.ToString(),
-                    BestSize = row.Cells["BestSize"].Value?.ToString(),
-                    SameSize = row.Cells["SameSize"].Value?.ToString(),
-
-                    OutputForeColor = row.Cells[3].Style.ForeColor, // Цвет для OutputFileSize
-                    CompressionForeColor = row.Cells[4].Style.ForeColor, // Цвет для Compression
-                    SpeedForeColor = row.Cells[6].Style.ForeColor // Цвет для Speed
-                };
-
-                dataToSort.Add(logEntry);
-            }
-
-            // Выполняем многоуровневую сортировку
-            var sortedData = dataToSort
-                .OrderBy(x => x.FilePath)
-                .ThenBy(x => x.Name)
-                .ThenBy(x => x.Parameters)
-                .ThenBy(x => x.Executable)
-                .ToList();
-
-            // Очищаем DataGridView и добавляем отсортированные данные
-            dataGridViewLog.Rows.Clear();
-            foreach (var data in sortedData)
-            {
-                int rowIndex = dataGridViewLog.Rows.Add(
-                    data.FilePath,
-                    data.Name,
-                    data.InputFileSize,
-                    data.OutputFileSize,
-                    data.Compression,
-                    data.Time,
-                    data.Speed,
-                    data.Parameters,
-                    data.Executable,
-                    data.Version,
-                    data.BestSize,
-                    data.SameSize);
-
-                // Установка цвета текста
-                dataGridViewLog.Rows[rowIndex].Cells[3].Style.ForeColor = data.OutputForeColor; // OutputFileSize
-                dataGridViewLog.Rows[rowIndex].Cells[4].Style.ForeColor = data.CompressionForeColor; // Compression
-                dataGridViewLog.Rows[rowIndex].Cells[6].Style.ForeColor = data.SpeedForeColor; // Speed
-            }
-            dataGridViewLog.ClearSelection();
-        }
-        private void buttonLogToExcel_Click(object? sender, EventArgs e)
-        {
-            // Создаем новый Excel файл
-            using (var workbook = new XLWorkbook())
-            {
-                // Добавляем новый лист
-                var worksheet = workbook.Worksheets.Add("Log Data");
-
-                // Добавляем заголовки колонок
-                int columnCount = dataGridViewLog.Columns.Count;
-                for (int i = 0; i < columnCount; i++)
-                {
-                    worksheet.Cell(1, i + 1).Value = dataGridViewLog.Columns[i].HeaderText;
-                    worksheet.Cell(1, i + 1).Style.Font.Bold = true; // Устанавливаем жирный шрифт для заголовков
-                }
-
-                // Добавляем строки данных
-                for (int i = 0; i < dataGridViewLog.Rows.Count; i++)
-                {
-                    for (int j = 0; j < columnCount; j++)
-                    {
-                        var cellValue = dataGridViewLog.Rows[i].Cells[j].Value;
-
-                        // Записываем значения для размеров файлов
-                        if (j == dataGridViewLog.Columns["InputFileSize"].Index || j == dataGridViewLog.Columns["OutputFileSize"].Index)
-                        {
-                            if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long numericValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = numericValue; // Записываем как число
-
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Compression"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double compressionValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = compressionValue / 100; // Записываем значение в диапазоне от 0 до 1
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Time"].Index) // Обработка столбца Time
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString(), out double timeSpanValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = timeSpanValue; // Записываем общее количество секунд
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Speed"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = speedValue; // Записываем значение скорости
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Parameters"].Index) // Обработка столбца Parameters
-                        {
-                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как текст
-                        }
-                        else
-                        {
-                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Записываем значение как строку
-                        }
-                        // Копируем цвет текста, если он установлен
-                        if (dataGridViewLog.Rows[i].Cells[j].Style.ForeColor != Color.Empty)
-                        {
-                            var color = dataGridViewLog.Rows[i].Cells[j].Style.ForeColor;
-                            worksheet.Cell(i + 2, j + 1).Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
-                        }
-                    }
-                }
-
-                // Установка формата с разделителем разрядов для столбцов с размерами файлов
-                int inputFileSizeIndex = dataGridViewLog.Columns["InputFileSize"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(inputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
-
-                int outputFileSizeIndex = dataGridViewLog.Columns["OutputFileSize"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(outputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Формат целого числа с разделителями
-
-                // Установка формата для столбца Compression как процент
-                int compressionIndex = dataGridViewLog.Columns["Compression"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(compressionIndex).Style.NumberFormat.Format = "0.000%"; // Формат числа с 3 знаками после запятой
-
-                // Установка формата для столбца Time
-                int timeIndex = dataGridViewLog.Columns["Time"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(timeIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения времени
-
-                // Установка формата для столбца Speed
-                int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Формат для отображения скорости
-
-                // Установка формата для столбца Parameters
-                int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 для 1-основанных индексов
-                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Формат для отображения параметров
-
-                // Установка фильтра на заголовки
-                worksheet.RangeUsed().SetAutoFilter();
-
-                // Замораживаем первую строку (заголовки)
-                worksheet.SheetView.FreezeRows(1);
-
-                // Настройка ширины столбцов на авто
-                worksheet.Columns().AdjustToContents();
-
-                // Задаем цвет заливки для первого ряда
-                worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
-                worksheet.Row(1).Style.Font.FontColor = XLColor.White; // Устанавливаем цвет шрифта в белый для контраста
-
-                // Формируем имя файла на основе текущей даты и времени
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
-                string fileName = $"Log {timestamp}.xlsx";
-
-                // Получаем путь к папке, где находится исполняемый файл
-                string folderPath = AppDomain.CurrentDomain.BaseDirectory;
-                string fullPath = Path.Combine(folderPath, fileName);
-
-                // Сохраняем файл
-                workbook.SaveAs(fullPath);
-
-                // Открываем файл по умолчанию
-                if (MessageBox.Show($"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?", "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = fullPath,
-                        UseShellExecute = true
-                    });
-                }
-            }
-        }
-        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
-        {
-            // Путь к файлу логирования
-            string logFilePath = "log.txt";
-            // Проверяем существует ли файл
-            if (File.Exists(logFilePath))
-            {
-                try
-                {
-                    // Открываем log.txt с помощью стандартного текстового редактора
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = logFilePath,
-                        UseShellExecute = true // Это откроет файл с помощью ассоциированного приложения
-                    });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-        private void buttonCopyLog_Click(object? sender, EventArgs e)
-        {
-            // Создаем StringBuilder для сбора текста логов
-            StringBuilder logText = new StringBuilder();
-            // Проходим по строкам в DataGridView и собираем текст
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
-            {
-                // Предполагаем, что вы хотите собирать текст из всех ячеек строки
-                foreach (DataGridViewCell cell in row.Cells)
-                {
-                    logText.Append(cell.Value?.ToString() + "\t"); // Используем табуляцию для разделения ячеек
-                }
-                logText.AppendLine(); // Переход на новую строку после каждой строки DataGridView
-            }
-            if (logText.Length > 0)
-            {
-                Clipboard.SetText(logText.ToString());
-                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-        private void buttonClearLog_Click(object? sender, EventArgs e)
-        {
-            dataGridViewLog.Rows.Clear();
-        }
 
         // General methods
         private void MoveSelectedItems(ListView listView, int direction)
@@ -2463,10 +2690,9 @@ namespace FLAC_Benchmark_H
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
-            listViewAudioFiles.Columns[5].Width = 0; // Скрываем колонку MD5
+            listViewAudioFiles.Columns[5].Width = 230; // Скрываем колонку MD5
             LoadSettings(); // Загрузка настроек
             this.ActiveControl = null; // Снимаем фокус с всех элементов
-
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {

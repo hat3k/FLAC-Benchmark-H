@@ -66,8 +66,9 @@
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
             buttonClearUnchecked = new Button();
-            buttonDetectDupesAudioFiles = new Button();
             buttonDownAudioFile = new Button();
+            buttonTestForErrors = new Button();
+            buttonDetectDupesAudioFiles = new Button();
             buttonUpAudioFile = new Button();
             listViewAudioFiles = new ListView();
             FileName = new ColumnHeader();
@@ -76,6 +77,7 @@
             SamplingRate = new ColumnHeader();
             Size = new ColumnHeader();
             MD5Hash = new ColumnHeader();
+            FilePath = new ColumnHeader();
             buttonRemoveAudiofile = new Button();
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
@@ -168,7 +170,7 @@
             // 
             buttonAddJobToJobListEncoder.Location = new Point(122, 141);
             buttonAddJobToJobListEncoder.Name = "buttonAddJobToJobListEncoder";
-            buttonAddJobToJobListEncoder.Size = new Size(100, 23);
+            buttonAddJobToJobListEncoder.Size = new Size(110, 23);
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
@@ -187,9 +189,9 @@
             // progressBarEncoder
             // 
             progressBarEncoder.Enabled = false;
-            progressBarEncoder.Location = new Point(228, 141);
+            progressBarEncoder.Location = new Point(238, 141);
             progressBarEncoder.Name = "progressBarEncoder";
-            progressBarEncoder.Size = new Size(334, 23);
+            progressBarEncoder.Size = new Size(324, 23);
             progressBarEncoder.TabIndex = 4;
             progressBarEncoder.Visible = false;
             // 
@@ -398,7 +400,7 @@
             // 
             labelCPUinfo.Location = new Point(6, 24);
             labelCPUinfo.Name = "labelCPUinfo";
-            labelCPUinfo.Size = new Size(155, 64);
+            labelCPUinfo.Size = new Size(161, 64);
             labelCPUinfo.TabIndex = 17;
             labelCPUinfo.Text = "CPU Info";
             // 
@@ -531,9 +533,11 @@
             // 
             // groupBoxAudioFiles
             // 
+            groupBoxAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
-            groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonTestForErrors);
+            groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonRemoveAudiofile);
@@ -548,23 +552,14 @@
             // 
             // buttonClearUnchecked
             // 
-            buttonClearUnchecked.Location = new Point(488, 230);
+            buttonClearUnchecked.Anchor = AnchorStyles.Right;
+            buttonClearUnchecked.Location = new Point(610, 230);
             buttonClearUnchecked.Name = "buttonClearUnchecked";
-            buttonClearUnchecked.Size = new Size(110, 23);
+            buttonClearUnchecked.Size = new Size(100, 23);
             buttonClearUnchecked.TabIndex = 29;
             buttonClearUnchecked.Text = "Clear uncheked";
             buttonClearUnchecked.UseVisualStyleBackColor = true;
             buttonClearUnchecked.Click += buttonClearUnchecked_Click;
-            // 
-            // buttonDetectDupesAudioFiles
-            // 
-            buttonDetectDupesAudioFiles.Location = new Point(616, 230);
-            buttonDetectDupesAudioFiles.Name = "buttonDetectDupesAudioFiles";
-            buttonDetectDupesAudioFiles.Size = new Size(94, 23);
-            buttonDetectDupesAudioFiles.TabIndex = 28;
-            buttonDetectDupesAudioFiles.Text = "Detect dupes";
-            buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
-            buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
             // 
             // buttonDownAudioFile
             // 
@@ -575,6 +570,28 @@
             buttonDownAudioFile.Text = "▼";
             buttonDownAudioFile.UseVisualStyleBackColor = true;
             buttonDownAudioFile.Click += buttonDownAudioFile_Click;
+            // 
+            // buttonTestForErrors
+            // 
+            buttonTestForErrors.Anchor = AnchorStyles.Left;
+            buttonTestForErrors.Enabled = false;
+            buttonTestForErrors.Location = new Point(354, 230);
+            buttonTestForErrors.Name = "buttonTestForErrors";
+            buttonTestForErrors.Size = new Size(110, 23);
+            buttonTestForErrors.TabIndex = 1;
+            buttonTestForErrors.Text = "Test for errors";
+            buttonTestForErrors.UseVisualStyleBackColor = true;
+            // 
+            // buttonDetectDupesAudioFiles
+            // 
+            buttonDetectDupesAudioFiles.Anchor = AnchorStyles.Left;
+            buttonDetectDupesAudioFiles.Location = new Point(238, 230);
+            buttonDetectDupesAudioFiles.Name = "buttonDetectDupesAudioFiles";
+            buttonDetectDupesAudioFiles.Size = new Size(110, 23);
+            buttonDetectDupesAudioFiles.TabIndex = 28;
+            buttonDetectDupesAudioFiles.Text = "Detect dupes";
+            buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
+            buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
             // 
             // buttonUpAudioFile
             // 
@@ -588,8 +605,9 @@
             // 
             // listViewAudioFiles
             // 
+            listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size, MD5Hash });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size, MD5Hash, FilePath });
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
@@ -638,6 +656,11 @@
             MD5Hash.Text = "MD5 Hash";
             MD5Hash.Width = 230;
             // 
+            // FilePath
+            // 
+            FilePath.Text = "File Path";
+            FilePath.Width = 250;
+            // 
             // buttonRemoveAudiofile
             // 
             buttonRemoveAudiofile.Location = new Point(182, 230);
@@ -660,6 +683,7 @@
             // 
             // buttonClearAudioFiles
             // 
+            buttonClearAudioFiles.Anchor = AnchorStyles.Right;
             buttonClearAudioFiles.Location = new Point(716, 230);
             buttonClearAudioFiles.Name = "buttonClearAudioFiles";
             buttonClearAudioFiles.Size = new Size(55, 23);
@@ -958,9 +982,9 @@
             groupBoxSystemandSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
-            groupBoxSystemandSettings.Location = new Point(1405, 278);
+            groupBoxSystemandSettings.Location = new Point(1399, 278);
             groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
-            groupBoxSystemandSettings.Size = new Size(167, 171);
+            groupBoxSystemandSettings.Size = new Size(173, 171);
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
@@ -982,14 +1006,14 @@
             comboBoxCPUPriority.Location = new Point(60, 87);
             comboBoxCPUPriority.MaxDropDownItems = 6;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
-            comboBoxCPUPriority.Size = new Size(100, 23);
+            comboBoxCPUPriority.Size = new Size(107, 23);
             comboBoxCPUPriority.TabIndex = 25;
             // 
             // buttonSelectTempFolder
             // 
             buttonSelectTempFolder.Location = new Point(6, 141);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(155, 23);
+            buttonSelectTempFolder.Size = new Size(161, 23);
             buttonSelectTempFolder.TabIndex = 23;
             buttonSelectTempFolder.Text = "Select temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
@@ -1015,7 +1039,7 @@
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
-            groupBoxDecoderSettings.Size = new Size(604, 171);
+            groupBoxDecoderSettings.Size = new Size(598, 171);
             groupBoxDecoderSettings.TabIndex = 26;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
@@ -1033,7 +1057,7 @@
             // 
             buttonAddJobToJobListDecoder.Location = new Point(122, 141);
             buttonAddJobToJobListDecoder.Name = "buttonAddJobToJobListDecoder";
-            buttonAddJobToJobListDecoder.Size = new Size(100, 23);
+            buttonAddJobToJobListDecoder.Size = new Size(110, 23);
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
@@ -1043,21 +1067,21 @@
             // 
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
-            textBoxCommandLineOptionsDecoder.Size = new Size(415, 23);
+            textBoxCommandLineOptionsDecoder.Size = new Size(409, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 4;
             // 
             // progressBarDecoder
             // 
             progressBarDecoder.Enabled = false;
-            progressBarDecoder.Location = new Point(228, 141);
+            progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(370, 23);
+            progressBarDecoder.Size = new Size(293, 23);
             progressBarDecoder.TabIndex = 4;
             progressBarDecoder.Visible = false;
             // 
             // buttonClearCommandLineDecoder
             // 
-            buttonClearCommandLineDecoder.Location = new Point(543, 21);
+            buttonClearCommandLineDecoder.Location = new Point(537, 21);
             buttonClearCommandLineDecoder.Name = "buttonClearCommandLineDecoder";
             buttonClearCommandLineDecoder.Size = new Size(55, 23);
             buttonClearCommandLineDecoder.TabIndex = 11;
@@ -1082,7 +1106,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20241230.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20250101.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -1193,5 +1217,7 @@
         private GroupBox groupBoxLog;
         private Button buttonLogToExcel;
         private Button buttonClearUnchecked;
+        private Button buttonTestForErrors;
+        private ColumnHeader FilePath;
     }
 }
