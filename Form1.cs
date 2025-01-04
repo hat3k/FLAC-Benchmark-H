@@ -701,10 +701,14 @@ namespace FLAC_Benchmark_H
                             }
                             else if (chunkId == 0x61746164) // "data"
                             {
+                                // Проверяем на допустимость размера
+                                if (chunkSize < 0 || chunkSize > int.MaxValue)
+                                {
+                                    return "Invalid WAV file";
+                                }
+
                                 // Читаем аудиоданные из блока "data"
                                 byte[] audioData = reader.ReadBytes((int)chunkSize);
-
-                                // Рассчитываем хэш и возвращаем его
                                 return BitConverter.ToString(md5.ComputeHash(audioData)).Replace("-", "").ToUpperInvariant();
                             }
                             else
@@ -719,6 +723,7 @@ namespace FLAC_Benchmark_H
 
             return "MD5 calculation failed"; // Если ничего не найдено
         }
+
         private string GetFileMD5Hash(string filePath, string existingMD5 = "N/A")
         {
             // Проверяем, есть ли существующий MD5 хеш, и если он не N/A, то возвращаем его
@@ -762,6 +767,7 @@ namespace FLAC_Benchmark_H
                             // Проверяем заголовок RIFF
                             if (reader.ReadUInt32() != 0x46464952) // "RIFF"
                                 return "Invalid WAV file";
+
                             reader.ReadUInt32(); // Читаем общий размер файла (не используется)
                             if (reader.ReadUInt32() != 0x45564157) // "WAVE"
                                 return "Invalid WAV file";
@@ -779,10 +785,14 @@ namespace FLAC_Benchmark_H
                                 }
                                 else if (chunkId == 0x61746164) // "data"
                                 {
+                                    // Проверяем на допустимость размера
+                                    if (chunkSize < 0 || chunkSize > int.MaxValue)
+                                    {
+                                        return "Invalid WAV file";
+                                    }
+
                                     // Читаем аудиоданные из блока "data"
                                     byte[] audioData = reader.ReadBytes((int)chunkSize);
-
-                                    // Рассчитываем хэш
                                     return BitConverter.ToString(md5.ComputeHash(audioData)).Replace("-", "").ToUpperInvariant();
                                 }
                                 else
@@ -798,6 +808,7 @@ namespace FLAC_Benchmark_H
             return "N/A"; // Возвращаем "N/A" для других форматов
         }
 
+
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
@@ -808,14 +819,14 @@ namespace FLAC_Benchmark_H
                 string md5Hash = item.SubItems[5].Text; // Пытаемся получить MD5 из подэлемента
 
                 // Проверяем, если MD5 хеш отсутствует, вычисляем его
-                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000")
+                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000" || md5Hash == "Invalid WAV file")
                 {
                     md5Hash = await Task.Run(() => GetFileMD5Hash(filePath));
                     item.SubItems[5].Text = md5Hash; // Устанавливаем вычисленный MD5 в подэлемент
                 }
 
                 // Проверяем, является ли хеш валидным
-                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000")
+                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000" && md5Hash != "Invalid WAV file")
                 {
                     if (hashDict.ContainsKey(md5Hash))
                     {
