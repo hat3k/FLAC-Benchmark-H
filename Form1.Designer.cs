@@ -21,8 +21,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
             labelCommandLineEncoder = new Label();
@@ -57,7 +57,7 @@
             buttonDownEncoder = new Button();
             buttonUpEncoder = new Button();
             buttonRemoveEncoder = new Button();
-            listViewFlacExecutables = new ListView();
+            listViewEncoders = new ListView();
             FileNameExe = new ColumnHeader();
             VersionExe = new ColumnHeader();
             SizeEexe = new ColumnHeader();
@@ -431,7 +431,7 @@
             groupBoxEncoders.Controls.Add(buttonDownEncoder);
             groupBoxEncoders.Controls.Add(buttonUpEncoder);
             groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
-            groupBoxEncoders.Controls.Add(listViewFlacExecutables);
+            groupBoxEncoders.Controls.Add(listViewEncoders);
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
@@ -472,17 +472,17 @@
             buttonRemoveEncoder.UseVisualStyleBackColor = true;
             buttonRemoveEncoder.Click += buttonRemoveEncoder_Click;
             // 
-            // listViewFlacExecutables
+            // listViewEncoders
             // 
-            listViewFlacExecutables.CheckBoxes = true;
-            listViewFlacExecutables.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, SizeEexe, DateExe });
-            listViewFlacExecutables.FullRowSelect = true;
-            listViewFlacExecutables.Location = new Point(6, 22);
-            listViewFlacExecutables.Name = "listViewFlacExecutables";
-            listViewFlacExecutables.Size = new Size(765, 202);
-            listViewFlacExecutables.TabIndex = 25;
-            listViewFlacExecutables.UseCompatibleStateImageBehavior = false;
-            listViewFlacExecutables.View = View.Details;
+            listViewEncoders.CheckBoxes = true;
+            listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, SizeEexe, DateExe });
+            listViewEncoders.FullRowSelect = true;
+            listViewEncoders.Location = new Point(6, 22);
+            listViewEncoders.Name = "listViewEncoders";
+            listViewEncoders.Size = new Size(765, 202);
+            listViewEncoders.TabIndex = 25;
+            listViewEncoders.UseCompatibleStateImageBehavior = false;
+            listViewEncoders.View = View.Details;
             // 
             // FileNameExe
             // 
@@ -939,23 +939,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1128,7 +1128,7 @@
         #endregion
 
         private GroupBox groupBoxEncoderSettings;
-        private ListView listViewFlacExecutables;
+        private ListView listViewEncoders;
         private Label labelCompressionLevel;
         private Label labelThreads;
         private TextBox textBoxThreads;

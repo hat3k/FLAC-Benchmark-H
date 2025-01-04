@@ -36,7 +36,7 @@ namespace FLAC_Benchmark_H
             InitializeComponent();
             InitializeDragAndDrop(); // Инициализация drag-and-drop
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
-            this.listViewFlacExecutables.KeyDown += ListViewFlacExecutables_KeyDown;
+            this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
             this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.textBoxCompressionLevel_KeyDown);
@@ -172,7 +172,7 @@ namespace FLAC_Benchmark_H
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
                 };
                 File.WriteAllLines(SettingsFilePath, settings);
-                SaveExecutables();
+                SaveEncoders();
                 SaveAudioFiles(); // Сохранение аудиофайлов
                 SaveJobs(); // Сохраняем содержимое jobList
             }
@@ -227,15 +227,15 @@ namespace FLAC_Benchmark_H
             catch
             {
             }
-            LoadExecutables(); // Загрузка исполняемых файлов
+            LoadEncoders(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobs(); // Загружаем содержимое Settings_joblist.txt
         }
-        private void SaveExecutables()
+        private void SaveEncoders()
         {
             try
             {
-                var executables = listViewFlacExecutables.Items
+                var executables = listViewEncoders.Items
                 .Cast<ListViewItem>()
                 .Select(item => $"{item.Tag}~{item.Checked}")
                 .ToArray();
@@ -265,10 +265,10 @@ namespace FLAC_Benchmark_H
         private void InitializeDragAndDrop()
         {
             // Разрешаем перетаскивание файлов в ListView для программ
-            listViewFlacExecutables.AllowDrop = true;
-            listViewFlacExecutables.DragEnter += ListViewFlacExecutables_DragEnter;
-            listViewFlacExecutables.DragDrop += ListViewFlacExecutables_DragDrop;
-            // Разрешаем перетаскивание файлов в ListView для аудиофайлов
+            listViewEncoders.AllowDrop = true;
+            listViewEncoders.DragEnter += ListViewEncoders_DragEnter;
+            listViewEncoders.DragDrop += ListViewEncoders_DragDrop;
+            // Разрешаем перетаrскивание файлов в ListView для аудиофайлов
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
@@ -279,7 +279,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Executables
-        private void ListViewFlacExecutables_DragEnter(object? sender, DragEventArgs e)
+        private void ListViewEncoders_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
@@ -294,30 +294,30 @@ namespace FLAC_Benchmark_H
                 e.Effect = DragDropEffects.None;
             }
         }
-        private async void ListViewFlacExecutables_DragDrop(object? sender, DragEventArgs e)
+        private async void ListViewEncoders_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             foreach (var file in files)
             {
                 if (Directory.Exists(file))
                 {
-                    await AddExecutableFiles(file); // Асинхронно добавляем исполняемые файлы
+                    await AddEncoders(file); // Асинхронно добавляем исполняемые файлы
                 }
                 else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    AddExecutableFileToListView(file, true); // Добавляем сразу, без Task.Run
+                    AddEncodersToListView(file, true); // Добавляем сразу, без Task.Run
                 }
             }
         }
         // Рекурсивный метод для добавления исполняемых файлов в ListView
-        private async Task AddExecutableFiles(string directory)
+        private async Task AddEncoders(string directory)
         {
             try
             {
                 var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
                 foreach (var file in exeFiles)
                 {
-                    AddExecutableFileToListView(file, true); // Сразу добавляем без Task.Run
+                    AddEncodersToListView(file, true); // Сразу добавляем без Task.Run
                 }
             }
             catch (Exception ex)
@@ -326,14 +326,14 @@ namespace FLAC_Benchmark_H
             }
         }
         // Загрузка исполняемых файлов из файла txt
-        private async void LoadExecutables()
+        private async void LoadEncoders()
         {
             if (File.Exists(executablesFilePath))
             {
                 try
                 {
                     string[] lines = await File.ReadAllLinesAsync(executablesFilePath);
-                    listViewFlacExecutables.Items.Clear();
+                    listViewEncoders.Items.Clear();
                     foreach (var line in lines)
                     {
                         var parts = line.Split('~');
@@ -341,7 +341,7 @@ namespace FLAC_Benchmark_H
                         {
                             string executablePath = parts[0]; // Полный путь
                             bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
-                            AddExecutableFileToListView(executablePath, isChecked); // Добавляем сразу
+                            AddEncodersToListView(executablePath, isChecked); // Добавляем сразу
                         }
                     }
                 }
@@ -352,16 +352,16 @@ namespace FLAC_Benchmark_H
             }
         }
         // Общий метод добавления исполняемых файлов в ListView
-        private void AddExecutableFileToListView(string executable, bool isChecked = true)
+        private void AddEncodersToListView(string executable, bool isChecked = true)
         {
             // Запускаем действие в основном потоке
-            if (listViewFlacExecutables.InvokeRequired)
+            if (listViewEncoders.InvokeRequired)
             {
-                listViewFlacExecutables.Invoke((MethodInvoker)(() => AddExecutableFileToListView(executable, isChecked)));
+                listViewEncoders.Invoke((MethodInvoker)(() => AddEncodersToListView(executable, isChecked)));
                 return;
             }
 
-            var version = GetExecutableInfo(executable);
+            var version = GetEncoderInfo(executable);
             long fileSize = new FileInfo(executable).Length;
             DateTime lastModifiedDate = new FileInfo(executable).LastWriteTime;
 
@@ -375,7 +375,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add($"{fileSize:n0} bytes");
             item.SubItems.Add(lastModifiedDate.ToString("yyyy.MM.dd HH:mm"));
 
-            listViewFlacExecutables.Items.Add(item);
+            listViewEncoders.Items.Add(item);
         }
         private void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
@@ -388,35 +388,35 @@ namespace FLAC_Benchmark_H
                 {
                     foreach (var file in openFileDialog.FileNames)
                     {
-                        AddExecutableFileToListView(file); // Используем общий метод
+                        AddEncodersToListView(file); // Используем общий метод
                     }
                 }
             }
         }
         private void buttonUpEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewFlacExecutables, -1); // Передаём -1 для перемещения вверх
+            MoveSelectedItems(listViewEncoders, -1); // Передаём -1 для перемещения вверх
         }
         private void buttonDownEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewFlacExecutables, 1); // Передаём 1 для перемещения вниз
+            MoveSelectedItems(listViewEncoders, 1); // Передаём 1 для перемещения вниз
         }
         private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
         {
             // Удаляем выделенные элементы из listViewFlacExecutables
-            for (int i = listViewFlacExecutables.Items.Count - 1; i >= 0; i--)
+            for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
             {
-                if (listViewFlacExecutables.Items[i].Selected) // Проверяем, выделен ли элемент
+                if (listViewEncoders.Items[i].Selected) // Проверяем, выделен ли элемент
                 {
-                    listViewFlacExecutables.Items.RemoveAt(i); // Удаляем элемент
+                    listViewEncoders.Items.RemoveAt(i); // Удаляем элемент
                 }
             }
         }
         private void buttonClearEncoders_Click(object? sender, EventArgs e)
         {
-            listViewFlacExecutables.Items.Clear();
+            listViewEncoders.Items.Clear();
         }
-        private string GetExecutableInfo(string executablePath)
+        private string GetEncoderInfo(string executablePath)
         {
             using (Process process = new Process())
             {
@@ -1044,7 +1044,7 @@ namespace FLAC_Benchmark_H
                 double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
 
                 // Получаем информацию о версии exe файла
-                var version = GetExecutableInfo(executable);
+                var version = GetEncoderInfo(executable);
 
                 // Добавление записи в лог DataGridView
                 int rowIndex = dataGridViewLog.Rows.Add(
@@ -1437,12 +1437,12 @@ namespace FLAC_Benchmark_H
 
 
         // Действия клавиш
-        private void ListViewFlacExecutables_KeyDown(object? sender, KeyEventArgs e)
+        private void ListViewEncoders_KeyDown(object? sender, KeyEventArgs e)
         {
             // Проверяем, нажата ли клавиша Delete
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveAudiofile.PerformClick();
+                buttonRemoveEncoder.PerformClick();
             }
 
             // Проверяем, нажаты ли Ctrl и A одновременно
@@ -1451,7 +1451,7 @@ namespace FLAC_Benchmark_H
                 e.Handled = true; // Отменяем стандартное поведение
 
                 // Выделяем все элементы
-                foreach (ListViewItem item in listViewAudioFiles.Items)
+                foreach (ListViewItem item in listViewEncoders.Items)
                 {
                     item.Selected = true; // Устанавливаем выделение для каждого элемента
                 }
@@ -1952,7 +1952,7 @@ namespace FLAC_Benchmark_H
                             // Создаём временную директорию для выходного файла
                             Directory.CreateDirectory(tempFolderPath);
                             // Получаем выделенные .exe файлы
-                            var selectedExecutables = listViewFlacExecutables.CheckedItems
+                            var selectedExecutables = listViewEncoders.CheckedItems
                             .Cast<ListViewItem>()
                             .Select(i => NormalizeSpaces(i.Tag.ToString())) // Получаем полный путь из Tag
                             .ToList();
@@ -2075,7 +2075,7 @@ namespace FLAC_Benchmark_H
                             // Создаём временную директорию для выходного файла
                             Directory.CreateDirectory(tempFolderPath);
                             // Получаем выделенные .exe файлы
-                            var selectedExecutables = listViewFlacExecutables.CheckedItems
+                            var selectedExecutables = listViewEncoders.CheckedItems
                             .Cast<ListViewItem>()
                             .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
                             .ToList();
@@ -2315,7 +2315,7 @@ namespace FLAC_Benchmark_H
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
-            var selectedExecutables = listViewFlacExecutables.CheckedItems
+            var selectedExecutables = listViewEncoders.CheckedItems
             .Cast<ListViewItem>()
             .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
             .ToList();
@@ -2451,7 +2451,7 @@ namespace FLAC_Benchmark_H
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
-            var selectedExecutables = listViewFlacExecutables.CheckedItems
+            var selectedExecutables = listViewEncoders.CheckedItems
             .Cast<ListViewItem>()
             .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
             .ToList();
