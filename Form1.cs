@@ -684,10 +684,6 @@ namespace FLAC_Benchmark_H
                     MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            else
-            {
-                MessageBox.Show($"File not found: {audioFilesFilePath}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
         }
         // Метод для создания элемента ListViewItem
         private async Task<ListViewItem> CreateListViewItem(string audioFile)
