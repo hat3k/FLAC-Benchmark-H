@@ -1,4 +1,4 @@
-![Снимок](https://github.com/user-attachments/assets/1df2fd7f-ecb5-4661-8a32-e4419b25ef7a)
+![Снимок](https://github.com/user-attachments/assets/e6d9344f-c10b-4717-988a-4b7467b0e021)
 
 Note:
 You may test any builds of FLAC starting from latest build 1.4.3.
