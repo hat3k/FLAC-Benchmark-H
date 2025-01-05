@@ -21,9 +21,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             groupBoxEncoderSettings = new GroupBox();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
@@ -115,6 +116,7 @@
             textBoxCommandLineOptionsDecoder = new TextBox();
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
+            toolTip1 = new ToolTip(components);
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -173,6 +175,7 @@
             buttonAddJobToJobListEncoder.Size = new Size(110, 23);
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
+            toolTip1.SetToolTip(buttonAddJobToJobListEncoder, "This will add encoding parameters to a job list.\r\n\r\nLater you may use them to bencmark all checked encoders with all checked audiofiles.");
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
             buttonAddJobToJobListEncoder.Click += buttonAddJobToJobListEncoder_Click;
             // 
@@ -183,6 +186,7 @@
             buttonStartEncode.Size = new Size(110, 23);
             buttonStartEncode.TabIndex = 1;
             buttonStartEncode.Text = "Encode";
+            toolTip1.SetToolTip(buttonStartEncode, "Encode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartEncode.UseVisualStyleBackColor = true;
             buttonStartEncode.Click += buttonStartEncode_Click;
             // 
@@ -383,6 +387,7 @@
             buttonStop.Size = new Size(110, 23);
             buttonStop.TabIndex = 25;
             buttonStop.Text = "Stop all (Esc)";
+            toolTip1.SetToolTip(buttonStop, "Stop all encoding and decoding jobs.");
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += buttonStop_Click;
             // 
@@ -393,6 +398,7 @@
             buttonStartDecode.Size = new Size(110, 23);
             buttonStartDecode.TabIndex = 23;
             buttonStartDecode.Text = "Decode";
+            toolTip1.SetToolTip(buttonStartDecode, "Decode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartDecode.UseVisualStyleBackColor = true;
             buttonStartDecode.Click += buttonStartDecode_Click;
             // 
@@ -558,6 +564,7 @@
             buttonClearUnchecked.Size = new Size(100, 23);
             buttonClearUnchecked.TabIndex = 29;
             buttonClearUnchecked.Text = "Clear uncheked";
+            toolTip1.SetToolTip(buttonClearUnchecked, "Clears all unchecked files from the list.\r\n\r\nHold 'Shift' while clicking to move unchecked files to the Recycle Bin.");
             buttonClearUnchecked.UseVisualStyleBackColor = true;
             buttonClearUnchecked.Click += buttonClearUnchecked_Click;
             // 
@@ -591,6 +598,7 @@
             buttonDetectDupesAudioFiles.Size = new Size(110, 23);
             buttonDetectDupesAudioFiles.TabIndex = 28;
             buttonDetectDupesAudioFiles.Text = "Detect dupes";
+            toolTip1.SetToolTip(buttonDetectDupesAudioFiles, resources.GetString("buttonDetectDupesAudioFiles.ToolTip"));
             buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
             buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
             // 
@@ -725,6 +733,7 @@
             labelPasses.Size = new Size(44, 15);
             labelPasses.TabIndex = 33;
             labelPasses.Text = "Passes:";
+            toolTip1.SetToolTip(labelPasses, "You can add several passes of the same job to obtain averaged results.");
             // 
             // buttonMinusPass
             // 
@@ -734,6 +743,7 @@
             buttonMinusPass.Size = new Size(24, 23);
             buttonMinusPass.TabIndex = 32;
             buttonMinusPass.Text = "➖";
+            toolTip1.SetToolTip(buttonMinusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonMinusPass.UseVisualStyleBackColor = true;
             buttonMinusPass.Click += buttonMinusPass_Click;
             // 
@@ -745,6 +755,7 @@
             buttonPlusPass.Size = new Size(24, 23);
             buttonPlusPass.TabIndex = 31;
             buttonPlusPass.Text = "➕";
+            toolTip1.SetToolTip(buttonPlusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonPlusPass.UseVisualStyleBackColor = true;
             buttonPlusPass.Click += buttonPlusPass_Click;
             // 
@@ -789,6 +800,7 @@
             buttonCopyJobs.Size = new Size(55, 23);
             buttonCopyJobs.TabIndex = 27;
             buttonCopyJobs.Text = "Copy";
+            toolTip1.SetToolTip(buttonCopyJobs, "You may copy joblist to notepad to edit and to paste it back.");
             buttonCopyJobs.UseVisualStyleBackColor = true;
             buttonCopyJobs.Click += buttonCopyJobs_Click;
             // 
@@ -800,6 +812,7 @@
             buttonPasteJobs.Size = new Size(55, 23);
             buttonPasteJobs.TabIndex = 26;
             buttonPasteJobs.Text = "Paste";
+            toolTip1.SetToolTip(buttonPasteJobs, "You may copy joblist to notepad to edit and to paste it back.");
             buttonPasteJobs.UseVisualStyleBackColor = true;
             buttonPasteJobs.Click += buttonPasteJobs_Click;
             // 
@@ -845,6 +858,7 @@
             buttonStartJobList.Size = new Size(110, 23);
             buttonStartJobList.TabIndex = 24;
             buttonStartJobList.Text = "Start Job List";
+            toolTip1.SetToolTip(buttonStartJobList, "Start all checked jobs to encode and decode all checked audio files using all checked encoders with listed parameters.");
             buttonStartJobList.UseVisualStyleBackColor = true;
             buttonStartJobList.Click += buttonStartJobList_Click;
             // 
@@ -918,6 +932,7 @@
             buttonAnalyzeLog.Size = new Size(85, 23);
             buttonAnalyzeLog.TabIndex = 27;
             buttonAnalyzeLog.Text = "Analyze log";
+            toolTip1.SetToolTip(buttonAnalyzeLog, resources.GetString("buttonAnalyzeLog.ToolTip"));
             buttonAnalyzeLog.UseVisualStyleBackColor = true;
             buttonAnalyzeLog.Click += buttonAnalyzeLog_Click;
             // 
@@ -1061,6 +1076,7 @@
             buttonAddJobToJobListDecoder.Size = new Size(110, 23);
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
+            toolTip1.SetToolTip(buttonAddJobToJobListDecoder, "This will add decoding parameters to a job list.\r\n\r\nLater you may use them to bencmark all checked encoders with all checked audiofiles.\r\n");
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
             buttonAddJobToJobListDecoder.Click += buttonAddJobToJobListDecoder_Click;
             // 
@@ -1089,6 +1105,12 @@
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
             buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
+            // 
+            // toolTip1
+            // 
+            toolTip1.AutoPopDelay = 20000;
+            toolTip1.InitialDelay = 500;
+            toolTip1.ReshowDelay = 100;
             // 
             // Form1
             // 
@@ -1220,5 +1242,6 @@
         private Button buttonClearUnchecked;
         private Button buttonTestForErrors;
         private ColumnHeader FilePath;
+        private ToolTip toolTip1;
     }
 }

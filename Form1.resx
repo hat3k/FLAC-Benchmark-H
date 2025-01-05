@@ -117,6 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
+    <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
+
+1. When duplicates are detected, they are moved to the top of the list;
+2. One file of the group stays checked, the others - unchecked;
+3. You may then clear uncheked files from list;
+
+This function is resource-expensive when you have huge amount of files!</value>
+  </data>
+  <data name="buttonAnalyzeLog.ToolTip" xml:space="preserve">
+    <value>This process analyzes the minimum size for each file based on the specified encoding parameters and organizes the log accordingly.
+
+This method also checks for any instances where different parameters yield the same resulting size.
+
+Additionally, this approach is beneficial before exporting the log to Excel.</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
