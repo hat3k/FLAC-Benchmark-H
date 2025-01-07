@@ -192,12 +192,10 @@
             // 
             // progressBarEncoder
             // 
-            progressBarEncoder.Enabled = false;
             progressBarEncoder.Location = new Point(238, 141);
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
             progressBarEncoder.TabIndex = 4;
-            progressBarEncoder.Visible = false;
             // 
             // labelSetThreads
             // 
@@ -1089,12 +1087,10 @@
             // 
             // progressBarDecoder
             // 
-            progressBarDecoder.Enabled = false;
             progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
             progressBarDecoder.Size = new Size(293, 23);
             progressBarDecoder.TabIndex = 4;
-            progressBarDecoder.Visible = false;
             // 
             // buttonClearCommandLineDecoder
             // 
