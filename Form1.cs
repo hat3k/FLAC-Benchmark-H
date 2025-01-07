@@ -65,6 +65,7 @@ namespace FLAC_Benchmark_H
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
             listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
             comboBoxCPUPriority.SelectedIndex = 3;
+
         }
         private string NormalizeSpaces(string input)
         {
@@ -2079,10 +2080,13 @@ namespace FLAC_Benchmark_H
             // Сбрасываем прогресс-бары
             progressBarEncoder.Value = 0;
             progressBarDecoder.Value = 0;
-            
+
+            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
-            
+
             foreach (ListViewItem item in listViewJobs.Items)
             {
                 // Проверяем, отмечена ли задача
@@ -2196,7 +2200,13 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false; // Сбрасываем флаг перед возвратом
                                             return;
                                         }
-                                        progressBarEncoder.Invoke((MethodInvoker)(() => { progressBarEncoder.Value++; }));
+                                        progressBarEncoder.Invoke((MethodInvoker)(() => {
+                                        progressBarEncoder.Value++;
+                                        // Обновление метки прогресса
+                                        labelEncoderProgress.Invoke((MethodInvoker)(() =>
+                                        labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}"
+                                        ));
+                                        }));
                                     }
                                     catch (Exception ex)
                                     {
@@ -2310,7 +2320,13 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false; // Сбрасываем флаг перед возвратом
                                             return;
                                         }
-                                        progressBarDecoder.Invoke((MethodInvoker)(() => { progressBarDecoder.Value++; }));
+                                        progressBarDecoder.Invoke((MethodInvoker)(() => {
+                                        progressBarDecoder.Value++;
+                                        // Обновление метки прогресса
+                                        labelDecoderProgress.Invoke((MethodInvoker)(() =>
+                                        labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}"
+                                        ));
+                                        }));
                                     }
                                     catch (Exception ex)
                                     {
@@ -2327,6 +2343,8 @@ namespace FLAC_Benchmark_H
             isExecuting = false; // Сбрасываем флаг после завершения
             progressBarEncoder.Value = 0; // Сбрасываем прогресс-бар кодирования
             progressBarDecoder.Value = 0; // Сбрасываем прогресс-бар декодирования
+            labelEncoderProgress.Text = $"";
+            labelDecoderProgress.Text = $"";
         }
 
         // Encoder and Decoder options
@@ -2567,7 +2585,7 @@ namespace FLAC_Benchmark_H
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
-                        progressBarEncoder.Invoke((MethodInvoker)delegate {progressBarEncoder.Value++;});
+                        progressBarEncoder.Invoke((MethodInvoker)delegate { progressBarEncoder.Value++; });
                     }
                     catch (Exception ex)
                     {
@@ -2704,7 +2722,7 @@ namespace FLAC_Benchmark_H
                             isExecuting = false; // Сбрасываем флаг перед возвратом
                             return;
                         }
-                        progressBarDecoder.Invoke((MethodInvoker)delegate {progressBarDecoder.Value++;});
+                        progressBarDecoder.Invoke((MethodInvoker)delegate { progressBarDecoder.Value++; });
                     }
                     catch (Exception ex)
                     {
@@ -2802,6 +2820,8 @@ namespace FLAC_Benchmark_H
                     _process = null; // Обнуляем ссылку на процесс
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
+                    labelEncoderProgress.Text = $"";
+                    labelDecoderProgress.Text = $"";
                 }
             }
         }
@@ -2880,6 +2900,11 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+        }
+
+        private void labelEncodingProgress_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

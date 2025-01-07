@@ -23,9 +23,10 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
+            labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             buttonStartEncode = new Button();
@@ -111,6 +112,7 @@
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
+            labelDecoderProgress = new Label();
             labelCommandLineDecoder = new Label();
             buttonAddJobToJobListDecoder = new Button();
             textBoxCommandLineOptionsDecoder = new TextBox();
@@ -129,6 +131,7 @@
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(labelEncoderProgress);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
@@ -158,6 +161,14 @@
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
+            // 
+            // labelEncoderProgress
+            // 
+            labelEncoderProgress.AutoSize = true;
+            labelEncoderProgress.Location = new Point(379, 145);
+            labelEncoderProgress.Name = "labelEncoderProgress";
+            labelEncoderProgress.Size = new Size(0, 15);
+            labelEncoderProgress.TabIndex = 25;
             // 
             // labelCommandLineEncoder
             // 
@@ -952,23 +963,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1045,6 +1056,7 @@
             // 
             // groupBoxDecoderSettings
             // 
+            groupBoxDecoderSettings.Controls.Add(labelDecoderProgress);
             groupBoxDecoderSettings.Controls.Add(buttonStartDecode);
             groupBoxDecoderSettings.Controls.Add(labelCommandLineDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonAddJobToJobListDecoder);
@@ -1057,6 +1069,15 @@
             groupBoxDecoderSettings.TabIndex = 26;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
+            // 
+            // labelDecoderProgress
+            // 
+            labelDecoderProgress.AutoSize = true;
+            labelDecoderProgress.BackColor = SystemColors.Control;
+            labelDecoderProgress.Location = new Point(373, 145);
+            labelDecoderProgress.Name = "labelDecoderProgress";
+            labelDecoderProgress.Size = new Size(0, 15);
+            labelDecoderProgress.TabIndex = 25;
             // 
             // labelCommandLineDecoder
             // 
@@ -1239,5 +1260,7 @@
         private Button buttonTestForErrors;
         private ColumnHeader FilePath;
         private ToolTip toolTip1;
+        private Label labelEncoderProgress;
+        private Label labelDecoderProgress;
     }
 }
