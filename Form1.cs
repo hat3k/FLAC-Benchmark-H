@@ -2041,6 +2041,48 @@ namespace FLAC_Benchmark_H
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
+
+            // Получаем все выделенные аудиофайлы .wav и .flac
+            var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
+            .Where(item => item.Checked &&
+            (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+            Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
+            .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
+            .ToList();
+
+            // Получаем все выделенные аудиофайлы .flac
+            var selectedFlacAudioFiles = selectedAudioFiles
+            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+            // Получаем выделенные энкодеры
+            var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
+            .Where(item => item.Checked)
+            .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
+            .ToList();
+
+            // Считаем количество задач и проходов по типу
+            int totalEncodeTasks = listViewJobs.Items
+            .Cast<ListViewItem>()
+            .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
+            .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+
+            int totalDecodeTasks = listViewJobs.Items
+            .Cast<ListViewItem>()
+            .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
+            .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+
+            // Устанавливаем максимальные значения для прогресс-баров
+            progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count * totalEncodeTasks;
+            progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count * totalDecodeTasks;
+
+            // Сбрасываем прогресс-бары
+            progressBarEncoder.Value = 0;
+            progressBarDecoder.Value = 0;
+            
+            // Создаём временную директорию для выходного файла
+            Directory.CreateDirectory(tempFolderPath);
+            
             foreach (ListViewItem item in listViewJobs.Items)
             {
                 // Проверяем, отмечена ли задача
@@ -2054,19 +2096,6 @@ namespace FLAC_Benchmark_H
                         {
                             // Устанавливаем флаг остановки
                             _isEncodingStopped = false;
-                            // Создаём временную директорию для выходного файла
-                            Directory.CreateDirectory(tempFolderPath);
-                            // Получаем выделенные .exe файлы
-                            var selectedEncoders = listViewEncoders.CheckedItems
-                                .Cast<ListViewItem>()
-                                .Select(i => NormalizeSpaces(i.Tag.ToString())) // Получаем полный путь из Tag
-                                .ToList();
-
-                            // Получаем выделенные аудиофайлы
-                            var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                                .Cast<ListViewItem>()
-                                .Select(i => NormalizeSpaces(i.Tag.ToString())) // Получаем полный путь из Tag
-                                .ToList();
 
                             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
                             if (selectedEncoders.Count == 0 || selectedAudioFiles.Count == 0)
@@ -2167,6 +2196,7 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false; // Сбрасываем флаг перед возвратом
                                             return;
                                         }
+                                        progressBarEncoder.Invoke((MethodInvoker)(() => { progressBarEncoder.Value++; }));
                                     }
                                     catch (Exception ex)
                                     {
@@ -2181,23 +2211,9 @@ namespace FLAC_Benchmark_H
                         {
                             // Устанавливаем флаг остановки
                             _isEncodingStopped = false;
-                            // Создаём временную директорию для выходного файла
-                            Directory.CreateDirectory(tempFolderPath);
-                            // Получаем выделенные .exe файлы
-                            var selectedEncoders = listViewEncoders.CheckedItems
-                                .Cast<ListViewItem>()
-                                .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
-                                .ToList();
-
-                            // Получаем выделенные аудиофайлы, но только с расширением .flac
-                            var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                            .Cast<ListViewItem>()
-                            .Select(item => NormalizeSpaces(item.Tag.ToString())) // Получаем полный путь из Tag
-                            .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                            .ToList();
 
                             // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                            if (selectedEncoders.Count == 0 || selectedAudioFiles.Count == 0)
+                            if (selectedEncoders.Count == 0 || selectedFlacAudioFiles.Count == 0)
                             {
                                 MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 isExecuting = false; // Сбрасываем флаг перед возвратом
@@ -2230,7 +2246,7 @@ namespace FLAC_Benchmark_H
                             }
                             foreach (var encoder in selectedEncoders)
                             {
-                                foreach (var audioFile in selectedAudioFiles)
+                                foreach (var audioFile in selectedFlacAudioFiles)
                                 {
                                     if (_isEncodingStopped)
                                     {
@@ -2294,6 +2310,7 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false; // Сбрасываем флаг перед возвратом
                                             return;
                                         }
+                                        progressBarDecoder.Invoke((MethodInvoker)(() => { progressBarDecoder.Value++; }));
                                     }
                                     catch (Exception ex)
                                     {
@@ -2306,8 +2323,10 @@ namespace FLAC_Benchmark_H
                         }
                     }
                 }
-                isExecuting = false; // Сбрасываем флаг после завершения
             }
+            isExecuting = false; // Сбрасываем флаг после завершения
+            progressBarEncoder.Value = 0; // Сбрасываем прогресс-бар кодирования
+            progressBarDecoder.Value = 0; // Сбрасываем прогресс-бар декодирования
         }
 
         // Encoder and Decoder options
@@ -2698,7 +2717,6 @@ namespace FLAC_Benchmark_H
             isExecuting = false; // Сбрасываем флаг после завершения
             progressBarDecoder.Value = 0;
         }
-
 
         // General methods
         private void MoveSelectedItems(ListView listView, int direction)
