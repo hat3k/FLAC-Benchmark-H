@@ -1140,8 +1140,7 @@ namespace FLAC_Benchmark_H
                     encodingSpeed < 1 ? System.Drawing.Color.Red : dataGridViewLog.Rows[rowIndex].Cells[5].Style.ForeColor;
 
                 // Прокручиваем DataGridView вниз к последней добавленной строке
-                dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
-                dataGridViewLog.ClearSelection(); // Очищаем выделение
+                //dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
 
                 // Логирование в файл
                 File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileNameShort}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {encoderInfo.FileName}\tVersion: {encoderInfo.Version}{Environment.NewLine}");
@@ -2040,6 +2039,8 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonStartJobList_Click(object? sender, EventArgs e)
         {
+            dataGridViewLog.ClearSelection(); // Очищаем выделение
+
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
 
@@ -2345,6 +2346,7 @@ namespace FLAC_Benchmark_H
             progressBarDecoder.Value = 0; // Сбрасываем прогресс-бар декодирования
             labelEncoderProgress.Text = $"";
             labelDecoderProgress.Text = $"";
+            dataGridViewLog.ClearSelection(); // Очищаем выделение
         }
 
         // Encoder and Decoder options
@@ -2822,6 +2824,8 @@ namespace FLAC_Benchmark_H
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = $"";
                     labelDecoderProgress.Text = $"";
+                    dataGridViewLog.ClearSelection(); // Очищаем выделение
+
                 }
             }
         }
@@ -2900,11 +2904,6 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-        }
-
-        private void labelEncodingProgress_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
