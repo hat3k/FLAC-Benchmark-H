@@ -37,7 +37,6 @@ namespace FLAC_Benchmark_H
         {
             InitializeComponent();
             InitializeDragAndDrop(); // Инициализация drag-and-drop
-            this.Load += Form1_Load; // Подписываемся на событие загрузки формы
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
@@ -47,7 +46,6 @@ namespace FLAC_Benchmark_H
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
             LoadCPUInfoAsync(); // Загружаем информацию о процессоре
-            this.Controls.Add(labelCPUinfo);
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             cpuUsageTimer = new System.Windows.Forms.Timer(); // Явно указываем System.Windows.Forms.Timer
