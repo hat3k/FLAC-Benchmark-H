@@ -37,6 +37,7 @@ namespace FLAC_Benchmark_H
         {
             InitializeComponent();
             InitializeDragAndDrop(); // Инициализация drag-and-drop
+            this.Load += Form1_Load; // Подписываемся на событие загрузки формы
             this.FormClosing += Form1_FormClosing; // Регистрация обработчика события закрытия формы
             this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
@@ -45,7 +46,8 @@ namespace FLAC_Benchmark_H
             this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
-            LoadCPUInfo(); // Загружаем информацию о процессоре
+            LoadCPUInfoAsync(); // Загружаем информацию о процессоре
+            this.Controls.Add(labelCPUinfo);
             stopwatch = new Stopwatch(); // Инициализация объекта Stopwatch
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             cpuUsageTimer = new System.Windows.Forms.Timer(); // Явно указываем System.Windows.Forms.Timer
@@ -73,15 +75,16 @@ namespace FLAC_Benchmark_H
         }
 
         // Метод для загрузки информации о процессоре
-        private void LoadCPUInfo()
+        private async void LoadCPUInfoAsync()
         {
             if (!isCpuInfoLoaded)
             {
-                try
+                physicalCores = 0;
+                threadCount = 0;
+
+                // Создаем запрос для получения информации о процессорах
+                await Task.Run(() =>
                 {
-                    physicalCores = 0;
-                    threadCount = 0;
-                    // Создаем запрос для получения информации о процессорах
                     using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_Processor"))
                     {
                         foreach (ManagementObject obj in searcher.Get())
@@ -93,24 +96,21 @@ namespace FLAC_Benchmark_H
                             }
                         }
                     }
-                    // Обновляем метку с информацией о процессоре
-                    if (physicalCores > 0 && threadCount > 0)
-                    {
-                        labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
-                    }
-                    else
-                    {
-                        labelCPUinfo.Text = "Unable to retrieve CPU information.";
-                    }
-                    isCpuInfoLoaded = true;
-                }
-                catch (Exception ex)
+                });
+
+                // Обновляем метку с информацией о процессоре на UI потоке
+                if (physicalCores > 0 && threadCount > 0)
                 {
-                    // Записываем ошибку в labelCPUinfo
-                    labelCPUinfo.Text = "Error loading CPU info: " + ex.Message;
+                    labelCPUinfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
                 }
+                else
+                {
+                    labelCPUinfo.Text = "Unable to retrieve CPU information.";
+                }
+                isCpuInfoLoaded = true;
             }
         }
+
         private async Task UpdateCpuUsageAsync()
         {
             float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
@@ -2112,7 +2112,7 @@ namespace FLAC_Benchmark_H
                             ProcessPriorityClass priorityClass;
                             switch (comboBoxCPUPriority.SelectedItem.ToString())
                             {
-                                case "Low":
+                                case "Idle":
                                     priorityClass = ProcessPriorityClass.Idle;
                                     break;
                                 case "BelowNormal":
@@ -2202,11 +2202,11 @@ namespace FLAC_Benchmark_H
                                             return;
                                         }
                                         progressBarEncoder.Invoke((MethodInvoker)(() => {
-                                        progressBarEncoder.Value++;
-                                        // Обновление метки прогресса
-                                        labelEncoderProgress.Invoke((MethodInvoker)(() =>
-                                        labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}"
-                                        ));
+                                            progressBarEncoder.Value++;
+                                            // Обновление метки прогресса
+                                            labelEncoderProgress.Invoke((MethodInvoker)(() =>
+                                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}"
+                                            ));
                                         }));
                                     }
                                     catch (Exception ex)
@@ -2233,7 +2233,7 @@ namespace FLAC_Benchmark_H
                             ProcessPriorityClass priorityClass;
                             switch (comboBoxCPUPriority.SelectedItem.ToString())
                             {
-                                case "Low":
+                                case "Idle":
                                     priorityClass = ProcessPriorityClass.Idle;
                                     break;
                                 case "BelowNormal":
@@ -2322,11 +2322,11 @@ namespace FLAC_Benchmark_H
                                             return;
                                         }
                                         progressBarDecoder.Invoke((MethodInvoker)(() => {
-                                        progressBarDecoder.Value++;
-                                        // Обновление метки прогресса
-                                        labelDecoderProgress.Invoke((MethodInvoker)(() =>
-                                        labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}"
-                                        ));
+                                            progressBarDecoder.Value++;
+                                            // Обновление метки прогресса
+                                            labelDecoderProgress.Invoke((MethodInvoker)(() =>
+                                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}"
+                                            ));
                                         }));
                                     }
                                     catch (Exception ex)
@@ -2461,9 +2461,7 @@ namespace FLAC_Benchmark_H
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
-
-            // Устанавливаем флаг остановки
-            _isEncodingStopped = false;
+            _isEncodingStopped = false;// Устанавливаем флаг остановки
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
@@ -2491,7 +2489,7 @@ namespace FLAC_Benchmark_H
             ProcessPriorityClass priorityClass;
             switch (comboBoxCPUPriority.SelectedItem.ToString())
             {
-                case "Low":
+                case "Idle":
                     priorityClass = ProcessPriorityClass.Idle;
                     break;
                 case "BelowNormal":
@@ -2605,8 +2603,7 @@ namespace FLAC_Benchmark_H
         {
             if (isExecuting) return; // Проверяем, выполняется ли уже процесс
             isExecuting = true; // Устанавливаем флаг выполнения
-                                // Устанавливаем флаг остановки
-            _isEncodingStopped = false;
+            _isEncodingStopped = false;// Устанавливаем флаг остановки
             // Создаём временную директорию для выходного файла
             Directory.CreateDirectory(tempFolderPath);
             // Получаем выделенные .exe файлы
@@ -2635,7 +2632,7 @@ namespace FLAC_Benchmark_H
             ProcessPriorityClass priorityClass;
             switch (comboBoxCPUPriority.SelectedItem.ToString())
             {
-                case "Low":
+                case "Idle":
                     priorityClass = ProcessPriorityClass.Idle;
                     break;
                 case "BelowNormal":
