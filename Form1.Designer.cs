@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -52,7 +52,7 @@
             textBoxThreads = new TextBox();
             buttonStop = new Button();
             buttonStartDecode = new Button();
-            labelCPUinfo = new Label();
+            labelCpuInfo = new Label();
             buttonOpenLogtxt = new Button();
             buttonClearLog = new Button();
             groupBoxEncoders = new GroupBox();
@@ -101,12 +101,14 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupBoxLog = new GroupBox();
+            buttonPauseResume = new Button();
             buttonLogToExcel = new Button();
             buttonAnalyzeLog = new Button();
             labelStopped = new Label();
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxSystemandSettings = new GroupBox();
+            labelCpuUsage = new Label();
             labelCPUPriority = new Label();
             comboBoxCPUPriority = new ComboBox();
             buttonSelectTempFolder = new Button();
@@ -411,13 +413,13 @@
             buttonStartDecode.UseVisualStyleBackColor = true;
             buttonStartDecode.Click += buttonStartDecode_Click;
             // 
-            // labelCPUinfo
+            // labelCpuInfo
             // 
-            labelCPUinfo.Location = new Point(6, 24);
-            labelCPUinfo.Name = "labelCPUinfo";
-            labelCPUinfo.Size = new Size(161, 64);
-            labelCPUinfo.TabIndex = 17;
-            labelCPUinfo.Text = "CPU Info";
+            labelCpuInfo.Location = new Point(6, 24);
+            labelCpuInfo.Name = "labelCpuInfo";
+            labelCpuInfo.Size = new Size(161, 31);
+            labelCpuInfo.TabIndex = 17;
+            labelCpuInfo.Text = "CPU Info\r\nCPU INFO";
             // 
             // buttonOpenLogtxt
             // 
@@ -907,6 +909,7 @@
             // groupBoxLog
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(buttonPauseResume);
             groupBoxLog.Controls.Add(buttonLogToExcel);
             groupBoxLog.Controls.Add(buttonAnalyzeLog);
             groupBoxLog.Controls.Add(labelStopped);
@@ -921,6 +924,18 @@
             groupBoxLog.TabIndex = 6;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
+            // 
+            // buttonPauseResume
+            // 
+            buttonPauseResume.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonPauseResume.Enabled = false;
+            buttonPauseResume.Location = new Point(122, 364);
+            buttonPauseResume.Name = "buttonPauseResume";
+            buttonPauseResume.Size = new Size(85, 23);
+            buttonPauseResume.TabIndex = 29;
+            buttonPauseResume.Text = "Pause";
+            toolTip1.SetToolTip(buttonPauseResume, "Pause after processing current file");
+            buttonPauseResume.UseVisualStyleBackColor = true;
             // 
             // buttonLogToExcel
             // 
@@ -950,7 +965,7 @@
             labelStopped.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelStopped.AutoSize = true;
             labelStopped.ForeColor = Color.Red;
-            labelStopped.Location = new Point(122, 368);
+            labelStopped.Location = new Point(213, 368);
             labelStopped.Name = "labelStopped";
             labelStopped.Size = new Size(0, 15);
             labelStopped.TabIndex = 26;
@@ -963,23 +978,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1002,17 +1017,27 @@
             // 
             // groupBoxSystemandSettings
             // 
+            groupBoxSystemandSettings.Controls.Add(labelCpuUsage);
             groupBoxSystemandSettings.Controls.Add(labelCPUPriority);
             groupBoxSystemandSettings.Controls.Add(comboBoxCPUPriority);
             groupBoxSystemandSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
-            groupBoxSystemandSettings.Controls.Add(labelCPUinfo);
+            groupBoxSystemandSettings.Controls.Add(labelCpuInfo);
             groupBoxSystemandSettings.Location = new Point(1399, 278);
             groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
             groupBoxSystemandSettings.Size = new Size(173, 171);
             groupBoxSystemandSettings.TabIndex = 25;
             groupBoxSystemandSettings.TabStop = false;
             groupBoxSystemandSettings.Text = "System and Settings";
+            // 
+            // labelCpuUsage
+            // 
+            labelCpuUsage.AutoSize = true;
+            labelCpuUsage.Location = new Point(6, 54);
+            labelCpuUsage.Name = "labelCpuUsage";
+            labelCpuUsage.Size = new Size(69, 15);
+            labelCpuUsage.TabIndex = 26;
+            labelCpuUsage.Text = "CPU USAGE";
             // 
             // labelCPUPriority
             // 
@@ -1183,7 +1208,7 @@
         private Button buttonClearLog;
         private GroupBox groupBoxEncoders;
         private Button buttonOpenLogtxt;
-        private Label labelCPUinfo;
+        private Label labelCpuInfo;
         private Button buttonSetMaxCores;
         private Button buttonHalfCores;
         private Button buttonSetHalfThreads;
@@ -1262,5 +1287,7 @@
         private ToolTip toolTip1;
         private Label labelEncoderProgress;
         private Label labelDecoderProgress;
+        private Button buttonPauseResume;
+        private Label labelCpuUsage;
     }
 }
