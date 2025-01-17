@@ -2474,16 +2474,16 @@ namespace FLAC_Benchmark_H
                     if (!_process.HasExited)
                     {
                         _process.Kill(); // Завершаем процесс
-                        ShowTemporaryStoppedMessage("Encoding process has been stopped.");
+                        ShowTemporaryStoppedMessage("Process has been stopped.");
                     }
                     else
                     {
-                        ShowTemporaryStoppedMessage("The encoding process has already exited.");
+                        ShowTemporaryStoppedMessage("Process has already exited.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    ShowTemporaryStoppedMessage($"Error stopping process: {ex.Message}");
+                    ShowTemporaryStoppedMessage($"Error stopping process");
                 }
                 finally
                 {
