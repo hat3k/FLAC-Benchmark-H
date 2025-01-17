@@ -2173,11 +2173,6 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
-                                        progressBarEncoder.Invoke((MethodInvoker)(() =>
-                                        {
-                                            progressBarEncoder.Value++;
-                                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                                        }));
 
                                         // Формируем строку с параметрами
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
@@ -2243,6 +2238,11 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
+                                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                                        {
+                                            progressBarEncoder.Value++;
+                                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                                        }));
                                     }
                                 }
                             }
@@ -2257,11 +2257,6 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
-                                        progressBarDecoder.Invoke((MethodInvoker)(() =>
-                                        {
-                                            progressBarDecoder.Value++;
-                                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                                        }));
 
                                         // Формируем строку с параметрами
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
@@ -2327,6 +2322,11 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
+                                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                                        {
+                                            progressBarDecoder.Value++;
+                                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                                        }));
                                     }
                                 }
                             }
@@ -2513,7 +2513,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        //Actions
+        // Actions
         private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true); // Изначально не на паузе
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
@@ -2588,11 +2588,6 @@ namespace FLAC_Benchmark_H
                             isExecuting = false;
                             return;
                         }
-                        progressBarEncoder.Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarEncoder.Value++;
-                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                        }));
                         
                         // Формируем строку с параметрами
                         string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
@@ -2668,6 +2663,11 @@ namespace FLAC_Benchmark_H
                             isExecuting = false;
                             return;
                         }
+                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                        {
+                            progressBarEncoder.Value++;
+                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                        }));
                     }
                 }
             }
@@ -2763,11 +2763,6 @@ namespace FLAC_Benchmark_H
                             isExecuting = false;
                             return;
                         }
-                        progressBarDecoder.Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarDecoder.Value++;
-                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                        }));
 
                         // Формируем строку с параметрами
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
@@ -2835,6 +2830,11 @@ namespace FLAC_Benchmark_H
                             isExecuting = false;
                             return;
                         }
+                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                        {
+                            progressBarDecoder.Value++;
+                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                        }));
                     }
                 }
             }
