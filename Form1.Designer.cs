@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -419,7 +419,6 @@
             labelCpuInfo.Name = "labelCpuInfo";
             labelCpuInfo.Size = new Size(161, 31);
             labelCpuInfo.TabIndex = 17;
-            labelCpuInfo.Text = "CPU Info\r\nCPU INFO";
             // 
             // buttonOpenLogtxt
             // 
@@ -978,23 +977,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1032,12 +1031,10 @@
             // 
             // labelCpuUsage
             // 
-            labelCpuUsage.AutoSize = true;
             labelCpuUsage.Location = new Point(6, 54);
             labelCpuUsage.Name = "labelCpuUsage";
-            labelCpuUsage.Size = new Size(69, 15);
+            labelCpuUsage.Size = new Size(157, 30);
             labelCpuUsage.TabIndex = 26;
-            labelCpuUsage.Text = "CPU USAGE";
             // 
             // labelCPUPriority
             // 
