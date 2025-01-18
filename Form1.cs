@@ -2483,7 +2483,7 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    ShowTemporaryStoppedMessage($"Error stopping process");
+                    ShowTemporaryStoppedMessage($"Process is not running.");
                 }
                 finally
                 {
@@ -2984,6 +2984,9 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Stop();
             cpuUsageTimer.Dispose();
             _pauseEvent.Dispose(); // Освобождаем ресурсы
+            cpuCounter.Dispose(); // Освобождаем ресурсы
+
+
 
             if (checkBoxClearTempFolder.Checked)
             {
