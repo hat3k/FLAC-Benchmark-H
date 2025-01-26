@@ -61,13 +61,11 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
             buttonPauseResume.Click += buttonPauseResume_Click;
 
-
             // Включаем пользовательскую отрисовку для listViewJobs
             listViewJobs.OwnerDraw = true;
             listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
             listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
             comboBoxCPUPriority.SelectedIndex = 3;
-
         }
         private string NormalizeSpaces(string input)
         {
@@ -130,7 +128,9 @@ namespace FLAC_Benchmark_H
                     $"CommandLineOptionsDecoder={textBoxCommandLineOptionsDecoder.Text}",
                     $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
                     $"TempFolderPath={tempFolderPath}",
-                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}"
+                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
+                    $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
+                    $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}"
                 };
                 File.WriteAllLines(SettingsFilePath, settings);
                 SaveEncoders();
@@ -181,6 +181,12 @@ namespace FLAC_Benchmark_H
                             case "ClearTempFolderOnExit":
                                 checkBoxClearTempFolder.Checked = bool.Parse(value);
                                 break;
+                            case "RemoveMetadata":
+                                checkBoxRemoveMetadata.Checked = bool.Parse(value);
+                                break;
+                            case "AddMD5OnLoadWav":
+                                checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
+                                break;
                         }
                     }
                 }
@@ -188,6 +194,7 @@ namespace FLAC_Benchmark_H
             catch
             {
             }
+
             LoadEncoders(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobs(); // Загружаем содержимое Settings_joblist.txt
@@ -696,7 +703,7 @@ namespace FLAC_Benchmark_H
             {
                 md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A"; // Получаем MD5 для FLAC
             }
-            else if (Path.GetExtension(audioFile).Equals(".wav", StringComparison.OrdinalIgnoreCase))
+            else if (Path.GetExtension(audioFile).Equals(".wav", StringComparison.OrdinalIgnoreCase) && (checkBoxAddMD5OnLoadWav.Checked))
             {
                 md5Hash = await CalculateWavMD5Async(audioFile); // Асинхронный метод для расчета MD5 для WAV
             }
@@ -878,14 +885,14 @@ namespace FLAC_Benchmark_H
                 string md5Hash = item.SubItems[5].Text; // Пытаемся получить MD5 из подэлемента
 
                 // Проверяем, если MD5 хеш отсутствует, вычисляем его
-                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000" || md5Hash == "Invalid WAV file")
+                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000" || md5Hash == "Invalid WAV file" || md5Hash == "N/A")
                 {
                     md5Hash = await Task.Run(() => GetFileMD5Hash(filePath));
                     item.SubItems[5].Text = md5Hash; // Устанавливаем вычисленный MD5 в подэлемент
                 }
 
                 // Проверяем, является ли хеш валидным
-                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000" && md5Hash != "Invalid WAV file")
+                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000" && md5Hash != "Invalid WAV file" || md5Hash == "N/A")
                 {
                     if (hashDict.ContainsKey(md5Hash))
                     {
@@ -2229,6 +2236,39 @@ namespace FLAC_Benchmark_H
 
                                             if (!_isEncodingStopped)
                                             {
+                                                // Проверка состояния чекбокса
+                                                if (checkBoxRemoveMetadata.Checked)
+                                                {
+                                                    // Запуск metaflac.exe --remove-all, если чекбокс включён
+                                                    try
+                                                    {
+                                                        using (var metaflacProcess = new Process())
+                                                        {
+                                                            metaflacProcess.StartInfo = new ProcessStartInfo
+                                                            {
+                                                                FileName = "metaflac.exe",
+                                                                //Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                                                Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                                                UseShellExecute = false,
+                                                                CreateNoWindow = true,
+                                                            };
+
+                                                            await Task.Run(() =>
+                                                            {
+                                                                metaflacProcess.Start();
+                                                                metaflacProcess.WaitForExit();
+                                                            });
+                                                        }
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                                    }
+                                                }
+                                            }
+
+                                            if (!_isEncodingStopped)
+                                            {
                                                 LogProcessResults(outputFilePath, audioFile, parameters, encoder);
                                             }
                                         }
@@ -2331,6 +2371,390 @@ namespace FLAC_Benchmark_H
                                 }
                             }
                         }
+                    }
+                }
+            }
+            finally
+            {
+                isExecuting = false;
+                _isPaused = false;
+                _pauseEvent.Set();
+
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    buttonPauseResume.Text = "Pause";
+                    buttonPauseResume.Enabled = false;
+                    progressBarEncoder.Value = 0;
+                    progressBarDecoder.Value = 0;
+                    labelEncoderProgress.Text = string.Empty;
+                    labelDecoderProgress.Text = string.Empty;
+                    dataGridViewLog.ClearSelection();
+                }));
+            }
+        }
+
+        // Actions
+        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true); // Изначально не на паузе
+        private async void buttonStartEncode_Click(object? sender, EventArgs e)
+        {
+            dataGridViewLog.ClearSelection(); // Очищаем выделение
+
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
+            isExecuting = true; // Устанавливаем флаг выполнения
+            _isEncodingStopped = false;
+
+            _isPaused = false;
+            _pauseEvent.Set();
+
+            this.Invoke((MethodInvoker)(() =>
+            {
+                buttonPauseResume.Text = "Pause";
+                buttonPauseResume.Enabled = true;
+                progressBarEncoder.Value = 0;
+                progressBarDecoder.Value = 0;
+                labelEncoderProgress.Text = string.Empty;
+                labelDecoderProgress.Text = string.Empty;
+                dataGridViewLog.ClearSelection();
+            }));
+
+            try
+            {
+                // Получаем выделенные енкодеры
+                var selectedEncoders = listViewEncoders.CheckedItems
+                    .Cast<ListViewItem>()
+                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                    .ToList();
+
+                // Получаем выделенные аудиофайлы
+                var selectedAudioFiles = listViewAudioFiles.CheckedItems
+                    .Cast<ListViewItem>()
+                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                    .ToList();
+
+                // Проверяем, есть ли выбранные енкодеры и аудиофайлы
+                if (selectedEncoders.Count == 0 && selectedAudioFiles.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one encoder and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                // Проверяем, есть ли выбранные енкодеры
+                if (selectedEncoders.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                // Проверяем, есть ли выбранные аудио файлы
+                if (selectedAudioFiles.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                int totalTasks = selectedEncoders.Count * selectedAudioFiles.Count;
+                progressBarEncoder.Maximum = totalTasks; // Максимальное значение прогресс-бара
+                progressBarEncoder.Value = 0; // Сбросить значение прогресс-бара
+
+                // Создаём временную директорию для выходного файла
+                Directory.CreateDirectory(tempFolderPath);
+
+                foreach (var encoder in selectedEncoders)
+                {
+                    foreach (var audioFile in selectedAudioFiles)
+                    {
+                        if (_isEncodingStopped)
+                        {
+                            isExecuting = false;
+                            return;
+                        }
+
+                        // Формируем строку с параметрами
+                        string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
+                        string threads = NormalizeSpaces(textBoxThreads.Text);
+                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
+                        string parameters = $"-{compressionLevel} {commandLine}".Trim();
+
+                        // Добавляем количество потоков, если оно больше 1
+                        if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+                        {
+                            parameters += $" -j{threads}"; // добавляем флаг -j{threads}
+                        }
+
+                        // Формируем аргументы для запуска
+                        string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
+                        string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+
+                        // Запускаем процесс и дожидаемся завершения
+                        try
+                        {
+                            await Task.Run(() =>
+                            {
+                                if (_isPaused)
+                                {
+                                    _pauseEvent.Wait(); // Ожидание паузы в фоновом потоке
+                                }
+
+                                using (_process = new Process())
+                                {
+                                    _process.StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = encoder,
+                                        Arguments = arguments,
+                                        UseShellExecute = false,
+                                        CreateNoWindow = true,
+                                    };
+
+                                    stopwatch.Reset();
+                                    stopwatch.Start();
+
+                                    if (!_isEncodingStopped)
+                                    {
+                                        _process.Start();
+
+                                        // Устанавливаем приоритет процесса
+                                        try
+                                        {
+                                            if (!_process.HasExited)
+                                            {
+                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                            }
+                                        }
+                                        catch (InvalidOperationException)
+                                        {
+                                            // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                        }
+
+                                        _process.WaitForExit();
+                                    }
+
+                                    stopwatch.Stop();
+                                }
+                            });
+
+                            if (!_isEncodingStopped)
+                            {
+                                // Проверка состояния чекбокса
+                                if (checkBoxRemoveMetadata.Checked)
+                                {
+                                    // Запуск metaflac.exe --remove-all, если чекбокс включён
+                                    try
+                                    {
+                                        using (var metaflacProcess = new Process())
+                                        {
+                                            metaflacProcess.StartInfo = new ProcessStartInfo
+                                            {
+                                                FileName = "metaflac.exe",
+                                                Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                                UseShellExecute = false,
+                                                CreateNoWindow = true,
+                                            };
+
+                                            await Task.Run(() =>
+                                            {
+                                                metaflacProcess.Start();
+                                                metaflacProcess.WaitForExit();
+                                            });
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    }
+                                }
+                            }
+                            if (!_isEncodingStopped)
+                            {
+                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false;
+                            return;
+                        }
+                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                        {
+                            progressBarEncoder.Value++;
+                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                        }));
+                    }
+                }
+            }
+            finally
+            {
+                isExecuting = false;
+                _isPaused = false;
+                _pauseEvent.Set();
+
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    buttonPauseResume.Text = "Pause";
+                    buttonPauseResume.Enabled = false;
+                    progressBarEncoder.Value = 0;
+                    progressBarDecoder.Value = 0;
+                    labelEncoderProgress.Text = string.Empty;
+                    labelDecoderProgress.Text = string.Empty;
+                    dataGridViewLog.ClearSelection();
+                }));
+            }
+        }
+        private async void buttonStartDecode_Click(object? sender, EventArgs e)
+        {
+            dataGridViewLog.ClearSelection(); // Очищаем выделение
+
+            // Создаём временную директорию для выходного файла
+            Directory.CreateDirectory(tempFolderPath);
+
+            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
+            isExecuting = true; // Устанавливаем флаг выполнения
+            _isEncodingStopped = false;
+
+            _isPaused = false;
+            _pauseEvent.Set();
+
+            this.Invoke((MethodInvoker)(() =>
+            {
+                buttonPauseResume.Text = "Pause";
+                buttonPauseResume.Enabled = true;
+                progressBarEncoder.Value = 0;
+                progressBarDecoder.Value = 0;
+                labelEncoderProgress.Text = string.Empty;
+                labelDecoderProgress.Text = string.Empty;
+                dataGridViewLog.ClearSelection();
+            }));
+
+            try
+            {
+                // Получаем выделенные .exe файлы
+                var selectedEncoders = listViewEncoders.CheckedItems
+                    .Cast<ListViewItem>()
+                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                    .ToList();
+
+                // Получаем выделенные аудиофайлы, но только с расширением .flac
+                var selectedFlacAudioFiles = listViewAudioFiles.CheckedItems
+                    .Cast<ListViewItem>()
+                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
+                    .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
+                    .ToList();
+
+                // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
+                if (selectedEncoders.Count == 0 && selectedFlacAudioFiles.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                // Проверяем, есть ли выбранные исполняемые файлы
+                if (selectedEncoders.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                // Проверяем, есть ли выбранные FLAC файлы
+                if (selectedFlacAudioFiles.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false; // Сбрасываем флаг, если нет файлов
+                    return;
+                }
+
+                int totalTasks = selectedEncoders.Count * selectedFlacAudioFiles.Count;
+                progressBarDecoder.Maximum = totalTasks; // Максимальное значение прогресс-бара
+                progressBarDecoder.Value = 0; // Сбросить значение прогресс-бара
+
+                // Создаём временную директорию для выходного файла
+                Directory.CreateDirectory(tempFolderPath);
+
+                foreach (var encoder in selectedEncoders)
+                {
+                    foreach (var audioFile in selectedFlacAudioFiles)
+                    {
+                        if (_isEncodingStopped)
+                        {
+                            isExecuting = false;
+                            return;
+                        }
+
+                        // Формируем строку с параметрами
+                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
+                        string parameters = $"{commandLine}".Trim();
+
+                        // Формируем аргументы для запуска
+                        string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
+                        string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+
+                        // Запускаем процесс и дожидаемся завершения
+                        try
+                        {
+                            await Task.Run(() =>
+                            {
+                                if (_isPaused)
+                                {
+                                    _pauseEvent.Wait(); // Ожидание паузы в фоновом потоке
+                                }
+
+                                using (_process = new Process())
+                                {
+                                    _process.StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = encoder,
+                                        Arguments = arguments,
+                                        UseShellExecute = false,
+                                        CreateNoWindow = true,
+                                    };
+
+                                    stopwatch.Reset();
+                                    stopwatch.Start();
+
+                                    if (!_isEncodingStopped)
+                                    {
+                                        _process.Start();
+
+                                        // Устанавливаем приоритет процесса
+                                        try
+                                        {
+                                            if (!_process.HasExited)
+                                            {
+                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                            }
+                                        }
+                                        catch (InvalidOperationException)
+                                        {
+                                            // Процесс завершён, логируем или обрабатываем по мере необходимости
+                                        }
+
+                                        _process.WaitForExit();
+                                    }
+
+                                    stopwatch.Stop();
+                                }
+                            });
+
+                            if (!_isEncodingStopped)
+                            {
+                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            isExecuting = false;
+                            return;
+                        }
+                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                        {
+                            progressBarDecoder.Value++;
+                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                        }));
                     }
                 }
             }
@@ -2513,350 +2937,6 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Actions
-        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true); // Изначально не на паузе
-        private async void buttonStartEncode_Click(object? sender, EventArgs e)
-        {
-            dataGridViewLog.ClearSelection(); // Очищаем выделение
-
-            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-            isExecuting = true; // Устанавливаем флаг выполнения
-            _isEncodingStopped = false;
-
-            _isPaused = false;
-            _pauseEvent.Set();
-
-            this.Invoke((MethodInvoker)(() =>
-            {
-                buttonPauseResume.Text = "Pause";
-                buttonPauseResume.Enabled = true;
-                progressBarEncoder.Value = 0;
-                progressBarDecoder.Value = 0;
-                labelEncoderProgress.Text = string.Empty;
-                labelDecoderProgress.Text = string.Empty;
-                dataGridViewLog.ClearSelection();
-            }));
-
-            try
-            {
-                // Получаем выделенные енкодеры
-                var selectedEncoders = listViewEncoders.CheckedItems
-                    .Cast<ListViewItem>()
-                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                    .ToList();
-
-                // Получаем выделенные аудиофайлы
-                var selectedAudioFiles = listViewAudioFiles.CheckedItems
-                    .Cast<ListViewItem>()
-                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                    .ToList();
-
-                // Проверяем, есть ли выбранные енкодеры и аудиофайлы
-                if (selectedEncoders.Count == 0 && selectedAudioFiles.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one encoder and one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                // Проверяем, есть ли выбранные енкодеры
-                if (selectedEncoders.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                // Проверяем, есть ли выбранные аудио файлы
-                if (selectedAudioFiles.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                int totalTasks = selectedEncoders.Count * selectedAudioFiles.Count;
-                progressBarEncoder.Maximum = totalTasks; // Максимальное значение прогресс-бара
-                progressBarEncoder.Value = 0; // Сбросить значение прогресс-бара
-
-                foreach (var encoder in selectedEncoders)
-                {
-                    foreach (var audioFile in selectedAudioFiles)
-                    {
-                        if (_isEncodingStopped)
-                        {
-                            isExecuting = false;
-                            return;
-                        }
-                        
-                        // Формируем строку с параметрами
-                        string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
-                        string threads = NormalizeSpaces(textBoxThreads.Text);
-                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
-                        string parameters = $"-{compressionLevel} {commandLine}".Trim();
-
-                        // Добавляем количество потоков, если оно больше 1
-                        if (int.TryParse(threads, out int threadCount) && threadCount > 1)
-                        {
-                            parameters += $" -j{threads}"; // добавляем флаг -j{threads}
-                        }
-
-                        // Формируем аргументы для запуска
-                        string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                        string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
-
-                        // Запускаем процесс и дожидаемся завершения
-                        try
-                        {
-                            await Task.Run(() =>
-                            {
-                                if (_isPaused)
-                                {
-                                    _pauseEvent.Wait(); // Ожидание паузы в фоновом потоке
-                                }
-
-                                using (_process = new Process())
-                                {
-                                    _process.StartInfo = new ProcessStartInfo
-                                    {
-                                        FileName = encoder,
-                                        Arguments = arguments,
-                                        UseShellExecute = false,
-                                        CreateNoWindow = true,
-                                    };
-
-                                    stopwatch.Reset();
-                                    stopwatch.Start();
-
-                                    if (!_isEncodingStopped)
-                                    {
-                                        _process.Start();
-
-                                        // Устанавливаем приоритет процесса
-                                        try
-                                        {
-                                            if (!_process.HasExited)
-                                            {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
-                                            }
-                                        }
-                                        catch (InvalidOperationException)
-                                        {
-                                            // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                        }
-
-                                        _process.WaitForExit();
-                                    }
-
-                                    stopwatch.Stop();
-                                }
-                            });
-
-                            if (!_isEncodingStopped)
-                            {
-                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false;
-                            return;
-                        }
-                        progressBarEncoder.Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarEncoder.Value++;
-                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                        }));
-                    }
-                }
-            }
-            finally
-            {
-                isExecuting = false;
-                _isPaused = false;
-                _pauseEvent.Set();
-
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    buttonPauseResume.Text = "Pause";
-                    buttonPauseResume.Enabled = false;
-                    progressBarEncoder.Value = 0;
-                    progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = string.Empty;
-                    labelDecoderProgress.Text = string.Empty;
-                    dataGridViewLog.ClearSelection();
-                }));
-            }
-        }
-        private async void buttonStartDecode_Click(object? sender, EventArgs e)
-        {
-            dataGridViewLog.ClearSelection(); // Очищаем выделение
-
-            if (isExecuting) return; // Проверяем, выполняется ли уже процесс
-            isExecuting = true; // Устанавливаем флаг выполнения
-            _isEncodingStopped = false;
-
-            _isPaused = false;
-            _pauseEvent.Set();
-
-            this.Invoke((MethodInvoker)(() =>
-            {
-                buttonPauseResume.Text = "Pause";
-                buttonPauseResume.Enabled = true;
-                progressBarEncoder.Value = 0;
-                progressBarDecoder.Value = 0;
-                labelEncoderProgress.Text = string.Empty;
-                labelDecoderProgress.Text = string.Empty;
-                dataGridViewLog.ClearSelection();
-            }));
-
-            try
-            {
-                // Получаем выделенные .exe файлы
-                var selectedEncoders = listViewEncoders.CheckedItems
-                    .Cast<ListViewItem>()
-                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                    .ToList();
-
-                // Получаем выделенные аудиофайлы, но только с расширением .flac
-                var selectedFlacAudioFiles = listViewAudioFiles.CheckedItems
-                    .Cast<ListViewItem>()
-                    .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                    .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
-                    .ToList();
-
-                // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                if (selectedEncoders.Count == 0 && selectedFlacAudioFiles.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                // Проверяем, есть ли выбранные исполняемые файлы
-                if (selectedEncoders.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                // Проверяем, есть ли выбранные FLAC файлы
-                if (selectedFlacAudioFiles.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
-
-                int totalTasks = selectedEncoders.Count * selectedFlacAudioFiles.Count;
-                progressBarDecoder.Maximum = totalTasks; // Максимальное значение прогресс-бара
-                progressBarDecoder.Value = 0; // Сбросить значение прогресс-бара
-
-                foreach (var encoder in selectedEncoders)
-                {
-                    foreach (var audioFile in selectedFlacAudioFiles)
-                    {
-                        if (_isEncodingStopped)
-                        {
-                            isExecuting = false;
-                            return;
-                        }
-
-                        // Формируем строку с параметрами
-                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
-                        string parameters = $"{commandLine}".Trim();
-
-                        // Формируем аргументы для запуска
-                        string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                        string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
-
-                        // Запускаем процесс и дожидаемся завершения
-                        try
-                        {
-                            await Task.Run(() =>
-                            {
-                                if (_isPaused)
-                                {
-                                    _pauseEvent.Wait(); // Ожидание паузы в фоновом потоке
-                                }
-
-                                using (_process = new Process())
-                                {
-                                    _process.StartInfo = new ProcessStartInfo
-                                    {
-                                        FileName = encoder,
-                                        Arguments = arguments,
-                                        UseShellExecute = false,
-                                        CreateNoWindow = true,
-                                    };
-
-                                    stopwatch.Reset();
-                                    stopwatch.Start();
-
-                                    if (!_isEncodingStopped)
-                                    {
-                                        _process.Start();
-
-                                        // Устанавливаем приоритет процесса
-                                        try
-                                        {
-                                            if (!_process.HasExited)
-                                            {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
-                                            }
-                                        }
-                                        catch (InvalidOperationException)
-                                        {
-                                            // Процесс завершён, логируем или обрабатываем по мере необходимости
-                                        }
-
-                                        _process.WaitForExit();
-                                    }
-
-                                    stopwatch.Stop();
-                                }
-                            });
-
-                            if (!_isEncodingStopped)
-                            {
-                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            isExecuting = false;
-                            return;
-                        }
-                        progressBarDecoder.Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarDecoder.Value++;
-                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                        }));
-                    }
-                }
-            }
-            finally
-            {
-                isExecuting = false;
-                _isPaused = false;
-                _pauseEvent.Set();
-
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    buttonPauseResume.Text = "Pause";
-                    buttonPauseResume.Enabled = false;
-                    progressBarEncoder.Value = 0;
-                    progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = string.Empty;
-                    labelDecoderProgress.Text = string.Empty;
-                    dataGridViewLog.ClearSelection();
-                }));
-            }
-        }
-
         // General methods
         private void MoveSelectedItems(ListView listView, int direction)
         {
@@ -2985,8 +3065,6 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Dispose();
             _pauseEvent.Dispose(); // Освобождаем ресурсы
             cpuCounter.Dispose(); // Освобождаем ресурсы
-
-
 
             if (checkBoxClearTempFolder.Checked)
             {

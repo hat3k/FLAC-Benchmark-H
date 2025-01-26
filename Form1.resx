@@ -120,9 +120,6 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
 
@@ -138,6 +135,19 @@ This function is resource-expensive when you have huge amount of files!</value>
 This method also checks for any instances where different parameters yield the same resulting size.
 
 Additionally, this approach is beneficial before exporting the log to Excel.</value>
+  </data>
+  <data name="checkBoxRemoveMetadata.ToolTip" xml:space="preserve">
+    <value>Run "metaflac.exe --remove-all --dont-use-padding" after encoding.
+This reduces the output file size.
+Input files are not affected.
+Encoding option "--no-padding" is ignored.
+
+Does not affect encoding or decoding speed.
+
+This option is necessary for more accurate file size comparisons.
+
+WARNING!
+When this option is enabled, the output file size will differ from standard encoding with applied effects.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

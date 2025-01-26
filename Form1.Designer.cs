@@ -23,14 +23,16 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
+            labelCpuUsage = new Label();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             buttonStartEncode = new Button();
             progressBarEncoder = new ProgressBar();
+            labelCpuInfo = new Label();
             labelSetThreads = new Label();
             labelSetCores = new Label();
             textBoxCommandLineOptionsEncoder = new TextBox();
@@ -52,7 +54,6 @@
             textBoxThreads = new TextBox();
             buttonStop = new Button();
             buttonStartDecode = new Button();
-            labelCpuInfo = new Label();
             buttonOpenLogtxt = new Button();
             buttonClearLog = new Button();
             groupBoxEncoders = new GroupBox();
@@ -107,8 +108,9 @@
             labelStopped = new Label();
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
-            groupBoxSystemandSettings = new GroupBox();
-            labelCpuUsage = new Label();
+            groupBoxSettings = new GroupBox();
+            checkBoxAddMD5OnLoadWav = new CheckBox();
+            checkBoxRemoveMetadata = new CheckBox();
             labelCPUPriority = new Label();
             comboBoxCPUPriority = new ComboBox();
             buttonSelectTempFolder = new Button();
@@ -127,17 +129,19 @@
             groupBoxJobsList.SuspendLayout();
             groupBoxLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
-            groupBoxSystemandSettings.SuspendLayout();
+            groupBoxSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(labelCpuUsage);
             groupBoxEncoderSettings.Controls.Add(labelEncoderProgress);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
+            groupBoxEncoderSettings.Controls.Add(labelCpuInfo);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
             groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
@@ -163,6 +167,13 @@
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
+            // 
+            // labelCpuUsage
+            // 
+            labelCpuUsage.Location = new Point(639, 49);
+            labelCpuUsage.Name = "labelCpuUsage";
+            labelCpuUsage.Size = new Size(132, 30);
+            labelCpuUsage.TabIndex = 26;
             // 
             // labelEncoderProgress
             // 
@@ -209,6 +220,13 @@
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
             progressBarEncoder.TabIndex = 4;
+            // 
+            // labelCpuInfo
+            // 
+            labelCpuInfo.Location = new Point(639, 19);
+            labelCpuInfo.Name = "labelCpuInfo";
+            labelCpuInfo.Size = new Size(132, 30);
+            labelCpuInfo.TabIndex = 17;
             // 
             // labelSetThreads
             // 
@@ -412,13 +430,6 @@
             toolTip1.SetToolTip(buttonStartDecode, "Decode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartDecode.UseVisualStyleBackColor = true;
             buttonStartDecode.Click += buttonStartDecode_Click;
-            // 
-            // labelCpuInfo
-            // 
-            labelCpuInfo.Location = new Point(6, 24);
-            labelCpuInfo.Name = "labelCpuInfo";
-            labelCpuInfo.Size = new Size(161, 30);
-            labelCpuInfo.TabIndex = 17;
             // 
             // buttonOpenLogtxt
             // 
@@ -977,23 +988,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1014,27 +1025,42 @@
             buttonCopyLog.UseVisualStyleBackColor = true;
             buttonCopyLog.Click += buttonCopyLog_Click;
             // 
-            // groupBoxSystemandSettings
+            // groupBoxSettings
             // 
-            groupBoxSystemandSettings.Controls.Add(labelCpuUsage);
-            groupBoxSystemandSettings.Controls.Add(labelCPUPriority);
-            groupBoxSystemandSettings.Controls.Add(comboBoxCPUPriority);
-            groupBoxSystemandSettings.Controls.Add(buttonSelectTempFolder);
-            groupBoxSystemandSettings.Controls.Add(checkBoxClearTempFolder);
-            groupBoxSystemandSettings.Controls.Add(labelCpuInfo);
-            groupBoxSystemandSettings.Location = new Point(1399, 278);
-            groupBoxSystemandSettings.Name = "groupBoxSystemandSettings";
-            groupBoxSystemandSettings.Size = new Size(173, 171);
-            groupBoxSystemandSettings.TabIndex = 25;
-            groupBoxSystemandSettings.TabStop = false;
-            groupBoxSystemandSettings.Text = "System and Settings";
+            groupBoxSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
+            groupBoxSettings.Controls.Add(checkBoxRemoveMetadata);
+            groupBoxSettings.Controls.Add(labelCPUPriority);
+            groupBoxSettings.Controls.Add(comboBoxCPUPriority);
+            groupBoxSettings.Controls.Add(buttonSelectTempFolder);
+            groupBoxSettings.Controls.Add(checkBoxClearTempFolder);
+            groupBoxSettings.Location = new Point(1399, 278);
+            groupBoxSettings.Name = "groupBoxSettings";
+            groupBoxSettings.Size = new Size(173, 171);
+            groupBoxSettings.TabIndex = 25;
+            groupBoxSettings.TabStop = false;
+            groupBoxSettings.Text = "Settings";
             // 
-            // labelCpuUsage
+            // checkBoxAddMD5OnLoadWav
             // 
-            labelCpuUsage.Location = new Point(6, 54);
-            labelCpuUsage.Name = "labelCpuUsage";
-            labelCpuUsage.Size = new Size(161, 30);
-            labelCpuUsage.TabIndex = 26;
+            checkBoxAddMD5OnLoadWav.AutoSize = true;
+            checkBoxAddMD5OnLoadWav.Location = new Point(6, 48);
+            checkBoxAddMD5OnLoadWav.Name = "checkBoxAddMD5OnLoadWav";
+            checkBoxAddMD5OnLoadWav.Size = new Size(150, 19);
+            checkBoxAddMD5OnLoadWav.TabIndex = 28;
+            checkBoxAddMD5OnLoadWav.Text = "Add MD5 on .WAV load";
+            toolTip1.SetToolTip(checkBoxAddMD5OnLoadWav, "Calculate MD5 when loading .wav files into the list.\r\nThis may significantly slow down the loading process.\r\nBut \"Detect dupes\" will work faster.\r\n\r\nDoes not affect encoding or decoding speed.");
+            checkBoxAddMD5OnLoadWav.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxRemoveMetadata
+            // 
+            checkBoxRemoveMetadata.AutoSize = true;
+            checkBoxRemoveMetadata.Location = new Point(6, 23);
+            checkBoxRemoveMetadata.Name = "checkBoxRemoveMetadata";
+            checkBoxRemoveMetadata.Size = new Size(122, 19);
+            checkBoxRemoveMetadata.TabIndex = 27;
+            checkBoxRemoveMetadata.Text = "Remove metadata";
+            toolTip1.SetToolTip(checkBoxRemoveMetadata, resources.GetString("checkBoxRemoveMetadata.ToolTip"));
+            checkBoxRemoveMetadata.UseVisualStyleBackColor = true;
             // 
             // labelCPUPriority
             // 
@@ -1159,7 +1185,7 @@
             ClientSize = new Size(1584, 861);
             Controls.Add(groupBoxDecoderSettings);
             Controls.Add(groupBoxLog);
-            Controls.Add(groupBoxSystemandSettings);
+            Controls.Add(groupBoxSettings);
             Controls.Add(groupBoxJobsList);
             Controls.Add(groupBoxAudioFiles);
             Controls.Add(groupBoxEncoders);
@@ -1168,7 +1194,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [beta 0.9 build 20250110.1]";
+            Text = "FLAC Benchmark-H [beta 0.9 build 20250126.1]";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
@@ -1179,8 +1205,8 @@
             groupBoxLog.ResumeLayout(false);
             groupBoxLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
-            groupBoxSystemandSettings.ResumeLayout(false);
-            groupBoxSystemandSettings.PerformLayout();
+            groupBoxSettings.ResumeLayout(false);
+            groupBoxSettings.PerformLayout();
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             ResumeLayout(false);
@@ -1228,7 +1254,7 @@
         private Button buttonClearAudioFiles;
         private Button buttonRemoveEncoder;
         private Button buttonRemoveAudiofile;
-        private GroupBox groupBoxSystemandSettings;
+        private GroupBox groupBoxSettings;
         private Button buttonStartJobList;
         private Button buttonAddJobToJobListEncoder;
         private Button buttonCopyLog;
@@ -1286,5 +1312,7 @@
         private Label labelDecoderProgress;
         private Button buttonPauseResume;
         private Label labelCpuUsage;
+        private CheckBox checkBoxAddMD5OnLoadWav;
+        private CheckBox checkBoxRemoveMetadata;
     }
 }
