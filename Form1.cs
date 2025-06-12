@@ -22,10 +22,10 @@ namespace FLAC_Benchmark_H
         private int physicalCores;
         private int threadCount;
         private Process _process; // Поле для хранения текущего процесса
-        private const string SettingsFilePath = "Settings_general.txt"; // Путь к файлу настроек
-        private const string JobsFilePath = "Settings_jobs.txt"; // Путь к файлу jobs
-        private const string encodersFilePath = "Settings_flac_executables.txt"; // Путь к файлу для сохранения исполняемых файлов
-        private const string audioFilesFilePath = "Settings_audio_files.txt"; // Путь к файлу для сохранения аудиофайлов
+        private const string SettingsGeneralFilePath = "Settings_general.txt"; // Путь к файлу настроек
+        private const string SettingsEncodersFilePath = "Settings_flac_executables.txt"; // Путь к файлу для сохранения исполняемых файлов
+        private const string SettingsAudioFilesFilePath = "Settings_audio_files.txt"; // Путь к файлу для сохранения аудиофайлов
+        private const string SettingsJobsFilePath = "Settings_jobs.txt"; // Путь к файлу jobs
         private Stopwatch stopwatch;
         private PerformanceCounter cpuCounter;
         private System.Windows.Forms.Timer cpuUsageTimer; // Указываем явно, что это Timer из System.Windows.Forms
@@ -132,16 +132,58 @@ namespace FLAC_Benchmark_H
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}"
                 };
-                File.WriteAllLines(SettingsFilePath, settings);
-                SaveEncoders();
-                SaveAudioFiles(); // Сохранение аудиофайлов
-                SaveJobs(); // Сохраняем содержимое jobList
+                File.WriteAllLines(SettingsGeneralFilePath, settings);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void SaveEncoders()
+        {
+            try
+            {
+                var encoders = listViewEncoders.Items
+                .Cast<ListViewItem>()
+                .Select(item => $"{item.Tag}~{item.Checked}")
+                .ToArray();
+                File.WriteAllLines(SettingsEncodersFilePath, encoders);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void SaveAudioFiles()
+        {
+            try
+            {
+                var audioFiles = listViewAudioFiles.Items
+                .Cast<ListViewItem>()
+                .Select(item => $"{item.Tag}~{item.Checked}")
+                .ToArray();
+                File.WriteAllLines(SettingsAudioFilesFilePath, audioFiles);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void SaveJobs()
+        {
+            try
+            {
+                var jobList = listViewJobs.Items.Cast<ListViewItem>()
+                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}") // Сохраняем текст, состояние чекбокса, количество проходов и параметры
+                .ToArray();
+                File.WriteAllLines(SettingsJobsFilePath, jobList);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // Метод для загрузки настроек
         private void LoadSettings()
         {
@@ -149,7 +191,7 @@ namespace FLAC_Benchmark_H
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
             try
             {
-                string[] lines = File.ReadAllLines(SettingsFilePath);
+                string[] lines = File.ReadAllLines(SettingsGeneralFilePath);
                 foreach (var line in lines)
                 {
                     var parts = line.Split(new[] { '=' }, 2); // Разделяем строку на ключ и значение, ограничиваем отделение по первому знаку '='
@@ -194,39 +236,168 @@ namespace FLAC_Benchmark_H
             catch
             {
             }
+        }
+        // Загрузка исполняемых файлов из файла txt
+        private async void LoadEncoders()
+        {
+            if (File.Exists(SettingsEncodersFilePath))
+            {
+                try
+                {
+                    string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
+                    listViewEncoders.Items.Clear(); // Очищаем ListView
 
-            LoadEncoders(); // Загрузка исполняемых файлов
-            LoadAudioFiles(); // Загрузка аудиофайлов
-            LoadJobs(); // Загружаем содержимое Settings_joblist.txt
+                    var missingFiles = new List<string>();
+                    var tasks = lines.Select(async line =>
+                    {
+                        var parts = line.Split('~');
+                        if (parts.Length == 2)
+                        {
+                            string encoderPath = parts[0]; // Удаляем лишние пробелы
+                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
+
+                            // Проверка существования файла
+                            if (File.Exists(encoderPath))
+                            {
+                                var item = await CreateEncoderListViewItem(encoderPath, isChecked); // Создаем элемент
+                                return item;
+                            }
+                            else
+                            {
+                                missingFiles.Add(encoderPath); // Сохраняем путь для предупреждения
+                                return null;
+                            }
+                        }
+                        return null;// Возвращаем null, если не удалось создать элемент
+                    });
+
+                    var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
+
+                    // Добавляем только непустые элементы в ListView
+                    foreach (var item in items)
+                    {
+                        if (item != null)
+                        {
+                            listViewEncoders.Items.Add(item); // Добавляем элемент в ListView
+                        }
+                    }
+
+                    // Показываем предупреждение о пропущенных файлах
+                    if (missingFiles.Count > 0)
+                    {
+                        string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
+                        string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                        "\n\nCheck if they still exist on your system.";
+
+                        MessageBox.Show(warningMessage, "Missing Encoders",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
-        private void SaveEncoders()
+        // Метод для загрузки аудиофайлов из файла txt
+        private async void LoadAudioFiles()
+        {
+            if (File.Exists(SettingsAudioFilesFilePath))
+            {
+                try
+                {
+                    // Читаем все строки из файла
+                    string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
+                    listViewAudioFiles.Items.Clear(); // Очищаем ListView
+
+                    var tasks = lines.Select(async line =>
+                    {
+                        var parts = line.Split('~');
+                        if (parts.Length == 2)
+                        {
+                            string audioFilePath = parts[0]; // Удаляем лишние пробелы
+                            bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
+
+                            // Проверка на пустой путь
+                            if (!string.IsNullOrEmpty(audioFilePath))
+                            {
+                                // Создание элемента ListViewItem
+                                var item = await Task.Run(() => CreateListViewItem(audioFilePath));
+
+                                // Проверка, что элемент не равен null
+                                if (item != null)
+                                {
+                                    item.Checked = isChecked; // Устанавливаем статус чекбокса
+                                    return item; // Возвращаем созданный элемент
+                                }
+                            }
+                        }
+
+                        return null; // Возвращаем null, если не удалось создать элемент
+                    }).Where(item => item != null); // Фильтруем null
+
+                    var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
+
+                    // Добавляем только непустые элементы в ListView
+                    foreach (var item in items)
+                    {
+                        if (item != null && listViewAudioFiles != null) // Проверяем, что listViewAudioFiles не null
+                        {
+                            listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
+                        }
+                    }
+                }
+                catch (Exception ex) // Обрабатываем исключения
+                {
+                    MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void LoadJobs()
+        {
+            BackupJobsFile();
+            if (File.Exists(SettingsJobsFilePath))
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(SettingsJobsFilePath);
+                    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
+
+                    foreach (var line in lines)
+                    {
+                        var parts = line.Split('~');
+                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            var item = new ListViewItem(NormalizeSpaces(parts[0])) { Checked = isChecked };
+                            item.SubItems.Add(NormalizeSpaces(parts[2]));
+                            item.SubItems.Add(NormalizeSpaces(parts[3]));
+                            listViewJobs.Invoke(new Action(() => listViewJobs.Items.Add(item)));
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void BackupJobsFile()
         {
             try
             {
-                var encoders = listViewEncoders.Items
-                .Cast<ListViewItem>()
-                .Select(item => $"{item.Tag}~{item.Checked}")
-                .ToArray();
-                File.WriteAllLines(encodersFilePath, encoders);
+                if (File.Exists(SettingsJobsFilePath))
+                {
+                    string backupPath = $"{SettingsJobsFilePath}.bak";
+                    File.Copy(SettingsJobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private void SaveAudioFiles()
-        {
-            try
-            {
-                var audioFiles = listViewAudioFiles.Items
-                .Cast<ListViewItem>()
-                .Select(item => $"{item.Tag}~{item.Checked}")
-                .ToArray();
-                File.WriteAllLines(audioFilesFilePath, audioFiles);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -347,46 +518,6 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        // Загрузка исполняемых файлов из файла txt
-        private async void LoadEncoders()
-        {
-            if (File.Exists(encodersFilePath))
-            {
-                try
-                {
-                    string[] lines = await File.ReadAllLinesAsync(encodersFilePath);
-                    listViewEncoders.Items.Clear(); // Очищаем ListView
-
-                    var tasks = lines.Select(async line =>
-                    {
-                        var parts = line.Split('~');
-                        if (parts.Length == 2)
-                        {
-                            string encoderPath = parts[0]; // Удаляем лишние пробелы
-                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
-                            var item = await CreateEncoderListViewItem(encoderPath, isChecked); // Создаем элемент
-                            return item; // Возвращаем созданный элемент
-                        }
-                        return null; // Возвращаем null, если не удалось создать элемент
-                    });
-
-                    var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
-
-                    // Добавляем только непустые элементы в ListView
-                    foreach (var item in items)
-                    {
-                        if (item != null)
-                        {
-                            listViewEncoders.Items.Add(item); // Добавляем элемент в ListView
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
         }
         private async Task<ListViewItem> CreateEncoderListViewItem(string encoderPath, bool isChecked)
@@ -598,60 +729,6 @@ namespace FLAC_Benchmark_H
             string extension = Path.GetExtension(file);
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                    extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
-        }
-        // Метод для загрузки аудиофайлов из файла txt
-        private async void LoadAudioFiles()
-        {
-            if (File.Exists(audioFilesFilePath))
-            {
-                try
-                {
-                    // Читаем все строки из файла
-                    string[] lines = await File.ReadAllLinesAsync(audioFilesFilePath);
-                    listViewAudioFiles.Items.Clear(); // Очищаем ListView
-
-                    var tasks = lines.Select(async line =>
-                    {
-                        var parts = line.Split('~');
-                        if (parts.Length == 2)
-                        {
-                            string audioFilePath = parts[0]; // Удаляем лишние пробелы
-                            bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
-
-                            // Проверка на пустой путь
-                            if (!string.IsNullOrEmpty(audioFilePath))
-                            {
-                                // Создание элемента ListViewItem
-                                var item = await Task.Run(() => CreateListViewItem(audioFilePath));
-
-                                // Проверка, что элемент не равен null
-                                if (item != null)
-                                {
-                                    item.Checked = isChecked; // Устанавливаем статус чекбокса
-                                    return item; // Возвращаем созданный элемент
-                                }
-                            }
-                        }
-
-                        return null; // Возвращаем null, если не удалось создать элемент
-                    }).Where(item => item != null); // Фильтруем null
-
-                    var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
-
-                    // Добавляем только непустые элементы в ListView
-                    foreach (var item in items)
-                    {
-                        if (item != null && listViewAudioFiles != null) // Проверяем, что listViewAudioFiles не null
-                        {
-                            listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
-                        }
-                    }
-                }
-                catch (Exception ex) // Обрабатываем исключения
-                {
-                    MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
         }
         // Метод для создания элемента ListViewItem
         private async Task<ListViewItem> CreateListViewItem(string audioFile)
@@ -1704,59 +1781,12 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void LoadJobs()
-        {
-            BackupJobsFile();
-            if (File.Exists(JobsFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(JobsFilePath);
-                    listViewJobs.Items.Clear(); // Очищаем список перед загрузкой
-
-                    foreach (var line in lines)
-                    {
-                        var parts = line.Split('~');
-                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            var item = new ListViewItem(NormalizeSpaces(parts[0])) { Checked = isChecked };
-                            item.SubItems.Add(NormalizeSpaces(parts[2]));
-                            item.SubItems.Add(NormalizeSpaces(parts[3]));
-                            listViewJobs.Invoke(new Action(() => listViewJobs.Items.Add(item)));
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
         private void AddJobsToListView(string job, bool isChecked = true, string passes = "", string parameters = "")
         {
             var item = new ListViewItem(job) { Checked = isChecked };
             item.SubItems.Add(passes); // Добавляем количество проходов
             item.SubItems.Add(parameters); // Добавляем параметры
             listViewJobs.Items.Add(item); // Добавляем элемент в ListView
-        }
-        private void BackupJobsFile()
-        {
-            try
-            {
-                if (File.Exists(JobsFilePath))
-                {
-                    string backupPath = $"{JobsFilePath}.bak";
-                    File.Copy(JobsFilePath, backupPath, true); // Копируем файл, если такой уже существует, перезаписываем
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
         private async void buttonImportJobList_Click(object? sender, EventArgs e)
         {
@@ -2024,20 +2054,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void SaveJobs()
-        {
-            try
-            {
-                var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}") // Сохраняем текст, состояние чекбокса, количество проходов и параметры
-                .ToArray();
-                File.WriteAllLines(JobsFilePath, jobList);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+
 
         // Actions (Buttons)
         private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true); // Изначально не на паузе
@@ -2274,46 +2291,42 @@ namespace FLAC_Benchmark_H
 
             try
             {
-                // Получаем выделенные .exe файлы
-                var selectedEncoders = listViewEncoders.CheckedItems
-                    .Cast<ListViewItem>()
+                // Получаем выделенные енкодеры
+                var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
+                    .Where(item => item.Checked)
                     .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
                     .ToList();
 
-                // Получаем выделенные аудиофайлы, но только с расширением .flac
-                var selectedFlacAudioFiles = listViewAudioFiles.CheckedItems
-                    .Cast<ListViewItem>()
+                // Получаем все выделенные аудиофайлы .flac
+                var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
+                    .Where(item => item.Checked &&
+                        (Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
                     .Select(item => item.Tag.ToString()) // Получаем полный путь из Tag
-                    .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase)) // Только .flac файлы
                     .ToList();
 
-                // Проверяем, есть ли выбранные исполняемые файлы и аудиофайлы
-                if (selectedEncoders.Count == 0 && selectedFlacAudioFiles.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one executable and one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Сбрасываем флаг, если нет файлов
-                    return;
-                }
 
-                // Проверяем, есть ли выбранные исполняемые файлы
+
+                // 1. Проверяем, есть ли хотя бы один энкодер
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Please select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false; // Сбрасываем флаг, если нет файлов
                     return;
                 }
 
-                // Проверяем, есть ли выбранные FLAC файлы
+                // 5. Проверяем, есть ли хотя бы один аудиофайл .flac
                 if (selectedFlacAudioFiles.Count == 0)
                 {
-                    MessageBox.Show("Please select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false; // Сбрасываем флаг, если нет файлов
                     return;
                 }
 
-                int totalTasks = selectedEncoders.Count * selectedFlacAudioFiles.Count;
-                progressBarDecoder.Maximum = totalTasks; // Максимальное значение прогресс-бара
+                // Устанавливаем максимальные значения для прогресс-бара
+                progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
+                // Сбрасываем прогресс-бар
                 progressBarDecoder.Value = 0; // Сбросить значение прогресс-бара
+                labelEncoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 // Создаём временную директорию для выходного файла
                 Directory.CreateDirectory(tempFolderPath);
@@ -3044,15 +3057,20 @@ namespace FLAC_Benchmark_H
         private void Form1_Load(object? sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
+            LoadEncoders(); // Загрузка исполняемых файлов
+            LoadAudioFiles(); // Загрузка аудиофайлов
+            LoadJobs(); // Загружаем содержимое Settings_joblist.txt
             this.ActiveControl = null; // Снимаем фокус с всех элементов
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            // Сохранение настроек перед закрытием
-            SaveSettings();
-            // Остановка таймера
-            cpuUsageTimer.Stop();
-            cpuUsageTimer.Dispose();
+            SaveSettings(); // Сохранение настроек перед закрытием
+            SaveEncoders(); // Сохранение списка енкодеров
+            SaveAudioFiles(); // Сохранение списка аудиофайлов
+            SaveJobs(); // Сохраняем содержимое jobList
+            
+            cpuUsageTimer.Stop(); // Остановка таймера
+            cpuUsageTimer.Dispose(); // Остановка таймера
             _pauseEvent.Dispose(); // Освобождаем ресурсы
             cpuCounter.Dispose(); // Освобождаем ресурсы
 
