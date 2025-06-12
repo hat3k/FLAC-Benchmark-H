@@ -8,10 +8,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-    <Platforms>x64</Platforms>
   </PropertyGroup>
+
+  <!-- Отключение инкрементной сборки -->
+  <Target Name="ForceRebuild" BeforeTargets="Build">
+    <Touch Files="@(Compile->'%(FullPath)')" AlwaysNew="true" />
+  </Target>
 
   <ItemGroup>
     <Content Include="Icon.ico" />
@@ -45,6 +49,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
 
 </Project>

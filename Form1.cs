@@ -2147,7 +2147,8 @@ namespace FLAC_Benchmark_H
 
                         // Формируем аргументы для запуска
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                        string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+                        DeleteFileIfExists(outputFilePath); // Удаляем старый файл
+                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Запускаем процесс и дожидаемся завершения
                         try
@@ -2347,7 +2348,8 @@ namespace FLAC_Benchmark_H
 
                         // Формируем аргументы для запуска
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                        string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+                        DeleteFileIfExists(outputFilePath); // Удаляем старый файл
+                        string arguments = $"\"{audioFile}\" -d {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Запускаем процесс и дожидаемся завершения
                         try
@@ -2574,7 +2576,8 @@ namespace FLAC_Benchmark_H
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
                                         // Формируем аргументы для запуска
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Имя выходного файла
-                                        string arguments = $"\"{audioFile}\" {parameters} -f -o \"{outputFilePath}\"";
+                                        DeleteFileIfExists(outputFilePath); // Удаляем старый файл
+                                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                         // Запускаем процесс и дожидаемся завершения
                                         try
@@ -2689,7 +2692,8 @@ namespace FLAC_Benchmark_H
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
                                         // Формируем аргументы для запуска
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Имя выходного файла
-                                        string arguments = $"\"{audioFile}\" -d {parameters} -f -o \"{outputFilePath}\"";
+                                        DeleteFileIfExists(outputFilePath); // Удаляем старый файл
+                                        string arguments = $"\"{audioFile}\" -d {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                         // Запускаем процесс и дожидаемся завершения
                                         try
@@ -3052,7 +3056,23 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
+        private void DeleteFileIfExists(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    // Снимаем атрибут "только для чтения", если установлен
+                    File.SetAttributes(filePath, FileAttributes.Normal);
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to delete {filePath}: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
