@@ -115,7 +115,7 @@ namespace FLAC_Benchmark_H
             labelCpuUsage.Text = $"CPU Usage: {cpuUsage:F2}%";
         }
 
-        // Метод для сохранения настроек
+        // Метод для сохранения настроек в файлы .txt
         private void SaveSettings()
         {
             try
@@ -184,7 +184,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Метод для загрузки настроек
+        // Метод для загрузки настроек из файлов .txt
         private void LoadSettings()
         {
             // Загрузка пути к временной папке
@@ -237,7 +237,6 @@ namespace FLAC_Benchmark_H
             {
             }
         }
-        // Загрузка исполняемых файлов из файла txt
         private async void LoadEncoders()
         {
             if (File.Exists(SettingsEncodersFilePath))
@@ -304,7 +303,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        // Метод для загрузки аудиофайлов из файла txt
         private async void LoadAudioFiles()
         {
             if (File.Exists(SettingsAudioFilesFilePath))
@@ -511,7 +509,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        // Рекурсивный метод для добавления исполняемых файлов в ListView
         private async Task AddEncoders(string directory)
         {
             try
@@ -748,7 +745,6 @@ namespace FLAC_Benchmark_H
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                    extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
-        // Метод для создания элемента ListViewItem
         private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFile, bool isChecked)
         {
             if (!File.Exists(audioFile))
@@ -775,7 +771,6 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(audioFileInfo.DirectoryPath);
             return item;
         }
-        // Метод для получения длительности и разрядности аудиофайла
         private async Task<AudioFileInfo> GetAudioInfo(string audioFile)
         {
             // Проверка на наличие информации в кэше
@@ -821,6 +816,7 @@ namespace FLAC_Benchmark_H
             audioInfoCache[audioFile] = audioFileInfo; // Кэшируем информацию
             return audioFileInfo;
         }
+
         // Класс для хранения информации об аудиофайле
         private class AudioFileInfo
         {
@@ -833,8 +829,8 @@ namespace FLAC_Benchmark_H
             public long FileSize { get; set; }
             public string Md5Hash { get; set; }
         }
-        private List<AudioFileInfo> audioFileInfoList = new List<AudioFileInfo>();
         private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
+ 
         private async Task<string> CalculateWavMD5Async(string filePath)
         {
             using (var stream = File.OpenRead(filePath))
@@ -3091,6 +3087,7 @@ namespace FLAC_Benchmark_H
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         // FORM LOAD
         private void Form1_Load(object? sender, EventArgs e)
         {
