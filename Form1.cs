@@ -244,28 +244,33 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
+                    // Читаем все строки из файла
                     string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
                     listViewEncoders.Items.Clear(); // Очищаем ListView
 
-                    var missingFiles = new List<string>();
+                    var missingFiles = new List<string>(); // Список отсутствующих файлов
                     var tasks = lines.Select(async line =>
                     {
                         var parts = line.Split('~');
                         if (parts.Length == 2)
                         {
-                            string encoderPath = parts[0]; // Удаляем лишние пробелы
-                            bool isChecked = bool.Parse(parts[1]); // Статус "выделено"
+                            string encoderPath = parts[0];
+                            bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
 
-                            // Проверка существования файла
-                            if (File.Exists(encoderPath))
+                            // Проверяем, существует ли файл
+                            if (!string.IsNullOrEmpty(encoderPath))
                             {
-                                var item = await CreateEncoderListViewItem(encoderPath, isChecked); // Создаем элемент
-                                return item;
+                                // Создание элемента ListViewItem
+                                var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
+                                if (item != null)
+                                {
+                                    item.Checked = isChecked; // Устанавливаем статус чекбокса
+                                    return item; // Возвращаем созданный элемент
+                                }
                             }
                             else
                             {
-                                missingFiles.Add(encoderPath); // Сохраняем путь для предупреждения
-                                return null;
+                                missingFiles.Add(encoderPath); // Добавляем путь в список отсутствующих
                             }
                         }
                         return null;// Возвращаем null, если не удалось создать элемент
@@ -310,44 +315,57 @@ namespace FLAC_Benchmark_H
                     string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
                     listViewAudioFiles.Items.Clear(); // Очищаем ListView
 
+                    var missingFiles = new List<string>(); // Список отсутствующих файлов
                     var tasks = lines.Select(async line =>
                     {
                         var parts = line.Split('~');
                         if (parts.Length == 2)
                         {
-                            string audioFilePath = parts[0]; // Удаляем лишние пробелы
+                            string audioFilePath = parts[0];
                             bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
 
-                            // Проверка на пустой путь
+                            // Проверяем, существует ли файл
                             if (!string.IsNullOrEmpty(audioFilePath))
                             {
                                 // Создание элемента ListViewItem
-                                var item = await Task.Run(() => CreateListViewItem(audioFilePath));
-
-                                // Проверка, что элемент не равен null
+                                var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
                                 if (item != null)
                                 {
                                     item.Checked = isChecked; // Устанавливаем статус чекбокса
                                     return item; // Возвращаем созданный элемент
                                 }
                             }
+                            else
+                            {
+                                missingFiles.Add(audioFilePath); // Добавляем путь в список отсутствующих
+                            }
                         }
-
                         return null; // Возвращаем null, если не удалось создать элемент
-                    }).Where(item => item != null); // Фильтруем null
+                    });
 
                     var items = await Task.WhenAll(tasks); // Ожидаем завершения всех задач
 
                     // Добавляем только непустые элементы в ListView
                     foreach (var item in items)
                     {
-                        if (item != null && listViewAudioFiles != null) // Проверяем, что listViewAudioFiles не null
+                        if (item != null)
                         {
-                            listViewAudioFiles.Items.Add(item); // Добавляем элемент в ListView
+                            listViewAudioFiles.Items.Add(item);
                         }
                     }
+
+                    // Показываем предупреждение о пропущенных файлах
+                    if (missingFiles.Count > 0)
+                    {
+                        string warningMessage = $"The following audio files were missing and not loaded:\n\n" +
+                                              string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                                              "\n\nCheck if they still exist on your system.";
+
+                        MessageBox.Show(warningMessage, "Missing Audio Files",
+                                      MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 }
-                catch (Exception ex) // Обрабатываем исключения
+                catch (Exception ex)
                 {
                     MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -447,7 +465,7 @@ namespace FLAC_Benchmark_H
                     }
                     else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        var item = await CreateEncoderListViewItem(file, true); // Создаем элемент списка
+                        var item = await CreateListViewEncodersItem(file, true); // Создаем элемент списка
                         return item; // Возвращаем созданный элемент
                     }
                     return null; // Возвращаем null, если это не .exe файл
@@ -477,7 +495,7 @@ namespace FLAC_Benchmark_H
                 {
                     var tasks = openFileDialog.FileNames.Select(async file =>
                     {
-                        var item = await CreateEncoderListViewItem(file, true); // Создание элемента списка
+                        var item = await CreateListViewEncodersItem(file, true); // Создание элемента списка
                         return item; // Возвращаем созданный элемент
                     });
 
@@ -501,7 +519,7 @@ namespace FLAC_Benchmark_H
                 var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
                 var tasks = exeFiles.Select(async file =>
                 {
-                    var item = await CreateEncoderListViewItem(file, true); // Создаем элемент и возвращаем его
+                    var item = await CreateListViewEncodersItem(file, true); // Создаем элемент и возвращаем его
                     return item; // Возвращаем созданный элемент
                 });
 
@@ -520,7 +538,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async Task<ListViewItem> CreateEncoderListViewItem(string encoderPath, bool isChecked)
+        private async Task<ListViewItem> CreateListViewEncodersItem(string encoderPath, bool isChecked)
         {
             if (!File.Exists(encoderPath))
             {
@@ -671,12 +689,12 @@ namespace FLAC_Benchmark_H
                             .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
 
                         // Создаем ListViewItem для каждого найденного аудиофайла
-                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewItem(f))));
+                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItem(f, true))));
                         return items; // Возвращаем массив элементов ListViewItem
                     }
                     else if (IsAudioFile(file) && File.Exists(file))
                     {
-                        var item = await Task.Run(() => CreateListViewItem(file)); // Создаем элемент списка
+                        var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Создаем элемент списка
                         return new[] { item }; // Возвращаем массив с одним элементом
                     }
 
@@ -707,7 +725,7 @@ namespace FLAC_Benchmark_H
                 {
                     var tasks = openFileDialog.FileNames.Select(async file =>
                     {
-                        var item = await Task.Run(() => CreateListViewItem(file)); // Создание элемента списка
+                        var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Создание элемента списка
                         item.Checked = true; // Устанавливаем статус "выделено"
                         return item;
                     });
@@ -731,7 +749,7 @@ namespace FLAC_Benchmark_H
                    extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
         // Метод для создания элемента ListViewItem
-        private async Task<ListViewItem> CreateListViewItem(string audioFile)
+        private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFile, bool isChecked)
         {
             if (!File.Exists(audioFile))
             {
