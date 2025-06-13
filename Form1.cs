@@ -258,7 +258,7 @@ namespace FLAC_Benchmark_H
                             bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
 
                             // Проверяем, существует ли файл
-                            if (!string.IsNullOrEmpty(encoderPath))
+                            if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
                             {
                                 // Создание элемента ListViewItem
                                 var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
@@ -325,8 +325,8 @@ namespace FLAC_Benchmark_H
                             bool isChecked = bool.Parse(parts[1]); // Читаем статус "выделено"
 
                             // Проверяем, существует ли файл
-                            if (!string.IsNullOrEmpty(audioFilePath))
-                            {
+                            if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
+                                {
                                 // Создание элемента ListViewItem
                                 var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
                                 if (item != null)
