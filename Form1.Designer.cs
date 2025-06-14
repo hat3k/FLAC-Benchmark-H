@@ -194,7 +194,7 @@
             buttonAddJobToJobListEncoder.Size = new Size(110, 23);
             buttonAddJobToJobListEncoder.TabIndex = 24;
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
-            toolTip1.SetToolTip(buttonAddJobToJobListEncoder, "This will add encoding parameters to a job list.\r\n\r\nLater you may use them to bencmark all checked encoders with all checked audiofiles.");
+            toolTip1.SetToolTip(buttonAddJobToJobListEncoder, "This will add encoding parameters to a job list.\r\n\r\nLater you may use them to benchmark all checked encoders with all checked audiofiles.");
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
             buttonAddJobToJobListEncoder.Click += buttonAddJobToJobListEncoder_Click;
             // 
@@ -588,7 +588,7 @@
             buttonClearUnchecked.Name = "buttonClearUnchecked";
             buttonClearUnchecked.Size = new Size(100, 23);
             buttonClearUnchecked.TabIndex = 29;
-            buttonClearUnchecked.Text = "Clear uncheked";
+            buttonClearUnchecked.Text = "Clear unchecked";
             toolTip1.SetToolTip(buttonClearUnchecked, "Clears all unchecked files from the list.\r\n\r\nHold 'Shift' while clicking to move unchecked files to the Recycle Bin.");
             buttonClearUnchecked.UseVisualStyleBackColor = true;
             buttonClearUnchecked.Click += buttonClearUnchecked_Click;
@@ -1147,7 +1147,7 @@
             buttonAddJobToJobListDecoder.Size = new Size(110, 23);
             buttonAddJobToJobListDecoder.TabIndex = 24;
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
-            toolTip1.SetToolTip(buttonAddJobToJobListDecoder, "This will add decoding parameters to a job list.\r\n\r\nLater you may use them to bencmark all checked encoders with all checked audiofiles.\r\n");
+            toolTip1.SetToolTip(buttonAddJobToJobListDecoder, "This will add decoding parameters to a job list.\r\n\r\nLater you may use them to benchmark all checked encoders with all checked audiofiles.\r\n");
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
             buttonAddJobToJobListDecoder.Click += buttonAddJobToJobListDecoder_Click;
             // 
@@ -1234,7 +1234,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             Name = "Form1";
-            Text = "FLAC Benchmark-H [1.0 build 20250613.1]";
+            Text = "FLAC Benchmark-H";
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

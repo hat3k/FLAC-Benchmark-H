@@ -35,6 +35,8 @@ namespace FLAC_Benchmark_H
         private string tempFolderPath; // Поле для хранения пути к временной папке
         private bool isCpuInfoLoaded = false;
         public string programVersionCurrent = "1.0 build 20250613"; // Версия текущей программы
+        public string programVersionIgnored = null; // Для хранения игнорируемой версии
+
         public Form1()
         {
             InitializeComponent();
@@ -132,7 +134,8 @@ namespace FLAC_Benchmark_H
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
-                    $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}"
+                    $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
+                    $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
                 File.WriteAllLines(SettingsGeneralFilePath, settings);
             }
@@ -233,6 +236,9 @@ namespace FLAC_Benchmark_H
                                 break;
                             case "CheckForUpdatesOnStartup":
                                 checkBoxCheckForUpdatesOnStartup.Checked = bool.Parse(value);
+                                break;
+                            case "IgnoredVersion":
+                                programVersionIgnored = value;
                                 break;
                         }
                     }
@@ -3093,9 +3099,9 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
+        private async void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
         {
-
+            await CheckForUpdatesAsync();
         }
         private async Task CheckForUpdatesAsync()
         {
@@ -3104,42 +3110,64 @@ namespace FLAC_Benchmark_H
 
             try
             {
-                using (var client = new HttpClient())
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("FLAC-Benchmark-H-App");
+
+                string programVersionLatestUrl = "https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/Version.txt";
+                string programVersionLatestOnline = await client.GetStringAsync(programVersionLatestUrl).ConfigureAwait(false);
+                programVersionLatestOnline = programVersionLatestOnline.Trim();
+
+                Version current = ParseVersion(programVersionCurrent);
+                Version latest = ParseVersion(programVersionLatestOnline);
+
+                if (latest != null && current != null && latest > current)
                 {
-                    string latestVersion = await client.GetStringAsync("https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/version.txt");
-                    latestVersion = latestVersion.Trim(); // Удаляем лишние пробелы и переносы
+                    if (programVersionIgnored == programVersionLatestOnline)
+                        return;
 
-                    if (string.Compare(latestVersion, programVersionCurrent, StringComparison.OrdinalIgnoreCase) > 0)
+                    var result = MessageBox.Show(
+                        $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionLatestOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
+                        "Update Available",
+                        MessageBoxButtons.YesNoCancel,
+                        MessageBoxIcon.Information);
+
+                    if (result == DialogResult.Yes)
                     {
-                        DialogResult result = MessageBox.Show(
-                            $"Доступна новая версия:\n{latestVersion}\n\nХотите открыть страницу загрузки?",
-                            "Обновление доступно",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Information);
-
-                        if (result == DialogResult.Yes)
+                        Process.Start(new ProcessStartInfo
                         {
-                            // Открываем репозиторий на GitHub или страницу загрузки
-                            System.Diagnostics.Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
-                                UseShellExecute = true
-                            });
-                        }
+                            FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
+                            UseShellExecute = true
+                        });
                     }
-                    else
+                    else if (result == DialogResult.Cancel)
                     {
-                        // Все актуально
-                        // Можно скрыть или оставить как есть
+                        programVersionIgnored = programVersionLatestOnline;
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Ошибки сети, доступа к интернету и т.д.
-                // Можно проигнорировать или показать предупреждение
-                //MessageBox.Show($"Не удалось проверить обновления: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error checking for updates:\n{ex.Message}",
+                              "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private Version ParseVersion(string versionStr)
+        {
+            if (string.IsNullOrEmpty(versionStr))
+                return new Version("0.0.0");
+
+            var parts = versionStr.Split(' ');
+            if (parts.Length >= 3 && parts[1] == "build")
+            {
+                if (int.TryParse(parts[2], out int buildNumber))
+                {
+                    // Версия будет сравниваться по формату Major.Minor.Build
+                    return new Version($"{parts[0]}.{buildNumber}");
+                }
+            }
+
+            // Если формат не распознан, считаем, что версия очень старая
+            return new Version("0.0.0");
         }
         private void buttonAbout_Click(object sender, EventArgs e)
         {
@@ -3149,6 +3177,8 @@ namespace FLAC_Benchmark_H
         // FORM LOAD
         private async void Form1_Load(object? sender, EventArgs e)
         {
+            this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
+
             LoadSettings(); // Загрузка настроек
             LoadEncoders(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
