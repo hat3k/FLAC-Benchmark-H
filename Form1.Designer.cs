@@ -584,9 +584,9 @@
             // buttonClearUnchecked
             // 
             buttonClearUnchecked.Anchor = AnchorStyles.Right;
-            buttonClearUnchecked.Location = new Point(610, 230);
+            buttonClearUnchecked.Location = new Point(600, 230);
             buttonClearUnchecked.Name = "buttonClearUnchecked";
-            buttonClearUnchecked.Size = new Size(100, 23);
+            buttonClearUnchecked.Size = new Size(110, 23);
             buttonClearUnchecked.TabIndex = 7;
             buttonClearUnchecked.Text = "Clear unchecked";
             toolTip1.SetToolTip(buttonClearUnchecked, "Clears all unchecked files from the list.\r\n\r\nHold 'Shift' while clicking to move unchecked files to the Recycle Bin.");
@@ -1037,9 +1037,9 @@
             groupBoxSettings.Controls.Add(comboBoxCPUPriority);
             groupBoxSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSettings.Controls.Add(checkBoxClearTempFolder);
-            groupBoxSettings.Location = new Point(1399, 278);
+            groupBoxSettings.Location = new Point(1389, 278);
             groupBoxSettings.Name = "groupBoxSettings";
-            groupBoxSettings.Size = new Size(173, 171);
+            groupBoxSettings.Size = new Size(183, 171);
             groupBoxSettings.TabIndex = 5;
             groupBoxSettings.TabStop = false;
             groupBoxSettings.Text = "Settings";
@@ -1083,14 +1083,14 @@
             comboBoxCPUPriority.Location = new Point(60, 87);
             comboBoxCPUPriority.MaxDropDownItems = 6;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
-            comboBoxCPUPriority.Size = new Size(107, 23);
+            comboBoxCPUPriority.Size = new Size(117, 23);
             comboBoxCPUPriority.TabIndex = 3;
             // 
             // buttonSelectTempFolder
             // 
             buttonSelectTempFolder.Location = new Point(6, 141);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(161, 23);
+            buttonSelectTempFolder.Size = new Size(171, 23);
             buttonSelectTempFolder.TabIndex = 5;
             buttonSelectTempFolder.Text = "Select temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
@@ -1117,7 +1117,7 @@
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
-            groupBoxDecoderSettings.Size = new Size(598, 171);
+            groupBoxDecoderSettings.Size = new Size(588, 171);
             groupBoxDecoderSettings.TabIndex = 4;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
@@ -1155,19 +1155,19 @@
             // 
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
-            textBoxCommandLineOptionsDecoder.Size = new Size(409, 23);
+            textBoxCommandLineOptionsDecoder.Size = new Size(399, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 1;
             // 
             // progressBarDecoder
             // 
             progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(293, 23);
+            progressBarDecoder.Size = new Size(283, 23);
             progressBarDecoder.TabIndex = 5;
             // 
             // buttonClearCommandLineDecoder
             // 
-            buttonClearCommandLineDecoder.Location = new Point(537, 21);
+            buttonClearCommandLineDecoder.Location = new Point(527, 21);
             buttonClearCommandLineDecoder.Name = "buttonClearCommandLineDecoder";
             buttonClearCommandLineDecoder.Size = new Size(55, 23);
             buttonClearCommandLineDecoder.TabIndex = 2;
