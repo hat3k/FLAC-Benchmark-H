@@ -34,6 +34,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Флаг паузы
         private string tempFolderPath; // Поле для хранения пути к временной папке
         private bool isCpuInfoLoaded = false;
+        public string programVersionCurrent = "1.0 build 20250613"; // Версия текущей программы
         public Form1()
         {
             InitializeComponent();
@@ -130,7 +131,8 @@ namespace FLAC_Benchmark_H
                     $"TempFolderPath={tempFolderPath}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
-                    $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}"
+                    $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
+                    $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}"
                 };
                 File.WriteAllLines(SettingsGeneralFilePath, settings);
             }
@@ -229,6 +231,9 @@ namespace FLAC_Benchmark_H
                             case "AddMD5OnLoadWav":
                                 checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
                                 break;
+                            case "CheckForUpdatesOnStartup":
+                                checkBoxCheckForUpdatesOnStartup.Checked = bool.Parse(value);
+                                break;
                         }
                     }
                 }
@@ -324,7 +329,7 @@ namespace FLAC_Benchmark_H
 
                             // Проверяем, существует ли файл
                             if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
-                                {
+                            {
                                 // Создание элемента ListViewItem
                                 var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
                                 if (item != null)
@@ -830,7 +835,7 @@ namespace FLAC_Benchmark_H
             public string Md5Hash { get; set; }
         }
         private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
- 
+
         private async Task<string> CalculateWavMD5Async(string filePath)
         {
             using (var stream = File.OpenRead(filePath))
@@ -3013,7 +3018,7 @@ namespace FLAC_Benchmark_H
             }
             listView.Focus(); // Ставим фокус на список
         }
-        
+
         // Метод для получения приоритета процесса
         private ProcessPriorityClass GetProcessPriorityClass(string priority)
         {
@@ -3088,14 +3093,69 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+        private async Task CheckForUpdatesAsync()
+        {
+            if (!checkBoxCheckForUpdatesOnStartup.Checked)
+                return;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    string latestVersion = await client.GetStringAsync("https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/version.txt");
+                    latestVersion = latestVersion.Trim(); // Удаляем лишние пробелы и переносы
+
+                    if (string.Compare(latestVersion, programVersionCurrent, StringComparison.OrdinalIgnoreCase) > 0)
+                    {
+                        DialogResult result = MessageBox.Show(
+                            $"Доступна новая версия:\n{latestVersion}\n\nХотите открыть страницу загрузки?",
+                            "Обновление доступно",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information);
+
+                        if (result == DialogResult.Yes)
+                        {
+                            // Открываем репозиторий на GitHub или страницу загрузки
+                            System.Diagnostics.Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
+                                UseShellExecute = true
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // Все актуально
+                        // Можно скрыть или оставить как есть
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ошибки сети, доступа к интернету и т.д.
+                // Можно проигнорировать или показать предупреждение
+                //MessageBox.Show($"Не удалось проверить обновления: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void buttonAbout_Click(object sender, EventArgs e)
+        {
+
+        }
+
         // FORM LOAD
-        private void Form1_Load(object? sender, EventArgs e)
+        private async void Form1_Load(object? sender, EventArgs e)
         {
             LoadSettings(); // Загрузка настроек
             LoadEncoders(); // Загрузка исполняемых файлов
             LoadAudioFiles(); // Загрузка аудиофайлов
             LoadJobs(); // Загружаем содержимое Settings_joblist.txt
+            await CheckForUpdatesAsync();
             this.ActiveControl = null; // Снимаем фокус с всех элементов
+
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
@@ -3103,7 +3163,7 @@ namespace FLAC_Benchmark_H
             SaveEncoders(); // Сохранение списка енкодеров
             SaveAudioFiles(); // Сохранение списка аудиофайлов
             SaveJobs(); // Сохраняем содержимое jobList
-            
+
             cpuUsageTimer.Stop(); // Остановка таймера
             cpuUsageTimer.Dispose(); // Остановка таймера
             _pauseEvent.Dispose(); // Освобождаем ресурсы
@@ -3137,5 +3197,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
     }
 }

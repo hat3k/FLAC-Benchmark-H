@@ -23,16 +23,14 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
-            labelCpuUsage = new Label();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             buttonStartEncode = new Button();
             progressBarEncoder = new ProgressBar();
-            labelCpuInfo = new Label();
             labelSetThreads = new Label();
             labelSetCores = new Label();
             textBoxCommandLineOptionsEncoder = new TextBox();
@@ -52,6 +50,8 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
+            labelCpuUsage = new Label();
+            labelCpuInfo = new Label();
             buttonStop = new Button();
             buttonStartDecode = new Button();
             buttonOpenLogtxt = new Button();
@@ -123,6 +123,9 @@
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
             toolTip1 = new ToolTip(components);
+            checkBoxCheckForUpdatesOnStartup = new CheckBox();
+            groupBoxInformation = new GroupBox();
+            buttonAbout = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -131,17 +134,16 @@
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
             groupBoxSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
+            groupBoxInformation.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
             // 
-            groupBoxEncoderSettings.Controls.Add(labelCpuUsage);
             groupBoxEncoderSettings.Controls.Add(labelEncoderProgress);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
-            groupBoxEncoderSettings.Controls.Add(labelCpuInfo);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
             groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
@@ -163,17 +165,10 @@
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
             groupBoxEncoderSettings.Location = new Point(12, 278);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
-            groupBoxEncoderSettings.Size = new Size(777, 171);
+            groupBoxEncoderSettings.Size = new Size(630, 171);
             groupBoxEncoderSettings.TabIndex = 0;
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
-            // 
-            // labelCpuUsage
-            // 
-            labelCpuUsage.Location = new Point(639, 49);
-            labelCpuUsage.Name = "labelCpuUsage";
-            labelCpuUsage.Size = new Size(132, 30);
-            labelCpuUsage.TabIndex = 26;
             // 
             // labelEncoderProgress
             // 
@@ -220,13 +215,6 @@
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
             progressBarEncoder.TabIndex = 4;
-            // 
-            // labelCpuInfo
-            // 
-            labelCpuInfo.Location = new Point(639, 19);
-            labelCpuInfo.Name = "labelCpuInfo";
-            labelCpuInfo.Size = new Size(132, 30);
-            labelCpuInfo.TabIndex = 17;
             // 
             // labelSetThreads
             // 
@@ -409,6 +397,20 @@
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(textBoxThreads, "If you use FLAC 1.4.3 and earlier set this parameter to 1 or 0");
+            // 
+            // labelCpuUsage
+            // 
+            labelCpuUsage.Location = new Point(5, 49);
+            labelCpuUsage.Name = "labelCpuUsage";
+            labelCpuUsage.Size = new Size(132, 30);
+            labelCpuUsage.TabIndex = 26;
+            // 
+            // labelCpuInfo
+            // 
+            labelCpuInfo.Location = new Point(5, 19);
+            labelCpuInfo.Name = "labelCpuInfo";
+            labelCpuInfo.Size = new Size(132, 30);
+            labelCpuInfo.TabIndex = 17;
             // 
             // buttonStop
             // 
@@ -990,23 +992,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1179,12 +1181,48 @@
             toolTip1.InitialDelay = 500;
             toolTip1.ReshowDelay = 100;
             // 
+            // checkBoxCheckForUpdatesOnStartup
+            // 
+            checkBoxCheckForUpdatesOnStartup.AutoSize = true;
+            checkBoxCheckForUpdatesOnStartup.Location = new Point(6, 116);
+            checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
+            checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
+            checkBoxCheckForUpdatesOnStartup.TabIndex = 28;
+            checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
+            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup");
+            checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
+            checkBoxCheckForUpdatesOnStartup.CheckedChanged += checkBoxCheckForUpdatesOnStartup_CheckedChanged;
+            // 
+            // groupBoxInformation
+            // 
+            groupBoxInformation.Controls.Add(checkBoxCheckForUpdatesOnStartup);
+            groupBoxInformation.Controls.Add(buttonAbout);
+            groupBoxInformation.Controls.Add(labelCpuUsage);
+            groupBoxInformation.Controls.Add(labelCpuInfo);
+            groupBoxInformation.Location = new Point(648, 278);
+            groupBoxInformation.Name = "groupBoxInformation";
+            groupBoxInformation.Size = new Size(141, 171);
+            groupBoxInformation.TabIndex = 27;
+            groupBoxInformation.TabStop = false;
+            groupBoxInformation.Text = "Information";
+            // 
+            // buttonAbout
+            // 
+            buttonAbout.Location = new Point(5, 141);
+            buttonAbout.Name = "buttonAbout";
+            buttonAbout.Size = new Size(129, 23);
+            buttonAbout.TabIndex = 27;
+            buttonAbout.Text = "About";
+            buttonAbout.UseVisualStyleBackColor = true;
+            buttonAbout.Click += buttonAbout_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = buttonStop;
             ClientSize = new Size(1584, 861);
+            Controls.Add(groupBoxInformation);
             Controls.Add(groupBoxDecoderSettings);
             Controls.Add(groupBoxLog);
             Controls.Add(groupBoxSettings);
@@ -1211,6 +1249,8 @@
             groupBoxSettings.PerformLayout();
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
+            groupBoxInformation.ResumeLayout(false);
+            groupBoxInformation.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -1316,5 +1356,8 @@
         private Label labelCpuUsage;
         private CheckBox checkBoxAddMD5OnLoadWav;
         private CheckBox checkBoxRemoveMetadata;
+        private GroupBox groupBoxInformation;
+        private Button buttonAbout;
+        private CheckBox checkBoxCheckForUpdatesOnStartup;
     }
 }
