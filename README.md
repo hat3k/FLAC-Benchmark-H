@@ -18,9 +18,12 @@ Temporary encoded and decoded files are stored in the "temp" folder in the app's
 **Log Analysis**
 Log entries can be sorted by clicking on the column headers. Analyze the log by pressing the button to find the smallest resulting file size and sort the log. Then use "Log to Excel" for further analysis.
 
+**Example of analyzed log:**
+
+![202506142](https://github.com/user-attachments/assets/79301a9f-c985-46b5-b6b6-76c687599fee)
+
 Note:
 You may test any builds of FLAC starting from 1.5.0.
 If you want to use earlier FLAC versions then set 'Threads' option to 1.
 
 ![GitHub all releases](https://img.shields.io/github/downloads/hat3k/FLAC-Benchmark-H/total)
-
