@@ -134,6 +134,7 @@ namespace FLAC_Benchmark_H
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
+                    $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
@@ -233,6 +234,9 @@ namespace FLAC_Benchmark_H
                                 break;
                             case "AddMD5OnLoadWav":
                                 checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
+                                break;
+                            case "AutoAnalyzeLog":
+                                checkBoxAutoAnalyzeLog.Checked = bool.Parse(value);
                                 break;
                             case "CheckForUpdatesOnStartup":
                                 checkBoxCheckForUpdatesOnStartup.Checked = bool.Parse(value);
@@ -2406,6 +2410,10 @@ namespace FLAC_Benchmark_H
                         }));
                     }
                 }
+                if (checkBoxAutoAnalyzeLog.Checked)
+                {
+                    AnalyzeLog();
+                }
             }
             finally
             {
@@ -2573,6 +2581,10 @@ namespace FLAC_Benchmark_H
                             labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
                         }));
                     }
+                }
+                if (checkBoxAutoAnalyzeLog.Checked)
+                {
+                    AnalyzeLog();
                 }
             }
             finally
@@ -2922,6 +2934,10 @@ namespace FLAC_Benchmark_H
                         }
                     }
                 }
+                if (checkBoxAutoAnalyzeLog.Checked)
+                {
+                    AnalyzeLog();
+                }
             }
             finally
             {
@@ -3231,7 +3247,10 @@ namespace FLAC_Benchmark_H
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void checkBoxAutoAnalyzeLog_CheckedChanged(object sender, EventArgs e)
+        {
 
+        }
         private async void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
         {
             await CheckForUpdatesAsync();
@@ -3389,5 +3408,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+
     }
 }

@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -127,6 +127,7 @@
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
+            checkBoxAutoAnalyzeLog = new CheckBox();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -946,7 +947,7 @@
             buttonLogColumnsAutoWidth.Location = new Point(39, 0);
             buttonLogColumnsAutoWidth.Name = "buttonLogColumnsAutoWidth";
             buttonLogColumnsAutoWidth.Size = new Size(42, 18);
-            buttonLogColumnsAutoWidth.TabIndex = 27;
+            buttonLogColumnsAutoWidth.TabIndex = 8;
             buttonLogColumnsAutoWidth.Text = "⟷";
             toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width");
             buttonLogColumnsAutoWidth.UseVisualStyleBackColor = true;
@@ -1005,23 +1006,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = SystemColors.Control;
+            dataGridViewCellStyle7.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle7.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = SystemColors.Control;
+            dataGridViewCellStyle8.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle8.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle8;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1044,6 +1045,7 @@
             // 
             // groupBoxSettings
             // 
+            groupBoxSettings.Controls.Add(checkBoxAutoAnalyzeLog);
             groupBoxSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
             groupBoxSettings.Controls.Add(checkBoxRemoveMetadata);
             groupBoxSettings.Controls.Add(labelCPUPriority);
@@ -1082,7 +1084,7 @@
             // labelCPUPriority
             // 
             labelCPUPriority.AutoSize = true;
-            labelCPUPriority.Location = new Point(6, 90);
+            labelCPUPriority.Location = new Point(6, 96);
             labelCPUPriority.Name = "labelCPUPriority";
             labelCPUPriority.Size = new Size(48, 15);
             labelCPUPriority.TabIndex = 2;
@@ -1093,7 +1095,7 @@
             comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCPUPriority.FormattingEnabled = true;
             comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
-            comboBoxCPUPriority.Location = new Point(60, 87);
+            comboBoxCPUPriority.Location = new Point(60, 93);
             comboBoxCPUPriority.MaxDropDownItems = 6;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
             comboBoxCPUPriority.Size = new Size(117, 23);
@@ -1228,6 +1230,18 @@
             buttonAbout.Text = "About";
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += buttonAbout_Click;
+            // 
+            // checkBoxAutoAnalyzeLog
+            // 
+            checkBoxAutoAnalyzeLog.AutoSize = true;
+            checkBoxAutoAnalyzeLog.Location = new Point(6, 73);
+            checkBoxAutoAnalyzeLog.Name = "checkBoxAutoAnalyze";
+            checkBoxAutoAnalyzeLog.Size = new Size(159, 19);
+            checkBoxAutoAnalyzeLog.TabIndex = 6;
+            checkBoxAutoAnalyzeLog.Text = "Analyze Log on job finish";
+            toolTip1.SetToolTip(checkBoxAutoAnalyzeLog, "Starts log analysis automatically after all encoding/decoding jobs are finished.");
+            checkBoxAutoAnalyzeLog.UseVisualStyleBackColor = true;
+            checkBoxAutoAnalyzeLog.CheckedChanged += checkBoxAutoAnalyzeLog_CheckedChanged;
             // 
             // Form1
             // 
@@ -1373,5 +1387,6 @@
         private Button buttonAbout;
         private CheckBox checkBoxCheckForUpdatesOnStartup;
         private Button buttonLogColumnsAutoWidth;
+        private CheckBox checkBoxAutoAnalyzeLog;
     }
 }

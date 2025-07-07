@@ -120,6 +120,9 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
 
@@ -130,11 +133,12 @@
 This function is resource-expensive when you have huge amount of files!</value>
   </data>
   <data name="buttonAnalyzeLog.ToolTip" xml:space="preserve">
-    <value>This process analyzes the minimum size for each file based on the specified encoding parameters and organizes the log accordingly.
+    <value>Analyzes and consolidates encoding results by file, encoder, and parameters.
 
-This method also checks for any instances where different parameters yield the same resulting size.
+Identifies the fastest encoder and smallest output size for each file,
+and detects duplicate sizes across configurations.
 
-Additionally, this approach is beneficial before exporting the log to Excel.</value>
+Perform this before exporting the log to Excel.</value>
   </data>
   <data name="checkBoxRemoveMetadata.ToolTip" xml:space="preserve">
     <value>Run "metaflac.exe --remove-all --dont-use-padding" after encoding.
