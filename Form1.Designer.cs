@@ -102,6 +102,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupBoxLog = new GroupBox();
+            buttonLogColumnsAutoWidth = new Button();
             buttonPauseResume = new Button();
             buttonLogToExcel = new Button();
             buttonAnalyzeLog = new Button();
@@ -923,6 +924,7 @@
             // groupBoxLog
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(buttonLogColumnsAutoWidth);
             groupBoxLog.Controls.Add(buttonPauseResume);
             groupBoxLog.Controls.Add(buttonLogToExcel);
             groupBoxLog.Controls.Add(buttonAnalyzeLog);
@@ -938,6 +940,17 @@
             groupBoxLog.TabIndex = 7;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
+            // 
+            // buttonLogColumnsAutoWidth
+            // 
+            buttonLogColumnsAutoWidth.Location = new Point(39, 0);
+            buttonLogColumnsAutoWidth.Name = "buttonLogColumnsAutoWidth";
+            buttonLogColumnsAutoWidth.Size = new Size(42, 18);
+            buttonLogColumnsAutoWidth.TabIndex = 27;
+            buttonLogColumnsAutoWidth.Text = "⟷";
+            toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width");
+            buttonLogColumnsAutoWidth.UseVisualStyleBackColor = true;
+            buttonLogColumnsAutoWidth.Click += buttonLogColumnsAutoWidth_Click;
             // 
             // buttonPauseResume
             // 
@@ -1359,5 +1372,6 @@
         private GroupBox groupBoxInformation;
         private Button buttonAbout;
         private CheckBox checkBoxCheckForUpdatesOnStartup;
+        private Button buttonLogColumnsAutoWidth;
     }
 }
