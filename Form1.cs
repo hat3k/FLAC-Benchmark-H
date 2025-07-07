@@ -916,30 +916,30 @@ namespace FLAC_Benchmark_H
                     {
                         filesWithMD5Errors.Add(item);
                     }
-                    if (item.Tag is AudioFileInfo tagInfo)
+                    // If Tag contains a file path (regular string), update the cache
+                    if (item.Tag is string existingFilePath)
                     {
-                        // Update the MD5 hash in the existing AudioFileInfo object
-                        tagInfo.Md5Hash = md5Hash;
-
-                        // Update or add the entry in the cache
-                        audioInfoCache[filePath] = tagInfo;
-                    }
-                    else
-                    {
-                        // If Tag does not contain an AudioFileInfo object — create a new one
-                        var newInfo = new AudioFileInfo
+                        // Check if this file exists in the cache
+                        if (audioInfoCache.TryGetValue(existingFilePath, out var cachedInfo))
                         {
-                            FilePath = filePath,
-                            Md5Hash = md5Hash,
-                            FileName = Path.GetFileName(filePath),
-                            DirectoryPath = Path.GetDirectoryName(filePath)
-                        };
+                            // Update only the MD5 of the existing object
+                            cachedInfo.Md5Hash = md5Hash;
+                            audioInfoCache[existingFilePath] = cachedInfo;
+                        }
+                        else
+                        {
+                            // If the file is not yet in the cache — create a new AudioFileInfo
+                            var newInfo = new AudioFileInfo
+                            {
+                                FilePath = existingFilePath,
+                                Md5Hash = md5Hash,
+                                FileName = Path.GetFileName(existingFilePath),
+                                DirectoryPath = Path.GetDirectoryName(existingFilePath)
+                            };
 
-                        // Assign the new AudioFileInfo object to the ListViewItem's Tag
-                        item.Tag = newInfo;
-
-                        // Add the new entry to the cache
-                        audioInfoCache[filePath] = newInfo;
+                            // Add to the cache
+                            audioInfoCache.TryAdd(existingFilePath, newInfo);
+                        }
                     }
                 }
 
