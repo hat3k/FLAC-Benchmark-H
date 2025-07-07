@@ -916,6 +916,31 @@ namespace FLAC_Benchmark_H
                     {
                         filesWithMD5Errors.Add(item);
                     }
+                    if (item.Tag is AudioFileInfo tagInfo)
+                    {
+                        // Update the MD5 hash in the existing AudioFileInfo object
+                        tagInfo.Md5Hash = md5Hash;
+
+                        // Update or add the entry in the cache
+                        audioInfoCache[filePath] = tagInfo;
+                    }
+                    else
+                    {
+                        // If Tag does not contain an AudioFileInfo object — create a new one
+                        var newInfo = new AudioFileInfo
+                        {
+                            FilePath = filePath,
+                            Md5Hash = md5Hash,
+                            FileName = Path.GetFileName(filePath),
+                            DirectoryPath = Path.GetDirectoryName(filePath)
+                        };
+
+                        // Assign the new AudioFileInfo object to the ListViewItem's Tag
+                        item.Tag = newInfo;
+
+                        // Add the new entry to the cache
+                        audioInfoCache[filePath] = newInfo;
+                    }
                 }
 
                 // Check if the hash is valid
