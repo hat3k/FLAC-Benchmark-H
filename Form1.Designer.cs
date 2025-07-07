@@ -216,7 +216,6 @@
             progressBarEncoder.Location = new Point(238, 141);
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
-            progressBarEncoder.Style = ProgressBarStyle.Marquee;
             progressBarEncoder.TabIndex = 22;
             // 
             // labelSetThreads
@@ -1191,7 +1190,6 @@
             progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
             progressBarDecoder.Size = new Size(283, 23);
-            progressBarDecoder.Style = ProgressBarStyle.Continuous;
             progressBarDecoder.TabIndex = 5;
             // 
             // buttonClearCommandLineDecoder
