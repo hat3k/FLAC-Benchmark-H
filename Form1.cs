@@ -2089,7 +2089,8 @@ namespace FLAC_Benchmark_H
         {
             // Get values from text fields and form parameters
             string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
-            string parameters = commandLine; // Decoding parameters
+            // Form parameter string
+            string parameters = $"-d {commandLine}".Trim();
 
             // Check if job already exists in last item
             string jobName = "Decode";
@@ -2098,7 +2099,7 @@ namespace FLAC_Benchmark_H
             if (listViewJobs.Items.Count > 0)
             {
                 ListViewItem lastItem = listViewJobs.Items[listViewJobs.Items.Count - 1];
-                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == commandLine)
+                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == parameters)
                 {
                     existingItem = lastItem;
                 }
@@ -2225,6 +2226,9 @@ namespace FLAC_Benchmark_H
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             dataGridViewLog.ClearSelection(); // Clear selection
+
+            // Create a temporary directory for the output file
+            Directory.CreateDirectory(tempFolderPath);
 
             if (isExecuting) return; // Check if process is already running
             isExecuting = true; // Set execution flag
@@ -2510,12 +2514,12 @@ namespace FLAC_Benchmark_H
 
                         // Form the parameter string
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
-                        string parameters = $"{commandLine}".Trim();
+                        string parameters = $"-d {commandLine}".Trim();
 
                         // Form the arguments for execution
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                        string arguments = $"\"{audioFile}\" -d {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Start the process and wait for completion
                         try
@@ -2608,6 +2612,9 @@ namespace FLAC_Benchmark_H
         private async void buttonStartJobList_Click(object? sender, EventArgs e)
         {
             dataGridViewLog.ClearSelection(); // Clear selection
+
+            // Create a temporary directory for the output file
+            Directory.CreateDirectory(tempFolderPath);
 
             if (isExecuting) return; // Check if process is already running
             isExecuting = true; // Set execution flag
@@ -2863,7 +2870,7 @@ namespace FLAC_Benchmark_H
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                                        string arguments = $"\"{audioFile}\" -d {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                         // Start the process and wait for completion
                                         try
