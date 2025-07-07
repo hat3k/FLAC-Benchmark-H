@@ -977,6 +977,7 @@ namespace FLAC_Benchmark_H
                     string.Empty, // Parameters
                     string.Empty, // Encoder
                     string.Empty, // Version
+                    string.Empty, // FastestEncoder
                     string.Empty, // BestSize
                     string.Empty, // SameSize
                     filePath,
@@ -1029,6 +1030,7 @@ namespace FLAC_Benchmark_H
                             string.Empty, // Parameters
                             string.Empty, // Encoder
                             string.Empty, // Version
+                            string.Empty, // FastestEncoder
                             string.Empty, // BestSize
                             string.Empty, // SameSize
                             filePath,
@@ -1152,6 +1154,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Binary");
             dataGridViewLog.Columns.Add("Version", "Version");
+            dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
             dataGridViewLog.Columns.Add("BestSize", "Best Size");
             dataGridViewLog.Columns.Add("SameSize", "Same Size");
             var filePathColumn = new DataGridViewLinkColumn
@@ -1162,7 +1165,7 @@ namespace FLAC_Benchmark_H
             };
             dataGridViewLog.Columns.Add(filePathColumn);
             dataGridViewLog.Columns.Add("MD5", "MD5");
-            dataGridViewLog.Columns.Add("Duplicates", "Duplicates"); // New column for duplicates
+            dataGridViewLog.Columns.Add("Duplicates", "Duplicates");
 
 
             // Set alignment for columns
@@ -1244,10 +1247,11 @@ namespace FLAC_Benchmark_H
                     parameters,                // 6
                     encoderInfo.FileName,      // 7 (Encoder file name from cache)
                     encoderInfo.Version,       // 8 (Encoder version from cache)
-                    string.Empty,              // 9 (BestSize)
-                    string.Empty,              // 10 (SameSize)
-                    audioFileDirectory,        // 11 (FilePath)
-                    Md5Hash                    // 12 (Md5Hash)
+                    string.Empty,              // 9 (FastestEncoder)
+                    string.Empty,              // 10 (BestSize)
+                    string.Empty,              // 11 (SameSize)
+                    audioFileDirectory,        // 12 (FilePath)
+                    Md5Hash                    // 13 (Md5Hash)
                 );
 
                 // Set text color based on file size comparison
@@ -1273,88 +1277,189 @@ namespace FLAC_Benchmark_H
         }
         private void buttonAnalyzeLog_Click(object? sender, EventArgs e)
         {
-            AnalyzeBestSize(); // Start analysis when button is clicked
+            AnalyzeLog();
         }
-        private async void AnalyzeBestSize()
+        private async void AnalyzeLog()
         {
-            var dataRows = new List<(string fileName, long outputSize, int rowIndex)>();
-            int rowCount = dataGridViewLog.Rows.Count;
-
-            // Get data in the main thread
-            for (int i = 0; i < rowCount; i++)
+            // Step 0: Clear analysis fields before starting
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                var row = dataGridViewLog.Rows[i];
-                if (row.Cells["Name"].Value is string fileName &&
-                    row.Cells["OutputFileSize"].Value is string outputSizeStr &&
-                    long.TryParse(outputSizeStr.Replace(" ", "").Trim(), out long outputSize))
+                if (!row.IsNewRow)
                 {
-                    dataRows.Add((fileName, outputSize, i));
+                    row.Cells["FastestEncoder"].Value = string.Empty;
+                    row.Cells["BestSize"].Value = string.Empty;
+                    row.Cells["SameSize"].Value = string.Empty;
                 }
             }
 
-            // Group output sizes
-            var outputSizeGroups = dataRows
-                .GroupBy(dataRow => dataRow.fileName)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.outputSize).ToList());
+            // Step 1: Collect and group all rows by key (fileName|encoder|parameters)
+            var groupedEntries = new Dictionary<string, List<LogEntry>>();
 
-            // Find minimum sizes
-            var smallestSizes = new ConcurrentDictionary<string, (long minSize, int count)>();
-
-            // Process data in parallel
-            Parallel.ForEach(dataRows, dataRow =>
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                var (fileName, outputSize, rowIndex) = dataRow;
+                if (row.IsNewRow) continue;
 
-                smallestSizes.AddOrUpdate(
-                    fileName,
-                    (outputSize, 1),
-                    (key, existingValue) =>
-                    {
-                        var (minSize, count) = existingValue;
-                        if (outputSize < minSize)
-                        {
-                            return (outputSize, 1);
-                        }
-                        else if (outputSize == minSize)
-                        {
-                            return (minSize, count + 1);
-                        }
-                        return existingValue;
-                    }
-                );
-            });
+                string fileName = row.Cells["Name"].Value?.ToString();
+                string encoder = row.Cells["Encoder"].Value?.ToString();
+                string parameters = row.Cells["Parameters"].Value?.ToString();
+                string speedStr = row.Cells["Speed"].Value?.ToString()?.Replace("x", "")?.Trim();
 
-            // Update UI after data processing
-            await Task.Run(() =>
-            {
-                this.Invoke((Action)(() =>
+                if (string.IsNullOrEmpty(fileName) ||
+                    string.IsNullOrEmpty(encoder) ||
+                    string.IsNullOrEmpty(parameters) ||
+                    !double.TryParse(speedStr, out double speed))
                 {
-                    foreach (var fileEntry in smallestSizes)
+                    continue;
+                }
+
+                string groupKey = $"{fileName}|{encoder}|{parameters}";
+
+                if (!groupedEntries.ContainsKey(groupKey))
+                    groupedEntries[groupKey] = new List<LogEntry>();
+
+                // Parse OutputFileSize
+                if (long.TryParse(row.Cells["OutputFileSize"].Value?.ToString()?.Replace(" ", "").Trim(), out long outputFileSize))
+                {
+                    // Create LogEntry
+                    var logEntry = new LogEntry
                     {
-                        string fileName = fileEntry.Key;
-                        long smallestSize = fileEntry.Value.minSize;
+                        Name = fileName,
+                        Encoder = encoder,
+                        Parameters = parameters,
+                        Speed = speedStr,
+                        Time = row.Cells["Time"].Value?.ToString(),
 
-                        var indices = dataRows.Where(x => x.fileName == fileName).Select(x => x.rowIndex).ToList();
+                        InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
+                        OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
+                        Compression = row.Cells["Compression"].Value?.ToString(),
+                        Version = row.Cells["Version"].Value?.ToString(),
+                        FilePath = row.Cells["FilePath"].Value?.ToString(),
+                        MD5 = row.Cells["MD5"].Value?.ToString(),
+                        Duplicates = row.Cells["Duplicates"].Value?.ToString(),
 
-                        foreach (int index in indices)
-                        {
-                            var objRow = dataGridViewLog.Rows[index];
-                            long rowOutputSize = dataRows[index].outputSize;
+                        OutputForeColor = row.Cells["OutputFileSize"].Style.ForeColor,
+                        CompressionForeColor = row.Cells["Compression"].Style.ForeColor,
+                        SpeedForeColor = row.Cells["Speed"].Style.ForeColor
+                    };
 
-                            // Update BestSize column
-                            objRow.Cells["BestSize"].Value = (rowOutputSize == smallestSize) ? "smallest size" : string.Empty;
-                        }
+                    groupedEntries[groupKey].Add(logEntry);
+                }
+            }
 
-                        // Check for same sizes
-                        bool hasSameSize = outputSizeGroups[fileName].Distinct().Count() < outputSizeGroups[fileName].Count;
-                        foreach (int index in indices)
-                        {
-                            var objRow = dataGridViewLog.Rows[index];
-                            objRow.Cells["SameSize"].Value = (hasSameSize && outputSizeGroups[fileName].Count(g => g == dataRows[index].outputSize) > 1) ? "has same size" : string.Empty;
-                        }
+            // Step 2: Average speed and time, create a new list of processed entries
+            var averagedEntries = new List<LogEntry>();
+            foreach (var group in groupedEntries.Values)
+            {
+                double avgSpeed = group.Average(x => double.Parse(x.Speed));
+                double avgTime = group.Average(x => double.Parse(x.Time));
+
+                var bestEntry = group.First(); // Use the first entry as a template
+                bestEntry.Speed = avgSpeed.ToString("F3") + "x";
+                bestEntry.Time = avgTime.ToString("F3");
+
+                averagedEntries.Add(bestEntry);
+            }
+
+            // Step 3: Find minimal output size for each group (file + parameters)
+            var fileParamToMinSize = new Dictionary<string, long>();
+
+            foreach (var entry in averagedEntries)
+            {
+                string key = $"{entry.Name}|{entry.Parameters}";
+                if (long.TryParse(entry.OutputFileSize.Replace(" ", "").Trim(), out long size))
+                {
+                    if (!fileParamToMinSize.TryGetValue(key, out long currentMin) || size < currentMin)
+                    {
+                        fileParamToMinSize[key] = size;
                     }
-                }));
+                }
+            }
+
+            // Step 4: Set BestSize based on the new dictionary
+            foreach (var entry in averagedEntries)
+            {
+                string key = $"{entry.Name}|{entry.Parameters}";
+                if (fileParamToMinSize.TryGetValue(key, out long minSize))
+                {
+                    if (long.TryParse(entry.OutputFileSize.Replace(" ", "").Trim(), out long currentSize))
+                    {
+                        entry.BestSize = (currentSize == minSize) ? "smallest size" : string.Empty;
+                    }
+                }
+            }
+
+            // Step 5: Find matching output sizes among all averaged entries
+            var fileToSizes = new Dictionary<string, List<long>>();
+
+            foreach (var entry in averagedEntries)
+            {
+                if (long.TryParse(entry.OutputFileSize.Replace(" ", "").Trim(), out long size))
+                {
+                    if (!fileToSizes.ContainsKey(entry.Name))
+                        fileToSizes[entry.Name] = new List<long>();
+
+                    fileToSizes[entry.Name].Add(size);
+                }
+            }
+
+            foreach (var entry in averagedEntries)
+            {
+                if (fileToSizes.TryGetValue(entry.Name, out var sizes))
+                {
+                    if (long.TryParse(entry.OutputFileSize.Replace(" ", "").Trim(), out long currentSize))
+                    {
+                        int sameCount = sizes.Count(s => s == currentSize);
+                        entry.SameSize = (sameCount > 1) ? "has same size" : string.Empty;
+                    }
+                }
+            }
+
+            // Step 6: Find fastest encoder per (file + parameters)
+            var fileParamGroups = averagedEntries.GroupBy(e => e.Name + "|" + e.Parameters);
+
+            foreach (var group in fileParamGroups)
+            {
+                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
+
+                foreach (var entry in group)
+                {
+                    bool isBest = double.Parse(entry.Speed.Replace("x", "").Trim()) >= maxSpeed - 0.01;
+                    entry.FastestEncoder = isBest ? "best speed" : string.Empty;
+                }
+            }
+
+            // Step 7: Update UI with analyzed data
+            await this.InvokeAsync(() =>
+            {
+                dataGridViewLog.Rows.Clear();
+
+                foreach (var entry in averagedEntries)
+                {
+                    int rowIndex = dataGridViewLog.Rows.Add(
+                        entry.Name,
+                        entry.InputFileSize,
+                        entry.OutputFileSize,
+                        entry.Compression,
+                        entry.Time,
+                        entry.Speed,
+                        entry.Parameters,
+                        entry.Encoder,
+                        entry.Version,
+                        entry.FastestEncoder,
+                        entry.BestSize,
+                        entry.SameSize,
+                        entry.FilePath,
+                        entry.MD5,
+                        entry.Duplicates
+                    );
+
+                    // Restore cell colors
+                    dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = entry.OutputForeColor;
+                    dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
+                    dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
+                }
             });
+
             SortDataGridView();
         }
         private class LogEntry
@@ -1368,6 +1473,7 @@ namespace FLAC_Benchmark_H
             public string Parameters { get; set; }
             public string Encoder { get; set; }
             public string Version { get; set; }
+            public string FastestEncoder { get; set; }
             public string BestSize { get; set; }
             public string SameSize { get; set; }
             public string FilePath { get; set; }
@@ -1397,6 +1503,7 @@ namespace FLAC_Benchmark_H
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
                     Version = row.Cells["Version"].Value?.ToString(),
+                    FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
                     BestSize = row.Cells["BestSize"].Value?.ToString(),
                     SameSize = row.Cells["SameSize"].Value?.ToString(),
                     FilePath = row.Cells["FilePath"].Value?.ToString(),
@@ -1433,11 +1540,12 @@ namespace FLAC_Benchmark_H
                     data.Parameters,
                     data.Encoder,
                     data.Version,
+                    data.FastestEncoder,
                     data.BestSize,
                     data.SameSize,
                     data.FilePath,
                     data.MD5,
-                    data.Duplicates); // New column
+                    data.Duplicates);
 
 
                 // Set text color
