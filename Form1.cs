@@ -58,16 +58,19 @@ namespace FLAC_Benchmark_H
                 performanceCountersAvailable = true;
             }
             catch (Exception ex) when (
-                ex is InvalidOperationException ||
-                ex is System.ComponentModel.Win32Exception)
+            ex is InvalidOperationException || ex is System.ComponentModel.Win32Exception)
             {
                 MessageBox.Show(
-                    "Performance counters are unavailable.\n" +
-                    "You may be running the program remotely or without administrator privileges.\n" +
-                    "Some features will be disabled.",
-                    "Performance Counters Initialization Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                "Performance counters are unavailable.\n" +
+                "You may be running the program remotely or without administrator privileges.\n" +
+                "Some features will be disabled.\n\n" +
+                "You may fix it by running CMD as Administrator, typing:\n" +
+                "cd C:\\Windows\\System32\n" +
+                "then:\n" +
+                "lodctr /R",
+                "Performance Counters Initialization Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
                 );
 
                 performanceCountersAvailable = false;
