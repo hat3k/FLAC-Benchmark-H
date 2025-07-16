@@ -1396,13 +1396,13 @@ namespace FLAC_Benchmark_H
             }
 
             // 4.2 Find smallest size for each file
-            var fileSizeGroups = encodeGroups.GroupBy(e => e.Name).ToList();
+            var fileSizeGroups = encodeGroups.GroupBy(e => e.Name + "|" + e.Parameters).ToList();
             var smallestSizes = new Dictionary<string, long>();
             var fileSizeCounts = new Dictionary<string, Dictionary<long, int>>();
 
             foreach (var group in fileSizeGroups)
             {
-                string fileName = group.Key;
+                string key = group.Key;
                 var sizes = group.Select(e =>
                 {
                     long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size);
@@ -1412,7 +1412,7 @@ namespace FLAC_Benchmark_H
                 if (sizes.Count == 0) continue;
 
                 long minSize = sizes.Min();
-                smallestSizes[fileName] = minSize;
+                smallestSizes[key] = minSize;
 
                 var countDict = new Dictionary<long, int>();
                 foreach (var size in sizes)
@@ -1421,7 +1421,7 @@ namespace FLAC_Benchmark_H
                         countDict[size] = 0;
                     countDict[size]++;
                 }
-                fileSizeCounts[fileName] = countDict;
+                fileSizeCounts[key] = countDict;
             }
 
             // 4.3 Apply BestSize and SameSize flags
@@ -1430,11 +1430,13 @@ namespace FLAC_Benchmark_H
             {
                 long.TryParse(entry.OutputFileSize?.Replace(" ", "").Trim(), out long outputSize);
 
-                entry.BestSize = smallestSizes.TryGetValue(entry.Name, out long minSize) && outputSize == minSize
+                string key = entry.Name + "|" + entry.Parameters;
+
+                entry.BestSize = smallestSizes.TryGetValue(key, out long minSize) && outputSize == minSize
                     ? "smallest size"
                     : string.Empty;
 
-                entry.SameSize = fileSizeCounts.TryGetValue(entry.Name, out var sizeCount) &&
+                entry.SameSize = fileSizeCounts.TryGetValue(key, out var sizeCount) &&
                                  sizeCount.TryGetValue(outputSize, out int count) && count > 1
                     ? "has same size"
                     : string.Empty;
