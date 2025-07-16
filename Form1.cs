@@ -27,7 +27,8 @@ namespace FLAC_Benchmark_H
         private const string SettingsAudioFilesFilePath = "Settings_audio_files.txt"; // Path to the file for saving audio files
         private const string SettingsJobsFilePath = "Settings_jobs.txt"; // Path to the jobs file
         private Stopwatch stopwatch;
-        private PerformanceCounter cpuCounter;
+        private PerformanceCounter cpuCounter = null;
+        private bool performanceCountersAvailable = false; 
         private System.Windows.Forms.Timer cpuUsageTimer; // Explicitly specify that this is a Timer from System.Windows.Forms
         private bool _isEncodingStopped = false;
         private bool isExecuting = false; // Flag to track if the process is running
@@ -51,7 +52,26 @@ namespace FLAC_Benchmark_H
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
             LoadCPUInfoAsync(); // Load CPU information
             stopwatch = new Stopwatch(); // Initialize Stopwatch object
-            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            try
+            {
+                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                performanceCountersAvailable = true;
+            }
+            catch (Exception ex) when (
+                ex is InvalidOperationException ||
+                ex is System.ComponentModel.Win32Exception)
+            {
+                MessageBox.Show(
+                    "Performance counters are unavailable.\n" +
+                    "You may be running the program remotely or without administrator privileges.\n" +
+                    "Some features will be disabled.",
+                    "Performance Counters Initialization Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                performanceCountersAvailable = false;
+            }
             cpuUsageTimer = new System.Windows.Forms.Timer(); // Explicitly specify System.Windows.Forms.Timer
             cpuUsageTimer.Interval = 250; // Every 250 ms
             cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
@@ -114,8 +134,16 @@ namespace FLAC_Benchmark_H
 
         private async Task UpdateCpuUsageAsync()
         {
-            float cpuUsage = await Task.Run(() => cpuCounter.NextValue());
-            labelCpuUsage.Text = $"CPU Usage: {cpuUsage:F2}%";
+
+            if (performanceCountersAvailable && cpuCounter != null)
+            {
+                float cpuUsage = cpuCounter.NextValue();
+                labelCpuUsage.Text = $"CPU Usage: {cpuUsage:F2}%";
+            }
+            else
+            {
+                labelCpuUsage.Text = "CPU Usage: N/A";
+            }
         }
 
         // Method to save settings to .txt files
@@ -3393,10 +3421,11 @@ namespace FLAC_Benchmark_H
             SaveAudioFiles(); // Save audio file list
             SaveJobs(); // Save jobList contents
 
-            cpuUsageTimer.Stop(); // Stop timer
-            cpuUsageTimer.Dispose(); // Stop timer
-            _pauseEvent.Dispose(); // Release resources
-            cpuCounter.Dispose(); // Release resources
+            cpuUsageTimer?.Stop();
+            cpuUsageTimer?.Dispose();
+
+            _pauseEvent?.Dispose();
+            cpuCounter?.Dispose();
 
             if (checkBoxClearTempFolder.Checked)
             {
