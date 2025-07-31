@@ -600,6 +600,7 @@ namespace FLAC_Benchmark_H
 
             // Fill subitems
             item.SubItems.Add(encoderInfo.Version);
+            item.SubItems.Add(encoderInfo.DirectoryPath);
             item.SubItems.Add($"{encoderInfo.FileSize:n0} bytes");
             item.SubItems.Add(encoderInfo.LastModified.ToString("yyyy.MM.dd HH:mm"));
 
@@ -1187,8 +1188,9 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Time", "Time");
             dataGridViewLog.Columns.Add("Speed", "Speed");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
-            dataGridViewLog.Columns.Add("Encoder", "Binary");
+            dataGridViewLog.Columns.Add("Encoder", "Encoder");
             dataGridViewLog.Columns.Add("Version", "Version");
+            dataGridViewLog.Columns.Add("EncoderDirectory", "Encoder Path");
             dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
             dataGridViewLog.Columns.Add("BestSize", "Best Size");
             dataGridViewLog.Columns.Add("SameSize", "Same Size");
@@ -1282,11 +1284,12 @@ namespace FLAC_Benchmark_H
                     parameters,                // 6
                     encoderInfo.FileName,      // 7 (Encoder file name from cache)
                     encoderInfo.Version,       // 8 (Encoder version from cache)
-                    string.Empty,              // 9 (FastestEncoder)
-                    string.Empty,              // 10 (BestSize)
-                    string.Empty,              // 11 (SameSize)
-                    audioFileDirectory,        // 12 (FilePath)
-                    Md5Hash                    // 13 (Md5Hash)
+                    encoderInfo.DirectoryPath, // 9 (Encoder's directory path from cache)
+                    string.Empty,              // 10 (FastestEncoder)
+                    string.Empty,              // 11 (BestSize)
+                    string.Empty,              // 12 (SameSize)
+                    audioFileDirectory,        // 13 (FilePath)
+                    Md5Hash                    // 14 (Md5Hash)
                 );
 
                 // Set text color based on file size comparison
@@ -1355,6 +1358,7 @@ namespace FLAC_Benchmark_H
                     Compression = row.Cells["Compression"].Value?.ToString(),
                     Time = row.Cells["Time"].Value?.ToString(),
                     Version = row.Cells["Version"].Value?.ToString(),
+                    EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString(),
                     FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
                     BestSize = row.Cells["BestSize"].Value?.ToString(),
                     SameSize = row.Cells["SameSize"].Value?.ToString(),
@@ -1481,6 +1485,7 @@ namespace FLAC_Benchmark_H
                         entry.Parameters,
                         entry.Encoder,
                         entry.Version,
+                        entry.EncoderDirectory,
                         entry.FastestEncoder,
                         entry.BestSize,
                         entry.SameSize,
@@ -1509,6 +1514,7 @@ namespace FLAC_Benchmark_H
             public string Parameters { get; set; }
             public string Encoder { get; set; }
             public string Version { get; set; }
+            public string EncoderDirectory { get; set; }
             public string FastestEncoder { get; set; }
             public string BestSize { get; set; }
             public string SameSize { get; set; }
@@ -1539,6 +1545,7 @@ namespace FLAC_Benchmark_H
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
                     Version = row.Cells["Version"].Value?.ToString(),
+                    EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString(),
                     FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
                     BestSize = row.Cells["BestSize"].Value?.ToString(),
                     SameSize = row.Cells["SameSize"].Value?.ToString(),
@@ -1559,7 +1566,7 @@ namespace FLAC_Benchmark_H
                 .OrderBy(x => x.FilePath)
                 .ThenBy(x => x.Name)
                 .ThenBy(x => x.Parameters)
-                .ThenBy(x => x.Encoder)
+                .ThenBy(x => x.EncoderDirectory)
                 .ToList();
 
             // Clear DataGridView and add sorted data
@@ -1576,6 +1583,7 @@ namespace FLAC_Benchmark_H
                     data.Parameters,
                     data.Encoder,
                     data.Version,
+                    data.EncoderDirectory,
                     data.FastestEncoder,
                     data.BestSize,
                     data.SameSize,

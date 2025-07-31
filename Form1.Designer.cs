@@ -128,6 +128,7 @@
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
+            EncoderDirectory = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -508,7 +509,7 @@
             // listViewEncoders
             // 
             listViewEncoders.CheckBoxes = true;
-            listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, SizeEexe, DateExe });
+            listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeEexe, DateExe });
             listViewEncoders.FullRowSelect = true;
             listViewEncoders.Location = new Point(6, 22);
             listViewEncoders.Name = "listViewEncoders";
@@ -527,7 +528,7 @@
             // 
             VersionExe.Tag = "VersionExe";
             VersionExe.Text = "Version";
-            VersionExe.Width = 170;
+            VersionExe.Width = 100;
             // 
             // SizeEexe
             // 
@@ -1243,6 +1244,11 @@
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += buttonAbout_Click;
             // 
+            // EncoderDirectory
+            // 
+            EncoderDirectory.Text = "File Path";
+            EncoderDirectory.Width = 130;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1388,5 +1394,6 @@
         private CheckBox checkBoxCheckForUpdatesOnStartup;
         private Button buttonLogColumnsAutoWidth;
         private CheckBox checkBoxAutoAnalyzeLog;
+        private ColumnHeader EncoderDirectory;
     }
 }
