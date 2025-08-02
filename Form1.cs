@@ -1306,7 +1306,7 @@ namespace FLAC_Benchmark_H
                 //dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
 
                 // Logging to file
-                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileName}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tBinary: {encoderInfo.FileName}\tVersion: {encoderInfo.Version}{Environment.NewLine}");
+                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileName}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoder: {encoderInfo.FileName}\tVersion: {encoderInfo.Version}\tEncoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}");
             }
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
