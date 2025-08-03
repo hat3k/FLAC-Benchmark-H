@@ -28,7 +28,7 @@ namespace FLAC_Benchmark_H
         private const string SettingsJobsFilePath = "Settings_jobs.txt"; // Path to the jobs file
         private Stopwatch stopwatch;
         private PerformanceCounter cpuCounter = null;
-        private bool performanceCountersAvailable = false; 
+        private bool performanceCountersAvailable = false;
         private System.Windows.Forms.Timer cpuUsageTimer; // Explicitly specify that this is a Timer from System.Windows.Forms
         private bool _isEncodingStopped = false;
         private bool isExecuting = false; // Flag to track if the process is running
@@ -1163,7 +1163,7 @@ namespace FLAC_Benchmark_H
                 string.Empty, // FastestEncoder
                 string.Empty, // BestSize
                 string.Empty, // SameSize
-                filePath,
+                Path.GetDirectoryName(filePath),
                 md5Hash, // MD5 with error
                 "MD5 calculation failed" // Note about failed calculation
                 );
@@ -1223,7 +1223,7 @@ namespace FLAC_Benchmark_H
                         string.Empty, // FastestEncoder
                         string.Empty, // BestSize
                         string.Empty, // SameSize
-                        filePath,
+                        Path.GetDirectoryName(filePath),
                         md5Hash,
                         duplicates // Duplicates
                         );
@@ -1232,6 +1232,99 @@ namespace FLAC_Benchmark_H
                         dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                     }
                 }
+            }
+        }
+        private async void buttonTestForErrors_Click(object? sender, EventArgs e)
+        {
+            var errorResults = new List<(string FileName, string FilePath, string Message)>();
+
+            var tasks = listViewAudioFiles.Items.Cast<ListViewItem>()
+                .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                .Select(async item =>
+                {
+                    string filePath = item.Tag.ToString();
+                    string fileName = Path.GetFileName(filePath);
+
+                    string encoderPath = null;
+
+                    await this.InvokeAsync(() =>
+                    {
+                        var encoderItem = listViewEncoders.Items
+                            .Cast<ListViewItem>()
+                            .FirstOrDefault(item =>
+                                Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+
+                        encoderPath = encoderItem?.Tag?.ToString();
+                    });
+
+                    if (string.IsNullOrEmpty(encoderPath))
+                    {
+                        errorResults.Add((fileName, filePath, "No .exe encoder found"));
+                        return;
+                    }
+
+                    using (var process = new Process())
+                    {
+                        process.StartInfo.FileName = encoderPath;
+                        process.StartInfo.Arguments = $"--test --silent \"{filePath}\"";
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.CreateNoWindow = true;
+
+                        process.Start();
+
+                        string errorOutput = await process.StandardError.ReadToEndAsync();
+                        string output = await process.StandardOutput.ReadToEndAsync();
+                        await process.WaitForExitAsync();
+
+                        if (process.ExitCode != 0)
+                        {
+                            string message = string.IsNullOrEmpty(errorOutput.Trim()) ? "Unknown error" : errorOutput.Trim();
+                            errorResults.Add((fileName, filePath, message));
+                        }
+                    }
+                });
+
+            await Task.WhenAll(tasks);
+
+            // Clear previous log entries related to errors
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                if (row.Cells["Duplicates"].Value?.ToString() == "Integrity Check Failed")
+                {
+                    dataGridViewLog.Rows.Remove(row);
+                }
+            }
+
+            // Add error results to dataGridViewLog
+            foreach (var result in errorResults)
+            {
+                int rowIndex = dataGridViewLog.Rows.Add(
+                    result.FileName,
+                    string.Empty, // InputFileSize
+                    string.Empty, // OutputFileSize
+                    string.Empty, // Compression
+                    string.Empty, // Time
+                    string.Empty, // Speed
+                    string.Empty, // Parameters
+                    string.Empty, // Encoder
+                    string.Empty, // Version
+                    string.Empty, // Encoder directory path
+                    string.Empty, // FastestEncoder
+                    string.Empty, // BestSize
+                    string.Empty, // SameSize
+                    Path.GetDirectoryName(result.FilePath),
+                    result.Message, // MD5 -> Use for error text
+                    "Integrity Check Failed"
+                );
+
+                dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
+            }
+
+            if (errorResults.Count == 0)
+            {
+                MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -1765,6 +1858,7 @@ namespace FLAC_Benchmark_H
                 .ThenBy(x => x.Name)
                 .ThenBy(x => x.Parameters)
                 .ThenBy(x => x.EncoderDirectory)
+                .ThenBy(x => x.Encoder)
                 .ToList();
 
             // Clear DataGridView and add sorted data

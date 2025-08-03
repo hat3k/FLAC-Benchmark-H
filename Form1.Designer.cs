@@ -63,6 +63,7 @@
             listViewEncoders = new ListView();
             FileNameExe = new ColumnHeader();
             VersionExe = new ColumnHeader();
+            EncoderDirectory = new ColumnHeader();
             SizeEexe = new ColumnHeader();
             DateExe = new ColumnHeader();
             buttonAddEncoders = new Button();
@@ -128,7 +129,6 @@
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
-            EncoderDirectory = new ColumnHeader();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -530,6 +530,11 @@
             VersionExe.Text = "Version";
             VersionExe.Width = 100;
             // 
+            // EncoderDirectory
+            // 
+            EncoderDirectory.Text = "File Path";
+            EncoderDirectory.Width = 130;
+            // 
             // SizeEexe
             // 
             SizeEexe.Tag = "SizeExe";
@@ -609,14 +614,14 @@
             // buttonTestForErrors
             // 
             buttonTestForErrors.Anchor = AnchorStyles.Left;
-            buttonTestForErrors.Enabled = false;
             buttonTestForErrors.Location = new Point(354, 230);
             buttonTestForErrors.Name = "buttonTestForErrors";
             buttonTestForErrors.Size = new Size(110, 23);
             buttonTestForErrors.TabIndex = 6;
             buttonTestForErrors.Text = "Test for errors";
+            toolTip1.SetToolTip(buttonTestForErrors, "Test .flac files for errors");
             buttonTestForErrors.UseVisualStyleBackColor = true;
-            buttonTestForErrors.Visible = false;
+            buttonTestForErrors.Click += buttonTestForErrors_Click;
             // 
             // buttonDetectDupesAudioFiles
             // 
@@ -1243,11 +1248,6 @@
             buttonAbout.Text = "About";
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += buttonAbout_Click;
-            // 
-            // EncoderDirectory
-            // 
-            EncoderDirectory.Text = "File Path";
-            EncoderDirectory.Width = 130;
             // 
             // Form1
             // 
