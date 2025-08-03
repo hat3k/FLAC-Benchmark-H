@@ -606,30 +606,6 @@ namespace FLAC_Benchmark_H
 
             return item;
         }
-
-        private void buttonUpEncoder_Click(object? sender, EventArgs e)
-        {
-            MoveSelectedItems(listViewEncoders, -1); // Pass -1 to move up
-        }
-        private void buttonDownEncoder_Click(object? sender, EventArgs e)
-        {
-            MoveSelectedItems(listViewEncoders, 1); // Pass 1 to move down
-        }
-        private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
-        {
-            // Remove selected items from listViewEncoders
-            for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
-            {
-                if (listViewEncoders.Items[i].Selected) // Check if the item is selected
-                {
-                    listViewEncoders.Items.RemoveAt(i); // Remove the item
-                }
-            }
-        }
-        private void buttonClearEncoders_Click(object? sender, EventArgs e)
-        {
-            listViewEncoders.Items.Clear();
-        }
         private async Task<EncoderInfo> GetEncoderInfo(string encoderPath)
         {
             // Check if the information is in the cache
@@ -678,8 +654,8 @@ namespace FLAC_Benchmark_H
             var encoderInfo = new EncoderInfo
             {
                 EncoderPath = encoderPath,
-                FileName = fileName,
                 DirectoryPath = directoryPath,
+                FileName = fileName,
                 Version = version,
                 FileSize = fileSize,
                 LastModified = lastModified
@@ -694,13 +670,37 @@ namespace FLAC_Benchmark_H
         private class EncoderInfo
         {
             public string EncoderPath { get; set; }
-            public string FileName { get; set; }
             public string DirectoryPath { get; set; }
+            public string FileName { get; set; }
             public string Version { get; set; }
             public long FileSize { get; set; }
             public DateTime LastModified { get; set; }
         }
         private ConcurrentDictionary<string, EncoderInfo> encoderInfoCache = new ConcurrentDictionary<string, EncoderInfo>();
+
+        private void buttonUpEncoder_Click(object? sender, EventArgs e)
+        {
+            MoveSelectedItems(listViewEncoders, -1); // Pass -1 to move up
+        }
+        private void buttonDownEncoder_Click(object? sender, EventArgs e)
+        {
+            MoveSelectedItems(listViewEncoders, 1); // Pass 1 to move down
+        }
+        private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
+        {
+            // Remove selected items from listViewEncoders
+            for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
+            {
+                if (listViewEncoders.Items[i].Selected) // Check if the item is selected
+                {
+                    listViewEncoders.Items.RemoveAt(i); // Remove the item
+                }
+            }
+        }
+        private void buttonClearEncoders_Click(object? sender, EventArgs e)
+        {
+            listViewEncoders.Items.Clear();
+        }
 
         //Audio files
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
