@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.2 build 20250803"; // Current program version
+        public string programVersionCurrent = "1.2 build 20250804"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
@@ -1683,8 +1683,9 @@ namespace FLAC_Benchmark_H
             // 4.1 Find fastest encoder for each group
             foreach (var group in encodeFileParamGroups)
             {
-                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
+                if (group.Count() <= 1) continue; // Skip groups with only one entry
 
+                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
                 foreach (var entry in group)
                 {
                     bool isFastest = (double.Parse(entry.Speed.Replace("x", "").Trim()) >= maxSpeed - 0.01);
@@ -1700,15 +1701,15 @@ namespace FLAC_Benchmark_H
 
             foreach (var group in fileSizeGroups)
             {
+                if (group.Count() <= 1) continue; // Skip groups with only one entry
+
                 string key = group.Key;
                 var sizes = group.Select(e =>
                 {
                     long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size);
                     return size;
                 }).Where(size => size > 0).ToList();
-
                 if (sizes.Count == 0) continue;
-
                 long minSize = sizes.Min();
                 smallestSizes[key] = minSize;
 
@@ -1730,12 +1731,19 @@ namespace FLAC_Benchmark_H
 
                 string key = Path.Combine(entry.AudioFileDirectory ?? "", entry.Name ?? "") + "|" + entry.Parameters;
 
-                entry.BestSize = smallestSizes.TryGetValue(key, out long minSize) && outputSize == minSize
+                // If group has more than one entry
+                bool isGroupLargeEnough = fileSizeGroups.FirstOrDefault(g => g.Key == key)?.Count() > 1;
+
+                entry.BestSize = isGroupLargeEnough
+                    && smallestSizes.TryGetValue(key, out long minSize)
+                    && outputSize == minSize
                     ? "smallest size"
                     : string.Empty;
 
-                entry.SameSize = fileSizeCounts.TryGetValue(key, out var sizeCount) &&
-                                 sizeCount.TryGetValue(outputSize, out int count) && count > 1
+                entry.SameSize = isGroupLargeEnough
+                    && fileSizeCounts.TryGetValue(key, out var sizeCount)
+                    && sizeCount.TryGetValue(outputSize, out int count)
+                    && count > 1
                     ? "has same size"
                     : string.Empty;
 
@@ -1747,8 +1755,9 @@ namespace FLAC_Benchmark_H
 
             foreach (var group in decodeFileParamGroups)
             {
-                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
+                if (group.Count() <= 1) continue; // Skip groups with only one entry
 
+                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
                 foreach (var entry in group)
                 {
                     bool isFastest = (double.Parse(entry.Speed.Replace("x", "").Trim()) >= maxSpeed - 0.01);
