@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.1 build 20250707"; // Current program version
+        public string programVersionCurrent = "1.2 build 20250803"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
@@ -1362,17 +1362,21 @@ namespace FLAC_Benchmark_H
         {
             var groupedEntries = new Dictionary<string, List<LogEntry>>();
 
-            // 1. Collect all entries and group by fileName + encoder + parameters
+            // 1. Collect all entries and group by Audio File Directory + Audio File Name + Encoder Directory + Encoder + Parameters
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
                 if (row.IsNewRow) continue;
 
+                string audioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString();
                 string fileName = row.Cells["Name"].Value?.ToString();
+                string encoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString();
                 string encoder = row.Cells["Encoder"].Value?.ToString();
                 string parameters = row.Cells["Parameters"].Value?.ToString();
                 string speedStr = row.Cells["Speed"].Value?.ToString()?.Replace("x", "")?.Trim();
 
-                if (string.IsNullOrEmpty(fileName) ||
+                if (string.IsNullOrEmpty(audioFileDirectory) ||
+                    string.IsNullOrEmpty(fileName) ||
+                    string.IsNullOrEmpty(encoderDirectory) ||
                     string.IsNullOrEmpty(encoder) ||
                     string.IsNullOrEmpty(parameters) ||
                     !double.TryParse(speedStr, out double speed))
@@ -1380,7 +1384,7 @@ namespace FLAC_Benchmark_H
                     continue;
                 }
 
-                string key = $"{fileName}|{encoder}|{parameters}";
+                string key = $"{audioFileDirectory}|{fileName}|{encoderDirectory}|{encoder}|{parameters}";
 
                 if (!groupedEntries.ContainsKey(key))
                     groupedEntries[key] = new List<LogEntry>();
@@ -1425,13 +1429,13 @@ namespace FLAC_Benchmark_H
             }
 
             // 3. Split into encoding and decoding
-            var encodeGroups = resultEntries.Where(e => !e.Parameters.Contains("-d")).ToList();
-            var decodeGroups = resultEntries.Where(e => e.Parameters.Contains("-d")).ToList();
+            var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
+            var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
 
             // 4. Analysis for encoding: find fastest encoder and smallest file sizes
-            var encodeFileParamGroups = encodeGroups.GroupBy(e => e.Name + "|" + e.Parameters).ToList();
+            var encodeFileParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
 
-            // 4.1 Find fastest encoder for each (file + parameters)
+            // 4.1 Find fastest encoder for each group
             foreach (var group in encodeFileParamGroups)
             {
                 double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
@@ -1443,8 +1447,9 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // 4.2 Find smallest size for each file
-            var fileSizeGroups = encodeGroups.GroupBy(e => e.Name + "|" + e.Parameters).ToList();
+            // 4.2 Find smallest size for each group
+            var fileSizeGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+
             var smallestSizes = new Dictionary<string, long>();
             var fileSizeCounts = new Dictionary<string, Dictionary<long, int>>();
 
@@ -1478,7 +1483,7 @@ namespace FLAC_Benchmark_H
             {
                 long.TryParse(entry.OutputFileSize?.Replace(" ", "").Trim(), out long outputSize);
 
-                string key = entry.Name + "|" + entry.Parameters;
+                string key = Path.Combine(entry.AudioFileDirectory ?? "", entry.Name ?? "") + "|" + entry.Parameters;
 
                 entry.BestSize = smallestSizes.TryGetValue(key, out long minSize) && outputSize == minSize
                     ? "smallest size"
@@ -1493,7 +1498,7 @@ namespace FLAC_Benchmark_H
             }
 
             // 5. Analysis for decoding: find fastest decoder
-            var decodeFileParamGroups = decodeGroups.GroupBy(e => e.Name + "|" + e.Parameters).ToList();
+            var decodeFileParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
 
             foreach (var group in decodeFileParamGroups)
             {
