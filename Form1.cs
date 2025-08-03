@@ -485,11 +485,12 @@ namespace FLAC_Benchmark_H
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
-                // Check if there's at least one .exe file
-                bool hasExeFiles = files.Any(file =>
+                // Check if there's at least one .exe file that is NOT metaflac.exe
+                bool hasValidExeFiles = files.Any(file =>
                     Directory.Exists(file) ||
-                    Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase));
-                e.Effect = hasExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
+                    (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                     !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase)));
+                e.Effect = hasValidExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
             {
@@ -505,14 +506,20 @@ namespace FLAC_Benchmark_H
                 {
                     if (Directory.Exists(file))
                     {
-                        await AddEncoders(file); // Asynchronously add executable files
+                        await AddEncoders(file); // Asynchronously add executable files from directory
                     }
                     else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                     {
+                        // Skip metaflac.exe to prevent it from being added to the encoders list
+                        if (Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return null; // Return null for metaflac.exe
+                        }
+
                         var item = await CreateListViewEncodersItem(file, true); // Create a list item
                         return item; // Return the created item
                     }
-                    return null; // Return null if it's not an .exe file
+                    return null; // Return null if it's not a directory or .exe file
                 });
 
                 var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
@@ -537,11 +544,14 @@ namespace FLAC_Benchmark_H
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    var tasks = openFileDialog.FileNames.Select(async file =>
-                    {
-                        var item = await CreateListViewEncodersItem(file, true); // Create a list item
-                        return item; // Return the created item
-                    });
+                    var tasks = openFileDialog.FileNames
+                        // Filter out metaflac.exe to prevent adding it to the encoders list
+                        .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                        .Select(async file =>
+                        {
+                            var item = await CreateListViewEncodersItem(file, true); // Create a list item
+                            return item; // Return the created item
+                        });
 
                     var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
 
@@ -559,7 +569,11 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
+                // Get all .exe files, but exclude metaflac.exe
+                var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories)
+                    .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                    .ToList(); // ToList() to execute the query and avoid issues if directory changes
+
                 var tasks = exeFiles.Select(async file =>
                 {
                     var item = await CreateListViewEncodersItem(file, true); // Create an item and return it
