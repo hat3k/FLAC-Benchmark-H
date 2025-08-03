@@ -930,6 +930,92 @@ namespace FLAC_Benchmark_H
 
             return "MD5 calculation failed"; // If nothing is found
         }
+        private async Task<string> CalculateFlacMD5Async(string flacFilePath)
+        {
+            return await Task.Run(async () =>
+            {
+                try
+                {
+                    string encoderExePath = null;
+
+                    // Get the path to the encoder from the UI thread
+                    await this.InvokeAsync(() =>
+                    {
+                        var encoderItem = listViewEncoders.Items
+                            .Cast<ListViewItem>()
+                            .FirstOrDefault(item =>
+                                Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+
+                        encoderExePath = encoderItem?.Tag?.ToString();
+                    });
+
+                    if (string.IsNullOrEmpty(encoderExePath) || !File.Exists(encoderExePath))
+                    {
+                        // Show a warning message from the UI thread
+                        await this.InvokeAsync(() =>
+                        {
+                            MessageBox.Show(
+                                "No encoder (.exe) is loaded in the Encoders list.\n" +
+                                "Please add at least one encoder (e.g., flac.exe) to calculate MD5 for FLAC files.",
+                                "No Encoder Found",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning
+                            );
+                        });
+
+                        return "No .exe encoder found in the list";
+                    }
+
+                    // Create a temporary WAV file path
+                    string tempWavFile = Path.Combine(tempFolderPath, "temp_flac_md5_decode.wav");
+                    // Build the command line for decoding
+                    string arguments = $"\"{flacFilePath}\" -d --no-preserve-modtime -f -o \"{tempWavFile}\"";
+
+                    using (var process = new Process())
+                    {
+                        process.StartInfo.FileName = encoderExePath;
+                        process.StartInfo.Arguments = arguments;
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.StartInfo.CreateNoWindow = true;
+
+                        process.Start();
+
+                        string errorOutput = await process.StandardError.ReadToEndAsync();
+                        await process.WaitForExitAsync();
+
+                        // Check if the process completed successfully
+                        if (process.ExitCode != 0)
+                        {
+                            return $"Decode failed: {errorOutput.Trim()}";
+                        }
+
+                        // Verify that the temporary WAV file was created
+                        if (!File.Exists(tempWavFile))
+                        {
+                            return "Temporary WAV file was not created";
+                        }
+
+                        // Calculate MD5 for the temporary WAV file
+                        string md5Hash = CalculateWavMD5Async(tempWavFile).Result;
+
+                        // Clean up: delete the temporary file
+                        try
+                        {
+                            File.Delete(tempWavFile);
+                        }
+                        catch { }
+
+                        // Return the calculated MD5 hash
+                        return md5Hash;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return $"Error: {ex.Message}";
+                }
+            });
+        }
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
@@ -958,6 +1044,24 @@ namespace FLAC_Benchmark_H
 
                         // If calculation failed, add the file to the error list
                         if (md5Hash == "Invalid WAV file" || md5Hash == "MD5 calculation failed")
+                        {
+                            filesWithMD5Errors.Add(item);
+                        }
+                    }
+                    else if (fileExtension == ".flac")
+                    {
+                        // Calculate MD5 for FLAC file by decoding it to a temporary WAV
+                        md5Hash = await CalculateFlacMD5Async(filePath);
+                        item.SubItems[5].Text = md5Hash; // Update the UI
+
+                        // If calculation failed, add to error list
+                        if (md5Hash.StartsWith("Error:") ||
+                            md5Hash.StartsWith("Decode failed:") ||
+                            md5Hash == "No .exe encoder found in the list" ||
+                            md5Hash == "Encoder path invalid" ||
+                            md5Hash == "Temporary WAV file was not created" ||
+                            md5Hash == "Invalid WAV file" ||
+                            md5Hash == "MD5 calculation failed")
                         {
                             filesWithMD5Errors.Add(item);
                         }
