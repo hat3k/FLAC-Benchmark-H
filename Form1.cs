@@ -786,26 +786,26 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private bool IsAudioFile(string file)
+        private bool IsAudioFile(string audioFilePath)
         {
-            string extension = Path.GetExtension(file);
+            string extension = Path.GetExtension(audioFilePath);
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                    extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
-        private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFile, bool isChecked)
+        private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFilePath, bool isChecked)
         {
-            if (!File.Exists(audioFile))
+            if (!File.Exists(audioFilePath))
             {
-                throw new FileNotFoundException("Audio file not found", audioFile);
+                throw new FileNotFoundException("Audio file not found", audioFilePath);
             }
 
             // Use the GetAudioInfo method to get file information
-            var audioFileInfo = await GetAudioInfo(audioFile);
+            var audioFileInfo = await GetAudioInfo(audioFilePath);
 
             // Create a ListViewItem
-            var item = new ListViewItem(Path.GetFileName(audioFile))
+            var item = new ListViewItem(Path.GetFileName(audioFilePath))
             {
-                Tag = audioFile,
+                Tag = audioFilePath,
                 Checked = true
             };
 
@@ -818,31 +818,31 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add(audioFileInfo.DirectoryPath);
             return item;
         }
-        private async Task<AudioFileInfo> GetAudioInfo(string audioFile)
+        private async Task<AudioFileInfo> GetAudioInfo(string audioFilePath)
         {
             // Check if the information is in the cache
-            if (audioInfoCache.TryGetValue(audioFile, out var cachedInfo))
+            if (audioInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
             {
                 return cachedInfo; // Return cached information
             }
 
             var mediaInfo = new MediaInfoLib.MediaInfo();
-            mediaInfo.Open(audioFile);
+            mediaInfo.Open(audioFilePath);
 
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
-            long fileSize = new FileInfo(audioFile).Length;
+            long fileSize = new FileInfo(audioFilePath).Length;
             string md5Hash = "N/A"; // Default value for MD5
 
             // Determine the file type and get the corresponding MD5
-            if (Path.GetExtension(audioFile).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+            if (Path.GetExtension(audioFilePath).Equals(".flac", StringComparison.OrdinalIgnoreCase))
             {
                 md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A"; // Get MD5 for FLAC
             }
-            else if (Path.GetExtension(audioFile).Equals(".wav", StringComparison.OrdinalIgnoreCase) && (checkBoxAddMD5OnLoadWav.Checked))
+            else if (Path.GetExtension(audioFilePath).Equals(".wav", StringComparison.OrdinalIgnoreCase) && (checkBoxAddMD5OnLoadWav.Checked))
             {
-                md5Hash = await CalculateWavMD5Async(audioFile); // Async method to calculate MD5 for WAV
+                md5Hash = await CalculateWavMD5Async(audioFilePath); // Async method to calculate MD5 for WAV
             }
 
             mediaInfo.Close();
@@ -850,9 +850,9 @@ namespace FLAC_Benchmark_H
             // Add new information to the cache
             var audioFileInfo = new AudioFileInfo
             {
-                FilePath = audioFile,
-                DirectoryPath = Path.GetDirectoryName(audioFile),
-                FileName = Path.GetFileName(audioFile),
+                FilePath = audioFilePath,
+                DirectoryPath = Path.GetDirectoryName(audioFilePath),
+                FileName = Path.GetFileName(audioFilePath),
                 Duration = duration,
                 BitDepth = bitDepth,
                 SamplingRate = samplingRate,
@@ -860,7 +860,7 @@ namespace FLAC_Benchmark_H
                 Md5Hash = md5Hash
             };
 
-            audioInfoCache[audioFile] = audioFileInfo; // Cache the information
+            audioInfoCache[audioFilePath] = audioFileInfo; // Cache the information
             return audioFileInfo;
         }
 
@@ -878,9 +878,9 @@ namespace FLAC_Benchmark_H
         }
         private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
 
-        private async Task<string> CalculateWavMD5Async(string filePath)
+        private async Task<string> CalculateWavMD5Async(string audioFilePath)
         {
-            using (var stream = File.OpenRead(filePath))
+            using (var stream = File.OpenRead(audioFilePath))
             {
                 using (var md5 = MD5.Create())
                 {
@@ -1237,7 +1237,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private async Task LogProcessResults(string outputFilePath, string audioFile, string parameters, string encoder)
+        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
             if (outputFile.Exists)
@@ -1247,7 +1247,7 @@ namespace FLAC_Benchmark_H
                 numberFormat.NumberGroupSeparator = " ";
 
                 // Get input audio file information from cache
-                var audioFileInfo = await GetAudioInfo(audioFile);
+                var audioFileInfo = await GetAudioInfo(audioFilePath);
 
                 // Extract data from cache
                 string audioFileName = audioFileInfo.FileName; // Use file name from cache
@@ -1306,7 +1306,7 @@ namespace FLAC_Benchmark_H
                 //dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
 
                 // Logging to file
-                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFileName}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoder: {encoderInfo.FileName}\tVersion: {encoderInfo.Version}\tEncoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}");
+                File.AppendAllText("log.txt", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {audioFilePath}\tInput size: {inputSize}\tOutput size: {outputSize} bytes\tCompression: {compressionPercentage:F3}%\tTime: {timeTaken.TotalMilliseconds:F3} ms\tSpeed: {encodingSpeed:F3}x\tParameters: {parameters.Trim()}\tEncoder: {encoderInfo.FileName}\tVersion: {encoderInfo.Version}\tEncoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}");
             }
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
@@ -2345,7 +2345,7 @@ namespace FLAC_Benchmark_H
 
                 foreach (var encoder in selectedEncoders)
                 {
-                    foreach (var audioFile in selectedAudioFiles)
+                    foreach (var audioFilePath in selectedAudioFiles)
                     {
                         if (_isEncodingStopped)
                         {
@@ -2368,7 +2368,7 @@ namespace FLAC_Benchmark_H
                         // Form the arguments for execution
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Start the process and wait for completion
                         try
@@ -2450,7 +2450,7 @@ namespace FLAC_Benchmark_H
                             }
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
                             }
                         }
                         catch (Exception ex)
@@ -2556,7 +2556,7 @@ namespace FLAC_Benchmark_H
 
                 foreach (var encoder in selectedEncoders)
                 {
-                    foreach (var audioFile in selectedFlacAudioFiles)
+                    foreach (var audioFilePath in selectedFlacAudioFiles)
                     {
                         if (_isEncodingStopped)
                         {
@@ -2571,7 +2571,7 @@ namespace FLAC_Benchmark_H
                         // Form the arguments for execution
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Start the process and wait for completion
                         try
@@ -2622,7 +2622,7 @@ namespace FLAC_Benchmark_H
 
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
                             }
                         }
                         catch (Exception ex)
@@ -2793,7 +2793,7 @@ namespace FLAC_Benchmark_H
                             {
                                 foreach (var encoder in selectedEncoders)
                                 {
-                                    foreach (var audioFile in selectedAudioFiles)
+                                    foreach (var audioFilePath in selectedAudioFiles)
                                     {
                                         if (_isEncodingStopped)
                                         {
@@ -2806,7 +2806,7 @@ namespace FLAC_Benchmark_H
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                         // Start the process and wait for completion
                                         try
@@ -2888,7 +2888,7 @@ namespace FLAC_Benchmark_H
                                             }
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
                                             }
                                         }
                                         catch (Exception ex)
@@ -2909,7 +2909,7 @@ namespace FLAC_Benchmark_H
                             {
                                 foreach (var encoder in selectedEncoders)
                                 {
-                                    foreach (var audioFile in selectedFlacAudioFiles)
+                                    foreach (var audioFilePath in selectedFlacAudioFiles)
                                     {
                                         if (_isEncodingStopped)
                                         {
@@ -2922,7 +2922,7 @@ namespace FLAC_Benchmark_H
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
-                                        string arguments = $"\"{audioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                         // Start the process and wait for completion
                                         try
@@ -2973,7 +2973,7 @@ namespace FLAC_Benchmark_H
 
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFile, parameters, encoder);
+                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
                                             }
                                         }
                                         catch (Exception ex)
