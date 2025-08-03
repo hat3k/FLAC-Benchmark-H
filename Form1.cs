@@ -942,20 +942,32 @@ namespace FLAC_Benchmark_H
                 string md5Hash = item.SubItems[5].Text; // Try to get MD5 from subitem
 
                 // Check if MD5 hash is missing or invalid, calculate it
-                if (string.IsNullOrEmpty(md5Hash) || md5Hash == "00000000000000000000000000000000" || md5Hash == "Invalid WAV file" || md5Hash == "N/A")
+                if (string.IsNullOrEmpty(md5Hash) ||
+                md5Hash == "00000000000000000000000000000000" ||
+                md5Hash == "Invalid WAV file" ||
+                md5Hash == "N/A")
                 {
-                    md5Hash = await Task.Run(() => CalculateWavMD5Async(filePath));
-                    item.SubItems[5].Text = md5Hash; // Set the calculated MD5 in the subitem
+                    string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
 
-                    // If MD5 couldn't be calculated, add the file to the list
-                    if (md5Hash == "Invalid WAV file" || md5Hash == "MD5 calculation failed")
+                    // Only attempt to calculate MD5 for .wav files
+                    if (fileExtension == ".wav")
                     {
-                        filesWithMD5Errors.Add(item);
+                        // Calculate MD5 for WAV file
+                        md5Hash = await Task.Run(() => CalculateWavMD5Async(filePath));
+                        item.SubItems[5].Text = md5Hash; // Update the UI with the calculated MD5
+
+                        // If calculation failed, add the file to the error list
+                        if (md5Hash == "Invalid WAV file" || md5Hash == "MD5 calculation failed")
+                        {
+                            filesWithMD5Errors.Add(item);
+                        }
                     }
-                    // If Tag contains a file path (regular string), update the cache
+                    // For .flac and other file types, we leave md5Hash as-is (e.g., "N/A", "000000...")
+                    // No attempt to calculate MD5 to avoid errors
+
+                    // Update the cache with the current md5Hash value (whether calculated or unchanged)
                     if (item.Tag is string existingFilePath)
                     {
-                        // Check if this file exists in the cache
                         if (audioInfoCache.TryGetValue(existingFilePath, out var cachedInfo))
                         {
                             // Update only the MD5 of the existing object
@@ -980,7 +992,11 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Check if the hash is valid
-                if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "00000000000000000000000000000000" && md5Hash != "Invalid WAV file" && md5Hash != "MD5 calculation failed")
+                if (!string.IsNullOrEmpty(md5Hash) &&
+                md5Hash != "00000000000000000000000000000000" &&
+                md5Hash != "Invalid WAV file" &&
+                md5Hash != "MD5 calculation failed" &&
+                md5Hash != "N/A")
                 {
                     if (hashDict.ContainsKey(md5Hash))
                     {
@@ -1004,29 +1020,29 @@ namespace FLAC_Benchmark_H
 
                 // Add a record to GridViewLog
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    fileName,
-                    string.Empty, // InputFileSize
-                    string.Empty, // OutputFileSize
-                    string.Empty, // Compression
-                    string.Empty, // Time
-                    string.Empty, // Speed
-                    string.Empty, // Parameters
-                    string.Empty, // Encoder
-                    string.Empty, // Version
-                    string.Empty, // Encoder directory path
-                    string.Empty, // FastestEncoder
-                    string.Empty, // BestSize
-                    string.Empty, // SameSize
-                    filePath,
-                    md5Hash, // MD5 with error
-                    "MD5 calculation failed" // Note about failed calculation
+                fileName,
+                string.Empty, // InputFileSize
+                string.Empty, // OutputFileSize
+                string.Empty, // Compression
+                string.Empty, // Time
+                string.Empty, // Speed
+                string.Empty, // Parameters
+                string.Empty, // Encoder
+                string.Empty, // Version
+                string.Empty, // Encoder directory path
+                string.Empty, // FastestEncoder
+                string.Empty, // BestSize
+                string.Empty, // SameSize
+                filePath,
+                md5Hash, // MD5 with error
+                "MD5 calculation failed" // Note about failed calculation
                 );
 
                 // Set color for the row with failed MD5 calculation
                 dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray; // Gray color for highlighting
             }
 
-            // List of duplicates
+            // Mark duplicates in ListView: only the first file is checked
             foreach (var kvp in hashDict)
             {
                 if (kvp.Value.Count > 1)
@@ -1039,16 +1055,22 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // Move duplicates to the top of the ListView
+            // Move duplicates to the top of the ListView and log them
             foreach (var kvp in hashDict)
             {
                 if (kvp.Value.Count > 1)
                 {
+                    // Remove and reinsert to move to the top
                     foreach (var dupItem in kvp.Value)
                     {
-                        listViewAudioFiles.Items.Remove(dupItem);
-                        listViewAudioFiles.Items.Insert(0, dupItem); // Insert at the beginning of the list
+                        if (listViewAudioFiles.Items.Contains(dupItem))
+                        {
+                            listViewAudioFiles.Items.Remove(dupItem);
+                        }
+                        listViewAudioFiles.Items.Insert(0, dupItem);
                     }
+
+                    // Log each duplicate in the log grid
                     foreach (var dupItem in kvp.Value)
                     {
                         string filePath = dupItem.Tag.ToString();
@@ -1058,22 +1080,22 @@ namespace FLAC_Benchmark_H
 
                         // Add a record to GridViewLog
                         int rowIndex = dataGridViewLog.Rows.Add(
-                            fileName,
-                            string.Empty, // InputFileSize
-                            string.Empty, // OutputFileSize
-                            string.Empty, // Compression
-                            string.Empty, // Time
-                            string.Empty, // Speed
-                            string.Empty, // Parameters
-                            string.Empty, // Encoder
-                            string.Empty, // Version
-                            string.Empty, // Encoder directory path
-                            string.Empty, // FastestEncoder
-                            string.Empty, // BestSize
-                            string.Empty, // SameSize
-                            filePath,
-                            md5Hash,
-                            duplicates // Duplicates
+                        fileName,
+                        string.Empty, // InputFileSize
+                        string.Empty, // OutputFileSize
+                        string.Empty, // Compression
+                        string.Empty, // Time
+                        string.Empty, // Speed
+                        string.Empty, // Parameters
+                        string.Empty, // Encoder
+                        string.Empty, // Version
+                        string.Empty, // Encoder directory path
+                        string.Empty, // FastestEncoder
+                        string.Empty, // BestSize
+                        string.Empty, // SameSize
+                        filePath,
+                        md5Hash,
+                        duplicates // Duplicates
                         );
 
                         // Set color for the row with duplicates
