@@ -1195,20 +1195,21 @@ namespace FLAC_Benchmark_H
             var encoderDirectoryColumn = new DataGridViewLinkColumn
             {
                 Name = "EncoderDirectory",
-                HeaderText = "Encoder Path",
-                DataPropertyName = "EncoderDirectory" // Bind to the Encoder Path column
+                HeaderText = "Encoder Directory",
+                DataPropertyName = "EncoderDirectory" // Bind to the Encoder's Directory Path column
             };
             dataGridViewLog.Columns.Add(encoderDirectoryColumn);
             dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
             dataGridViewLog.Columns.Add("BestSize", "Best Size");
             dataGridViewLog.Columns.Add("SameSize", "Same Size");
-            var filePathColumn = new DataGridViewLinkColumn
+            var audioFileDirectoryColumn = new DataGridViewLinkColumn
             {
-                Name = "FilePath",
-                HeaderText = "File Path",
-                DataPropertyName = "FilePath" // Bind to the FilePath column
+                Name = "AudioFileDirectory",
+                HeaderText = "Audio File Directory",
+                DataPropertyName = "AudioFileDirectory" // Bind to the Audio File's Directory Path column
+
             };
-            dataGridViewLog.Columns.Add(filePathColumn);
+            dataGridViewLog.Columns.Add(audioFileDirectoryColumn);
             dataGridViewLog.Columns.Add("MD5", "MD5");
             dataGridViewLog.Columns.Add("Duplicates", "Duplicates");
 
@@ -1230,10 +1231,10 @@ namespace FLAC_Benchmark_H
 
             string columnName = dataGridViewLog.Columns[e.ColumnIndex].Name;
 
-            // 1. Handle click on "FilePath" column — path to the audio file directory
-            if (columnName == "FilePath")
+            // 1. Handle click on "AudioFileDirectory" column — path to the audio file directory
+            if (columnName == "AudioFileDirectory")
             {
-                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["FilePath"].Value?.ToString();
+                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
                 string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
 
                 if (!string.IsNullOrEmpty(directoryPath) &&
@@ -1328,7 +1329,7 @@ namespace FLAC_Benchmark_H
                     string.Empty,              // 10 (FastestEncoder)
                     string.Empty,              // 11 (BestSize)
                     string.Empty,              // 12 (SameSize)
-                    audioFileDirectory,        // 13 (FilePath)
+                    audioFileDirectory,        // 13 (Audio File Path)
                     Md5Hash                    // 14 (Md5Hash)
                 );
 
@@ -1402,7 +1403,7 @@ namespace FLAC_Benchmark_H
                     FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
                     BestSize = row.Cells["BestSize"].Value?.ToString(),
                     SameSize = row.Cells["SameSize"].Value?.ToString(),
-                    FilePath = row.Cells["FilePath"].Value?.ToString(),
+                    AudioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString(),
                     MD5 = row.Cells["MD5"].Value?.ToString(),
                     Duplicates = row.Cells["Duplicates"].Value?.ToString(),
 
@@ -1529,7 +1530,7 @@ namespace FLAC_Benchmark_H
                         entry.FastestEncoder,
                         entry.BestSize,
                         entry.SameSize,
-                        entry.FilePath,
+                        entry.AudioFileDirectory,
                         entry.MD5,
                         entry.Duplicates
                     );
@@ -1558,7 +1559,7 @@ namespace FLAC_Benchmark_H
             public string FastestEncoder { get; set; }
             public string BestSize { get; set; }
             public string SameSize { get; set; }
-            public string FilePath { get; set; }
+            public string AudioFileDirectory { get; set; }
             public string MD5 { get; set; }
             public string Duplicates { get; set; }
 
@@ -1589,7 +1590,7 @@ namespace FLAC_Benchmark_H
                     FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
                     BestSize = row.Cells["BestSize"].Value?.ToString(),
                     SameSize = row.Cells["SameSize"].Value?.ToString(),
-                    FilePath = row.Cells["FilePath"].Value?.ToString(),
+                    AudioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString(),
                     MD5 = row.Cells["MD5"].Value?.ToString(),
                     Duplicates = row.Cells["Duplicates"].Value?.ToString(),
 
@@ -1603,7 +1604,7 @@ namespace FLAC_Benchmark_H
 
             // Perform multi-level sorting
             var sortedData = dataToSort
-                .OrderBy(x => x.FilePath)
+                .OrderBy(x => x.AudioFileDirectory)
                 .ThenBy(x => x.Name)
                 .ThenBy(x => x.Parameters)
                 .ThenBy(x => x.EncoderDirectory)
@@ -1627,7 +1628,7 @@ namespace FLAC_Benchmark_H
                     data.FastestEncoder,
                     data.BestSize,
                     data.SameSize,
-                    data.FilePath,
+                    data.AudioFileDirectory,
                     data.MD5,
                     data.Duplicates);
 
@@ -1703,7 +1704,7 @@ namespace FLAC_Benchmark_H
                                 cell.SetHyperlink(new XLHyperlink(path));
                             }
                         }
-                        else if (j == dataGridViewLog.Columns["FilePath"].Index)
+                        else if (j == dataGridViewLog.Columns["AudioFileDirectory"].Index)
                         {
                             string path = cellValue?.ToString() ?? string.Empty;
                             var cell = worksheet.Cell(i + 2, j + 1);
