@@ -980,6 +980,19 @@ namespace FLAC_Benchmark_H
                         return "No .exe encoder found in the list";
                     }
 
+                    if (!Directory.Exists(tempFolderPath))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(tempFolderPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            return $"Failed to create temp folder: {ex.Message}";
+                        }
+                    }
+                    // ---
+
                     // Create a temporary WAV file path
                     string tempWavFile = Path.Combine(tempFolderPath, "temp_flac_md5_decode.wav");
                     // Build the command line for decoding
@@ -1030,7 +1043,6 @@ namespace FLAC_Benchmark_H
                 }
             });
         }
-
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
