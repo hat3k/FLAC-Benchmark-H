@@ -1709,11 +1709,9 @@ namespace FLAC_Benchmark_H
                             var cell = worksheet.Cell(i + 2, j + 1);
                             cell.Value = path;
 
-                            if (Directory.Exists(path) || File.Exists(path))
+                            if (Directory.Exists(path))
                             {
                                 cell.SetHyperlink(new XLHyperlink(path));
-                                //cell.Style.Font.Underline = true;
-                                //cell.Style.Font.FontColor = XLColor.Blue;
                             }
                         }
                         else if (j == dataGridViewLog.Columns["Parameters"].Index) // Parameters column processing
