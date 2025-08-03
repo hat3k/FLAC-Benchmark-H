@@ -1013,6 +1013,7 @@ namespace FLAC_Benchmark_H
                     string.Empty, // Parameters
                     string.Empty, // Encoder
                     string.Empty, // Version
+                    string.Empty, // Encoder directory path
                     string.Empty, // FastestEncoder
                     string.Empty, // BestSize
                     string.Empty, // SameSize
@@ -1066,6 +1067,7 @@ namespace FLAC_Benchmark_H
                             string.Empty, // Parameters
                             string.Empty, // Encoder
                             string.Empty, // Version
+                            string.Empty, // Encoder directory path
                             string.Empty, // FastestEncoder
                             string.Empty, // BestSize
                             string.Empty, // SameSize
@@ -1190,7 +1192,13 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
             dataGridViewLog.Columns.Add("Version", "Version");
-            dataGridViewLog.Columns.Add("EncoderDirectory", "Encoder Path");
+            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            {
+                Name = "EncoderDirectory",
+                HeaderText = "Encoder Path",
+                DataPropertyName = "EncoderDirectory" // Bind to the Encoder Path column
+            };
+            dataGridViewLog.Columns.Add(encoderDirectoryColumn);
             dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
             dataGridViewLog.Columns.Add("BestSize", "Best Size");
             dataGridViewLog.Columns.Add("SameSize", "Same Size");
@@ -1217,22 +1225,54 @@ namespace FLAC_Benchmark_H
         }
         private void dataGridViewLog_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Check if clicked on the "FilePath" column
-            if (e.ColumnIndex == dataGridViewLog.Columns["FilePath"].Index && e.RowIndex >= 0)
+            // Prevent interaction with the new row or invalid cell
+            if (e.RowIndex < 0) return;
+
+            string columnName = dataGridViewLog.Columns[e.ColumnIndex].Name;
+
+            // 1. Handle click on "FilePath" column — path to the audio file directory
+            if (columnName == "FilePath")
             {
-                // Get the full path to the directory
                 string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["FilePath"].Value?.ToString();
-                // Get the file name
-                string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString(); // Assuming this cell stores the output file name
+                string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
 
-                // Check that both values are not empty
-                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(fileName))
                 {
-                    // Form the full path to the file
                     string fullPath = Path.Combine(directoryPath, fileName);
+                    if (File.Exists(fullPath))
+                    {
+                        // Highlight the audio file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if file not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
+                }
+            }
 
-                    // Open Explorer with the specified path and highlight the file
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+            // 2. Handle click on "EncoderDirectory" column — path to the encoder's folder
+            else if (columnName == "EncoderDirectory")
+            {
+                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
+                string encoderFileName = dataGridViewLog.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(encoderFileName))
+                {
+                    string encoderExePath = Path.Combine(directoryPath, encoderFileName);
+                    if (File.Exists(encoderExePath))
+                    {
+                        // Highlight the encoder .exe file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if .exe not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
                 }
             }
         }
@@ -1650,6 +1690,17 @@ namespace FLAC_Benchmark_H
                             if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
                             {
                                 worksheet.Cell(i + 2, j + 1).Value = speedValue; // Write speed value
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
+                        {
+                            string path = cellValue?.ToString() ?? string.Empty;
+                            var cell = worksheet.Cell(i + 2, j + 1);
+                            cell.Value = path;
+
+                            if (Directory.Exists(path))
+                            {
+                                cell.SetHyperlink(new XLHyperlink(path));
                             }
                         }
                         else if (j == dataGridViewLog.Columns["FilePath"].Index)
@@ -3468,6 +3519,5 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
     }
 }
