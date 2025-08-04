@@ -1046,7 +1046,7 @@ namespace FLAC_Benchmark_H
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var hashDict = new Dictionary<string, List<ListViewItem>>();
-            var filesWithMD5Errors = new List<ListViewItem>(); // List for files with failed MD5 calculation
+            var filesWithMD5Errors = new List<(ListViewItem Item, string FullErrorMessage)>(); // Store the item and full error message
 
             // Process each audio file sequentially to avoid parallel execution of flac.exe
             var items = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
@@ -1057,41 +1057,50 @@ namespace FLAC_Benchmark_H
 
                 // Check if MD5 hash is missing or invalid, calculate it
                 if (string.IsNullOrEmpty(md5Hash) ||
-                md5Hash == "00000000000000000000000000000000" ||
-                md5Hash == "Invalid WAV file" ||
-                md5Hash == "N/A")
+                    md5Hash == "00000000000000000000000000000000" ||
+                    md5Hash == "Invalid WAV file" ||
+                    md5Hash == "N/A")
                 {
                     string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
 
-                    // Only attempt to calculate MD5 for .wav files
                     if (fileExtension == ".wav")
                     {
                         // Calculate MD5 for WAV file
                         md5Hash = await Task.Run(() => CalculateWavMD5Async(filePath));
-                        item.SubItems[5].Text = md5Hash; // Update the UI with the calculated MD5
 
-                        // If calculation failed, add the file to the error list
-                        if (md5Hash == "Invalid WAV file" || md5Hash == "MD5 calculation failed")
+                        // Determine if there was an error
+                        bool hasError = md5Hash == "Invalid WAV file" || md5Hash == "MD5 calculation failed";
+
+                        // In listViewAudioFiles, display a short error label
+                        item.SubItems[5].Text = hasError ? "MD5 calculation failed" : md5Hash;
+
+                        // If there was an error, store the item and the FULL error message
+                        if (hasError)
                         {
-                            filesWithMD5Errors.Add(item);
+                            filesWithMD5Errors.Add((item, md5Hash));
                         }
                     }
                     else if (fileExtension == ".flac")
                     {
                         // Calculate MD5 for FLAC file by decoding it to a temporary WAV
-                        md5Hash = await CalculateFlacMD5Async(filePath);
-                        item.SubItems[5].Text = md5Hash; // Update the UI
+                        string fullError = await CalculateFlacMD5Async(filePath); // Store the full error text
 
-                        // If calculation failed, add to error list
-                        if (md5Hash.StartsWith("Error:") ||
-                            md5Hash.StartsWith("Decode failed:") ||
-                            md5Hash == "No .exe encoder found in the list" ||
-                            md5Hash == "Encoder path invalid" ||
-                            md5Hash == "Temporary WAV file was not created" ||
-                            md5Hash == "Invalid WAV file" ||
-                            md5Hash == "MD5 calculation failed")
+                        // Determine if there was an error
+                        bool hasError = fullError.StartsWith("Error:") ||
+                                        fullError.StartsWith("Decode failed:") ||
+                                        fullError == "No .exe encoder found in the list" ||
+                                        fullError == "Encoder path invalid" ||
+                                        fullError == "Temporary WAV file was not created" ||
+                                        fullError == "Invalid WAV file" ||
+                                        fullError == "MD5 calculation failed";
+
+                        // In listViewAudioFiles, display a short error label
+                        item.SubItems[5].Text = hasError ? "MD5 calculation failed" : fullError;
+
+                        // If there was an error, store the item and the FULL error message
+                        if (hasError)
                         {
-                            filesWithMD5Errors.Add(item);
+                            filesWithMD5Errors.Add((item, fullError));
                         }
                     }
                     // For .flac and other file types, we leave md5Hash as-is (e.g., "N/A", "000000...")
@@ -1103,7 +1112,7 @@ namespace FLAC_Benchmark_H
                         if (audioInfoCache.TryGetValue(existingFilePath, out var cachedInfo))
                         {
                             // Update only the MD5 of the existing object
-                            cachedInfo.Md5Hash = md5Hash;
+                            cachedInfo.Md5Hash = md5Hash; // Use the short label for the cache
                             audioInfoCache[existingFilePath] = cachedInfo;
                         }
                         else
@@ -1112,7 +1121,7 @@ namespace FLAC_Benchmark_H
                             var newInfo = new AudioFileInfo
                             {
                                 FilePath = existingFilePath,
-                                Md5Hash = md5Hash,
+                                Md5Hash = md5Hash, // Use the short label
                                 FileName = Path.GetFileName(existingFilePath),
                                 DirectoryPath = Path.GetDirectoryName(existingFilePath)
                             };
@@ -1125,10 +1134,10 @@ namespace FLAC_Benchmark_H
 
                 // Check if the hash is valid
                 if (!string.IsNullOrEmpty(md5Hash) &&
-                md5Hash != "00000000000000000000000000000000" &&
-                md5Hash != "Invalid WAV file" &&
-                md5Hash != "MD5 calculation failed" &&
-                md5Hash != "N/A")
+                    md5Hash != "00000000000000000000000000000000" &&
+                    md5Hash != "Invalid WAV file" &&
+                    md5Hash != "MD5 calculation failed" &&
+                    md5Hash != "N/A")
                 {
                     if (hashDict.ContainsKey(md5Hash))
                     {
@@ -1141,36 +1150,60 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // Add files with failed MD5 calculation to DataGridViewLog
-            foreach (var errorItem in filesWithMD5Errors)
+            // Ensure the "Error" column exists
+            if (!dataGridViewLog.Columns.Contains("Error"))
+            {
+                var errorColumn = new DataGridViewTextBoxColumn();
+                errorColumn.Name = "Error";
+                errorColumn.HeaderText = "Error";
+                errorColumn.Visible = false;
+                errorColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridViewLog.Columns.Add(errorColumn);
+            }
+
+            // Clear previous MD5 error results from the log
+            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            {
+                if (row.Cells["Duplicates"].Value?.ToString() == "MD5 calculation failed")
+                {
+                    dataGridViewLog.Rows.Remove(row);
+                }
+            }
+
+            // Add error results to the log grid
+            foreach (var (errorItem, fullErrorMessage) in filesWithMD5Errors)
             {
                 string filePath = errorItem.Tag.ToString();
                 string fileName = Path.GetFileName(filePath);
-                string md5Hash = errorItem.SubItems[5].Text;
 
-                // Add a record to GridViewLog
                 int rowIndex = dataGridViewLog.Rows.Add(
-                fileName,
-                string.Empty, // InputFileSize
-                string.Empty, // OutputFileSize
-                string.Empty, // Compression
-                string.Empty, // Time
-                string.Empty, // Speed
-                string.Empty, // Parameters
-                string.Empty, // Encoder
-                string.Empty, // Version
-                string.Empty, // Encoder directory path
-                string.Empty, // FastestEncoder
-                string.Empty, // BestSize
-                string.Empty, // SameSize
-                Path.GetDirectoryName(filePath), // AudioFileDirectory
-                md5Hash, // MD5 with error
-                "MD5 calculation failed" // Note about failed calculation
+                    fileName,
+                    string.Empty, // InputFileSize
+                    string.Empty, // OutputFileSize
+                    string.Empty, // Compression
+                    string.Empty, // Time
+                    string.Empty, // Speed
+                    string.Empty, // Parameters
+                    string.Empty, // Encoder
+                    string.Empty, // Version
+                    string.Empty, // Encoder directory path
+                    string.Empty, // FastestEncoder
+                    string.Empty, // BestSize
+                    string.Empty, // SameSize
+                    Path.GetDirectoryName(filePath), // AudioFileDirectory
+                    "MD5 calculation failed", // MD5 - display status
+                    string.Empty // Duplicates - leave empty
                 );
 
-                // Set color for the row with failed MD5 calculation
-                dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray; // Gray color for highlighting
+                // Set the full error message in the "Error" column
+                dataGridViewLog.Rows[rowIndex].Cells["Error"].Value = fullErrorMessage;
+                dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
             }
+
+            // Show the "Error" column only if there are errors in the log
+            dataGridViewLog.Columns["Error"].Visible = dataGridViewLog.Rows
+                .Cast<DataGridViewRow>()
+                .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
 
             // Mark duplicates in ListView: only the first file is checked
             foreach (var kvp in hashDict)
@@ -1210,22 +1243,22 @@ namespace FLAC_Benchmark_H
 
                         // Add a record to GridViewLog
                         int rowIndex = dataGridViewLog.Rows.Add(
-                        fileName,
-                        string.Empty, // InputFileSize
-                        string.Empty, // OutputFileSize
-                        string.Empty, // Compression
-                        string.Empty, // Time
-                        string.Empty, // Speed
-                        string.Empty, // Parameters
-                        string.Empty, // Encoder
-                        string.Empty, // Version
-                        string.Empty, // Encoder directory path
-                        string.Empty, // FastestEncoder
-                        string.Empty, // BestSize
-                        string.Empty, // SameSize
-                        Path.GetDirectoryName(filePath), // AudioFileDirectory
-                        md5Hash,
-                        duplicates // Duplicates
+                            fileName,
+                            string.Empty, // InputFileSize
+                            string.Empty, // OutputFileSize
+                            string.Empty, // Compression
+                            string.Empty, // Time
+                            string.Empty, // Speed
+                            string.Empty, // Parameters
+                            string.Empty, // Encoder
+                            string.Empty, // Version
+                            string.Empty, // Encoder directory path
+                            string.Empty, // FastestEncoder
+                            string.Empty, // BestSize
+                            string.Empty, // SameSize
+                            Path.GetDirectoryName(filePath), // AudioFileDirectory
+                            md5Hash,
+                            duplicates // Duplicates
                         );
 
                         // Set color for the row with duplicates
@@ -1298,6 +1331,17 @@ namespace FLAC_Benchmark_H
                 }
             }
 
+            // Ensure the "Error" column exists and is initially hidden
+            if (!dataGridViewLog.Columns.Contains("Error"))
+            {
+                var errorColumn = new DataGridViewTextBoxColumn();
+                errorColumn.Name = "Error";
+                errorColumn.HeaderText = "Error";
+                errorColumn.Visible = false;
+                errorColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridViewLog.Columns.Add(errorColumn);
+            }
+
             // Clear previous integrity check results from the log
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
@@ -1325,12 +1369,19 @@ namespace FLAC_Benchmark_H
                     string.Empty, // BestSize
                     string.Empty, // SameSize
                     Path.GetDirectoryName(result.FilePath), // AudioFileDirectory
-                    result.Message, // MD5 -> using for error message
-                    "Integrity Check Failed" // Duplicates
+                    "Integrity Check Failed", // MD5 - placeholder
+                    string.Empty // Duplicates
                 );
 
+                // Set the error message in the dedicated Error column
+                dataGridViewLog.Rows[rowIndex].Cells["Error"].Value = result.Message;
                 dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
             }
+
+            // Show the "Error" column only if there are errors
+            dataGridViewLog.Columns["Error"].Visible = dataGridViewLog.Rows
+                .Cast<DataGridViewRow>()
+                .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
 
             if (errorResults.Count == 0)
             {
