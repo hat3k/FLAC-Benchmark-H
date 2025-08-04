@@ -1282,18 +1282,13 @@ namespace FLAC_Benchmark_H
                 string filePath = item.Tag.ToString();
                 string fileName = Path.GetFileName(filePath);
 
-                string encoderPath = null;
 
-                // Get the encoder path from the UI thread
-                await this.InvokeAsync(() =>
-                {
-                    var encoderItem = listViewEncoders.Items
-                    .Cast<ListViewItem>()
-                    .FirstOrDefault(item =>
-                    Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                var encoderItem = listViewEncoders.Items
+                .Cast<ListViewItem>()
+                .FirstOrDefault(item =>
+                Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
-                    encoderPath = encoderItem?.Tag?.ToString();
-                });
+                string encoderPath = encoderItem?.Tag?.ToString();
 
                 if (string.IsNullOrEmpty(encoderPath))
                 {
