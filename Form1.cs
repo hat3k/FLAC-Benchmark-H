@@ -956,9 +956,9 @@ namespace FLAC_Benchmark_H
                     await this.InvokeAsync(() =>
                     {
                         var encoderItem = listViewEncoders.Items
-                            .Cast<ListViewItem>()
-                            .FirstOrDefault(item =>
-                                Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                        .Cast<ListViewItem>()
+                        .FirstOrDefault(item =>
+                        Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
                         encoderExePath = encoderItem?.Tag?.ToString();
                     });
@@ -969,11 +969,11 @@ namespace FLAC_Benchmark_H
                         await this.InvokeAsync(() =>
                         {
                             MessageBox.Show(
-                                "No encoder (.exe) is loaded in the Encoders list.\n" +
-                                "Please add at least one encoder (e.g., flac.exe) to calculate MD5 for FLAC files.",
-                                "No Encoder Found",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning
+                            "No encoder (.exe) is loaded in the Encoders list.\n" +
+                            "Please add at least one encoder (e.g., flac.exe) to calculate MD5 for FLAC files.",
+                            "No Encoder Found",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning
                             );
                         });
 
@@ -1057,9 +1057,9 @@ namespace FLAC_Benchmark_H
 
                 // Check if MD5 hash is missing or invalid, calculate it
                 if (string.IsNullOrEmpty(md5Hash) ||
-                    md5Hash == "00000000000000000000000000000000" ||
-                    md5Hash == "Invalid WAV file" ||
-                    md5Hash == "N/A")
+                md5Hash == "00000000000000000000000000000000" ||
+                md5Hash == "Invalid WAV file" ||
+                md5Hash == "N/A")
                 {
                     string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
 
@@ -1087,12 +1087,12 @@ namespace FLAC_Benchmark_H
 
                         // Determine if there was an error
                         bool hasError = fullError.StartsWith("Error:") ||
-                                        fullError.StartsWith("Decode failed:") ||
-                                        fullError == "No .exe encoder found in the list" ||
-                                        fullError == "Encoder path invalid" ||
-                                        fullError == "Temporary WAV file was not created" ||
-                                        fullError == "Invalid WAV file" ||
-                                        fullError == "MD5 calculation failed";
+                        fullError.StartsWith("Decode failed:") ||
+                        fullError == "No .exe encoder found in the list" ||
+                        fullError == "Encoder path invalid" ||
+                        fullError == "Temporary WAV file was not created" ||
+                        fullError == "Invalid WAV file" ||
+                        fullError == "MD5 calculation failed";
 
                         // In listViewAudioFiles, display a short error label
                         item.SubItems[5].Text = hasError ? "MD5 calculation failed" : fullError;
@@ -1134,10 +1134,10 @@ namespace FLAC_Benchmark_H
 
                 // Check if the hash is valid
                 if (!string.IsNullOrEmpty(md5Hash) &&
-                    md5Hash != "00000000000000000000000000000000" &&
-                    md5Hash != "Invalid WAV file" &&
-                    md5Hash != "MD5 calculation failed" &&
-                    md5Hash != "N/A")
+                md5Hash != "00000000000000000000000000000000" &&
+                md5Hash != "Invalid WAV file" &&
+                md5Hash != "MD5 calculation failed" &&
+                md5Hash != "N/A")
                 {
                     if (hashDict.ContainsKey(md5Hash))
                     {
@@ -1177,22 +1177,22 @@ namespace FLAC_Benchmark_H
                 string fileName = Path.GetFileName(filePath);
 
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    fileName,
-                    string.Empty, // InputFileSize
-                    string.Empty, // OutputFileSize
-                    string.Empty, // Compression
-                    string.Empty, // Time
-                    string.Empty, // Speed
-                    string.Empty, // Parameters
-                    string.Empty, // Encoder
-                    string.Empty, // Version
-                    string.Empty, // Encoder directory path
-                    string.Empty, // FastestEncoder
-                    string.Empty, // BestSize
-                    string.Empty, // SameSize
-                    Path.GetDirectoryName(filePath), // AudioFileDirectory
-                    "MD5 calculation failed", // MD5 - display status
-                    string.Empty // Duplicates - leave empty
+                fileName,
+                string.Empty, // InputFileSize
+                string.Empty, // OutputFileSize
+                string.Empty, // Compression
+                string.Empty, // Time
+                string.Empty, // Speed
+                string.Empty, // Parameters
+                string.Empty, // Encoder
+                string.Empty, // Version
+                string.Empty, // Encoder directory path
+                string.Empty, // FastestEncoder
+                string.Empty, // BestSize
+                string.Empty, // SameSize
+                Path.GetDirectoryName(filePath), // AudioFileDirectory
+                "MD5 calculation failed", // MD5 - display status
+                string.Empty // Duplicates - leave empty
                 );
 
                 // Set the full error message in the "Error" column
@@ -1202,8 +1202,8 @@ namespace FLAC_Benchmark_H
 
             // Show the "Error" column only if there are errors in the log
             dataGridViewLog.Columns["Error"].Visible = dataGridViewLog.Rows
-                .Cast<DataGridViewRow>()
-                .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
+            .Cast<DataGridViewRow>()
+            .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
 
             // Mark duplicates in ListView: only the first file is checked
             foreach (var kvp in hashDict)
@@ -1243,22 +1243,22 @@ namespace FLAC_Benchmark_H
 
                         // Add a record to GridViewLog
                         int rowIndex = dataGridViewLog.Rows.Add(
-                            fileName,
-                            string.Empty, // InputFileSize
-                            string.Empty, // OutputFileSize
-                            string.Empty, // Compression
-                            string.Empty, // Time
-                            string.Empty, // Speed
-                            string.Empty, // Parameters
-                            string.Empty, // Encoder
-                            string.Empty, // Version
-                            string.Empty, // Encoder directory path
-                            string.Empty, // FastestEncoder
-                            string.Empty, // BestSize
-                            string.Empty, // SameSize
-                            Path.GetDirectoryName(filePath), // AudioFileDirectory
-                            md5Hash,
-                            duplicates // Duplicates
+                        fileName,
+                        string.Empty, // InputFileSize
+                        string.Empty, // OutputFileSize
+                        string.Empty, // Compression
+                        string.Empty, // Time
+                        string.Empty, // Speed
+                        string.Empty, // Parameters
+                        string.Empty, // Encoder
+                        string.Empty, // Version
+                        string.Empty, // Encoder directory path
+                        string.Empty, // FastestEncoder
+                        string.Empty, // BestSize
+                        string.Empty, // SameSize
+                        Path.GetDirectoryName(filePath), // AudioFileDirectory
+                        md5Hash,
+                        duplicates // Duplicates
                         );
 
                         // Set color for the row with duplicates
@@ -1273,8 +1273,8 @@ namespace FLAC_Benchmark_H
 
             // Get the list of FLAC files from the audio files list
             var flacItems = listViewAudioFiles.Items.Cast<ListViewItem>()
-                .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
             // Process each file sequentially
             foreach (var item in flacItems)
@@ -1288,9 +1288,9 @@ namespace FLAC_Benchmark_H
                 await this.InvokeAsync(() =>
                 {
                     var encoderItem = listViewEncoders.Items
-                        .Cast<ListViewItem>()
-                        .FirstOrDefault(item =>
-                            Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                    .Cast<ListViewItem>()
+                    .FirstOrDefault(item =>
+                    Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
                     encoderPath = encoderItem?.Tag?.ToString();
                 });
@@ -1355,22 +1355,22 @@ namespace FLAC_Benchmark_H
             foreach (var result in errorResults)
             {
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    result.FileName,
-                    string.Empty, // InputFileSize
-                    string.Empty, // OutputFileSize
-                    string.Empty, // Compression
-                    string.Empty, // Time
-                    string.Empty, // Speed
-                    string.Empty, // Parameters
-                    string.Empty, // Encoder
-                    string.Empty, // Version
-                    string.Empty, // Encoder directory path
-                    string.Empty, // FastestEncoder
-                    string.Empty, // BestSize
-                    string.Empty, // SameSize
-                    Path.GetDirectoryName(result.FilePath), // AudioFileDirectory
-                    "Integrity Check Failed", // MD5 - placeholder
-                    string.Empty // Duplicates
+                result.FileName,
+                string.Empty, // InputFileSize
+                string.Empty, // OutputFileSize
+                string.Empty, // Compression
+                string.Empty, // Time
+                string.Empty, // Speed
+                string.Empty, // Parameters
+                string.Empty, // Encoder
+                string.Empty, // Version
+                string.Empty, // Encoder directory path
+                string.Empty, // FastestEncoder
+                string.Empty, // BestSize
+                string.Empty, // SameSize
+                Path.GetDirectoryName(result.FilePath), // AudioFileDirectory
+                "Integrity Check Failed", // MD5 - placeholder
+                string.Empty // Duplicates
                 );
 
                 // Set the error message in the dedicated Error column
@@ -1380,8 +1380,8 @@ namespace FLAC_Benchmark_H
 
             // Show the "Error" column only if there are errors
             dataGridViewLog.Columns["Error"].Visible = dataGridViewLog.Rows
-                .Cast<DataGridViewRow>()
-                .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
+            .Cast<DataGridViewRow>()
+            .Any(row => row.Cells["Error"].Value != null && !string.IsNullOrEmpty(row.Cells["Error"].Value.ToString()));
 
             if (errorResults.Count == 0)
             {
