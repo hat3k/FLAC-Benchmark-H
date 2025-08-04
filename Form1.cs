@@ -1048,7 +1048,9 @@ namespace FLAC_Benchmark_H
             var hashDict = new Dictionary<string, List<ListViewItem>>();
             var filesWithMD5Errors = new List<ListViewItem>(); // List for files with failed MD5 calculation
 
-            var tasks = listViewAudioFiles.Items.Cast<ListViewItem>().Select(async item =>
+            // Process each audio file sequentially to avoid parallel execution of flac.exe
+            var items = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+            foreach (var item in items)
             {
                 string filePath = item.Tag.ToString(); // Get file path
                 string md5Hash = item.SubItems[5].Text; // Try to get MD5 from subitem
@@ -1137,9 +1139,7 @@ namespace FLAC_Benchmark_H
                         hashDict[md5Hash] = new List<ListViewItem> { item }; // Create a new list of duplicates
                     }
                 }
-            });
-
-            await Task.WhenAll(tasks); // Wait for all tasks to complete
+            }
 
             // Add files with failed MD5 calculation to DataGridViewLog
             foreach (var errorItem in filesWithMD5Errors)
@@ -1163,7 +1163,7 @@ namespace FLAC_Benchmark_H
                 string.Empty, // FastestEncoder
                 string.Empty, // BestSize
                 string.Empty, // SameSize
-                Path.GetDirectoryName(filePath),
+                Path.GetDirectoryName(filePath), // AudioFileDirectory
                 md5Hash, // MD5 with error
                 "MD5 calculation failed" // Note about failed calculation
                 );
@@ -1223,7 +1223,7 @@ namespace FLAC_Benchmark_H
                         string.Empty, // FastestEncoder
                         string.Empty, // BestSize
                         string.Empty, // SameSize
-                        Path.GetDirectoryName(filePath),
+                        Path.GetDirectoryName(filePath), // AudioFileDirectory
                         md5Hash,
                         duplicates // Duplicates
                         );
@@ -1238,31 +1238,38 @@ namespace FLAC_Benchmark_H
         {
             var errorResults = new List<(string FileName, string FilePath, string Message)>();
 
-            var tasks = listViewAudioFiles.Items.Cast<ListViewItem>()
+            // Get the list of FLAC files from the audio files list
+            var flacItems = listViewAudioFiles.Items.Cast<ListViewItem>()
                 .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                .Select(async item =>
+                .ToList();
+
+            // Process each file sequentially
+            foreach (var item in flacItems)
+            {
+                string filePath = item.Tag.ToString();
+                string fileName = Path.GetFileName(filePath);
+
+                string encoderPath = null;
+
+                // Get the encoder path from the UI thread
+                await this.InvokeAsync(() =>
                 {
-                    string filePath = item.Tag.ToString();
-                    string fileName = Path.GetFileName(filePath);
+                    var encoderItem = listViewEncoders.Items
+                        .Cast<ListViewItem>()
+                        .FirstOrDefault(item =>
+                            Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
 
-                    string encoderPath = null;
+                    encoderPath = encoderItem?.Tag?.ToString();
+                });
 
-                    await this.InvokeAsync(() =>
-                    {
-                        var encoderItem = listViewEncoders.Items
-                            .Cast<ListViewItem>()
-                            .FirstOrDefault(item =>
-                                Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                if (string.IsNullOrEmpty(encoderPath))
+                {
+                    errorResults.Add((fileName, filePath, "No .exe encoder found"));
+                    continue;
+                }
 
-                        encoderPath = encoderItem?.Tag?.ToString();
-                    });
-
-                    if (string.IsNullOrEmpty(encoderPath))
-                    {
-                        errorResults.Add((fileName, filePath, "No .exe encoder found"));
-                        return;
-                    }
-
+                try
+                {
                     using (var process = new Process())
                     {
                         process.StartInfo.FileName = encoderPath;
@@ -1284,11 +1291,14 @@ namespace FLAC_Benchmark_H
                             errorResults.Add((fileName, filePath, message));
                         }
                     }
-                });
+                }
+                catch (Exception ex)
+                {
+                    errorResults.Add((fileName, filePath, $"Exception: {ex.Message}"));
+                }
+            }
 
-            await Task.WhenAll(tasks);
-
-            // Clear previous log entries related to errors
+            // Clear previous integrity check results from the log
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
                 if (row.Cells["Duplicates"].Value?.ToString() == "Integrity Check Failed")
@@ -1297,7 +1307,7 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // Add error results to dataGridViewLog
+            // Add error results to the log grid
             foreach (var result in errorResults)
             {
                 int rowIndex = dataGridViewLog.Rows.Add(
@@ -1314,9 +1324,9 @@ namespace FLAC_Benchmark_H
                     string.Empty, // FastestEncoder
                     string.Empty, // BestSize
                     string.Empty, // SameSize
-                    Path.GetDirectoryName(result.FilePath),
-                    result.Message, // MD5 -> Use for error text
-                    "Integrity Check Failed"
+                    Path.GetDirectoryName(result.FilePath), // AudioFileDirectory
+                    result.Message, // MD5 -> using for error message
+                    "Integrity Check Failed" // Duplicates
                 );
 
                 dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
