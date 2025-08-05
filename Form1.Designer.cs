@@ -619,7 +619,7 @@
             buttonTestForErrors.Size = new Size(110, 23);
             buttonTestForErrors.TabIndex = 6;
             buttonTestForErrors.Text = "Test for errors";
-            toolTip1.SetToolTip(buttonTestForErrors, "Test .flac files for errors");
+            toolTip1.SetToolTip(buttonTestForErrors, "Test all the .flac files for errors (checked and unchecked).\r\n\r\nThis function is resource-expensive when you have huge amount of files!\r\n\r\nStill in BETA. Feel free to report issues.");
             buttonTestForErrors.UseVisualStyleBackColor = true;
             buttonTestForErrors.Click += buttonTestForErrors_Click;
             // 

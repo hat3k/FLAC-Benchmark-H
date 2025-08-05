@@ -123,9 +123,12 @@
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
 
-1. When duplicates are detected, they are moved to the top of the list;
+1. When duplicates are detected, their groups are moved to the top of the list;
 2. One file of the group stays checked, the others - unchecked;
 3. You may then clear uncheked files from list;
+
+Note:
+This method may discover corrupted files. Errors will be shown in the log.
 
 This function is resource-expensive when you have huge amount of files!</value>
   </data>
