@@ -69,6 +69,7 @@
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
+            labelAudioFileRemoved = new Label();
             buttonClearUnchecked = new Button();
             buttonDownAudioFile = new Button();
             buttonTestForErrors = new Button();
@@ -573,6 +574,7 @@
             // groupBoxAudioFiles
             // 
             groupBoxAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxAudioFiles.Controls.Add(labelAudioFileRemoved);
             groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonTestForErrors);
@@ -588,6 +590,15 @@
             groupBoxAudioFiles.TabIndex = 1;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
+            // 
+            // labelAudioFileRemoved
+            // 
+            labelAudioFileRemoved.AutoSize = true;
+            labelAudioFileRemoved.BackColor = SystemColors.ActiveCaption;
+            labelAudioFileRemoved.Location = new Point(122, 213);
+            labelAudioFileRemoved.Name = "labelAudioFileRemoved";
+            labelAudioFileRemoved.Size = new Size(0, 15);
+            labelAudioFileRemoved.TabIndex = 9;
             // 
             // buttonClearUnchecked
             // 
@@ -1273,6 +1284,7 @@
             groupBoxEncoderSettings.PerformLayout();
             groupBoxEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
+            groupBoxAudioFiles.PerformLayout();
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
             groupBoxLog.ResumeLayout(false);
@@ -1395,5 +1407,6 @@
         private Button buttonLogColumnsAutoWidth;
         private CheckBox checkBoxAutoAnalyzeLog;
         private ColumnHeader EncoderDirectory;
+        private Label labelAudioFileRemoved;
     }
 }
