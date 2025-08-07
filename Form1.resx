@@ -120,6 +120,16 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
+    <value>Test all the .flac files for errors (checked and unchecked).
+
+This function is resource-expensive when you have huge amount of files!
+
+This feature is in BETA. Feel free to report issues.
+
+WARNING!
+No progress is indicated. If you check a huge amount of files it may take a long time!</value>
+  </data>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
 
