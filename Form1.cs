@@ -347,6 +347,7 @@ namespace FLAC_Benchmark_H
                 {
                     MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                UpdateGroupBoxEncodersHeader();
             }
         }
         private async void LoadAudioFiles()
@@ -534,6 +535,7 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            UpdateGroupBoxEncodersHeader();
         }
         private async void buttonAddEncoders_Click(object? sender, EventArgs e)
         {
@@ -565,6 +567,7 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            UpdateGroupBoxEncodersHeader();
         }
         private async Task AddEncoders(string directory)
         {
@@ -590,6 +593,7 @@ namespace FLAC_Benchmark_H
                         listViewEncoders.Items.Add(item); // Add items to the ListView
                     }
                 }
+                UpdateGroupBoxEncodersHeader();
             }
             catch (Exception ex)
             {
@@ -711,11 +715,29 @@ namespace FLAC_Benchmark_H
                     listViewEncoders.Items.RemoveAt(i); // Remove the item
                 }
             }
+            UpdateGroupBoxEncodersHeader();
         }
         private void buttonClearEncoders_Click(object? sender, EventArgs e)
         {
             listViewEncoders.Items.Clear();
+            UpdateGroupBoxEncodersHeader();
         }
+        private void UpdateGroupBoxEncodersHeader()
+        {
+            string baseText = "Choose Encoder (Drag'n'Drop of files and folders is available)";
+            int fileCount = listViewEncoders.Items.Count;
+
+            if (fileCount > 0)
+            {
+                string fileWord = fileCount == 1 ? "encoder" : "encoders";
+                groupBoxEncoders.Text = $"{baseText} - {fileCount} {fileWord} loaded";
+            }
+            else
+            {
+                groupBoxEncoders.Text = baseText;
+            }
+        }
+
 
         //Audio files
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
