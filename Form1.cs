@@ -413,6 +413,7 @@ namespace FLAC_Benchmark_H
                 {
                     MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                UpdateGroupBoxAudioFilesHeader();
             }
         }
         private void LoadJobs()
