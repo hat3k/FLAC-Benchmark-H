@@ -774,18 +774,18 @@
             labelPasses.AutoSize = true;
             labelPasses.Location = new Point(270, 368);
             labelPasses.Name = "labelPasses";
-            labelPasses.Size = new Size(44, 15);
-            labelPasses.TabIndex = 5;
-            labelPasses.Text = "Passes:";
+            labelPasses.Size = new Size(41, 15);
+            labelPasses.TabIndex = 6;
+            labelPasses.Text = "Passes";
             toolTip1.SetToolTip(labelPasses, "You can add several passes of the same job to obtain averaged results.");
             // 
             // buttonMinusPass
             // 
             buttonMinusPass.Anchor = AnchorStyles.Bottom;
-            buttonMinusPass.Location = new Point(350, 364);
+            buttonMinusPass.Location = new Point(240, 364);
             buttonMinusPass.Name = "buttonMinusPass";
             buttonMinusPass.Size = new Size(24, 23);
-            buttonMinusPass.TabIndex = 7;
+            buttonMinusPass.TabIndex = 5;
             buttonMinusPass.Text = "➖";
             toolTip1.SetToolTip(buttonMinusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonMinusPass.UseVisualStyleBackColor = true;
@@ -794,10 +794,10 @@
             // buttonPlusPass
             // 
             buttonPlusPass.Anchor = AnchorStyles.Bottom;
-            buttonPlusPass.Location = new Point(320, 364);
+            buttonPlusPass.Location = new Point(317, 364);
             buttonPlusPass.Name = "buttonPlusPass";
             buttonPlusPass.Size = new Size(24, 23);
-            buttonPlusPass.TabIndex = 6;
+            buttonPlusPass.TabIndex = 7;
             buttonPlusPass.Text = "➕";
             toolTip1.SetToolTip(buttonPlusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonPlusPass.UseVisualStyleBackColor = true;

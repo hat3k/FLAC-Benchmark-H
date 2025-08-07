@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.3 build 20250806"; // Current program version
+        public string programVersionCurrent = "1.3 build 20250807"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
@@ -800,7 +800,7 @@ namespace FLAC_Benchmark_H
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Title = "Select Audio Files";
-                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|All Files (*.*)|*.*";
+                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|FLAC Files (*.flac)|*.flac|WAV Files (*.wav)|*.wav|All Files (*.*)|*.*";
                 openFileDialog.Multiselect = true;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
