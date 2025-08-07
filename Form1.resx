@@ -132,6 +132,21 @@ This method may discover corrupted files. Errors will be shown in the log.
 
 This function is resource-expensive when you have huge amount of files!</value>
   </data>
+  <data name="buttonCopyLogAsBBCode.ToolTip" xml:space="preserve">
+    <value>Copy log as a BBCode to past it in forums as a table.
+
+Columns to copy:
+ "Input File Size",
+ "Output File Size",
+ "Compression",
+ "Time",
+ "Speed",
+ "Parameters",
+ "Encoder",
+ "Version"
+
+This feature is in BETA. Feel free to report issues.</value>
+  </data>
   <data name="buttonAnalyzeLog.ToolTip" xml:space="preserve">
     <value>Analyzes and consolidates encoding results by file, encoder, and parameters.
 

@@ -1498,12 +1498,12 @@ namespace FLAC_Benchmark_H
 
                         dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown; // Set color for the row with duplicates
                     }
-                    
+
                     // Show the "Duplicates" column only if there are errors
                     dataGridViewLog.Columns["Duplicates"].Visible = dataGridViewLog.Rows
                     .Cast<DataGridViewRow>()
                     .Any(row => row.Cells["Duplicates"].Value != null && !string.IsNullOrEmpty(row.Cells["Duplicates"].Value.ToString()));
-                    
+
                     // Show the "Errors" column only if there are errors
                     dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
                     .Cast<DataGridViewRow>()
@@ -2409,6 +2409,101 @@ namespace FLAC_Benchmark_H
                         UseShellExecute = true
                     });
                 }
+            }
+        }
+        private void buttonCopyLogAsBBCode_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                // Check if there are any rows in the DataGridView
+                if (dataGridViewLog.Rows.Count == 0)
+                {
+                    MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Define the list of column names to INCLUDE
+                // !!! IMPORTANT: Use the exact column Names from the DataGridView !!!
+                var columnsToInclude = new HashSet<string>
+        {
+            "InputFileSize",
+            "OutputFileSize",
+            "Compression",
+            "Time",
+            "Speed",
+            "Parameters",
+            "Encoder",
+            "Version"
+        };
+
+                // Create a StringBuilder to build the BBCode
+                StringBuilder bbCodeText = new StringBuilder();
+
+                // Start of BBCode table
+                bbCodeText.AppendLine("[table]");
+
+                // --- Generate headers ---
+                bbCodeText.AppendLine("[tr]"); // Start of header row
+
+                // Iterate through ALL columns in the order they are displayed in the DataGridView
+                // and add headers only for the included columns
+                foreach (DataGridViewColumn column in dataGridViewLog.Columns.Cast<DataGridViewColumn>().OrderBy(c => c.DisplayIndex))
+                {
+                    // Check if this column should be included
+                    if (columnsToInclude.Contains(column.Name))
+                    {
+                        // Use [b] to make headers bold (optional)
+                        bbCodeText.Append("[td][b]").Append(column.HeaderText).Append("[/b][/td]");
+                    }
+                }
+                bbCodeText.AppendLine("[/tr]"); // End of header row
+
+                // --- Generate data rows ---
+                // Add data rows
+                foreach (DataGridViewRow row in dataGridViewLog.Rows)
+                {
+                    // Skip the new row (if it exists)
+                    if (row.IsNewRow) continue;
+
+                    bbCodeText.AppendLine("[tr]"); // Start of data row
+
+                    // Iterate through ALL cells in the row in the order of DataGridView columns
+                    foreach (DataGridViewColumn column in dataGridViewLog.Columns.Cast<DataGridViewColumn>().OrderBy(c => c.DisplayIndex))
+                    {
+                        // Check if this column should be included
+                        if (columnsToInclude.Contains(column.Name))
+                        {
+                            // Get the cell by column index
+                            DataGridViewCell cell = row.Cells[column.Index];
+                            // Get the cell value, replace null with an empty string
+                            string cellValue = cell.Value?.ToString() ?? "";
+                            // Add the cell content to the table
+                            bbCodeText.Append("[td]").Append(cellValue).Append("[/td]");
+                        }
+                    }
+                    bbCodeText.AppendLine("[/tr]"); // End of data row
+                }
+
+                // End of BBCode table
+                bbCodeText.AppendLine("[/table]");
+
+                // Copy the generated BBCode to the clipboard
+                if (bbCodeText.Length > 0)
+                {
+                    Clipboard.SetText(bbCodeText.ToString());
+                    // Optionally: show a success message
+                    // MessageBox.Show("Log (selected columns) copied to clipboard as BBCode!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // This block is unlikely to execute due to the initial check, but logic requires it
+                    MessageBox.Show("There is no log data to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle possible errors when working with the clipboard
+                MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)

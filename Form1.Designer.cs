@@ -104,6 +104,7 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupBoxLog = new GroupBox();
+            buttonCopyLogAsBBCode = new Button();
             buttonLogColumnsAutoWidth = new Button();
             buttonPauseResume = new Button();
             buttonLogToExcel = new Button();
@@ -445,7 +446,7 @@
             buttonOpenLogtxt.Location = new Point(564, 364);
             buttonOpenLogtxt.Name = "buttonOpenLogtxt";
             buttonOpenLogtxt.Size = new Size(85, 23);
-            buttonOpenLogtxt.TabIndex = 5;
+            buttonOpenLogtxt.TabIndex = 6;
             buttonOpenLogtxt.Text = "Open log.txt";
             buttonOpenLogtxt.UseVisualStyleBackColor = true;
             buttonOpenLogtxt.Click += buttonOpenLogtxt_Click;
@@ -456,7 +457,7 @@
             buttonClearLog.Location = new Point(716, 364);
             buttonClearLog.Name = "buttonClearLog";
             buttonClearLog.Size = new Size(55, 23);
-            buttonClearLog.TabIndex = 7;
+            buttonClearLog.TabIndex = 8;
             buttonClearLog.Text = "Clear";
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
@@ -630,7 +631,7 @@
             buttonTestForErrors.Size = new Size(110, 23);
             buttonTestForErrors.TabIndex = 6;
             buttonTestForErrors.Text = "Test for errors";
-            toolTip1.SetToolTip(buttonTestForErrors, "Test all the .flac files for errors (checked and unchecked).\r\n\r\nThis function is resource-expensive when you have huge amount of files!\r\n\r\nStill in BETA. Feel free to report issues.");
+            toolTip1.SetToolTip(buttonTestForErrors, "Test all the .flac files for errors (checked and unchecked).\r\n\r\nThis function is resource-expensive when you have huge amount of files!\r\n\r\nThis feature is in BETA. Feel free to report issues.");
             buttonTestForErrors.UseVisualStyleBackColor = true;
             buttonTestForErrors.Click += buttonTestForErrors_Click;
             // 
@@ -942,6 +943,7 @@
             // groupBoxLog
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(buttonCopyLogAsBBCode);
             groupBoxLog.Controls.Add(buttonLogColumnsAutoWidth);
             groupBoxLog.Controls.Add(buttonPauseResume);
             groupBoxLog.Controls.Add(buttonLogToExcel);
@@ -958,6 +960,18 @@
             groupBoxLog.TabIndex = 7;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
+            // 
+            // buttonCopyLogAsBBCode
+            // 
+            buttonCopyLogAsBBCode.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonCopyLogAsBBCode.Location = new Point(448, 364);
+            buttonCopyLogAsBBCode.Name = "buttonCopyLogAsBBCode";
+            buttonCopyLogAsBBCode.Size = new Size(110, 23);
+            buttonCopyLogAsBBCode.TabIndex = 5;
+            buttonCopyLogAsBBCode.Text = "Copy as BBCode";
+            toolTip1.SetToolTip(buttonCopyLogAsBBCode, resources.GetString("buttonCopyLogAsBBCode.ToolTip"));
+            buttonCopyLogAsBBCode.UseVisualStyleBackColor = true;
+            buttonCopyLogAsBBCode.Click += buttonCopyLogAsBBCode_Click;
             // 
             // buttonLogColumnsAutoWidth
             // 
@@ -985,7 +999,7 @@
             // buttonLogToExcel
             // 
             buttonLogToExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonLogToExcel.Location = new Point(473, 364);
+            buttonLogToExcel.Location = new Point(357, 364);
             buttonLogToExcel.Name = "buttonLogToExcel";
             buttonLogToExcel.Size = new Size(85, 23);
             buttonLogToExcel.TabIndex = 4;
@@ -996,7 +1010,7 @@
             // buttonAnalyzeLog
             // 
             buttonAnalyzeLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonAnalyzeLog.Location = new Point(382, 364);
+            buttonAnalyzeLog.Location = new Point(266, 364);
             buttonAnalyzeLog.Name = "buttonAnalyzeLog";
             buttonAnalyzeLog.Size = new Size(85, 23);
             buttonAnalyzeLog.TabIndex = 3;
@@ -1055,7 +1069,7 @@
             buttonCopyLog.Location = new Point(655, 364);
             buttonCopyLog.Name = "buttonCopyLog";
             buttonCopyLog.Size = new Size(55, 23);
-            buttonCopyLog.TabIndex = 6;
+            buttonCopyLog.TabIndex = 7;
             buttonCopyLog.Text = "Copy";
             buttonCopyLog.UseVisualStyleBackColor = true;
             buttonCopyLog.Click += buttonCopyLog_Click;
@@ -1408,5 +1422,6 @@
         private CheckBox checkBoxAutoAnalyzeLog;
         private ColumnHeader EncoderDirectory;
         private Label labelAudioFileRemoved;
+        private Button buttonCopyLogAsBBCode;
     }
 }
