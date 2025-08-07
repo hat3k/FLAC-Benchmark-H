@@ -770,6 +770,7 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private async void buttonAddAudioFiles_Click(object? sender, EventArgs e)
         {
@@ -799,6 +800,7 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private bool IsAudioFile(string audioFilePath)
         {
@@ -1239,6 +1241,7 @@ namespace FLAC_Benchmark_H
             foreach (var itemToRemove in itemsToRemove)
             {
                 listViewAudioFiles.Items.Remove(itemToRemove);
+                UpdateGroupBoxAudioFilesHeader();
             }
 
             // Inform the user via tex label
@@ -1519,6 +1522,7 @@ namespace FLAC_Benchmark_H
             foreach (var itemToRemove in itemsToRemove)
             {
                 listViewAudioFiles.Items.Remove(itemToRemove);
+                UpdateGroupBoxAudioFilesHeader();
             }
 
             // Inform the user via tex label
@@ -1660,6 +1664,7 @@ namespace FLAC_Benchmark_H
                     listViewAudioFiles.Items.RemoveAt(i); // Remove the item
                 }
             }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private void buttonClearUnchecked_Click(object? sender, EventArgs e)
         {
@@ -1688,6 +1693,7 @@ namespace FLAC_Benchmark_H
                     listViewAudioFiles.Items.RemoveAt(itemsToRemove[i]); // Remove the item
                 }
             }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private void MoveUncheckedToRecycleBin()
         {
@@ -1729,13 +1735,29 @@ namespace FLAC_Benchmark_H
                         listViewAudioFiles.Items.Remove(itemToRemove);
                     }
                 }
-
+                UpdateGroupBoxAudioFilesHeader();
                 MessageBox.Show("Unchecked audio files have been moved to the recycle bin.", "Deletion", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
+            UpdateGroupBoxAudioFilesHeader();
+        }
+        private void UpdateGroupBoxAudioFilesHeader()
+        {
+            string baseText = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
+            int fileCount = listViewAudioFiles.Items.Count;
+
+            if (fileCount > 0)
+            {
+                string fileWord = fileCount == 1 ? "file" : "files";
+                groupBoxAudioFiles.Text = $"{baseText} - {fileCount} {fileWord} loaded";
+            }
+            else
+            {
+                groupBoxAudioFiles.Text = baseText;
+            }
         }
 
         // Log
