@@ -1226,6 +1226,12 @@ namespace FLAC_Benchmark_H
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
+            //Deactivate button and show a Progress text
+            var button = (Button)sender;
+            var originalText = button.Text;
+            button.Text = "In progress...";
+            button.Enabled = false;
+
             // Clear previous MD5 error results from the log
             for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
             {
@@ -1514,9 +1520,25 @@ namespace FLAC_Benchmark_H
             {
                 listViewAudioFiles.EndUpdate();
             }
+
+            //Enable the button and reset text
+            if (button != null && !button.IsDisposed)
+            {
+                button.Invoke((MethodInvoker)(() =>
+                {
+                    button.Text = originalText;
+                    button.Enabled = true;
+                }));
+            }
         }
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
+            //Deactivate button and show a Progress text
+            var button = (Button)sender;
+            var originalText = button.Text;
+            button.Text = "In progress...";
+            button.Enabled = false;
+
             // Clear previous integrity error results from the log
             for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
             {
@@ -1666,6 +1688,16 @@ namespace FLAC_Benchmark_H
             if (errorResults.Count == 0)
             {
                 MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            //Enable the button and reset text
+            if (button != null && !button.IsDisposed)
+            {
+                button.Invoke((MethodInvoker)(() =>
+                {
+                    button.Text = originalText;
+                    button.Enabled = true;
+                }));
             }
         }
 
