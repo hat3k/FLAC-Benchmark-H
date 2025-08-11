@@ -137,15 +137,51 @@ namespace FLAC_Benchmark_H
 
         private async Task UpdateCpuUsageAsync()
         {
+            // Assume unavailable until proven otherwise
+            bool isAvailable = performanceCountersAvailable && cpuCounter != null;
+            float cpuUsage = 0f;
 
-            if (performanceCountersAvailable && cpuCounter != null)
+            // Get the counter value if it's available
+            if (isAvailable)
             {
-                float cpuUsage = cpuCounter.NextValue();
-                labelCpuUsage.Text = $"CPU Usage: {cpuUsage:F2}%";
+                try
+                {
+                    // NextValue() can throw exceptions, for example,
+                    // if the counter becomes unavailable or corrupted
+                    cpuUsage = cpuCounter.NextValue();
+                    // Ensure the value is valid before using it
+                    isAvailable = !float.IsNaN(cpuUsage) && !float.IsInfinity(cpuUsage);
+                }
+                catch (Exception ex) // PlatformNotSupportedException, InvalidOperationException, etc.
+                {
+                    // Log the error for diagnostics if needed
+                    // System.Diagnostics.Debug.WriteLine($"Error reading CPU counter: {ex.Message}");
+                    isAvailable = false;
+                }
+            }
+
+            // Update the UI. Since this method is called by a timer,
+            // we should always use Invoke/InvokeAsync for thread safety.
+            // We use Invoke for simplicity and synchronous UI updates.
+            // Checking InvokeRequired is not mandatory, but it's a good practice.
+            if (labelCpuUsage.InvokeRequired)
+            {
+                // Use MethodInvoker for a simple parameterless delegate
+                labelCpuUsage.Invoke((MethodInvoker)delegate
+                {
+                    // UI update happens on the UI thread
+                    labelCpuUsage.Text = isAvailable
+                        ? $"CPU Usage: {cpuUsage:F2}%"
+                        : "CPU Usage: N/A";
+                });
             }
             else
             {
-                labelCpuUsage.Text = "CPU Usage: N/A";
+                // In case the method is somehow called from the UI thread
+                labelCpuUsage.Text = isAvailable
+                    ? $"CPU Usage: {cpuUsage:F2}%"
+                    : "CPU Usage: N/A";
+                // progressBarCPU.Value = isAvailable ? (int)Math.Min(100, Math.Max(0, cpuUsage)) : 0;
             }
         }
 
