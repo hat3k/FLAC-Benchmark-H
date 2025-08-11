@@ -2096,7 +2096,11 @@ namespace FLAC_Benchmark_H
             var resultEntries = new List<LogEntry>();
             foreach (var group in groupedEntries.Values)
             {
-                double avgSpeed = group.Average(x => double.Parse(x.Speed.Replace("x", "").Trim()));
+                double avgSpeed = group.Average(x =>
+                {
+                    string s = x.Speed?.Replace("x", "")?.Trim();
+                    return double.TryParse(s, out double speed) ? speed : 0.0;
+                });
                 var bestEntry = group.First(); // Take the first entry as a template
                 bestEntry.Speed = avgSpeed.ToString("F3") + "x";
                 resultEntries.Add(bestEntry);
@@ -2106,91 +2110,109 @@ namespace FLAC_Benchmark_H
             var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
             var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
 
-            // 4. Analysis for encoding: find fastest encoder and smallest file sizes
-            var encodeFileParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-
-            // 4.1 Find fastest encoder for each group
-            foreach (var group in encodeFileParamGroups)
-            {
-                if (group.Count() <= 1) continue; // Skip groups with only one entry
-
-                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
-                foreach (var entry in group)
-                {
-                    bool isFastest = (double.Parse(entry.Speed.Replace("x", "").Trim()) >= maxSpeed - 0.01);
-                    entry.FastestEncoder = isFastest ? "fastest encoder" : string.Empty;
-                }
-            }
-
-            // 4.2 Find smallest size for each group
-            var fileSizeGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-
-            var smallestSizes = new Dictionary<string, long>();
-            var fileSizeCounts = new Dictionary<string, Dictionary<long, int>>();
-
-            foreach (var group in fileSizeGroups)
-            {
-                if (group.Count() <= 1) continue; // Skip groups with only one entry
-
-                string key = group.Key;
-                var sizes = group.Select(e =>
-                {
-                    long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size);
-                    return size;
-                }).Where(size => size > 0).ToList();
-                if (sizes.Count == 0) continue;
-                long minSize = sizes.Min();
-                smallestSizes[key] = minSize;
-
-                var countDict = new Dictionary<long, int>();
-                foreach (var size in sizes)
-                {
-                    if (!countDict.ContainsKey(size))
-                        countDict[size] = 0;
-                    countDict[size]++;
-                }
-                fileSizeCounts[key] = countDict;
-            }
-
-            // 4.3 Apply BestSize and SameSize flags
+            // 4. Analysis for encoding: find fastest encoder and smallest file sizes in a single pass
             var finalEncodeEntries = new List<LogEntry>();
-            foreach (var entry in encodeGroups)
+            var encodeParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+
+            foreach (var group in encodeParamGroups)
             {
-                long.TryParse(entry.OutputFileSize?.Replace(" ", "").Trim(), out long outputSize);
+                string key = group.Key;
+                var entries = group.ToList();
+                int groupCount = entries.Count;
 
-                string key = Path.Combine(entry.AudioFileDirectory ?? "", entry.Name ?? "") + "|" + entry.Parameters;
+                // Reset flags
+                foreach (var entry in entries)
+                {
+                    entry.FastestEncoder = string.Empty;
+                    entry.BestSize = string.Empty;
+                    entry.SameSize = string.Empty;
+                }
 
-                // If group has more than one entry
-                bool isGroupLargeEnough = fileSizeGroups.FirstOrDefault(g => g.Key == key)?.Count() > 1;
+                // Skip groups with only one entry
+                if (groupCount <= 1)
+                {
+                    finalEncodeEntries.AddRange(entries);
+                    continue;
+                }
 
-                entry.BestSize = isGroupLargeEnough
-                    && smallestSizes.TryGetValue(key, out long minSize)
-                    && outputSize == minSize
-                    ? "smallest size"
-                    : string.Empty;
+                // 4.1: Find fastest encoder in the group
+                double maxSpeed = entries.Max(e =>
+                {
+                    string s = e.Speed?.Replace("x", "")?.Trim();
+                    return double.TryParse(s, out double speed) ? speed : 0.0;
+                });
 
-                entry.SameSize = isGroupLargeEnough
-                    && fileSizeCounts.TryGetValue(key, out var sizeCount)
-                    && sizeCount.TryGetValue(outputSize, out int count)
-                    && count > 1
-                    ? "has same size"
-                    : string.Empty;
+                foreach (var entry in entries)
+                {
+                    string s = entry.Speed?.Replace("x", "")?.Trim();
+                    if (double.TryParse(s, out double speed) && speed >= maxSpeed - 0.01)
+                    {
+                        entry.FastestEncoder = "fastest encoder";
+                    }
+                }
 
-                finalEncodeEntries.Add(entry);
+                // 4.2: Analyze output file sizes
+                var validEntries = new List<(LogEntry Entry, long Size)>();
+                foreach (var e in entries)
+                {
+                    if (long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
+                    {
+                        validEntries.Add((e, size));
+                    }
+                }
+
+                if (validEntries.Count == 0)
+                {
+                    finalEncodeEntries.AddRange(entries);
+                    continue;
+                }
+
+                long minSize = validEntries.Min(x => x.Size);
+
+                // Count frequency of each size
+                var sizeCountDict = new Dictionary<long, int>();
+                foreach (var (_, size) in validEntries)
+                {
+                    sizeCountDict[size] = sizeCountDict.GetValueOrDefault(size, 0) + 1;
+                }
+
+                // 4.3: Apply BestSize and SameSize
+                foreach (var (entry, size) in validEntries)
+                {
+                    // BestSize: smallest size AND there exists at least one larger file
+                    entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize))
+                        ? "smallest size"
+                        : string.Empty;
+
+                    // SameSize: this size appears more than once
+                    entry.SameSize = (sizeCountDict[size] > 1)
+                        ? "has same size"
+                        : string.Empty;
+                }
+
+                finalEncodeEntries.AddRange(entries);
             }
 
             // 5. Analysis for decoding: find fastest decoder
-            var decodeFileParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+            var decodeParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
 
-            foreach (var group in decodeFileParamGroups)
+            foreach (var group in decodeParamGroups)
             {
-                if (group.Count() <= 1) continue; // Skip groups with only one entry
+                if (group.Count() <= 1) continue;
 
-                double maxSpeed = group.Max(e => double.Parse(e.Speed.Replace("x", "").Trim()));
+                double maxSpeed = group.Max(e =>
+                {
+                    string s = e.Speed?.Replace("x", "")?.Trim();
+                    return double.TryParse(s, out double speed) ? speed : 0.0;
+                });
+
                 foreach (var entry in group)
                 {
-                    bool isFastest = (double.Parse(entry.Speed.Replace("x", "").Trim()) >= maxSpeed - 0.01);
-                    entry.FastestEncoder = isFastest ? "fastest decoder" : string.Empty;
+                    string s = entry.Speed?.Replace("x", "")?.Trim();
+                    if (double.TryParse(s, out double speed) && speed >= maxSpeed - 0.01)
+                    {
+                        entry.FastestEncoder = "fastest decoder";
+                    }
                 }
             }
 
