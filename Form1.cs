@@ -1262,7 +1262,7 @@ namespace FLAC_Benchmark_H
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
-            await ButtonsTextUpdate((Button)sender, "In progress...", async () =>
+            await ButtonsTextUpdate((Button)sender, "In progress", async () =>
             {
                 // Clear previous MD5 error results from the log
                 for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
@@ -1454,7 +1454,7 @@ namespace FLAC_Benchmark_H
                 // --- END OF STEP 3 ---
 
                 // --- STEP 4: Organize and log duplicates ---
-                listViewAudioFiles.BeginUpdate();
+                //listViewAudioFiles.BeginUpdate();
                 try
                 {
                     // Get all duplicate groups (more than one file with the same hash)
@@ -1550,13 +1550,13 @@ namespace FLAC_Benchmark_H
                 }
                 finally
                 {
-                    listViewAudioFiles.EndUpdate();
+                    //listViewAudioFiles.EndUpdate();
                 }
             });
         }
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
-            await ButtonsTextUpdate((Button)sender, "In progress...", async () =>
+            await ButtonsTextUpdate((Button)sender, "In progress", async () =>
             {
                 // Clear previous integrity error results from the log
                 for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
@@ -2002,11 +2002,14 @@ namespace FLAC_Benchmark_H
         {
             dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
-        private void buttonAnalyzeLog_Click(object? sender, EventArgs e)
+        private async void buttonAnalyzeLog_Click(object? sender, EventArgs e)
         {
-            AnalyzeLog();
+            await ButtonsTextUpdate((Button)sender, "In progress", async () =>
+            {
+                await AnalyzeLogAsync();
+            });
         }
-        private async void AnalyzeLog()
+        private async Task AnalyzeLogAsync()
         {
             var groupedEntries = new Dictionary<string, List<LogEntry>>();
 
@@ -3302,7 +3305,7 @@ namespace FLAC_Benchmark_H
                 }
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
-                    AnalyzeLog();
+                    await AnalyzeLogAsync();
                 }
             }
             finally
@@ -3474,7 +3477,7 @@ namespace FLAC_Benchmark_H
                 }
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
-                    AnalyzeLog();
+                    await AnalyzeLogAsync();
                 }
             }
             finally
@@ -3829,7 +3832,7 @@ namespace FLAC_Benchmark_H
                 }
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
-                    AnalyzeLog();
+                    await AnalyzeLogAsync();
                 }
             }
             finally
@@ -4066,23 +4069,66 @@ namespace FLAC_Benchmark_H
             }
             listView.Focus(); // Set focus on the list
         }
-        private async Task ButtonsTextUpdate(Button button, string tempText, Func<Task> action)
+        private async Task ButtonsTextUpdate(Button button, string baseText, Func<Task> action)
         {
+            if (button.IsDisposed) return;
+
+            // 1. INSTANTLY update to initial state
             var originalText = button.Text;
-            button.Text = tempText;
-            button.Enabled = false;
+            button.Invoke((MethodInvoker)(() =>
+            {
+                button.Text = baseText + " .  "; // First frame immediately
+                button.Enabled = false;
+            }));
+
+            // Animation variables
+            var cts = new CancellationTokenSource();
+            string[] progressDots = { " .  ", " .. ", " ..." };
+            int dotIndex = 1; // Start from second frame (we already showed first)
+
+            // 2. Separate fast UI update from background operation
+            var animationTask = Task.Run(async () =>
+            {
+                while (!cts.IsCancellationRequested && !button.IsDisposed)
+                {
+                    await Task.Delay(250, cts.Token).ConfigureAwait(false);
+
+                    if (cts.IsCancellationRequested || button.IsDisposed)
+                        break;
+
+                    try
+                    {
+                        button.Invoke((MethodInvoker)(() =>
+                        {
+                            if (!cts.IsCancellationRequested && !button.IsDisposed)
+                                button.Text = baseText + progressDots[dotIndex];
+                        }));
+                    }
+                    catch { break; }
+
+                    dotIndex = (dotIndex + 1) % 3;
+                }
+            }, cts.Token);
+
             try
             {
-                await action();
+                await action().ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            catch { /* Silent */ }
             finally
             {
-                button.Text = originalText;
-                button.Enabled = true;
+                // 3. Faster cleanup with CancellationToken
+                cts.Cancel();
+
+                // INSTANTLY restore original state
+                if (!button.IsDisposed)
+                {
+                    button.Invoke((MethodInvoker)(() =>
+                    {
+                        button.Text = originalText;
+                        button.Enabled = true;
+                    }));
+                }
             }
         }
 
