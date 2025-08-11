@@ -907,7 +907,9 @@ namespace FLAC_Benchmark_H
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
             string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
-            long fileSize = new FileInfo(audioFilePath).Length;
+            FileInfo file = new FileInfo(audioFilePath);
+            long fileSize = file.Length;
+            DateTime lastWriteTime = file.LastWriteTime;
             string md5Hash = "N/A"; // Default value for MD5
 
             // Determine the file type and get the corresponding MD5
@@ -932,7 +934,8 @@ namespace FLAC_Benchmark_H
                 BitDepth = bitDepth,
                 SamplingRate = samplingRate,
                 FileSize = fileSize,
-                Md5Hash = md5Hash
+                Md5Hash = md5Hash,
+                LastWriteTime = lastWriteTime
             };
 
             audioInfoCache[audioFilePath] = audioFileInfo; // Cache the information
@@ -949,6 +952,7 @@ namespace FLAC_Benchmark_H
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public long FileSize { get; set; }
+            public DateTime LastWriteTime { get; set; }
 
             public string Md5Hash { get; set; }
             public string ErrorDetails { get; set; }
@@ -1554,6 +1558,11 @@ namespace FLAC_Benchmark_H
                 }
             });
         }
+
+
+
+
+
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
             await ButtonsTextUpdate((Button)sender, "In progress", async () =>
