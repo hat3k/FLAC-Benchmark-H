@@ -1438,6 +1438,16 @@ namespace FLAC_Benchmark_H
                             // above, and we only need to change the state of the items to be unchecked.
                         }
 
+                        // --- UPDATE MD5 DISPLAY IN LISTVIEW ---
+                        foreach (ListViewItem item in listViewAudioFiles.Items)
+                        {
+                            string path = item.Tag.ToString();
+                            if (audioInfoCache.TryGetValue(path, out var info))
+                            {
+                                item.SubItems[5].Text = info.Md5Hash;
+                            }
+                        }
+
                         // --- ADD MD5 ERROR ENTRIES TO LOG ---
                         foreach (string filePath in filesWithMD5Errors)
                         {
