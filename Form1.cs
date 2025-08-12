@@ -1372,8 +1372,8 @@ namespace FLAC_Benchmark_H
 
                     // --- STAGE 2.2: DETERMINE PRIMARY DUPLICATES ---
                     // For each group of duplicates, select one "primary" file to keep (checked)
-                    var itemsToCheck = new List<string>();   // Files to mark as checked
-                    var itemsToUncheck = new List<string>(); // Files to mark as unchecked
+                    var itemsToCheck = new List<string>();   // Files to mark as checked (primary)
+                    var itemsToUncheck = new List<string>(); // Files to mark as unchecked (non-primary duplicates)
 
                     foreach (var kvp in hashDict)
                     {
@@ -1396,7 +1396,7 @@ namespace FLAC_Benchmark_H
                             if (sortedPaths.Count > 0)
                             {
                                 itemsToCheck.Add(sortedPaths[0].Path);                    // Primary file
-                                itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Others
+                                itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Non-primary duplicates
                             }
                         }
                     }
@@ -1416,17 +1416,29 @@ namespace FLAC_Benchmark_H
                             }
                         }
 
-                        // --- Update checked state of ListView items ---
+                        // --- STEP 1: INITIALIZE CHECKBOX SELECTION STATE ---
+                        // Select all items initially to ensure a known state before applying duplicate logic.
+                        // After this, only non-primary duplicates will be unchecked.
+                        foreach (ListViewItem item in listViewAudioFiles.Items)
+                        {
+                            item.Checked = true;
+                        }
+
+                        // --- STEP 2: UNCHECK NON-PRIMARY DUPLICATE ITEMS ---
+                        // Now, uncheck the items that were identified as non-primary duplicates.
+                        // Items NOT in 'itemsToUncheck' (including unique files and primary duplicates) remain checked.
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             string path = item.Tag.ToString();
-                            if (itemsToCheck.Contains(path))
-                                item.Checked = true;
-                            else if (itemsToUncheck.Contains(path))
+                            if (itemsToUncheck.Contains(path))
+                            {
                                 item.Checked = false;
+                            }
+                            // Note: We don't need an 'else' clause here because we already set all to 'true'
+                            // above, and we only need to change the state of the items to be unchecked.
                         }
 
-                        // --- Add MD5 error entries to log ---
+                        // --- ADD MD5 ERROR ENTRIES TO LOG ---
                         foreach (string filePath in filesWithMD5Errors)
                         {
                             if (audioInfoCache.TryGetValue(filePath, out var info))
@@ -1442,7 +1454,7 @@ namespace FLAC_Benchmark_H
                             }
                         }
 
-                        // --- Add duplicate groups to log ---
+                        // --- ADD DUPLICATE GROUPS TO LOG ---
                         var logEntries = new List<(string FileName, string DirectoryPath, string Md5, string Duplicates)>();
                         foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
@@ -1470,11 +1482,75 @@ namespace FLAC_Benchmark_H
                             dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                         }
 
-                        // --- Show/hide relevant columns based on results ---
+                        // --- SHOW/HIDE COLUMNS BASED ON RESULTS ---
                         dataGridViewLog.Columns["Duplicates"].Visible = logEntries.Count > 0;
                         dataGridViewLog.Columns["Errors"].Visible = filesWithMD5Errors.Count > 0;
-                    });
-                });
+
+                        // --- MOVE DUPLICATE GROUPS TO THE TOP, SORTED BY PRIMARY FILE PATH ---
+                        // Sort groups by the full path of their primary (checked) member
+                        var sortedGroups = hashDict
+                            .Where(kvp => kvp.Value.Count > 1)
+                            .OrderBy(kvp =>
+                            {
+                                var primaryPath = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p));
+                                // Fallback to the first item if no primary is found (shouldn't happen after Step 2.2)
+                                return primaryPath ?? kvp.Value.First();
+                            })
+                            .ToList();
+
+                        // listViewAudioFiles sorting fix:
+                        // To ensure the primary item appears first visually within its group when moved to the top,
+                        // we insert items in reverse order. We also process groups in reverse order of their
+                        // desired final position.
+                        listViewAudioFiles.BeginUpdate();
+                        try
+                        {
+                            for (int groupIndex = sortedGroups.Count - 1; groupIndex >= 0; groupIndex--)
+                            {
+                                var kvp = sortedGroups[groupIndex];
+                                // Get ListViewItem objects for all files in the group
+                                var groupItems = kvp.Value
+                                    .Select(path => listViewAudioFiles.Items.Find(path, false).FirstOrDefault())
+                                    .Where(item => item != null)
+                                    .ToList();
+
+                                // Identify the primary item (the one that should be checked/kept)
+                                var primaryItem = groupItems.FirstOrDefault(item => itemsToCheck.Contains(item.Tag.ToString()));
+                                var otherItems = groupItems.Where(item => item != primaryItem).ToList();
+
+                                // To ensure correct visual order when adding to the top (index 0):
+                                // 1. Remove all items in the group from the ListView
+                                foreach (var item in groupItems)
+                                {
+                                    if (listViewAudioFiles.Items.Contains(item))
+                                    {
+                                        listViewAudioFiles.Items.Remove(item);
+                                    }
+                                }
+
+                                // 2. Insert items at index 0 in a specific reverse order.
+                                //    Insert 'otherItems' last-to-first, then 'primaryItem'.
+                                //    This places 'primaryItem' visually first in the group at the top.
+                                int insertIndex = 0;
+                                // Insert other items first (in reverse order to maintain their relative order)
+                                for (int i = otherItems.Count - 1; i >= 0; i--)
+                                {
+                                    listViewAudioFiles.Items.Insert(insertIndex, otherItems[i]);
+                                }
+                                // Insert the primary item last, which places it visually first in the group
+                                if (primaryItem != null)
+                                {
+                                    listViewAudioFiles.Items.Insert(insertIndex, primaryItem);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            listViewAudioFiles.EndUpdate();
+                        }
+
+                    }); // End of Invoke
+                }); // End of Task.Run
             }
             catch (Exception ex)
             {
