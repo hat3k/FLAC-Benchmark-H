@@ -910,16 +910,17 @@ namespace FLAC_Benchmark_H
             FileInfo file = new FileInfo(audioFilePath);
             long fileSize = file.Length;
             DateTime lastWriteTime = file.LastWriteTime;
+            string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
             string md5Hash = "N/A"; // Default value for MD5
 
             // Determine the file type and get the corresponding MD5
-            if (Path.GetExtension(audioFilePath).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+            if (extension == ".flac")
             {
-                md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A"; // Get MD5 for FLAC
+                md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
             }
-            else if (Path.GetExtension(audioFilePath).Equals(".wav", StringComparison.OrdinalIgnoreCase) && (checkBoxAddMD5OnLoadWav.Checked))
+            else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
             {
-                md5Hash = await CalculateWavMD5Async(audioFilePath); // Async method to calculate MD5 for WAV
+                md5Hash = await CalculateWavMD5Async(audioFilePath);
             }
 
             mediaInfo.Close();
@@ -930,6 +931,7 @@ namespace FLAC_Benchmark_H
                 FilePath = audioFilePath,
                 DirectoryPath = Path.GetDirectoryName(audioFilePath),
                 FileName = Path.GetFileName(audioFilePath),
+                Extension = extension,
                 Duration = duration,
                 BitDepth = bitDepth,
                 SamplingRate = samplingRate,
@@ -948,6 +950,7 @@ namespace FLAC_Benchmark_H
             public string FilePath { get; set; }
             public string DirectoryPath { get; set; }
             public string FileName { get; set; }
+            public string Extension { get; set; }
             public string Duration { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
@@ -1266,10 +1269,14 @@ namespace FLAC_Benchmark_H
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
-            await ButtonsTextUpdate((Button)sender, "In progress", async () =>
-            {
-                // Clear previous MD5 error results from the log
-                for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
+            //Deactivate button and show a Progress text
+            var button = (Button)sender;
+            var originalText = button.Text;
+            button.Text = "In progress...";
+            button.Enabled = false;
+
+            // Clear previous MD5 error results from the log
+            for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
                 {
                     DataGridViewRow row = dataGridViewLog.Rows[i];
                     if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed")
@@ -1332,7 +1339,7 @@ namespace FLAC_Benchmark_H
                 foreach (var item in items)
                 {
                     string filePath = item.Tag.ToString(); // Get file path from item's Tag
-                    string md5Hash = item.SubItems[5].Text; // Get MD5 or status from subitem
+                    string md5Hash = audioInfoCache.TryGetValue(filePath, out var cachedInfo) ? cachedInfo.Md5Hash : null; // Get MD5 or status from cache
 
                     // --- STEP 2: Handle files with MD5 calculation errors ---
 
@@ -1347,12 +1354,12 @@ namespace FLAC_Benchmark_H
                         // Calculate MD5 based on file type
                         if (fileExtension == ".wav")
                         {
-                            md5Hash = await Task.Run(() => CalculateWavMD5Async(filePath));
+                            md5Hash = await CalculateWavMD5Async(filePath);
                         }
                         else if (fileExtension == ".flac")
                         {
                             // Calculate MD5 for FLAC file by decoding it to a temporary WAV
-                            md5Hash = await Task.Run(() => CalculateFlacMD5Async(filePath));
+                            md5Hash = await CalculateFlacMD5Async(filePath);
                         }
 
                         // Update the ListViewAudioFiles column "MD5" with the calculated MD5 or status
@@ -1439,11 +1446,23 @@ namespace FLAC_Benchmark_H
                         // 3. Latest LastWriteTime (descending)
                         // 4. Alphabetical Full Path (ascending) - fallback for stability
                         var sortedItems = kvp.Value
-                        .OrderBy(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase) ? 0 : 1) // 1. Prefer .flac
-                        .ThenBy(item => Path.GetDirectoryName(item.Tag.ToString())?.Length ?? int.MaxValue) // 2. Shortest directory path
-                        .ThenByDescending(item => new FileInfo(item.Tag.ToString()).LastWriteTime) // 3. Latest modification time
-                        .ThenBy(item => item.Tag.ToString()) // 4. Alphabetical full path
-                        .ToList();
+                            .OrderBy(item =>
+                            {
+                                string path = item.Tag.ToString();
+                                return audioInfoCache.TryGetValue(path, out var info) && info.Extension == ".flac" ? 0 : 1;
+                            }) // 1. Prefer .flac
+                            .ThenBy(item =>
+                            {
+                                string path = item.Tag.ToString();
+                                return audioInfoCache.TryGetValue(path, out var info) ? (info.DirectoryPath?.Length ?? int.MaxValue) : int.MaxValue;
+                            }) // 2. Shortest directory path
+                            .ThenByDescending(item =>
+                            {
+                                string path = item.Tag.ToString();
+                                return audioInfoCache.TryGetValue(path, out var info) ? info.LastWriteTime : DateTime.MinValue;
+                            }) // 3. Latest modification time
+                            .ThenBy(item => item.Tag.ToString()) // 4. Alphabetical full path
+                            .ToList();
 
                         // The first item in the sorted list is the "Primary" duplicate
                         ListViewItem primaryItem = sortedItems[0];
@@ -1556,7 +1575,16 @@ namespace FLAC_Benchmark_H
                 {
                     //listViewAudioFiles.EndUpdate();
                 }
-            });
+
+            //Enable the button and reset text
+            if (button != null && !button.IsDisposed)
+            {
+                button.Invoke((MethodInvoker)(() =>
+                {
+                    button.Text = originalText;
+                    button.Enabled = true;
+                }));
+            }
         }
 
 
