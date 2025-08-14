@@ -1434,8 +1434,6 @@ namespace FLAC_Benchmark_H
                             {
                                 item.Checked = false;
                             }
-                            // Note: We don't need an 'else' clause here because we already set all to 'true'
-                            // above, and we only need to change the state of the items to be unchecked.
                         }
 
                         // --- UPDATE MD5 DISPLAY IN LISTVIEW ---
@@ -1569,7 +1567,7 @@ namespace FLAC_Benchmark_H
             }
             finally
             {
-                // Always restore the button's original state
+                // Restore the button's original state
                 if (button != null && !button.IsDisposed)
                 {
                     button.Invoke((MethodInvoker)(() =>
@@ -1580,10 +1578,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-
-
-
 
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
@@ -1658,7 +1652,7 @@ namespace FLAC_Benchmark_H
                         using (var process = new Process())
                         {
                             process.StartInfo.FileName = encoderPath;
-                            process.StartInfo.Arguments = $"--test --silent \"{filePath}\"";
+                            process.StartInfo.Arguments = $" --test --silent --warnings-as-errors \"{filePath}\"";
                             process.StartInfo.UseShellExecute = false;
                             process.StartInfo.RedirectStandardError = true;
                             process.StartInfo.RedirectStandardOutput = true;
