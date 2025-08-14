@@ -1617,6 +1617,7 @@ namespace FLAC_Benchmark_H
                     {
                         button.Text = originalText;
                         button.Enabled = true;
+                        dataGridViewLog.ClearSelection();
                     }));
                 }
             }
@@ -1859,6 +1860,7 @@ namespace FLAC_Benchmark_H
                     {
                         button.Text = originalText;
                         button.Enabled = true;
+                        dataGridViewLog.ClearSelection();
                     }));
                 }
             }
