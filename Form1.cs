@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.3 build 20250807"; // Current program version
+        public string programVersionCurrent = "1.3 build 20250814"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
@@ -1273,12 +1273,13 @@ namespace FLAC_Benchmark_H
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
+            // Store a reference to the sender button and its original text for restoration later.
             var button = (Button)sender;
             var originalText = button.Text;
 
             try
             {
-                // Disable the button to prevent multiple clicks
+                // 1. Disable the button and show a progress indicator to prevent multiple clicks.
                 button.Text = "In progress...";
                 button.Enabled = false;
 
@@ -1456,7 +1457,7 @@ namespace FLAC_Benchmark_H
                             if (audioInfoCache.TryGetValue(filePath, out var info))
                             {
                                 int rowIndex = dataGridViewLog.Rows.Add(
-                                    Path.GetFileName(filePath),                     // Name
+                                    info.FileName,                                  // Name
                                     string.Empty,                                   // InputFileSize
                                     string.Empty,                                   // OutputFileSize
                                     string.Empty,                                   // Compression
@@ -1469,7 +1470,7 @@ namespace FLAC_Benchmark_H
                                     string.Empty,                                   // FastestEncoder
                                     string.Empty,                                   // BestSize
                                     string.Empty,                                   // SameSize
-                                    Path.GetDirectoryName(filePath),                // AudioFileDirectory
+                                    info.DirectoryPath,                             // AudioFileDirectory
                                     "MD5 calculation failed",                       // MD5 - status indicator
                                     string.Empty,                                   // Duplicates
                                     info.ErrorDetails ?? string.Empty               // Errors
@@ -1482,15 +1483,18 @@ namespace FLAC_Benchmark_H
                         var logEntries = new List<(string FileName, string DirectoryPath, string Md5, string Duplicates)>();
                         foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
-                            string duplicates = string.Join(", ", kvp.Value.Select(Path.GetFileName));
+                            string duplicates = string.Join(", ", kvp.Value.Select(path => audioInfoCache.TryGetValue(path, out var info) ? info.FileName : Path.GetFileName(path)));
                             foreach (string path in kvp.Value)
                             {
-                                logEntries.Add((
-                                    Path.GetFileName(path),
-                                    Path.GetDirectoryName(path),
-                                    kvp.Key,
-                                    duplicates
-                                ));
+                                if (audioInfoCache.TryGetValue(path, out var info))
+                                {
+                                    logEntries.Add((
+                                        info.FileName,
+                                        info.DirectoryPath,
+                                        kvp.Key,
+                                        duplicates
+                                    ));
+                                }
                             }
                         }
 
@@ -1523,6 +1527,8 @@ namespace FLAC_Benchmark_H
                             .Cast<DataGridViewRow>()
                             .Any(row => row.Cells["Duplicates"].Value != null && !string.IsNullOrEmpty(row.Cells["Duplicates"].Value.ToString()));
 
+                        // Show the "Errors" column if there are ANY errors present in it.
+                        // This ensures the column remains visible if other operations (e.g., integrity checks) also added errors.
                         dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
                             .Cast<DataGridViewRow>()
                             .Any(row => row.Cells["Errors"].Value != null && !string.IsNullOrEmpty(row.Cells["Errors"].Value.ToString()));
@@ -1539,6 +1545,9 @@ namespace FLAC_Benchmark_H
                             })
                             .ToList();
 
+                        // Get all ListViewItems once for efficient lookup
+                        var allListViewItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+
                         // listViewAudioFiles sorting fix:
                         // To ensure the primary item appears first visually within its group when moved to the top,
                         // we insert items in reverse order. We also process groups in reverse order of their
@@ -1550,10 +1559,11 @@ namespace FLAC_Benchmark_H
                             {
                                 var kvp = sortedGroups[groupIndex];
                                 // Get ListViewItem objects for all files in the group
-                                var groupItems = kvp.Value
-                                    .Select(path => listViewAudioFiles.Items.Find(path, false).FirstOrDefault())
-                                    .Where(item => item != null)
+                                // Find items by comparing their Tag (which holds the full file path)
+                                var groupItems = allListViewItems
+                                    .Where(item => kvp.Value.Contains(item.Tag.ToString()))
                                     .ToList();
+                                // --- END OF FIX ---
 
                                 // Identify the primary item (the one that should be checked/kept)
                                 var primaryItem = groupItems.FirstOrDefault(item => itemsToCheck.Contains(item.Tag.ToString()));
