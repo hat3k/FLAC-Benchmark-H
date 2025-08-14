@@ -69,6 +69,7 @@
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
+            checkBoxWarningsAsErrors = new CheckBox();
             labelAudioFileRemoved = new Label();
             buttonClearUnchecked = new Button();
             buttonDownAudioFile = new Button();
@@ -575,6 +576,7 @@
             // groupBoxAudioFiles
             // 
             groupBoxAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxAudioFiles.Controls.Add(checkBoxWarningsAsErrors);
             groupBoxAudioFiles.Controls.Add(labelAudioFileRemoved);
             groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
@@ -591,6 +593,19 @@
             groupBoxAudioFiles.TabIndex = 1;
             groupBoxAudioFiles.TabStop = false;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available)";
+            // 
+            // checkBoxWarningsAsErrors
+            // 
+            checkBoxWarningsAsErrors.Anchor = AnchorStyles.Left;
+            checkBoxWarningsAsErrors.AutoSize = true;
+            checkBoxWarningsAsErrors.Location = new Point(470, 233);
+            checkBoxWarningsAsErrors.Name = "checkBoxWarningsAsErrors";
+            checkBoxWarningsAsErrors.Size = new Size(123, 19);
+            checkBoxWarningsAsErrors.TabIndex = 10;
+            checkBoxWarningsAsErrors.Text = "Warnings as errors";
+            toolTip1.SetToolTip(checkBoxWarningsAsErrors, "Treat all warnings as errors when performing FLAC files test.\r\n\r\nWarnings will be shown in the log in addition to errors.");
+            checkBoxWarningsAsErrors.UseVisualStyleBackColor = true;
+            checkBoxWarningsAsErrors.CheckedChanged += checkBoxWarningsAsErrors_CheckedChanged;
             // 
             // labelAudioFileRemoved
             // 
@@ -1423,5 +1438,6 @@
         private ColumnHeader EncoderDirectory;
         private Label labelAudioFileRemoved;
         private Button buttonCopyLogAsBBCode;
+        private CheckBox checkBoxWarningsAsErrors;
     }
 }

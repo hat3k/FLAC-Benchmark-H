@@ -201,6 +201,7 @@ namespace FLAC_Benchmark_H
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
+                    $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}"
@@ -301,6 +302,9 @@ namespace FLAC_Benchmark_H
                                 break;
                             case "AddMD5OnLoadWav":
                                 checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
+                                break;
+                            case "WarningsAsErrors":
+                                checkBoxWarningsAsErrors.Checked = bool.Parse(value);
                                 break;
                             case "AutoAnalyzeLog":
                                 checkBoxAutoAnalyzeLog.Checked = bool.Parse(value);
@@ -1735,7 +1739,10 @@ namespace FLAC_Benchmark_H
                 }
             });
         }
+        private void checkBoxWarningsAsErrors_CheckedChanged(object sender, EventArgs e)
+        {
 
+        }
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
