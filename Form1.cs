@@ -1283,7 +1283,8 @@ namespace FLAC_Benchmark_H
                 button.Text = "In progress...";
                 button.Enabled = false;
 
-                // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW (IN UI THREAD) ---
+                // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
+                // Run this part in the UI thread as it modifies UI elements.
                 var itemsToRemove = new List<ListViewItem>();
                 this.Invoke((MethodInvoker)delegate
                 {
@@ -1314,7 +1315,8 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // --- STAGE 0.2: COLLECT FILE PATHS (IN UI THREAD) ---
+                // --- STAGE 0.2: COLLECT FILE PATHS ---
+                // Run this part in the UI thread to safely access ListView items.
                 var filePaths = new List<string>();
                 this.Invoke((MethodInvoker)delegate
                 {
@@ -1397,7 +1399,8 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    // --- STAGE 2: UPDATE USER INTERFACE (IN UI THREAD) ---
+                    // --- STAGE 2: UPDATE USER INTERFACE ---
+                    // All UI modifications must happen on the UI thread.
                     this.Invoke((MethodInvoker)delegate
                     {
                         // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
@@ -1622,10 +1625,12 @@ namespace FLAC_Benchmark_H
 
             try
             {
+                // Disable the button and show a progress indicator.
                 button.Text = "In progress...";
                 button.Enabled = false;
 
-                // --- STAGE 0.1: COLLECT DATA FROM UI (IN UI THREAD) ---
+                // --- STAGE 0.1: COLLECT DATA FROM UI ---
+                // Run this part in the UI thread as it reads/modifies UI elements.
                 List<string> flacFilePaths = new List<string>();
                 string? encoderPath = null;
                 bool useWarningsAsErrors = false;
@@ -1659,25 +1664,30 @@ namespace FLAC_Benchmark_H
                     if (itemsToRemove.Count > 0)
                     {
                         UpdateGroupBoxAudioFilesHeader();
+                        // Show message on UI thread
                         this.Invoke((MethodInvoker)delegate {
                             ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
                         });
                     }
 
+                    // Collect paths of all .flac files currently in the list.
                     flacFilePaths.AddRange(
                         listViewAudioFiles.Items.Cast<ListViewItem>()
                             .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                             .Select(item => item.Tag.ToString())
                     );
 
+                    // Get the path of the first .exe file found in the encoders list.
                     var encoderItem = listViewEncoders.Items
                         .Cast<ListViewItem>()
                         .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
                     encoderPath = encoderItem?.Tag?.ToString();
 
+                    // Get the state of the 'Warnings as Errors' checkbox.
                     useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
                 });
 
+                // Validate collected data before proceeding.
                 if (flacFilePaths.Count == 0)
                 {
                     MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1692,14 +1702,16 @@ namespace FLAC_Benchmark_H
 
                 // --- STAGE 1: PERFORM INTEGRITY TESTS IN BACKGROUND THREAD ---
                 List<(string FileName, string FilePath, string Message)> errorResults = new List<(string, string, string)>();
-                bool allPassed = true;
+                bool allPassed = true; // Flag to track if all files passed the test.
 
                 await Task.Run(async () =>
                 {
                     var localErrorResults = new List<(string FileName, string FilePath, string Message)>();
 
+                    // Test each FLAC file sequentially.
                     foreach (string filePath in flacFilePaths)
                     {
+                        // Get the file name, preferably from the cache.
                         string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
 
                         try
@@ -1707,6 +1719,7 @@ namespace FLAC_Benchmark_H
                             using (var process = new Process())
                             {
                                 process.StartInfo.FileName = encoderPath;
+                                // Build the command line arguments for the flac test.
                                 string arguments = " --test --silent";
                                 if (useWarningsAsErrors)
                                 {
@@ -1722,6 +1735,7 @@ namespace FLAC_Benchmark_H
 
                                 process.Start();
 
+                                // Asynchronously read output and error streams to prevent deadlocks.
                                 var errorTask = process.StandardError.ReadToEndAsync();
                                 var outputTask = process.StandardOutput.ReadToEndAsync();
 
@@ -1730,33 +1744,38 @@ namespace FLAC_Benchmark_H
                                 string errorOutput = await errorTask;
                                 string output = await outputTask;
 
+                                // If the process exited with a non-zero code, it indicates an error or failure.
                                 if (process.ExitCode != 0)
                                 {
                                     string message = string.IsNullOrEmpty(errorOutput.Trim()) ? "Unknown error" : errorOutput.Trim();
                                     localErrorResults.Add((fileName, filePath, message));
-                                    allPassed = false;
+                                    allPassed = false; // Mark that at least one file failed.
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
+                            // Catch any exceptions during the process execution (e.g., file access issues).
                             localErrorResults.Add((fileName, filePath, $"Exception: {ex.Message}"));
-                            allPassed = false;
+                            allPassed = false; // Mark that at least one file failed.
                         }
                     }
+                    // Transfer results from the local list (used inside Task.Run) to the outer list.
                     errorResults = localErrorResults;
                 });
 
-                // --- STAGE 2: UPDATE USER INTERFACE (IN UI THREAD) ---
+                // --- STAGE 2: UPDATE USER INTERFACE ---
+                // All UI modifications must happen on the UI thread.
                 this.Invoke((MethodInvoker)delegate
                 {
                     // --- STAGE 2.1: UPDATE LOG GRID ---
+                    // Ensure the 'Errors' column exists in the DataGridView.
                     if (!dataGridViewLog.Columns.Contains("Errors"))
                     {
                         var errorColumn = new DataGridViewTextBoxColumn();
                         errorColumn.Name = "Errors";
                         errorColumn.HeaderText = "Errors";
-                        errorColumn.Visible = false;
+                        errorColumn.Visible = false; // Will be made visible if needed.
                         errorColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                         dataGridViewLog.Columns.Add(errorColumn);
                     }
@@ -1785,13 +1804,14 @@ namespace FLAC_Benchmark_H
                             string.Empty,                // 11: BestSize
                             string.Empty,                // 12: SameSize
                             directoryPath,               // 13: AudioFileDirectory
-                            "Integrity Check Failed",    // 14: MD5
+                            "Integrity Check Failed",    // 14: MD5 (repurposed for this check)
                             string.Empty,                // 15: Duplicates
                             errorMessage                 // 16: Errors
                         );
                         // Highlight integrity check error rows in red for visibility.
                         dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
-                        // Note: No dataGridViewLog.Rows[rowIndex].Cells["Errors"].Value = ... here.
+                        // Note: The error message is added to the row itself, not specifically to the 'Errors' cell,
+                        // which is consistent with how other logs are added in this application.
                     }
 
                     // Show the "Errors" column only if there are any errors present in it.
@@ -1800,6 +1820,7 @@ namespace FLAC_Benchmark_H
                         .Cast<DataGridViewRow>()
                         .Any(row => row.Cells["Errors"].Value != null && !string.IsNullOrEmpty(row.Cells["Errors"].Value.ToString()));
 
+                    // Inform the user about the overall result of the test.
                     if (allPassed)
                     {
                         MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1810,6 +1831,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
+                // Handle any unexpected errors that occurred outside the main processing loop.
                 this.Invoke((MethodInvoker)delegate
                 {
                     MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1817,6 +1839,7 @@ namespace FLAC_Benchmark_H
             }
             finally
             {
+                // Restore the button's original state regardless of outcome.
                 if (button != null && !button.IsDisposed)
                 {
                     button.Invoke((MethodInvoker)(() =>
