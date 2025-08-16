@@ -1273,18 +1273,17 @@ namespace FLAC_Benchmark_H
 
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
-            // Store a reference to the sender button and its original text for restoration later.
+            // --- STAGE 0: PREPARE USER INTERFACE ---
             var button = (Button)sender;
             var originalText = button.Text;
 
             try
             {
-                // 1. Disable the button and show a progress indicator to prevent multiple clicks.
+                // Disable the button and show a progress indicator.
                 button.Text = "In progress...";
                 button.Enabled = false;
 
-                // --- STAGE 0: CHECK FILE EXISTENCE AND CLEAN UP LIST ---
-                // Identify and remove missing files from the ListView
+                // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW (IN UI THREAD) ---
                 var itemsToRemove = new List<ListViewItem>();
                 this.Invoke((MethodInvoker)delegate
                 {
@@ -1297,13 +1296,11 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    // Remove missing files from the list and UI
                     foreach (var item in itemsToRemove)
                     {
                         listViewAudioFiles.Items.Remove(item);
                     }
 
-                    // Update UI header and show message
                     UpdateGroupBoxAudioFilesHeader();
                     if (itemsToRemove.Count > 0)
                     {
@@ -1311,58 +1308,57 @@ namespace FLAC_Benchmark_H
                     }
                 });
 
-                // If no files left, exit early
                 if (listViewAudioFiles.Items.Count == 0)
                 {
                     MessageBox.Show("No audio files to process.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                // --- STAGE 1: COLLECT FILE PATHS IN UI THREAD ---
-                // Safely extract file paths from listViewAudioFiles using Invoke
+                // --- STAGE 0.2: COLLECT FILE PATHS (IN UI THREAD) ---
                 var filePaths = new List<string>();
                 this.Invoke((MethodInvoker)delegate
                 {
                     filePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>().Select(item => item.Tag.ToString()));
                 });
 
-                // --- STAGE 2: PROCESS FILES IN BACKGROUND THREAD ---
-                // Move heavy work (MD5, sorting, duplicate detection) off the UI thread
+                // --- STAGE 1: PERFORM DUPLICATE DETECTION IN BACKGROUND THREAD ---
                 await Task.Run(async () =>
                 {
-                    // Dictionary to group files by their MD5 hash
-                    var hashDict = new Dictionary<string, List<string>>();
-                    // List to track files where MD5 calculation failed
-                    var filesWithMD5Errors = new List<string>();
+                    var hashDict = new Dictionary<string, List<string>>(); // Group files by MD5 hash.
+                    var filesWithMD5Errors = new List<string>(); // Track paths of files with MD5 errors.
 
-                    // --- STAGE 2.1: CALCULATE OR RETRIEVE MD5 HASHES ---
+                    // --- STAGE 1.1: CALCULATE OR RETRIEVE MD5 HASHES ---
                     foreach (string filePath in filePaths)
                     {
-                        // Try to get MD5 from cache
-                        string md5Hash = audioInfoCache.TryGetValue(filePath, out var cachedInfo) ? cachedInfo.Md5Hash : null;
+                        string md5Hash = audioInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
 
-                        // Recalculate MD5 if missing, invalid, or failed previously
                         if (string.IsNullOrEmpty(md5Hash) ||
                             md5Hash == "MD5 calculation failed" ||
                             md5Hash == "00000000000000000000000000000000" ||
                             md5Hash == "N/A")
                         {
-                            string ext = Path.GetExtension(filePath).ToLowerInvariant();
-                            md5Hash = ext == ".wav"
-                                ? await CalculateWavMD5Async(filePath)
-                                : ext == ".flac"
-                                    ? await CalculateFlacMD5Async(filePath)
-                                    : "MD5 calculation failed";
-
-                            // Update cache with new MD5
-                            if (audioInfoCache.TryGetValue(filePath, out var info))
+                            string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
+                            if (fileExtension == ".wav")
                             {
-                                info.Md5Hash = md5Hash;
-                                audioInfoCache[filePath] = info;
+                                md5Hash = await CalculateWavMD5Async(filePath);
+                            }
+                            else if (fileExtension == ".flac")
+                            {
+                                md5Hash = await CalculateFlacMD5Async(filePath);
+                            }
+                            else
+                            {
+                                md5Hash = "MD5 calculation failed";
+                            }
+
+                            // Update the cache with the new MD5 hash.
+                            if (audioInfoCache.TryGetValue(filePath, out var infoToUpdate))
+                            {
+                                infoToUpdate.Md5Hash = md5Hash;
+                                audioInfoCache[filePath] = infoToUpdate;
                             }
                         }
 
-                        // Add to hash groups or error list
                         if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "MD5 calculation failed")
                         {
                             if (!hashDict.ContainsKey(md5Hash))
@@ -1375,42 +1371,36 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    // --- STAGE 2.2: DETERMINE PRIMARY DUPLICATES ---
-                    // For each group of duplicates, select one "primary" file to keep (checked)
-                    var itemsToCheck = new List<string>();   // Files to mark as checked (primary)
-                    var itemsToUncheck = new List<string>(); // Files to mark as unchecked (non-primary duplicates)
+                    // --- STAGE 1.2: DETERMINE PRIMARY DUPLICATE IN EACH GROUP ---
+                    var itemsToCheck = new List<string>();   // Paths of files to mark as checked (primary).
+                    var itemsToUncheck = new List<string>(); // Paths of files to mark as unchecked (non-primary duplicates).
 
                     foreach (var kvp in hashDict)
                     {
-                        if (kvp.Value.Count > 1) // Only process duplicate groups
+                        if (kvp.Value.Count > 1) // Process only actual duplicate groups.
                         {
-                            // Sort files by preference: .flac > .wav, shorter path, newer file, then alphabetically
+                            // Sort by: .flac > .wav, shorter path, newer file, then alphabetically.
                             var sortedPaths = kvp.Value
-                                .Select(path => new
-                                {
-                                    Path = path,
-                                    Info = audioInfoCache.TryGetValue(path, out var info) ? info : null
-                                })
+                                .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
                                 .Where(x => x.Info != null)
-                                .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)           // Prefer .flac
-                                .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)    // Prefer shorter path
-                                .ThenByDescending(x => x.Info.LastWriteTime)                  // Prefer newer file
-                                .ThenBy(x => x.Path)                                          // Fallback: alphabetical
+                                .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)
+                                .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)
+                                .ThenByDescending(x => x.Info.LastWriteTime)
+                                .ThenBy(x => x.Path)
                                 .ToList();
 
                             if (sortedPaths.Count > 0)
                             {
-                                itemsToCheck.Add(sortedPaths[0].Path);                    // Primary file
-                                itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Non-primary duplicates
+                                itemsToCheck.Add(sortedPaths[0].Path); // Primary file.
+                                itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Others.
                             }
                         }
                     }
 
-                    // --- STAGE 3: UPDATE UI (MUST BE ON UI THREAD) ---
-                    // Perform all UI updates safely using Invoke
+                    // --- STAGE 2: UPDATE USER INTERFACE (IN UI THREAD) ---
                     this.Invoke((MethodInvoker)delegate
                     {
-                        // --- Clear previous duplicate and MD5 error entries from log ---
+                        // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
                         for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
                         {
                             DataGridViewRow row = dataGridViewLog.Rows[i];
@@ -1421,17 +1411,14 @@ namespace FLAC_Benchmark_H
                             }
                         }
 
-                        // --- STEP 1: INITIALIZE CHECKBOX SELECTION STATE ---
-                        // Select all items initially to ensure a known state before applying duplicate logic.
-                        // After this, only non-primary duplicates will be unchecked.
+                        // --- STAGE 2.2: UPDATE CHECKBOX STATES IN LISTVIEW ---
+                        // STEP 1: Initialize all items as checked.
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             item.Checked = true;
                         }
 
-                        // --- STEP 2: UNCHECK NON-PRIMARY DUPLICATE ITEMS ---
-                        // Now, uncheck the items that were identified as non-primary duplicates.
-                        // Items NOT in 'itemsToUncheck' (including unique files and primary duplicates) remain checked.
+                        // STEP 2: Uncheck non-primary duplicates.
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             string path = item.Tag.ToString();
@@ -1441,7 +1428,7 @@ namespace FLAC_Benchmark_H
                             }
                         }
 
-                        // --- UPDATE MD5 DISPLAY IN LISTVIEW ---
+                        // --- STAGE 2.3: UPDATE MD5 DISPLAY IN LISTVIEW ---
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             string path = item.Tag.ToString();
@@ -1451,39 +1438,51 @@ namespace FLAC_Benchmark_H
                             }
                         }
 
-                        // --- ADD MD5 ERROR ENTRIES TO LOG ---
+                        // --- STAGE 2.4: LOG MD5 CALCULATION ERROR RESULTS ---
+                        // Add entries for files where MD5 calculation failed to the log grid.
                         foreach (string filePath in filesWithMD5Errors)
                         {
+                            // Retrieve file metadata from the cache.
                             if (audioInfoCache.TryGetValue(filePath, out var info))
                             {
+                                string fileName = info.FileName;
+                                string directoryPath = info.DirectoryPath;
+                                // The specific error details are stored in the cache.
+                                string errorMessage = info.ErrorDetails ?? string.Empty;
+
                                 int rowIndex = dataGridViewLog.Rows.Add(
-                                    info.FileName,                                  // Name
-                                    string.Empty,                                   // InputFileSize
-                                    string.Empty,                                   // OutputFileSize
-                                    string.Empty,                                   // Compression
-                                    string.Empty,                                   // Time
-                                    string.Empty,                                   // Speed
-                                    string.Empty,                                   // Parameters
-                                    string.Empty,                                   // Encoder
-                                    string.Empty,                                   // Version
-                                    string.Empty,                                   // Encoder directory path
-                                    string.Empty,                                   // FastestEncoder
-                                    string.Empty,                                   // BestSize
-                                    string.Empty,                                   // SameSize
-                                    info.DirectoryPath,                             // AudioFileDirectory
-                                    "MD5 calculation failed",                       // MD5 - status indicator
-                                    string.Empty,                                   // Duplicates
-                                    info.ErrorDetails ?? string.Empty               // Errors
+                                    fileName,                   // 0:  Name
+                                    string.Empty,               // 1:  InputFileSize
+                                    string.Empty,               // 2:  OutputFileSize
+                                    string.Empty,               // 3:  Compression
+                                    string.Empty,               // 4:  Time
+                                    string.Empty,               // 5:  Speed
+                                    string.Empty,               // 6:  Parameters
+                                    string.Empty,               // 7:  Encoder
+                                    string.Empty,               // 8:  Version
+                                    string.Empty,               // 9:  Encoder directory path
+                                    string.Empty,               // 10: FastestEncoder
+                                    string.Empty,               // 11: BestSize
+                                    string.Empty,               // 12: SameSize
+                                    directoryPath,              // 13: AudioFileDirectory
+                                    "MD5 calculation failed",   // 14: MD5
+                                    string.Empty,               // 15: Duplicates
+                                    errorMessage                // 16: Errors
                                 );
+                                // Highlight MD5 error rows in gray for visibility.
                                 dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
                             }
                         }
 
-                        // --- ADD DUPLICATE GROUPS TO LOG ---
+                        // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
+                        // Add entries for each file found in duplicate groups to the log grid.
                         var logEntries = new List<(string FileName, string DirectoryPath, string Md5, string Duplicates)>();
                         foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
-                            string duplicates = string.Join(", ", kvp.Value.Select(path => audioInfoCache.TryGetValue(path, out var info) ? info.FileName : Path.GetFileName(path)));
+                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
+                                audioInfoCache.TryGetValue(path, out var info) ? info.FileName : Path.GetFileName(path)
+                            ));
+
                             foreach (string path in kvp.Value)
                             {
                                 if (audioInfoCache.TryGetValue(path, out var info))
@@ -1492,7 +1491,7 @@ namespace FLAC_Benchmark_H
                                         info.FileName,
                                         info.DirectoryPath,
                                         kvp.Key,
-                                        duplicates
+                                        duplicatesList
                                     ));
                                 }
                             }
@@ -1500,77 +1499,75 @@ namespace FLAC_Benchmark_H
 
                         foreach (var entry in logEntries)
                         {
+                            // Data for 'entry' is pre-fetched from the cache in STAGE 1.2.
+                            string fileName = entry.FileName;
+                            string directoryPath = entry.DirectoryPath;
+                            string md5Hash = entry.Md5;
+                            string duplicatesList = entry.Duplicates;
+                            // No specific error message for a duplicate entry itself.
+                            string errorMessage = string.Empty;
+
                             int rowIndex = dataGridViewLog.Rows.Add(
-                                entry.FileName,                                 // Name
-                                string.Empty,                                   // InputFileSize
-                                string.Empty,                                   // OutputFileSize
-                                string.Empty,                                   // Compression
-                                string.Empty,                                   // Time
-                                string.Empty,                                   // Speed
-                                string.Empty,                                   // Parameters
-                                string.Empty,                                   // Encoder
-                                string.Empty,                                   // Version
-                                string.Empty,                                   // Encoder directory path
-                                string.Empty,                                   // FastestEncoder
-                                string.Empty,                                   // BestSize
-                                string.Empty,                                   // SameSize
-                                entry.DirectoryPath,                            // AudioFileDirectory
-                                entry.Md5,                                      // MD5
-                                entry.Duplicates,                               // Duplicates
-                                string.Empty                                    // Errors
+                                fileName,            // 0:  Name
+                                string.Empty,        // 1:  InputFileSize
+                                string.Empty,        // 2:  OutputFileSize
+                                string.Empty,        // 3:  Compression
+                                string.Empty,        // 4:  Time
+                                string.Empty,        // 5:  Speed
+                                string.Empty,        // 6:  Parameters
+                                string.Empty,        // 7:  Encoder
+                                string.Empty,        // 8:  Version
+                                string.Empty,        // 9:  Encoder directory path
+                                string.Empty,        // 10: FastestEncoder
+                                string.Empty,        // 11: BestSize
+                                string.Empty,        // 12: SameSize
+                                directoryPath,       // 13: AudioFileDirectory
+                                md5Hash,             // 14: MD5
+                                duplicatesList,      // 15: Duplicates
+                                errorMessage         // 16: Errors
                             );
+                            // Highlight duplicate rows in brown for visibility.
                             dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                         }
 
-                        // --- SHOW/HIDE COLUMNS BASED ON RESULTS ---
+                        // --- STAGE 2.6: MANAGE LOG COLUMN VISIBILITY ---
+                        // Show columns only if they contain data.
                         dataGridViewLog.Columns["Duplicates"].Visible = dataGridViewLog.Rows
                             .Cast<DataGridViewRow>()
                             .Any(row => row.Cells["Duplicates"].Value != null && !string.IsNullOrEmpty(row.Cells["Duplicates"].Value.ToString()));
 
-                        // Show the "Errors" column if there are ANY errors present in it.
-                        // This ensures the column remains visible if other operations (e.g., integrity checks) also added errors.
                         dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
                             .Cast<DataGridViewRow>()
                             .Any(row => row.Cells["Errors"].Value != null && !string.IsNullOrEmpty(row.Cells["Errors"].Value.ToString()));
 
-                        // --- MOVE DUPLICATE GROUPS TO THE TOP, SORTED BY PRIMARY FILE PATH ---
-                        // Sort groups by the full path of their primary (checked) member
+                        // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
                         var sortedGroups = hashDict
                             .Where(kvp => kvp.Value.Count > 1)
                             .OrderBy(kvp =>
                             {
                                 var primaryPath = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p));
-                                // Fallback to the first item if no primary is found (shouldn't happen after Step 2.2)
                                 return primaryPath ?? kvp.Value.First();
                             })
                             .ToList();
 
-                        // Get all ListViewItems once for efficient lookup
                         var allListViewItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
 
-                        // listViewAudioFiles sorting fix:
-                        // To ensure the primary item appears first visually within its group when moved to the top,
-                        // we insert items in reverse order. We also process groups in reverse order of their
-                        // desired final position.
                         listViewAudioFiles.BeginUpdate();
                         try
                         {
+                            // Process groups in reverse order for correct final positioning.
                             for (int groupIndex = sortedGroups.Count - 1; groupIndex >= 0; groupIndex--)
                             {
                                 var kvp = sortedGroups[groupIndex];
-                                // Get ListViewItem objects for all files in the group
-                                // Find items by comparing their Tag (which holds the full file path)
+                                // Find ListViewItem objects by comparing their Tag.
                                 var groupItems = allListViewItems
                                     .Where(item => kvp.Value.Contains(item.Tag.ToString()))
                                     .ToList();
-                                // --- END OF FIX ---
 
-                                // Identify the primary item (the one that should be checked/kept)
                                 var primaryItem = groupItems.FirstOrDefault(item => itemsToCheck.Contains(item.Tag.ToString()));
                                 var otherItems = groupItems.Where(item => item != primaryItem).ToList();
 
-                                // To ensure correct visual order when adding to the top (index 0):
-                                // 1. Remove all items in the group from the ListView
+                                // Remove all items in the group.
                                 foreach (var item in groupItems)
                                 {
                                     if (listViewAudioFiles.Items.Contains(item))
@@ -1579,16 +1576,13 @@ namespace FLAC_Benchmark_H
                                     }
                                 }
 
-                                // 2. Insert items at index 0 in a specific reverse order.
-                                //    Insert 'otherItems' last-to-first, then 'primaryItem'.
-                                //    This places 'primaryItem' visually first in the group at the top.
+                                // Insert items at the top (index 0) in reverse order.
+                                // This places 'primaryItem' visually first in the group.
                                 int insertIndex = 0;
-                                // Insert other items first (in reverse order to maintain their relative order)
                                 for (int i = otherItems.Count - 1; i >= 0; i--)
                                 {
                                     listViewAudioFiles.Items.Insert(insertIndex, otherItems[i]);
                                 }
-                                // Insert the primary item last, which places it visually first in the group
                                 if (primaryItem != null)
                                 {
                                     listViewAudioFiles.Items.Insert(insertIndex, primaryItem);
@@ -1599,18 +1593,16 @@ namespace FLAC_Benchmark_H
                         {
                             listViewAudioFiles.EndUpdate();
                         }
-
-                    }); // End of Invoke
-                }); // End of Task.Run
+                        dataGridViewLog.ClearSelection();
+                    }); // End of UI update Invoke.
+                }); // End of background Task.Run.
             }
             catch (Exception ex)
             {
-                // Show error message if an unexpected exception occurs
                 MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                // Restore the button's original state
                 if (button != null && !button.IsDisposed)
                 {
                     button.Invoke((MethodInvoker)(() =>
@@ -1622,30 +1614,25 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
-            // Store a reference to the sender button and its original text for restoration later.
+            // --- STAGE 0: PREPARE USER INTERFACE ---
             var button = (Button)sender;
             var originalText = button.Text;
 
             try
             {
-                // 1. Disable the button and show a progress indicator to prevent multiple clicks.
                 button.Text = "In progress...";
                 button.Enabled = false;
 
-                // --- STAGE 0: COLLECT DATA IN UI THREAD ---
-                // Gather necessary data from UI controls safely using Invoke.
+                // --- STAGE 0.1: COLLECT DATA FROM UI (IN UI THREAD) ---
                 List<string> flacFilePaths = new List<string>();
                 string? encoderPath = null;
-                bool useWarningsAsErrors = false; // State of the warnings-as-errors checkbox
+                bool useWarningsAsErrors = false;
 
-                // Use Invoke to safely access UI elements from the UI thread context.
                 this.Invoke((MethodInvoker)delegate
                 {
                     // --- Clear previous integrity error results from the log ---
-                    // Remove any rows previously marked as "Integrity Check Failed" from the log grid.
                     for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
                     {
                         DataGridViewRow row = dataGridViewLog.Rows[i];
@@ -1656,7 +1643,6 @@ namespace FLAC_Benchmark_H
                     }
 
                     // --- Check if files physically exist on disk ---
-                    // Identify audio files that no longer exist on disk.
                     var itemsToRemove = new List<ListViewItem>();
                     foreach (ListViewItem item in listViewAudioFiles.Items)
                     {
@@ -1666,80 +1652,67 @@ namespace FLAC_Benchmark_H
                             itemsToRemove.Add(item);
                         }
                     }
-                    // Remove missing files from the list
                     foreach (var itemToRemove in itemsToRemove)
                     {
                         listViewAudioFiles.Items.Remove(itemToRemove);
                     }
-                    // Inform the user via text label
                     if (itemsToRemove.Count > 0)
                     {
-                        UpdateGroupBoxAudioFilesHeader(); // Update the file count header
+                        UpdateGroupBoxAudioFilesHeader();
                         this.Invoke((MethodInvoker)delegate {
                             ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
                         });
                     }
 
-                    // Collect paths of all FLAC files currently in the list.
                     flacFilePaths.AddRange(
                         listViewAudioFiles.Items.Cast<ListViewItem>()
                             .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                             .Select(item => item.Tag.ToString())
                     );
 
-                    // Get the path to the selected encoder executable.
                     var encoderItem = listViewEncoders.Items
                         .Cast<ListViewItem>()
-                        .FirstOrDefault(item =>
-                            Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                        .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
                     encoderPath = encoderItem?.Tag?.ToString();
 
-                    // Get the state of the warnings-as-errors checkbox.
                     useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
-                }); // End of Invoke for data collection
+                });
 
-                // Check if there are any FLAC files to process.
                 if (flacFilePaths.Count == 0)
                 {
                     MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return; // Exit early if no files to check.
+                    return;
                 }
 
-                // Check if an encoder was found.
                 if (string.IsNullOrEmpty(encoderPath))
                 {
                     MessageBox.Show("No .exe encoder found in the encoders list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return; // Exit early if no encoder is available.
+                    return;
                 }
 
                 // --- STAGE 1: PERFORM INTEGRITY TESTS IN BACKGROUND THREAD ---
-                // Variables to store the results of the tests.
                 List<(string FileName, string FilePath, string Message)> errorResults = new List<(string, string, string)>();
-                bool allPassed = true; // Flag to track if all files passed the test.
+                bool allPassed = true;
 
-                // Perform the heavy work (running flac --test) in a background thread.
                 await Task.Run(async () =>
                 {
-                    // Local variable to accumulate errors within the Task.Run scope.
                     var localErrorResults = new List<(string FileName, string FilePath, string Message)>();
 
-                    // Process each FLAC file sequentially.
-                    foreach (var filePath in flacFilePaths) // Use paths collected earlier.
+                    foreach (string filePath in flacFilePaths)
                     {
-                        string fileName = Path.GetFileName(filePath);
+                        string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
+
                         try
                         {
                             using (var process = new Process())
                             {
-                                process.StartInfo.FileName = encoderPath; // Use the encoder path collected earlier.
-
-                                // Build command-line arguments.
+                                process.StartInfo.FileName = encoderPath;
                                 string arguments = " --test --silent";
-                                if (useWarningsAsErrors) // Add flag based on checkbox state.
+                                if (useWarningsAsErrors)
                                 {
                                     arguments += " --warnings-as-errors";
                                 }
-                                arguments += $" \"{filePath}\""; // Always append the file path.
+                                arguments += $" \"{filePath}\"";
 
                                 process.StartInfo.Arguments = arguments;
                                 process.StartInfo.UseShellExecute = false;
@@ -1749,45 +1722,35 @@ namespace FLAC_Benchmark_H
 
                                 process.Start();
 
-                                // Asynchronously read output and errors to prevent deadlocks.
                                 var errorTask = process.StandardError.ReadToEndAsync();
                                 var outputTask = process.StandardOutput.ReadToEndAsync();
 
-                                // Asynchronously wait for the process to exit.
                                 await process.WaitForExitAsync();
 
-                                // Get the results of reading streams.
                                 string errorOutput = await errorTask;
                                 string output = await outputTask;
 
-                                // Check the exit code to determine if the file passed the test.
                                 if (process.ExitCode != 0)
                                 {
-                                    // If the test failed, record the error message.
                                     string message = string.IsNullOrEmpty(errorOutput.Trim()) ? "Unknown error" : errorOutput.Trim();
                                     localErrorResults.Add((fileName, filePath, message));
-                                    allPassed = false; // Set flag if any error is found.
+                                    allPassed = false;
                                 }
-                                // If ExitCode == 0, the file passed, nothing is added.
                             }
                         }
                         catch (Exception ex)
                         {
-                            // Catch any exceptions that occur while starting the process.
                             localErrorResults.Add((fileName, filePath, $"Exception: {ex.Message}"));
-                            allPassed = false; // Set flag on exception.
+                            allPassed = false;
                         }
                     }
-                    // After processing all files, assign the local results to the outer variable.
                     errorResults = localErrorResults;
-                }); // End of Task.Run
+                });
 
-                // --- STAGE 2: UPDATE UI IN UI THREAD ---
-                // All heavy operations are complete, update the UI safely.
+                // --- STAGE 2: UPDATE USER INTERFACE (IN UI THREAD) ---
                 this.Invoke((MethodInvoker)delegate
                 {
-                    // --- UPDATE LOG GRID ---
-                    // Ensure the "Errors" column exists in the log grid.
+                    // --- STAGE 2.1: UPDATE LOG GRID ---
                     if (!dataGridViewLog.Columns.Contains("Errors"))
                     {
                         var errorColumn = new DataGridViewTextBoxColumn();
@@ -1797,55 +1760,56 @@ namespace FLAC_Benchmark_H
                         errorColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                         dataGridViewLog.Columns.Add(errorColumn);
                     }
-                    // Note: Clearing old results was already done in the first Invoke block.
 
-                    // Add new error results to the log grid.
+                    // --- STAGE 2.2: LOG INTEGRITY CHECK ERROR RESULTS ---
+                    // Add entries for files that failed the flac --test to the log grid.
                     foreach (var result in errorResults)
                     {
-                        int rowIndex = dataGridViewLog.Rows.Add(
-                            result.FileName,                     // Name
-                            string.Empty,                        // InputFileSize
-                            string.Empty,                        // OutputFileSize
-                            string.Empty,                        // Compression
-                            string.Empty,                        // Time
-                            string.Empty,                        // Speed
-                            string.Empty,                        // Parameters
-                            string.Empty,                        // Encoder
-                            string.Empty,                        // Version
-                            string.Empty,                        // Encoder directory path
-                            string.Empty,                        // FastestEncoder
-                            string.Empty,                        // BestSize
-                            string.Empty,                        // SameSize
-                            Path.GetDirectoryName(result.FilePath), // AudioFileDirectory
-                            "Integrity Check Failed",            // MD5 - status indicator
-                            string.Empty                         // Duplicates
-                        );
+                        // Retrieve file metadata from the cache. Fallback to Path.* methods if not found (unlikely).
+                        string fileName = result.FileName; // Name is already in the result.
+                        string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info) ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
+                        string errorMessage = result.Message; // Error message is already in the result.
 
-                        // Set the specific error message in the dedicated "Errors" column.
-                        dataGridViewLog.Rows[rowIndex].Cells["Errors"].Value = result.Message;
-                        // Highlight error rows in red for visibility.
+                        int rowIndex = dataGridViewLog.Rows.Add(
+                            fileName,                    // 0:  Name
+                            string.Empty,                // 1:  InputFileSize
+                            string.Empty,                // 2:  OutputFileSize
+                            string.Empty,                // 3:  Compression
+                            string.Empty,                // 4:  Time
+                            string.Empty,                // 5:  Speed
+                            string.Empty,                // 6:  Parameters
+                            string.Empty,                // 7:  Encoder
+                            string.Empty,                // 8:  Version
+                            string.Empty,                // 9:  Encoder directory path
+                            string.Empty,                // 10: FastestEncoder
+                            string.Empty,                // 11: BestSize
+                            string.Empty,                // 12: SameSize
+                            directoryPath,               // 13: AudioFileDirectory
+                            "Integrity Check Failed",    // 14: MD5
+                            string.Empty,                // 15: Duplicates
+                            errorMessage                 // 16: Errors
+                        );
+                        // Highlight integrity check error rows in red for visibility.
                         dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
+                        // Note: No dataGridViewLog.Rows[rowIndex].Cells["Errors"].Value = ... here.
                     }
 
                     // Show the "Errors" column only if there are any errors present in it.
-                    // This ensures the column remains visible if other operations (e.g., MD5 checks) also added errors.
+                    // This ensures the column remains visible if other operations also added errors.
                     dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
                         .Cast<DataGridViewRow>()
                         .Any(row => row.Cells["Errors"].Value != null && !string.IsNullOrEmpty(row.Cells["Errors"].Value.ToString()));
 
-                    // Show a completion message based on the test results.
-                    if (allPassed) // Use the flag set during background processing.
+                    if (allPassed)
                     {
                         MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
-                    // If there were errors, no additional message is shown as errors are visible in the log.
-                    // (Original logic: show message only if no errors occurred).
-                }); // End of Invoke for UI update
+                    dataGridViewLog.ClearSelection();
+                });
 
             }
             catch (Exception ex)
             {
-                // Show any unexpected error message on the UI thread.
                 this.Invoke((MethodInvoker)delegate
                 {
                     MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1853,18 +1817,17 @@ namespace FLAC_Benchmark_H
             }
             finally
             {
-                // Always restore the button to its original state, even if an error occurred.
                 if (button != null && !button.IsDisposed)
                 {
                     button.Invoke((MethodInvoker)(() =>
                     {
                         button.Text = originalText;
                         button.Enabled = true;
-                        dataGridViewLog.ClearSelection();
                     }));
                 }
             }
         }
+
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
@@ -2158,10 +2121,7 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonAnalyzeLog_Click(object? sender, EventArgs e)
         {
-            await ButtonsTextUpdate((Button)sender, "In progress", async () =>
-            {
-                await AnalyzeLogAsync();
-            });
+            await AnalyzeLogAsync();
         }
         private async Task AnalyzeLogAsync()
         {
@@ -4222,68 +4182,6 @@ namespace FLAC_Benchmark_H
                 item.Selected = true; // Set selection on moved items
             }
             listView.Focus(); // Set focus on the list
-        }
-        private async Task ButtonsTextUpdate(Button button, string baseText, Func<Task> action)
-        {
-            if (button.IsDisposed) return;
-
-            // 1. INSTANTLY update to initial state
-            var originalText = button.Text;
-            button.Invoke((MethodInvoker)(() =>
-            {
-                button.Text = baseText + " .  "; // First frame immediately
-                button.Enabled = false;
-            }));
-
-            // Animation variables
-            var cts = new CancellationTokenSource();
-            string[] progressDots = { " .  ", " .. ", " ..." };
-            int dotIndex = 1; // Start from second frame (we already showed first)
-
-            // 2. Separate fast UI update from background operation
-            var animationTask = Task.Run(async () =>
-            {
-                while (!cts.IsCancellationRequested && !button.IsDisposed)
-                {
-                    await Task.Delay(250, cts.Token).ConfigureAwait(false);
-
-                    if (cts.IsCancellationRequested || button.IsDisposed)
-                        break;
-
-                    try
-                    {
-                        button.Invoke((MethodInvoker)(() =>
-                        {
-                            if (!cts.IsCancellationRequested && !button.IsDisposed)
-                                button.Text = baseText + progressDots[dotIndex];
-                        }));
-                    }
-                    catch { break; }
-
-                    dotIndex = (dotIndex + 1) % 3;
-                }
-            }, cts.Token);
-
-            try
-            {
-                await action().ConfigureAwait(false);
-            }
-            catch { /* Silent */ }
-            finally
-            {
-                // 3. Faster cleanup with CancellationToken
-                cts.Cancel();
-
-                // INSTANTLY restore original state
-                if (!button.IsDisposed)
-                {
-                    button.Invoke((MethodInvoker)(() =>
-                    {
-                        button.Text = originalText;
-                        button.Enabled = true;
-                    }));
-                }
-            }
         }
 
         // Method to get process priority
