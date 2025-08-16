@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.3 build 20250814"; // Current program version
+        public string programVersionCurrent = "1.4 build 20250814"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
