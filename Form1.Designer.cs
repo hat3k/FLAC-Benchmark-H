@@ -601,7 +601,7 @@
             checkBoxWarningsAsErrors.Location = new Point(470, 233);
             checkBoxWarningsAsErrors.Name = "checkBoxWarningsAsErrors";
             checkBoxWarningsAsErrors.Size = new Size(123, 19);
-            checkBoxWarningsAsErrors.TabIndex = 10;
+            checkBoxWarningsAsErrors.TabIndex = 7;
             checkBoxWarningsAsErrors.Text = "Warnings as errors";
             toolTip1.SetToolTip(checkBoxWarningsAsErrors, "Treat all warnings as errors when performing FLAC files test.\r\n\r\nWarnings will be shown in the log in addition to errors.");
             checkBoxWarningsAsErrors.UseVisualStyleBackColor = true;
@@ -614,7 +614,7 @@
             labelAudioFileRemoved.Location = new Point(122, 213);
             labelAudioFileRemoved.Name = "labelAudioFileRemoved";
             labelAudioFileRemoved.Size = new Size(0, 15);
-            labelAudioFileRemoved.TabIndex = 9;
+            labelAudioFileRemoved.TabIndex = 10;
             // 
             // buttonClearUnchecked
             // 
@@ -622,7 +622,7 @@
             buttonClearUnchecked.Location = new Point(600, 230);
             buttonClearUnchecked.Name = "buttonClearUnchecked";
             buttonClearUnchecked.Size = new Size(110, 23);
-            buttonClearUnchecked.TabIndex = 7;
+            buttonClearUnchecked.TabIndex = 8;
             buttonClearUnchecked.Text = "Clear unchecked";
             toolTip1.SetToolTip(buttonClearUnchecked, "Clears all unchecked files from the list.\r\n\r\nHold 'Shift' while clicking to move unchecked files to the Recycle Bin.");
             buttonClearUnchecked.UseVisualStyleBackColor = true;
@@ -756,7 +756,7 @@
             buttonClearAudioFiles.Location = new Point(716, 230);
             buttonClearAudioFiles.Name = "buttonClearAudioFiles";
             buttonClearAudioFiles.Size = new Size(55, 23);
-            buttonClearAudioFiles.TabIndex = 8;
+            buttonClearAudioFiles.TabIndex = 9;
             buttonClearAudioFiles.Text = "Clear";
             buttonClearAudioFiles.UseVisualStyleBackColor = true;
             buttonClearAudioFiles.Click += buttonClearAudioFiles_Click;
