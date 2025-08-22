@@ -35,7 +35,7 @@ namespace FLAC_Benchmark_H
         private bool _isPaused = false; // Pause flag
         private string tempFolderPath; // Field to store the path to the temporary folder
         private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.4 build 20250814"; // Current program version
+        public string programVersionCurrent = "1.4 build 20250822"; // Current program version
         public string programVersionIgnored = null; // To store the ignored version
 
         public Form1()
@@ -889,9 +889,9 @@ namespace FLAC_Benchmark_H
             };
 
             // Fill subitems
-            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");
             item.SubItems.Add(audioFileInfo.BitDepthString);
             item.SubItems.Add(audioFileInfo.SamplingRateString);
+            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");
             item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes");
             item.SubItems.Add(audioFileInfo.Md5Hash);
             item.SubItems.Add(audioFileInfo.DirectoryPath);
@@ -938,11 +938,11 @@ namespace FLAC_Benchmark_H
                 DirectoryPath = Path.GetDirectoryName(audioFilePath),
                 FileName = Path.GetFileName(audioFilePath),
                 Extension = extension,
-                Duration = duration,
                 BitDepth = bitDepth,
                 BitDepthString = bitDepthString,
                 SamplingRate = samplingRate,
                 SamplingRateString = samplingRateString,
+                Duration = duration,
                 FileSize = fileSize,
                 Md5Hash = md5Hash,
                 LastWriteTime = lastWriteTime
@@ -959,11 +959,11 @@ namespace FLAC_Benchmark_H
             public string DirectoryPath { get; set; }
             public string FileName { get; set; }
             public string Extension { get; set; }
-            public string Duration { get; set; }
             public string BitDepth { get; set; }
             public string BitDepthString { get; set; }
             public string SamplingRate { get; set; }
             public string SamplingRateString { get; set; }
+            public string Duration { get; set; }
             public long FileSize { get; set; }
             public DateTime LastWriteTime { get; set; }
 
