@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -178,6 +178,7 @@
             // 
             // labelEncoderProgress
             // 
+            labelEncoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelEncoderProgress.AutoSize = true;
             labelEncoderProgress.Location = new Point(379, 145);
             labelEncoderProgress.Name = "labelEncoderProgress";
@@ -195,6 +196,7 @@
             // 
             // buttonAddJobToJobListEncoder
             // 
+            buttonAddJobToJobListEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonAddJobToJobListEncoder.Location = new Point(122, 141);
             buttonAddJobToJobListEncoder.Name = "buttonAddJobToJobListEncoder";
             buttonAddJobToJobListEncoder.Size = new Size(110, 23);
@@ -206,6 +208,7 @@
             // 
             // buttonStartEncode
             // 
+            buttonStartEncode.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonStartEncode.Location = new Point(6, 141);
             buttonStartEncode.Name = "buttonStartEncode";
             buttonStartEncode.Size = new Size(110, 23);
@@ -217,6 +220,7 @@
             // 
             // progressBarEncoder
             // 
+            progressBarEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             progressBarEncoder.Location = new Point(238, 141);
             progressBarEncoder.Name = "progressBarEncoder";
             progressBarEncoder.Size = new Size(324, 23);
@@ -432,6 +436,7 @@
             // 
             // buttonStartDecode
             // 
+            buttonStartDecode.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonStartDecode.Location = new Point(6, 141);
             buttonStartDecode.Name = "buttonStartDecode";
             buttonStartDecode.Size = new Size(110, 23);
@@ -480,6 +485,7 @@
             // 
             // buttonDownEncoder
             // 
+            buttonDownEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonDownEncoder.Location = new Point(152, 230);
             buttonDownEncoder.Name = "buttonDownEncoder";
             buttonDownEncoder.Size = new Size(24, 23);
@@ -490,6 +496,7 @@
             // 
             // buttonUpEncoder
             // 
+            buttonUpEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonUpEncoder.Location = new Point(122, 230);
             buttonUpEncoder.Name = "buttonUpEncoder";
             buttonUpEncoder.Size = new Size(24, 23);
@@ -500,6 +507,7 @@
             // 
             // buttonRemoveEncoder
             // 
+            buttonRemoveEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonRemoveEncoder.Font = new Font("Segoe UI", 9F);
             buttonRemoveEncoder.Location = new Point(182, 230);
             buttonRemoveEncoder.Name = "buttonRemoveEncoder";
@@ -511,6 +519,7 @@
             // 
             // listViewEncoders
             // 
+            listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
             listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeEexe, DateExe });
             listViewEncoders.FullRowSelect = true;
@@ -553,6 +562,7 @@
             // 
             // buttonAddEncoders
             // 
+            buttonAddEncoders.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonAddEncoders.Font = new Font("Segoe UI", 9F);
             buttonAddEncoders.Location = new Point(6, 230);
             buttonAddEncoders.Name = "buttonAddEncoders";
@@ -564,6 +574,7 @@
             // 
             // buttonClearEncoders
             // 
+            buttonClearEncoders.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonClearEncoders.Font = new Font("Segoe UI", 9F);
             buttonClearEncoders.Location = new Point(716, 230);
             buttonClearEncoders.Name = "buttonClearEncoders";
@@ -618,7 +629,7 @@
             // 
             // buttonClearUnchecked
             // 
-            buttonClearUnchecked.Anchor = AnchorStyles.Right;
+            buttonClearUnchecked.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonClearUnchecked.Location = new Point(600, 230);
             buttonClearUnchecked.Name = "buttonClearUnchecked";
             buttonClearUnchecked.Size = new Size(110, 23);
@@ -630,6 +641,7 @@
             // 
             // buttonDownAudioFile
             // 
+            buttonDownAudioFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonDownAudioFile.Location = new Point(152, 230);
             buttonDownAudioFile.Name = "buttonDownAudioFile";
             buttonDownAudioFile.Size = new Size(24, 23);
@@ -664,6 +676,7 @@
             // 
             // buttonUpAudioFile
             // 
+            buttonUpAudioFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonUpAudioFile.Location = new Point(122, 230);
             buttonUpAudioFile.Name = "buttonUpAudioFile";
             buttonUpAudioFile.Size = new Size(24, 23);
@@ -674,7 +687,7 @@
             // 
             // listViewAudioFiles
             // 
-            listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
             listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Duration, BitDepth, SamplingRate, Size, MD5Hash, FilePath });
             listViewAudioFiles.FullRowSelect = true;
@@ -732,6 +745,7 @@
             // 
             // buttonRemoveAudiofile
             // 
+            buttonRemoveAudiofile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonRemoveAudiofile.Location = new Point(182, 230);
             buttonRemoveAudiofile.Name = "buttonRemoveAudiofile";
             buttonRemoveAudiofile.Size = new Size(24, 23);
@@ -742,6 +756,7 @@
             // 
             // buttonAddAudioFiles
             // 
+            buttonAddAudioFiles.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonAddAudioFiles.Location = new Point(6, 230);
             buttonAddAudioFiles.Name = "buttonAddAudioFiles";
             buttonAddAudioFiles.Size = new Size(110, 23);
@@ -752,7 +767,7 @@
             // 
             // buttonClearAudioFiles
             // 
-            buttonClearAudioFiles.Anchor = AnchorStyles.Right;
+            buttonClearAudioFiles.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonClearAudioFiles.Location = new Point(716, 230);
             buttonClearAudioFiles.Name = "buttonClearAudioFiles";
             buttonClearAudioFiles.Size = new Size(55, 23);
@@ -786,7 +801,7 @@
             // 
             // labelPasses
             // 
-            labelPasses.Anchor = AnchorStyles.Bottom;
+            labelPasses.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelPasses.AutoSize = true;
             labelPasses.Location = new Point(270, 368);
             labelPasses.Name = "labelPasses";
@@ -797,7 +812,7 @@
             // 
             // buttonMinusPass
             // 
-            buttonMinusPass.Anchor = AnchorStyles.Bottom;
+            buttonMinusPass.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonMinusPass.Location = new Point(240, 364);
             buttonMinusPass.Name = "buttonMinusPass";
             buttonMinusPass.Size = new Size(24, 23);
@@ -809,7 +824,7 @@
             // 
             // buttonPlusPass
             // 
-            buttonPlusPass.Anchor = AnchorStyles.Bottom;
+            buttonPlusPass.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonPlusPass.Location = new Point(317, 364);
             buttonPlusPass.Name = "buttonPlusPass";
             buttonPlusPass.Size = new Size(24, 23);
@@ -879,7 +894,7 @@
             // listViewJobs
             // 
             listViewJobs.AllowDrop = true;
-            listViewJobs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            listViewJobs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewJobs.CheckBoxes = true;
             listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Passes, Parameters });
             listViewJobs.FullRowSelect = true;
@@ -924,8 +939,8 @@
             // 
             // buttonExportJobList
             // 
-            buttonExportJobList.Anchor = AnchorStyles.Bottom;
-            buttonExportJobList.Location = new Point(507, 364);
+            buttonExportJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonExportJobList.Location = new Point(437, 364);
             buttonExportJobList.Name = "buttonExportJobList";
             buttonExportJobList.Size = new Size(55, 23);
             buttonExportJobList.TabIndex = 9;
@@ -935,8 +950,8 @@
             // 
             // buttonImportJobList
             // 
-            buttonImportJobList.Anchor = AnchorStyles.Bottom;
-            buttonImportJobList.Location = new Point(446, 364);
+            buttonImportJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonImportJobList.Location = new Point(376, 364);
             buttonImportJobList.Name = "buttonImportJobList";
             buttonImportJobList.Size = new Size(55, 23);
             buttonImportJobList.TabIndex = 8;
@@ -1052,23 +1067,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1161,6 +1176,7 @@
             // 
             // buttonSelectTempFolder
             // 
+            buttonSelectTempFolder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             buttonSelectTempFolder.Location = new Point(6, 141);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
             buttonSelectTempFolder.Size = new Size(171, 23);
@@ -1197,6 +1213,7 @@
             // 
             // labelDecoderProgress
             // 
+            labelDecoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelDecoderProgress.AutoSize = true;
             labelDecoderProgress.BackColor = SystemColors.Control;
             labelDecoderProgress.Location = new Point(373, 145);
@@ -1215,6 +1232,7 @@
             // 
             // buttonAddJobToJobListDecoder
             // 
+            buttonAddJobToJobListDecoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonAddJobToJobListDecoder.Location = new Point(122, 141);
             buttonAddJobToJobListDecoder.Name = "buttonAddJobToJobListDecoder";
             buttonAddJobToJobListDecoder.Size = new Size(110, 23);
@@ -1233,6 +1251,7 @@
             // 
             // progressBarDecoder
             // 
+            progressBarDecoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
             progressBarDecoder.Size = new Size(283, 23);
@@ -1281,6 +1300,7 @@
             // 
             // buttonAbout
             // 
+            buttonAbout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             buttonAbout.Location = new Point(5, 141);
             buttonAbout.Name = "buttonAbout";
             buttonAbout.Size = new Size(129, 23);
