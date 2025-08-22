@@ -78,9 +78,9 @@
             buttonUpAudioFile = new Button();
             listViewAudioFiles = new ListView();
             FileName = new ColumnHeader();
-            Duration = new ColumnHeader();
             BitDepth = new ColumnHeader();
             SamplingRate = new ColumnHeader();
+            Duration = new ColumnHeader();
             Size = new ColumnHeader();
             MD5Hash = new ColumnHeader();
             FilePath = new ColumnHeader();
@@ -704,13 +704,6 @@
             FileName.Text = "File Name";
             FileName.Width = 387;
             // 
-            // Duration
-            // 
-            Duration.Tag = "Duration";
-            Duration.Text = "Duration";
-            Duration.TextAlign = HorizontalAlignment.Right;
-            Duration.Width = 100;
-            // 
             // BitDepth
             // 
             BitDepth.Tag = "BitDepth";
@@ -724,6 +717,13 @@
             SamplingRate.Text = "Samp. Rate";
             SamplingRate.TextAlign = HorizontalAlignment.Right;
             SamplingRate.Width = 71;
+            // 
+            // Duration
+            // 
+            Duration.Tag = "Duration";
+            Duration.Text = "Duration";
+            Duration.TextAlign = HorizontalAlignment.Right;
+            Duration.Width = 100;
             // 
             // Size
             // 
