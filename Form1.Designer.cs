@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -84,7 +84,7 @@
             Size = new ColumnHeader();
             MD5Hash = new ColumnHeader();
             FilePath = new ColumnHeader();
-            buttonRemoveAudiofile = new Button();
+            buttonRemoveAudioFile = new Button();
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
@@ -465,6 +465,7 @@
             buttonClearLog.Size = new Size(55, 23);
             buttonClearLog.TabIndex = 8;
             buttonClearLog.Text = "Clear";
+            toolTip1.SetToolTip(buttonClearLog, "Clear log and cache.\r\nRemoves all displayed entries and reset internal benchmark history.");
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
             // 
@@ -595,7 +596,7 @@
             groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
-            groupBoxAudioFiles.Controls.Add(buttonRemoveAudiofile);
+            groupBoxAudioFiles.Controls.Add(buttonRemoveAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
             groupBoxAudioFiles.Location = new Point(795, 12);
@@ -743,16 +744,16 @@
             FilePath.Text = "File Path";
             FilePath.Width = 250;
             // 
-            // buttonRemoveAudiofile
+            // buttonRemoveAudioFile
             // 
-            buttonRemoveAudiofile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonRemoveAudiofile.Location = new Point(182, 230);
-            buttonRemoveAudiofile.Name = "buttonRemoveAudiofile";
-            buttonRemoveAudiofile.Size = new Size(24, 23);
-            buttonRemoveAudiofile.TabIndex = 4;
-            buttonRemoveAudiofile.Text = "❌";
-            buttonRemoveAudiofile.UseVisualStyleBackColor = true;
-            buttonRemoveAudiofile.Click += buttonRemoveAudiofile_Click;
+            buttonRemoveAudioFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonRemoveAudioFile.Location = new Point(182, 230);
+            buttonRemoveAudioFile.Name = "buttonRemoveAudioFile";
+            buttonRemoveAudioFile.Size = new Size(24, 23);
+            buttonRemoveAudioFile.TabIndex = 4;
+            buttonRemoveAudioFile.Text = "❌";
+            buttonRemoveAudioFile.UseVisualStyleBackColor = true;
+            buttonRemoveAudioFile.Click += buttonRemoveAudioFile_Click;
             // 
             // buttonAddAudioFiles
             // 
@@ -1067,23 +1068,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1389,7 +1390,7 @@
         private Button buttonAddAudioFiles;
         private Button buttonClearAudioFiles;
         private Button buttonRemoveEncoder;
-        private Button buttonRemoveAudiofile;
+        private Button buttonRemoveAudioFile;
         private GroupBox groupBoxSettings;
         private Button buttonStartJobList;
         private Button buttonAddJobToJobListEncoder;

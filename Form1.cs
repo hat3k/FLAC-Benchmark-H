@@ -1,42 +1,58 @@
-using MediaInfoLib;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Management;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Security.Cryptography;
-using System.IO;
 using System.Threading.Tasks;
-using System.Linq;
+using System.Windows.Forms;
+
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
+using MediaInfoLib;
 
 namespace FLAC_Benchmark_H
 {
     public partial class Form1 : Form
     {
-        private int physicalCores;
-        private int threadCount;
-        private Process _process; // Field to store the current process
-        private const string SettingsGeneralFilePath = "Settings_general.txt"; // Path to the settings file
-        private const string SettingsEncodersFilePath = "Settings_flac_executables.txt"; // Path to the file for saving executable files
-        private const string SettingsAudioFilesFilePath = "Settings_audio_files.txt"; // Path to the file for saving audio files
-        private const string SettingsJobsFilePath = "Settings_jobs.txt"; // Path to the jobs file
-        private Stopwatch stopwatch;
-        private PerformanceCounter cpuCounter = null;
-        private bool performanceCountersAvailable = false;
-        private System.Windows.Forms.Timer cpuUsageTimer; // Explicitly specify that this is a Timer from System.Windows.Forms
-        private bool _isEncodingStopped = false;
-        private bool isExecuting = false; // Flag to track if the process is running
-        private bool _isPaused = false; // Pause flag
-        private string tempFolderPath; // Field to store the path to the temporary folder
-        private bool isCpuInfoLoaded = false;
-        public string programVersionCurrent = "1.4 build 20250822"; // Current program version
-        public string programVersionIgnored = null; // To store the ignored version
+        // Application version
+        public string programVersionCurrent = "1.5 build 20250824"; // Current app version
+        public string programVersionIgnored = null;                 // Previously ignored update
+
+        // Hardware info
+        private int physicalCores; // Number of physical CPU cores
+        private int threadCount;   // Total logical threads
+
+        // CPU monitoring
+        private PerformanceCounter cpuCounter = null;            // CPU usage counter
+        private bool performanceCountersAvailable = false;       // True if counters initialized
+        private System.Windows.Forms.Timer cpuUsageTimer;        // Updates CPU usage label
+
+        // Timing and performance
+        private Stopwatch stopwatch; // Measures encoding/decoding time
+
+        // UI state
+        private bool isCpuInfoLoaded = false; // Prevents duplicate CPU info load
+
+        // Paths and files
+        private const string SettingsGeneralFilePath = "Settings_general.txt";              // General settings file
+        private const string SettingsEncodersFilePath = "Settings_flac_executables.txt";    // Encoder list file
+        private const string SettingsAudioFilesFilePath = "Settings_audio_files.txt";       // Audio files list file
+        private const string SettingsJobsFilePath = "Settings_jobs.txt";                    // Job list file
+        private string tempFolderPath;                                                      // Path to temporary working directory
+
+        // Process execution
+        private Process _process;                                           // Running process instance
+        private bool isExecuting = false;                                   // True if encoding/decoding is active
+        private bool _isEncodingStopped = false;                            // Request to stop
+        private bool _isPaused = false;                                     // Pause state
+        private ManualResetEvent _pauseEvent = new ManualResetEvent(true);  // Controls pause/resume sync for encoding thread
 
         public Form1()
         {
@@ -46,6 +62,7 @@ namespace FLAC_Benchmark_H
             this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
+            this.dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
             this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.textBoxCompressionLevel_KeyDown);
             this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
@@ -778,7 +795,6 @@ namespace FLAC_Benchmark_H
             }
         }
 
-
         //Audio files
         private void ListViewAudioFiles_DragEnter(object? sender, DragEventArgs e)
         {
@@ -1155,8 +1171,9 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    // Create a temporary WAV file path
-                    string tempWavFile = Path.Combine(tempFolderPath, "temp_flac_md5_decode.wav");
+                    // Create a unique temporary WAV file path to prevent conflicts during parallel processing
+                    string tempWavFile = Path.Combine(tempFolderPath, $"temp_flac_md5_{Guid.NewGuid()}.wav");
+
                     // Build the command line for decoding
                     string arguments = $"\"{flacFilePath}\" -d --no-preserve-modtime --silent -f -o \"{tempWavFile}\"";
 
@@ -1871,7 +1888,7 @@ namespace FLAC_Benchmark_H
         {
             MoveSelectedItems(listViewAudioFiles, 1); // Pass 1 to move down
         }
-        private void buttonRemoveAudiofile_Click(object? sender, EventArgs e)
+        private void buttonRemoveAudioFile_Click(object? sender, EventArgs e)
         {
             // Remove selected items from listViewAudioFiles
             for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
@@ -2094,100 +2111,114 @@ namespace FLAC_Benchmark_H
         private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
-            if (outputFile.Exists)
+            if (!outputFile.Exists)
+                return;
+
+            // Create CultureInfo for formatting with spaces as thousand separators
+            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+            numberFormat.NumberGroupSeparator = " ";
+
+            // Get input audio file information from cache
+            var audioFileInfo = await GetAudioInfo(audioFilePath);
+
+            // Extract data from cache
+            string audioFileName = audioFileInfo.FileName; // Use file name from cache
+            long samplingRate = long.TryParse(audioFileInfo.SamplingRate, out long temp) ? temp : 0;
+            string samplingRateFormatted = samplingRate.ToString("N0", numberFormat);
+            long inputSize = audioFileInfo.FileSize; // Get size from file info
+            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+            long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Use duration from cache
+            string audioFileDirectory = audioFileInfo.DirectoryPath;
+            string Md5Hash = audioFileInfo.Md5Hash;
+
+            // Form short name for input file
+            //string audioFileNameShort = audioFileName.Length > 30
+            //    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
+            //    : audioFileName.PadRight(33);
+
+            // Get output audio file information
+            long outputSize = outputFile.Length;
+            string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+            TimeSpan timeTaken = stopwatch.Elapsed;
+            double compressionPercentage = ((double)outputSize / inputSize) * 100;
+            double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+
+            // Get encoder information from cache
+            var encoderInfo = await GetEncoderInfo(encoder); // Get encoder info
+
+            // Add raw data of the Pass to cache
+            _benchmarkPasses.Add(new BenchmarkPass
             {
-                // Create CultureInfo for formatting with spaces as thousand separators
-                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                numberFormat.NumberGroupSeparator = " ";
+                AudioFilePath = audioFilePath,
+                EncoderPath = encoder,
+                Parameters = parameters,
+                InputSize = inputSize,
+                OutputSize = outputSize,
+                Time = timeTaken.TotalMilliseconds,
+                Speed = encodingSpeed,
+                BitDepth = audioFileInfo.BitDepth,
+                SamplingRate = audioFileInfo.SamplingRate,
+                Timestamp = DateTime.Now
+            });
 
-                // Get input audio file information from cache
-                var audioFileInfo = await GetAudioInfo(audioFilePath);
+            // Add record to DataGridView log
+            int rowIndex = dataGridViewLog.Rows.Add(
+                audioFileName,                          //  1 "Name"
+                audioFileInfo.BitDepth,                 //  2 "BitDepth"
+                samplingRateFormatted,                  //  3 "SamplingRate"
+                inputSizeFormatted,                     //  4 "InputFileSize"
+                outputSizeFormatted,                    //  5 "OutputFileSize"
+                $"{compressionPercentage:F3}%",         //  6 "Compression"
+                $"{timeTaken.TotalMilliseconds:F3}",    //  7 "Time"
+                $"{encodingSpeed:F3}x",                 //  8 "Speed"
+                "1",                                    //  9 "Passes"
+                parameters,                             // 10 "Parameters"
+                encoderInfo.FileName,                   // 11 "Encoder"
+                encoderInfo.Version,                    // 12 "Version"
+                encoderInfo.DirectoryPath,              // 13 "EncoderDirectory"
+                string.Empty,                           // 14 "FastestEncoder"
+                string.Empty,                           // 15 "BestSize"
+                string.Empty,                           // 16 "SameSize"
+                audioFileDirectory,                     // 17 "AudioFileDirectory"
+                Md5Hash,                                // 18 "MD5"
+                string.Empty,                           // 19 "Duplicates"
+                string.Empty                            // 20 "Errors"
+            );
 
-                // Extract data from cache
-                string audioFileName = audioFileInfo.FileName; // Use file name from cache
-                long samplingRate = long.TryParse(audioFileInfo.SamplingRate, out long temp) ? temp : 0;
-                string samplingRateFormatted = samplingRate.ToString("N0", numberFormat);
-                long inputSize = audioFileInfo.FileSize; // Get size from file info
-                string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
-                long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Use duration from cache
-                string audioFileDirectory = audioFileInfo.DirectoryPath;
-                string Md5Hash = audioFileInfo.Md5Hash;
+            // Set text color based on file size comparison
+            dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor =
+            outputSize < inputSize ? System.Drawing.Color.Green :
+            outputSize > inputSize ? System.Drawing.Color.Red :
+            dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor;
 
-                // Form short name for input file
-                //string audioFileNameShort = audioFileName.Length > 30
-                //    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
-                //    : audioFileName.PadRight(33);
+            dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor =
+            compressionPercentage < 100 ? System.Drawing.Color.Green :
+            compressionPercentage > 100 ? System.Drawing.Color.Red :
+            dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor;
 
-                // Get output audio file information
-                long outputSize = outputFile.Length;
-                string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
-                TimeSpan timeTaken = stopwatch.Elapsed;
-                double compressionPercentage = ((double)outputSize / inputSize) * 100;
-                double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+            dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor =
+            encodingSpeed > 1 ? System.Drawing.Color.Green :
+            encodingSpeed < 1 ? System.Drawing.Color.Red :
+            dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor;
 
-                // Get encoder information from cache
-                // Here we call GetEncoderInfo but with cache check
-                var encoderInfo = await GetEncoderInfo(encoder); // Get encoder info
+            // Scroll to the last added row (optional)
+            // if (dataGridViewLog.Rows.Count > 0)
+            //dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
 
-                // Add record to DataGridView log
-                int rowIndex = dataGridViewLog.Rows.Add(
-                    audioFileName,                          //  1 "Name"
-                    audioFileInfo.BitDepth,                 //  2 "BitDepth"
-                    samplingRateFormatted,                  //  3 "SamplingRate"
-                    inputSizeFormatted,                     //  4 "InputFileSize"
-                    outputSizeFormatted,                    //  5 "OutputFileSize"
-                    $"{compressionPercentage:F3}%",         //  6 "Compression"
-                    $"{timeTaken.TotalMilliseconds:F3}",    //  7 "Time"
-                    $"{encodingSpeed:F3}x",                 //  8 "Speed"
-                    "1",                                    //  9 "Passes"
-                    parameters,                             // 10 "Parameters"
-                    encoderInfo.FileName,                   // 11 "Encoder"
-                    encoderInfo.Version,                    // 12 "Version"
-                    encoderInfo.DirectoryPath,              // 13 "EncoderDirectory"
-                    string.Empty,                           // 14 "FastestEncoder"
-                    string.Empty,                           // 15 "BestSize"
-                    string.Empty,                           // 16 "SameSize"
-                    audioFileDirectory,                     // 17 "AudioFileDirectory"
-                    Md5Hash,                                // 18 "MD5"
-                    string.Empty,                           // 19 "Duplicates"
-                    string.Empty                            // 20 "Errors"
-                );
-
-                // Set text color based on file size comparison
-                dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor =
-                outputSize < inputSize ? System.Drawing.Color.Green :
-                outputSize > inputSize ? System.Drawing.Color.Red :
-                dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor;
-
-                dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor =
-                compressionPercentage < 100 ? System.Drawing.Color.Green :
-                compressionPercentage > 100 ? System.Drawing.Color.Red :
-                dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor;
-
-                dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor =
-                encodingSpeed > 1 ? System.Drawing.Color.Green :
-                encodingSpeed < 1 ? System.Drawing.Color.Red :
-                dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor;
-
-                // Scroll to the last added row (optional)
-                // if (dataGridViewLog.Rows.Count > 0)
-                //dataGridViewLog.FirstDisplayedScrollingRowIndex = dataGridViewLog.Rows.Count - 1;
-
-                // Log to file
-                File.AppendAllText("log.txt",
-                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} " +
-                $"{audioFilePath}\t" +
-                $"Input size: {inputSize}\t" +
-                $"Output size: {outputSize} bytes\t" +
-                $"Compression: {compressionPercentage:F3}%\t" +
-                $"Time: {timeTaken.TotalMilliseconds:F3} ms\t" +
-                $"Speed: {encodingSpeed:F3}x\t" +
-                $"Parameters: {parameters.Trim()}\t" +
-                $"Encoder: {encoderInfo.FileName}\t" +
-                $"Version: {encoderInfo.Version}\t" +
-                $"Encoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}"
-                );
-            }
+            // Log to file
+            File.AppendAllText("log.txt",
+            $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} " +
+            $"{audioFilePath}\t" +
+            $"Input size: {inputSize}\t" +
+            $"Output size: {outputSize} bytes\t" +
+            $"Compression: {compressionPercentage:F3}%\t" +
+            $"Time: {timeTaken.TotalMilliseconds:F3} ms\t" +
+            $"Speed: {encodingSpeed:F3}x\t" +
+            $"Parameters: {parameters.Trim()}\t" +
+            $"Encoder: {encoderInfo.FileName}\t" +
+            $"Version: {encoderInfo.Version}\t" +
+            $"Encoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}"
+            );
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
         {
@@ -2199,150 +2230,112 @@ namespace FLAC_Benchmark_H
         }
         private async Task AnalyzeLogAsync()
         {
-            var groupedEntries = new Dictionary<string, List<LogEntry>>();
-
-            // 1. Collect all entries and group by Audio File Directory + Audio File Name + Encoder Directory + Encoder + Parameters
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
-            {
-                if (row.IsNewRow) continue;
-
-                string audioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString();
-                string fileName = row.Cells["Name"].Value?.ToString();
-                string encoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString();
-                string encoder = row.Cells["Encoder"].Value?.ToString();
-                string parameters = row.Cells["Parameters"].Value?.ToString();
-                string speedStr = row.Cells["Speed"].Value?.ToString()?.Replace("x", "")?.Trim();
-                string timeStr = row.Cells["Time"].Value?.ToString()?.Trim();
-
-                if (string.IsNullOrEmpty(audioFileDirectory) ||
-                    string.IsNullOrEmpty(fileName) ||
-                    string.IsNullOrEmpty(encoderDirectory) ||
-                    string.IsNullOrEmpty(encoder) ||
-                    string.IsNullOrEmpty(parameters) ||
-                    !double.TryParse(speedStr, out double speed) ||
-                    !double.TryParse(timeStr, out double time))
+            // 1. Group all benchmark passes by unique test configuration
+            var grouped = _benchmarkPasses
+                .GroupBy(pass => new
                 {
-                    continue;
-                }
+                    pass.AudioFilePath,
+                    pass.EncoderPath,
+                    pass.Parameters
+                })
+                .Select(g => new
+                {
+                    AudioFilePath = g.Key.AudioFilePath,
+                    EncoderPath = g.Key.EncoderPath,
+                    Parameters = g.Key.Parameters,
+                    PassesCount = g.Count(),
+                    AvgTimeMs = g.Average(p => p.Time),
+                    AvgSpeed = g.Average(p => p.Speed),
+                    MinOutputSize = g.Min(p => p.OutputSize),
+                    InputSize = g.First().InputSize,
+                    BitDepth = g.First().BitDepth,
+                    SamplingRate = g.First().SamplingRate
+                })
+                .ToList();
 
-                string key = $"{audioFileDirectory}|{fileName}|{encoderDirectory}|{encoder}|{parameters}";
+            var resultEntries = new List<LogEntry>();
 
-                if (!groupedEntries.ContainsKey(key))
-                    groupedEntries[key] = new List<LogEntry>();
+            foreach (var group in grouped)
+            {
+                // Get file and encoder info for display
+                var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
+                var encoderInfo = await GetEncoderInfo(group.EncoderPath);
 
-                // Convert DataGridView row to LogEntry object
+                // Format sizes with thousand separators
+                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
+                numberFormat.NumberGroupSeparator = " ";
+
+                string inputSizeFormatted = group.InputSize.ToString("N0", numberFormat);
+                string outputSizeFormatted = group.MinOutputSize.ToString("N0", numberFormat);
+                double compressionPercentage = ((double)group.MinOutputSize / group.InputSize) * 100;
+
+                // Format SamplingRate for display (e.g. 44100 -> "44 100")
+                string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", numberFormat) : "N/A";
+
+                // Determine output file directory
+                string audioFileDirectory = audioFileInfo?.DirectoryPath ?? Path.GetDirectoryName(group.AudioFilePath) ?? string.Empty;
+
+                // Create the log entry with averaged values
                 var logEntry = new LogEntry
                 {
-                    Name = fileName,
-                    Encoder = encoder,
-                    Parameters = parameters,
-                    Speed = speedStr,
-                    Time = timeStr,
-                    SpeedForeColor = row.Cells["Speed"].Style.ForeColor,
+                    Name = audioFileInfo?.FileName ?? Path.GetFileName(group.AudioFilePath),
+                    BitDepth = group.BitDepth,
+                    SamplingRate = samplingRateFormatted,
+                    InputFileSize = inputSizeFormatted,
+                    OutputFileSize = outputSizeFormatted,
+                    Compression = $"{compressionPercentage:F3}%",
+                    Time = group.AvgTimeMs.ToString("F3"),
+                    Speed = $"{group.AvgSpeed:F3}x",
+                    Passes = group.PassesCount.ToString(),
+                    Parameters = group.Parameters,
+                    Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
+                    Version = encoderInfo?.Version ?? "N/A",
+                    EncoderDirectory = encoderInfo?.DirectoryPath ?? Path.GetDirectoryName(group.EncoderPath) ?? string.Empty,
+                    AudioFileDirectory = audioFileDirectory,
+                    MD5 = audioFileInfo?.Md5Hash ?? "N/A",
 
-                    BitDepth = row.Cells["BitDepth"].Value?.ToString(),
-                    SamplingRate = row.Cells["SamplingRate"].Value?.ToString(),
-                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
-                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
-                    Compression = row.Cells["Compression"].Value?.ToString(),
-                    Version = row.Cells["Version"].Value?.ToString(),
-                    EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString(),
-                    FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
-                    BestSize = row.Cells["BestSize"].Value?.ToString(),
-                    SameSize = row.Cells["SameSize"].Value?.ToString(),
-                    AudioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString(),
-                    MD5 = row.Cells["MD5"].Value?.ToString(),
-                    Duplicates = row.Cells["Duplicates"].Value?.ToString(),
-
-                    OutputForeColor = row.Cells["OutputFileSize"].Style.ForeColor,
-                    CompressionForeColor = row.Cells["Compression"].Style.ForeColor
+                    // Set text colors based on results
+                    OutputForeColor = group.MinOutputSize < group.InputSize ? Color.Green :
+                                    group.MinOutputSize > group.InputSize ? Color.Red : Color.Black,
+                    CompressionForeColor = compressionPercentage < 100 ? Color.Green :
+                                         compressionPercentage > 100 ? Color.Red : Color.Black,
+                    SpeedForeColor = group.AvgSpeed > 1 ? Color.Green :
+                                   group.AvgSpeed < 1 ? Color.Red : Color.Black
                 };
 
-                groupedEntries[key].Add(logEntry);
+                resultEntries.Add(logEntry);
             }
 
-            // 2. For each group calculate average speed and time, and keep one entry
-            var resultEntries = new List<LogEntry>();
-            foreach (var group in groupedEntries.Values)
-            {
-                // Calculate average speed
-                double avgSpeed = group.Average(x =>
-                {
-                    string s = x.Speed?.Replace("x", "")?.Trim();
-                    return double.TryParse(s, out double speed) ? speed : 0.0;
-                });
-
-                // Calculate average time
-                double avgTime = group.Average(x =>
-                {
-                    string t = x.Time?.Trim();
-                    return double.TryParse(t, out double time) ? time : 0.0;
-                });
-
-                var bestEntry = group.First(); // Take the first entry as a template
-
-                // Update with averaged values
-                bestEntry.Speed = avgSpeed.ToString("F3") + "x";
-                bestEntry.Time = avgTime.ToString("F3"); // Keep same formatting as original
-                bestEntry.Passes = group.Count.ToString(); // Passes number
-
-                resultEntries.Add(bestEntry);
-            }
-
-            // 3. Split into encoding and decoding
+            // 2. Split into encoding and decoding groups
             var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
             var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
 
-            // 4. Analysis for encoding: find fastest encoder and smallest file sizes in a single pass
+            // 3. Analysis for encoding: find fastest encoder and best compression
             var finalEncodeEntries = new List<LogEntry>();
             var encodeParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
 
             foreach (var group in encodeParamGroups)
             {
-                string key = group.Key;
                 var entries = group.ToList();
-                int groupCount = entries.Count;
-
-                // Reset flags
-                foreach (var entry in entries)
-                {
-                    entry.FastestEncoder = string.Empty;
-                    entry.BestSize = string.Empty;
-                    entry.SameSize = string.Empty;
-                }
-
-                // Skip groups with only one entry
-                if (groupCount <= 1)
+                if (entries.Count <= 1)
                 {
                     finalEncodeEntries.AddRange(entries);
                     continue;
                 }
 
-                // 4.1: Find fastest encoder in the group
-                double maxSpeed = entries.Max(e =>
-                {
-                    string s = e.Speed?.Replace("x", "")?.Trim();
-                    return double.TryParse(s, out double speed) ? speed : 0.0;
-                });
-
+                // Find fastest encoder
+                double maxSpeed = entries.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
                 foreach (var entry in entries)
                 {
-                    string s = entry.Speed?.Replace("x", "")?.Trim();
-                    if (double.TryParse(s, out double speed) && speed >= maxSpeed - 0.01)
-                    {
+                    if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
                         entry.FastestEncoder = "fastest encoder";
-                    }
                 }
 
-                // 4.2: Analyze output file sizes
-                var validEntries = new List<(LogEntry Entry, long Size)>();
-                foreach (var e in entries)
-                {
-                    if (long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
-                    {
-                        validEntries.Add((e, size));
-                    }
-                }
+                // Analyze output file sizes
+                var validEntries = entries
+                    .Where(e => long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
+                    .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
+                    .ToList();
 
                 if (validEntries.Count == 0)
                 {
@@ -2350,63 +2343,39 @@ namespace FLAC_Benchmark_H
                     continue;
                 }
 
-                long minSize = validEntries.Min(x => x.Size);
+                long minSize = validEntries.Min(x => x.Item2);
+                var sizeCountDict = validEntries.GroupBy(x => x.Item2).ToDictionary(g => g.Key, g => g.Count());
 
-                // Count frequency of each size
-                var sizeCountDict = new Dictionary<long, int>();
-                foreach (var (_, size) in validEntries)
-                {
-                    sizeCountDict[size] = sizeCountDict.GetValueOrDefault(size, 0) + 1;
-                }
-
-                // 4.3: Apply BestSize and SameSize
                 foreach (var (entry, size) in validEntries)
                 {
-                    // BestSize: smallest size AND there exists at least one larger file
-                    entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize))
-                        ? "smallest size"
-                        : string.Empty;
-
-                    // SameSize: this size appears more than once
-                    entry.SameSize = (sizeCountDict[size] > 1)
-                        ? "has same size"
-                        : string.Empty;
+                    entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize)) ? "smallest size" : string.Empty;
+                    entry.SameSize = (sizeCountDict[size] > 1) ? "has same size" : string.Empty;
                 }
 
                 finalEncodeEntries.AddRange(entries);
             }
 
-            // 5. Analysis for decoding: find fastest decoder
+            // 4. Analysis for decoding: find fastest decoder
             var decodeParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-
             foreach (var group in decodeParamGroups)
             {
                 if (group.Count() <= 1) continue;
 
-                double maxSpeed = group.Max(e =>
-                {
-                    string s = e.Speed?.Replace("x", "")?.Trim();
-                    return double.TryParse(s, out double speed) ? speed : 0.0;
-                });
-
+                double maxSpeed = group.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
                 foreach (var entry in group)
                 {
-                    string s = entry.Speed?.Replace("x", "")?.Trim();
-                    if (double.TryParse(s, out double speed) && speed >= maxSpeed - 0.01)
-                    {
+                    if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
                         entry.FastestEncoder = "fastest decoder";
-                    }
                 }
             }
 
-            // 6. Merge results
+            // 5. Merge results
             var finalEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
 
-            // 7. Update DataGridView
+            // 6. Update UI
             await this.InvokeAsync(() =>
             {
                 dataGridViewLog.Rows.Clear();
-
                 foreach (var entry in finalEntries)
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
@@ -2432,7 +2401,7 @@ namespace FLAC_Benchmark_H
                         entry.Errors
                     );
 
-                    // Restore colors
+                    // Restore text colors
                     dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = entry.OutputForeColor;
                     dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
                     dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
@@ -2468,6 +2437,20 @@ namespace FLAC_Benchmark_H
             public Color CompressionForeColor { get; set; } // Color for Compression
             public Color SpeedForeColor { get; set; } // Color for Speed
         }
+        private class BenchmarkPass
+        {
+            public string AudioFilePath { get; set; }
+            public string EncoderPath { get; set; }
+            public string Parameters { get; set; }
+            public long InputSize { get; set; }
+            public long OutputSize { get; set; }
+            public double Time { get; set; }
+            public double Speed { get; set; }
+            public string BitDepth { get; set; }
+            public string SamplingRate { get; set; }
+            public DateTime Timestamp { get; set; }
+        }
+        private readonly List<BenchmarkPass> _benchmarkPasses = new();
         private void SortDataGridView()
         {
             // Collect data from DataGridView into a list
@@ -2881,11 +2864,18 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearLog_Click(object? sender, EventArgs e)
         {
+            // Clear the DataGridView
             dataGridViewLog.Rows.Clear();
 
-            // Hide the columns
+            // Hide optional columns
             dataGridViewLog.Columns["Duplicates"].Visible = false;
             dataGridViewLog.Columns["Errors"].Visible = false;
+
+            // Clear the internal cache of all benchmark passes
+            _benchmarkPasses.Clear();
+
+            // Optional: Clear selection and reset state
+            dataGridViewLog.ClearSelection();
         }
 
         // Key actions
@@ -2914,7 +2904,7 @@ namespace FLAC_Benchmark_H
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveAudiofile.PerformClick();
+                buttonRemoveAudioFile.PerformClick();
             }
 
             // Check if Ctrl and A are pressed simultaneously
@@ -2961,6 +2951,61 @@ namespace FLAC_Benchmark_H
             {
                 buttonPasteJobs.PerformClick();
                 e.Handled = true; // Cancel default behavior
+            }
+        }
+        private void DataGridViewLog_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                // Collect unique keys for deletion: (AudioFilePath, EncoderPath, Parameters)
+                var keysToDelete = new HashSet<(string AudioFilePath, string EncoderPath, string Parameters)>();
+
+                // First, gather keys to avoid modifying collections during iteration
+                foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
+                {
+                    if (row.IsNewRow) continue;
+
+                    string audioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString();
+                    string fileName = row.Cells["Name"].Value?.ToString();
+                    string encoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString();
+                    string encoder = row.Cells["Encoder"].Value?.ToString();
+                    string parameters = row.Cells["Parameters"].Value?.ToString();
+
+                    if (string.IsNullOrEmpty(audioFileDirectory) ||
+                        string.IsNullOrEmpty(fileName) ||
+                        string.IsNullOrEmpty(encoderDirectory) ||
+                        string.IsNullOrEmpty(encoder) ||
+                        string.IsNullOrEmpty(parameters))
+                    {
+                        continue;
+                    }
+
+                    string audioFilePath = Path.Combine(audioFileDirectory, fileName);
+                    string encoderPath = Path.Combine(encoderDirectory, encoder);
+
+                    keysToDelete.Add((audioFilePath, encoderPath, parameters));
+                }
+
+                // Remove selected rows from DataGridView
+                foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
+                {
+                    if (!row.IsNewRow)
+                    {
+                        dataGridViewLog.Rows.Remove(row);
+                    }
+                }
+
+                // Remove corresponding benchmark passes from the internal cache
+                foreach (var key in keysToDelete)
+                {
+                    _benchmarkPasses.RemoveAll(pass =>
+                        pass.AudioFilePath == key.AudioFilePath &&
+                        pass.EncoderPath == key.EncoderPath &&
+                        pass.Parameters == key.Parameters);
+                }
+
+                // Suppress default key press behavior (e.g., error beep)
+                e.SuppressKeyPress = true;
             }
         }
 
@@ -3367,7 +3412,6 @@ namespace FLAC_Benchmark_H
         }
 
         // Actions (Buttons)
-        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true); // Initially not paused
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
             dataGridViewLog.ClearSelection(); // Clear selection
@@ -3470,7 +3514,7 @@ namespace FLAC_Benchmark_H
                             {
                                 if (_isPaused)
                                 {
-                                    _pauseEvent.Wait(); // Wait for pause in the background thread
+                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                 }
 
                                 using (_process = new Process())
@@ -3673,7 +3717,7 @@ namespace FLAC_Benchmark_H
                             {
                                 if (_isPaused)
                                 {
-                                    _pauseEvent.Wait(); // Wait for pause in the background thread
+                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                 }
 
                                 using (_process = new Process())
@@ -3908,7 +3952,7 @@ namespace FLAC_Benchmark_H
                                             {
                                                 if (_isPaused)
                                                 {
-                                                    _pauseEvent.Wait(); // Wait for pause in the background thread
+                                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                                 }
 
                                                 using (_process = new Process())
@@ -4024,7 +4068,7 @@ namespace FLAC_Benchmark_H
                                             {
                                                 if (_isPaused)
                                                 {
-                                                    _pauseEvent.Wait(); // Wait for pause in the background thread
+                                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                                 }
 
                                                 using (_process = new Process())
@@ -4542,17 +4586,21 @@ namespace FLAC_Benchmark_H
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            SaveSettings(); // Save settings before closing
-            SaveEncoders(); // Save encoder list
-            SaveAudioFiles(); // Save audio file list
-            SaveJobs(); // Save jobList contents
+            // Save user settings and lists
+            SaveSettings();        // General settings
+            SaveEncoders();        // Encoder list
+            SaveAudioFiles();      // Audio files list
+            SaveJobs();            // Job list
 
+            // Stop and dispose UI timers and performance counters
             cpuUsageTimer?.Stop();
             cpuUsageTimer?.Dispose();
-
-            _pauseEvent?.Dispose();
             cpuCounter?.Dispose();
 
+            // Dispose pause/resume synchronization object
+            _pauseEvent?.Dispose();
+
+            // Optionally clean up temporary folder
             if (checkBoxClearTempFolder.Checked)
             {
                 // Check if temp folder exists
