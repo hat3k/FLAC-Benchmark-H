@@ -1989,6 +1989,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Compression", "Compr.");
             dataGridViewLog.Columns.Add("Time", "Time");
             dataGridViewLog.Columns.Add("Speed", "Speed");
+            dataGridViewLog.Columns.Add("Passes", "Passes");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
             dataGridViewLog.Columns.Add("Version", "Version");
@@ -2025,6 +2026,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
             dataGridViewLog.Columns["Duplicates"].Visible = false;
@@ -2137,17 +2139,18 @@ namespace FLAC_Benchmark_H
                     $"{compressionPercentage:F3}%",         //  6 "Compression"
                     $"{timeTaken.TotalMilliseconds:F3}",    //  7 "Time"
                     $"{encodingSpeed:F3}x",                 //  8 "Speed"
-                    parameters,                             //  9 "Parameters"
-                    encoderInfo.FileName,                   // 10 "Encoder"
-                    encoderInfo.Version,                    // 11 "Version"
-                    encoderInfo.DirectoryPath,              // 12 "EncoderDirectory"
-                    string.Empty,                           // 13 "FastestEncoder"
-                    string.Empty,                           // 14 "BestSize"
-                    string.Empty,                           // 15 "SameSize"
-                    audioFileDirectory,                     // 16 "AudioFileDirectory"
-                    Md5Hash,                                // 17 "MD5"
-                    string.Empty,                           // 18 "Duplicates"
-                    string.Empty                            // 18 "Errors"
+                    "1",                                    //  9 "Passes"
+                    parameters,                             // 10 "Parameters"
+                    encoderInfo.FileName,                   // 11 "Encoder"
+                    encoderInfo.Version,                    // 12 "Version"
+                    encoderInfo.DirectoryPath,              // 13 "EncoderDirectory"
+                    string.Empty,                           // 14 "FastestEncoder"
+                    string.Empty,                           // 15 "BestSize"
+                    string.Empty,                           // 16 "SameSize"
+                    audioFileDirectory,                     // 17 "AudioFileDirectory"
+                    Md5Hash,                                // 18 "MD5"
+                    string.Empty,                           // 19 "Duplicates"
+                    string.Empty                            // 20 "Errors"
                 );
 
                 // Set text color based on file size comparison
@@ -2281,6 +2284,7 @@ namespace FLAC_Benchmark_H
                 // Update with averaged values
                 bestEntry.Speed = avgSpeed.ToString("F3") + "x";
                 bestEntry.Time = avgTime.ToString("F3"); // Keep same formatting as original
+                bestEntry.Passes = group.Count.ToString(); // Passes number
 
                 resultEntries.Add(bestEntry);
             }
@@ -2414,6 +2418,7 @@ namespace FLAC_Benchmark_H
                         entry.Compression,
                         entry.Time,
                         entry.Speed,
+                        entry.Passes,
                         entry.Parameters,
                         entry.Encoder,
                         entry.Version,
@@ -2423,7 +2428,8 @@ namespace FLAC_Benchmark_H
                         entry.SameSize,
                         entry.AudioFileDirectory,
                         entry.MD5,
-                        entry.Duplicates
+                        entry.Duplicates,
+                        entry.Errors
                     );
 
                     // Restore colors
@@ -2445,6 +2451,7 @@ namespace FLAC_Benchmark_H
             public string Compression { get; set; }
             public string Time { get; set; }
             public string Speed { get; set; }
+            public string Passes { get; set; }
             public string Parameters { get; set; }
             public string Encoder { get; set; }
             public string Version { get; set; }
@@ -2479,6 +2486,7 @@ namespace FLAC_Benchmark_H
                     Compression = row.Cells["Compression"].Value?.ToString(),
                     Time = row.Cells["Time"].Value?.ToString(),
                     Speed = row.Cells["Speed"].Value?.ToString(),
+                    Passes = row.Cells["Passes"].Value?.ToString(),
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
                     Version = row.Cells["Version"].Value?.ToString(),
@@ -2521,6 +2529,7 @@ namespace FLAC_Benchmark_H
                     data.Compression,
                     data.Time,
                     data.Speed,
+                    data.Passes,
                     data.Parameters,
                     data.Encoder,
                     data.Version,
@@ -2608,6 +2617,13 @@ namespace FLAC_Benchmark_H
                                 worksheet.Cell(i + 2, j + 1).Value = speedValue; // Write speed value
                             }
                         }
+                        else if (j == dataGridViewLog.Columns["Passes"].Index)
+                        {
+                            if (cellValue != null && int.TryParse(cellValue.ToString(), out int passesValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = passesValue;
+                            }
+                        }
                         else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
                         {
                             string path = cellValue?.ToString() ?? string.Empty;
@@ -2674,6 +2690,10 @@ namespace FLAC_Benchmark_H
                 int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 for 1-based indexes
                 worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Format for displaying speed
 
+                // Set format for Passes column
+                int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
+                worksheet.Column(passesIndex).Style.NumberFormat.Format = "0"; // Integer, no decimals
+
                 // Set format for Parameters column
                 int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 for 1-based indexes
                 worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Format for displaying parameters
@@ -2733,6 +2753,7 @@ namespace FLAC_Benchmark_H
             "Compression",
             "Time",
             "Speed",
+            "Passes",
             "Parameters",
             "Encoder",
             "Version"
