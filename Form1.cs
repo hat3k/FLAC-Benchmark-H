@@ -1086,7 +1086,6 @@ namespace FLAC_Benchmark_H
 
                                             // Clear any previous error details for this file as calculation was successful.
                                             cachedInfoWav.ErrorDetails = null; // Or string.Empty
-                                            audioInfoCache[audioFilePath] = cachedInfoWav;
                                         }
                                         else
                                         {
@@ -1241,7 +1240,6 @@ namespace FLAC_Benchmark_H
                             cachedInfoFlac.Md5Hash = finalMd5Hash; // Store the actual hash
                                                                    // Clear any previous error details for this file as calculation was successful.
                             cachedInfoFlac.ErrorDetails = null; // Or string.Empty
-                            audioInfoCache[flacFilePath] = cachedInfoFlac;
                         }
                         else
                         {
@@ -1277,7 +1275,6 @@ namespace FLAC_Benchmark_H
                 // If file exists in cache, update its status and error details.
                 cachedInfoError.Md5Hash = "MD5 calculation failed"; // Store the standardized error status
                 cachedInfoError.ErrorDetails = errorDetails; // Store the full error message/details
-                audioInfoCache[filePath] = cachedInfoError;
             }
             else
             {
@@ -1293,7 +1290,6 @@ namespace FLAC_Benchmark_H
                 audioInfoCache.TryAdd(filePath, newInfo);
             }
         }
-
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             // --- STAGE 0: PREPARE USER INTERFACE ---
@@ -1477,26 +1473,32 @@ namespace FLAC_Benchmark_H
                                 string errorMessage = info.ErrorDetails ?? string.Empty;
 
                                 int rowIndex = dataGridViewLog.Rows.Add(
-                                    fileName,                   //  0:  Name
-                                    string.Empty,               //  1:  BitDepth
-                                    string.Empty,               //  2:  SamplingRate
-                                    string.Empty,               //  3:  InputFileSize
-                                    string.Empty,               //  4:  OutputFileSize
-                                    string.Empty,               //  5:  Compression
-                                    string.Empty,               //  6:  Time
-                                    string.Empty,               //  7:  Speed
-                                    string.Empty,               //  8:  Parameters
-                                    string.Empty,               //  9:  Encoder
-                                    string.Empty,               // 10:  Version
-                                    string.Empty,               // 11:  Encoder directory path
-                                    string.Empty,               // 12: FastestEncoder
-                                    string.Empty,               // 13: BestSize
-                                    string.Empty,               // 14: SameSize
-                                    directoryPath,              // 15: AudioFileDirectory
-                                    "MD5 calculation failed",   // 16: MD5
-                                    string.Empty,               // 17: Duplicates
-                                    errorMessage                // 18: Errors
+                                    fileName,                   //  0: Name
+                                    string.Empty,               //  1: BitDepth
+                                    string.Empty,               //  2: SamplingRate
+                                    string.Empty,               //  3: InputFileSize
+                                    string.Empty,               //  4: OutputFileSize
+                                    string.Empty,               //  5: Compression
+                                    string.Empty,               //  6: Time
+                                    string.Empty,               //  7: Speed
+                                    string.Empty,               //  8: SpeedMin
+                                    string.Empty,               //  9: SpeedMax
+                                    string.Empty,               // 10: SpeedRange
+                                    string.Empty,               // 11: SpeedConsistency
+                                    string.Empty,               // 12: Passes
+                                    string.Empty,               // 13: Parameters
+                                    string.Empty,               // 14: Encoder
+                                    string.Empty,               // 15: Version
+                                    string.Empty,               // 16: Encoder directory path
+                                    string.Empty,               // 17: FastestEncoder
+                                    string.Empty,               // 18: BestSize
+                                    string.Empty,               // 19: SameSize
+                                    directoryPath,              // 20: AudioFileDirectory
+                                    "MD5 calculation failed",   // 21: MD5
+                                    string.Empty,               // 22: Duplicates
+                                    errorMessage                // 23: Errors
                                 );
+
                                 // Highlight MD5 error rows in gray for visibility.
                                 dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
                             }
@@ -1536,26 +1538,32 @@ namespace FLAC_Benchmark_H
                             string errorMessage = string.Empty;
 
                             int rowIndex = dataGridViewLog.Rows.Add(
-                                fileName,            //  0:  Name
-                                string.Empty,        //  1:  BitDepth
-                                string.Empty,        //  2:  SamplingRate
-                                string.Empty,        //  3:  InputFileSize
-                                string.Empty,        //  4:  OutputFileSize
-                                string.Empty,        //  5:  Compression
-                                string.Empty,        //  6:  Time
-                                string.Empty,        //  7:  Speed
-                                string.Empty,        //  8:  Parameters
-                                string.Empty,        //  9:  Encoder
-                                string.Empty,        // 10:  Version
-                                string.Empty,        // 11  Encoder directory path
-                                string.Empty,        // 12: FastestEncoder
-                                string.Empty,        // 13: BestSize
-                                string.Empty,        // 14: SameSize
-                                directoryPath,       // 15: AudioFileDirectory
-                                md5Hash,             // 16: MD5
-                                duplicatesList,      // 17: Duplicates
-                                errorMessage         // 18: Errors
+                                fileName,            //  0: Name
+                                string.Empty,        //  1: BitDepth
+                                string.Empty,        //  2: SamplingRate
+                                string.Empty,        //  3: InputFileSize
+                                string.Empty,        //  4: OutputFileSize
+                                string.Empty,        //  5: Compression
+                                string.Empty,        //  6: Time
+                                string.Empty,        //  7: Speed
+                                string.Empty,        //  8: SpeedMin
+                                string.Empty,        //  9: SpeedMax
+                                string.Empty,        // 10: SpeedRange
+                                string.Empty,        // 11: SpeedConsistency
+                                string.Empty,        // 12: Passes
+                                string.Empty,        // 13: Parameters
+                                string.Empty,        // 14: Encoder
+                                string.Empty,        // 15: Version
+                                string.Empty,        // 16: Encoder directory path
+                                string.Empty,        // 17: FastestEncoder
+                                string.Empty,        // 18: BestSize
+                                string.Empty,        // 19: SameSize
+                                directoryPath,       // 20: AudioFileDirectory
+                                md5Hash,             // 21: MD5
+                                duplicatesList,      // 22: Duplicates
+                                errorMessage         // 23: Errors
                             );
+
                             // Highlight duplicate rows in brown for visibility.
                             dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                         }
@@ -1817,26 +1825,32 @@ namespace FLAC_Benchmark_H
                         string errorMessage = result.Message; // Error message is already in the result.
 
                         int rowIndex = dataGridViewLog.Rows.Add(
-                            fileName,                    //  0:  Name
-                            string.Empty,                //  1:  BitDepth
-                            string.Empty,                //  2:  SamplingRate
-                            string.Empty,                //  3:  OutputFileSize
-                            string.Empty,                //  4:  OutputFileSize
-                            string.Empty,                //  5:  Compression
-                            string.Empty,                //  6:  Time
-                            string.Empty,                //  7:  Speed
-                            string.Empty,                //  8:  Parameters
-                            string.Empty,                //  9:  Encoder
-                            string.Empty,                // 10:  Version
-                            string.Empty,                // 11:  Encoder directory path
-                            string.Empty,                // 12: FastestEncoder
-                            string.Empty,                // 13: BestSize
-                            string.Empty,                // 14: SameSize
-                            directoryPath,               // 15: AudioFileDirectory
-                            "Integrity Check Failed",    // 16: MD5 (repurposed for this check)
-                            string.Empty,                // 17: Duplicates
-                            errorMessage                 // 18: Errors
+                            fileName,                    //  0: Name
+                            string.Empty,                //  1: BitDepth
+                            string.Empty,                //  2: SamplingRate
+                            string.Empty,                //  3: InputFileSize
+                            string.Empty,                //  4: OutputFileSize
+                            string.Empty,                //  5: Compression
+                            string.Empty,                //  6: Time
+                            string.Empty,                //  7: Speed
+                            string.Empty,                //  8: SpeedMin
+                            string.Empty,                //  9: SpeedMax
+                            string.Empty,                // 10: SpeedRange
+                            string.Empty,                // 11: SpeedConsistency
+                            string.Empty,                // 12: Passes
+                            string.Empty,                // 13: Parameters
+                            string.Empty,                // 14: Encoder
+                            string.Empty,                // 15: Version
+                            string.Empty,                // 16: Encoder directory path
+                            string.Empty,                // 17: FastestEncoder
+                            string.Empty,                // 18: BestSize
+                            string.Empty,                // 19: SameSize
+                            directoryPath,               // 20: AudioFileDirectory
+                            "Integrity Check Failed",    // 21: MD5 (repurposed for this check)
+                            string.Empty,                // 22: Duplicates
+                            errorMessage                 // 23: Errors
                         );
+
                         // Highlight integrity check error rows in red for visibility.
                         dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
                         // Note: The error message is added to the row itself, not specifically to the 'Errors' cell,
@@ -2006,6 +2020,10 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Compression", "Compr.");
             dataGridViewLog.Columns.Add("Time", "Time");
             dataGridViewLog.Columns.Add("Speed", "Speed");
+            dataGridViewLog.Columns.Add("SpeedMin", "Speed Min.");
+            dataGridViewLog.Columns.Add("SpeedMax", "Speed Max.");
+            dataGridViewLog.Columns.Add("SpeedRange", "Range");
+            dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
             dataGridViewLog.Columns.Add("Passes", "Passes");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
@@ -2043,6 +2061,10 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
@@ -2163,26 +2185,30 @@ namespace FLAC_Benchmark_H
 
             // Add record to DataGridView log
             int rowIndex = dataGridViewLog.Rows.Add(
-                audioFileName,                          //  1 "Name"
-                audioFileInfo.BitDepth,                 //  2 "BitDepth"
-                samplingRateFormatted,                  //  3 "SamplingRate"
-                inputSizeFormatted,                     //  4 "InputFileSize"
-                outputSizeFormatted,                    //  5 "OutputFileSize"
-                $"{compressionPercentage:F3}%",         //  6 "Compression"
-                $"{timeTaken.TotalMilliseconds:F3}",    //  7 "Time"
-                $"{encodingSpeed:F3}x",                 //  8 "Speed"
-                "1",                                    //  9 "Passes"
-                parameters,                             // 10 "Parameters"
-                encoderInfo.FileName,                   // 11 "Encoder"
-                encoderInfo.Version,                    // 12 "Version"
-                encoderInfo.DirectoryPath,              // 13 "EncoderDirectory"
-                string.Empty,                           // 14 "FastestEncoder"
-                string.Empty,                           // 15 "BestSize"
-                string.Empty,                           // 16 "SameSize"
-                audioFileDirectory,                     // 17 "AudioFileDirectory"
-                Md5Hash,                                // 18 "MD5"
-                string.Empty,                           // 19 "Duplicates"
-                string.Empty                            // 20 "Errors"
+                audioFileName,                          //  0 "Name"
+                audioFileInfo.BitDepth,                 //  1 "BitDepth"
+                samplingRateFormatted,                  //  2 "SamplingRate"
+                inputSizeFormatted,                     //  3 "InputFileSize"
+                outputSizeFormatted,                    //  4 "OutputFileSize"
+                $"{compressionPercentage:F3}%",         //  5 "Compression"
+                $"{timeTaken.TotalMilliseconds:F3}",    //  6 "Time"
+                $"{encodingSpeed:F3}x",                 //  7 "Speed"
+                string.Empty,                           //  8 "SpeedMin"
+                string.Empty,                           //  9 "SpeedMax"
+                string.Empty,                           // 10 "SpeedRange"
+                string.Empty,                           // 11 "SpeedConsistency"
+                "1",                                    // 12 "Passes"
+                parameters,                             // 13 "Parameters"
+                encoderInfo.FileName,                   // 14 "Encoder"
+                encoderInfo.Version,                    // 15 "Version"
+                encoderInfo.DirectoryPath,              // 16 "EncoderDirectory"
+                string.Empty,                           // 17 "FastestEncoder"
+                string.Empty,                           // 18 "BestSize"
+                string.Empty,                           // 19 "SameSize"
+                audioFileDirectory,                     // 20 "AudioFileDirectory"
+                Md5Hash,                                // 21 "MD5"
+                string.Empty,                           // 22 "Duplicates"
+                string.Empty                            // 23 "Errors"
             );
 
             // Set text color based on file size comparison
@@ -2247,9 +2273,12 @@ namespace FLAC_Benchmark_H
                     AvgTimeMs = g.Average(p => p.Time),
                     AvgSpeed = g.Average(p => p.Speed),
                     MinOutputSize = g.Min(p => p.OutputSize),
+                    MaxOutputSize = g.Max(p => p.OutputSize),
                     InputSize = g.First().InputSize,
                     BitDepth = g.First().BitDepth,
-                    SamplingRate = g.First().SamplingRate
+                    SamplingRate = g.First().SamplingRate,
+                    Speeds = g.Where(p => p.Speed > 0).Select(p => p.Speed).OrderBy(s => s).ToList(), // Extract sorted speeds once
+                    LatestPass = g.OrderByDescending(p => p.Timestamp).First() // Latest pass for final size
                 })
                 .ToList();
 
@@ -2261,19 +2290,57 @@ namespace FLAC_Benchmark_H
                 var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
                 var encoderInfo = await GetEncoderInfo(group.EncoderPath);
 
-                // Format sizes with thousand separators
+                // Configure number format with space as thousand separator (e.g. 1 234 567)
                 NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
                 numberFormat.NumberGroupSeparator = " ";
 
                 string inputSizeFormatted = group.InputSize.ToString("N0", numberFormat);
-                string outputSizeFormatted = group.MinOutputSize.ToString("N0", numberFormat);
-                double compressionPercentage = ((double)group.MinOutputSize / group.InputSize) * 100;
+
+                // Use the final OutputSize (after metaflac used or not) for analysis
+                long outputSizeFinal = group.LatestPass.OutputSize;
+                string outputSizeFormatted = outputSizeFinal.ToString("N0", numberFormat);
+
+                // Calculate Compression using the final output size
+                double compressionPercentage = ((double)outputSizeFinal / group.InputSize) * 100;
 
                 // Format SamplingRate for display (e.g. 44100 -> "44 100")
                 string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", numberFormat) : "N/A";
 
                 // Determine output file directory
                 string audioFileDirectory = audioFileInfo?.DirectoryPath ?? Path.GetDirectoryName(group.AudioFilePath) ?? string.Empty;
+
+                // --- Speed Stability Analysis ---
+                var speeds = group.Speeds; // Use pre-extracted list
+
+                string speedMin = "N/A", speedMax = "N/A", speedRange = "N/A", speedConsistency = "N/A";
+
+                if (speeds.Any())
+                {
+                    // Since 'speeds' is already sorted in ascending order:
+                    double minSpeed = speeds.First();  // Equivalent to Min()
+                    double maxSpeed = speeds.Last();   // Equivalent to Max()
+                    double range = maxSpeed - minSpeed;
+
+                    speedMin = $"{minSpeed:F3}x";
+                    speedMax = $"{maxSpeed:F3}x";
+                    speedRange = $"{range:F3}x";
+
+                    // Calculate p50 (median)
+                    int n = speeds.Count;
+                    double p50 = n % 2 == 0
+                        ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
+                        : speeds[n / 2];
+
+                    // Calculate p90 (90th percentile)
+                    double p90Index = 0.9 * (n - 1);
+                    int p90Low = (int)Math.Floor(p90Index);
+                    int p90High = (int)Math.Ceiling(p90Index);
+                    double p90 = speeds[p90Low] + (p90Index - p90Low) * (speeds[p90High] - speeds[p90Low]);
+
+                    // Speed Consistency = ratio of p50 to p90, expressed as a percentage
+                    double consistency = p90 > 0 ? (p50 / p90) * 100.0 : 0.0;
+                    speedConsistency = $"{consistency:F3}%";
+                }
 
                 // Create the log entry with averaged values
                 var logEntry = new LogEntry
@@ -2286,6 +2353,10 @@ namespace FLAC_Benchmark_H
                     Compression = $"{compressionPercentage:F3}%",
                     Time = group.AvgTimeMs.ToString("F3"),
                     Speed = $"{group.AvgSpeed:F3}x",
+                    SpeedMin = speedMin,
+                    SpeedMax = speedMax,
+                    SpeedRange = speedRange,
+                    SpeedConsistency = speedConsistency,
                     Passes = group.PassesCount.ToString(),
                     Parameters = group.Parameters,
                     Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
@@ -2295,8 +2366,8 @@ namespace FLAC_Benchmark_H
                     MD5 = audioFileInfo?.Md5Hash ?? "N/A",
 
                     // Set text colors based on results
-                    OutputForeColor = group.MinOutputSize < group.InputSize ? Color.Green :
-                                    group.MinOutputSize > group.InputSize ? Color.Red : Color.Black,
+                    OutputForeColor = outputSizeFinal < group.InputSize ? Color.Green :
+                            outputSizeFinal > group.InputSize ? Color.Red : Color.Black,
                     CompressionForeColor = compressionPercentage < 100 ? Color.Green :
                                          compressionPercentage > 100 ? Color.Red : Color.Black,
                     SpeedForeColor = group.AvgSpeed > 1 ? Color.Green :
@@ -2387,6 +2458,10 @@ namespace FLAC_Benchmark_H
                         entry.Compression,
                         entry.Time,
                         entry.Speed,
+                        entry.SpeedMin,
+                        entry.SpeedMax,
+                        entry.SpeedRange,
+                        entry.SpeedConsistency,
                         entry.Passes,
                         entry.Parameters,
                         entry.Encoder,
@@ -2420,6 +2495,12 @@ namespace FLAC_Benchmark_H
             public string Compression { get; set; }
             public string Time { get; set; }
             public string Speed { get; set; }
+            public string SpeedMin { get; set; }
+            public string SpeedMax { get; set; }
+            public string SpeedRange { get; set; }
+            public double SpeedP50 { get; set; }
+            public double SpeedP90 { get; set; }
+            public string SpeedConsistency { get; set; }
             public string Passes { get; set; }
             public string Parameters { get; set; }
             public string Encoder { get; set; }
@@ -2469,6 +2550,10 @@ namespace FLAC_Benchmark_H
                     Compression = row.Cells["Compression"].Value?.ToString(),
                     Time = row.Cells["Time"].Value?.ToString(),
                     Speed = row.Cells["Speed"].Value?.ToString(),
+                    SpeedMin = row.Cells["SpeedMin"].Value?.ToString(),
+                    SpeedMax = row.Cells["SpeedMax"].Value?.ToString(),
+                    SpeedRange = row.Cells["SpeedRange"].Value?.ToString(),
+                    SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString(),
                     Passes = row.Cells["Passes"].Value?.ToString(),
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
@@ -2512,6 +2597,10 @@ namespace FLAC_Benchmark_H
                     data.Compression,
                     data.Time,
                     data.Speed,
+                    data.SpeedMin,
+                    data.SpeedMax,
+                    data.SpeedRange,
+                    data.SpeedConsistency,
                     data.Passes,
                     data.Parameters,
                     data.Encoder,
@@ -2600,6 +2689,20 @@ namespace FLAC_Benchmark_H
                                 worksheet.Cell(i + 2, j + 1).Value = speedValue; // Write speed value
                             }
                         }
+                        else if (j == dataGridViewLog.Columns["SpeedMin"].Index || j == dataGridViewLog.Columns["SpeedMax"].Index || j == dataGridViewLog.Columns["SpeedRange"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = speedValue;
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["SpeedConsistency"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double value))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = value / 100;
+                            }
+                        }
                         else if (j == dataGridViewLog.Columns["Passes"].Index)
                         {
                             if (cellValue != null && int.TryParse(cellValue.ToString(), out int passesValue))
@@ -2673,6 +2776,18 @@ namespace FLAC_Benchmark_H
                 int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 for 1-based indexes
                 worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Format for displaying speed
 
+                int speedMinIndex = dataGridViewLog.Columns["SpeedMin"].Index + 1;
+                worksheet.Column(speedMinIndex).Style.NumberFormat.Format = "0.000";
+
+                int speedMaxIndex = dataGridViewLog.Columns["SpeedMax"].Index + 1;
+                worksheet.Column(speedMaxIndex).Style.NumberFormat.Format = "0.000";
+
+                int speedRangeIndex = dataGridViewLog.Columns["SpeedRange"].Index + 1;
+                worksheet.Column(speedRangeIndex).Style.NumberFormat.Format = "0.000";
+
+                int speedConsistencyIndex = dataGridViewLog.Columns["SpeedConsistency"].Index + 1;
+                worksheet.Column(speedConsistencyIndex).Style.NumberFormat.Format = "0.000%";
+
                 // Set format for Passes column
                 int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
                 worksheet.Column(passesIndex).Style.NumberFormat.Format = "0"; // Integer, no decimals
@@ -2736,6 +2851,10 @@ namespace FLAC_Benchmark_H
             "Compression",
             "Time",
             "Speed",
+            "SpeedMin",
+            "SpeedMax",
+            "SpeedRange",
+            "SpeedConsistency",
             "Passes",
             "Parameters",
             "Encoder",
@@ -4187,7 +4306,7 @@ namespace FLAC_Benchmark_H
         {
             textBoxCommandLineOptionsDecoder.Clear(); // Clear textCommandLineOptions
         }
-        private void buttonepr8_Click(object? sender, EventArgs e)
+        private void buttonEpr8_Click(object? sender, EventArgs e)
         {
             // Check if -epr8 is already in textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("-epr8"))

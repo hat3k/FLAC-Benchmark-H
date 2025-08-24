@@ -120,9 +120,6 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
     <value>Tests all FLAC files in the list (checked and unchecked) for errors.
 
@@ -156,6 +153,11 @@ Columns to copy:
  "Compression",
  "Time",
  "Speed",
+ "Speed Min",
+ "Speed Max",
+ "Speed Range",
+ "Speed Consistency",
+ "Passes",
  "Parameters",
  "Encoder",
  "Version"
@@ -172,16 +174,19 @@ Perform this before exporting the log to Excel.</value>
   </data>
   <data name="checkBoxRemoveMetadata.ToolTip" xml:space="preserve">
     <value>Run "metaflac.exe --remove-all --dont-use-padding" after encoding.
-This reduces the output file size.
-Input files are not affected.
-Encoding option "--no-padding" is ignored.
+This reduces the output file size by removing all metadata (tags, covers, etc.).
 
-Does not affect encoding or decoding speed.
+• Input files are not affected.
+• The "--no-padding" encoding option is ignored.
+• Does not affect encoding or decoding speed.
 
-This option is necessary for more accurate file size comparisons.
+This option is necessary for more accurate file size comparisons 
+when testing different encoders or parameters.
 
-WARNING!
-When this option is enabled, the output file size will differ from standard encoding with applied effects.</value>
+⚠️ WARNING!
+When enabled, the output file size will differ from standard encoding with applied effects.
+Use this option only if different encoders show different file sizes for the same input, 
+to eliminate custom metadata or padding that may skew compression results.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

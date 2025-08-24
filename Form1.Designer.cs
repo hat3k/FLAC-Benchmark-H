@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
@@ -35,7 +35,7 @@
             labelSetCores = new Label();
             textBoxCommandLineOptionsEncoder = new TextBox();
             labelSetCompression = new Label();
-            buttonepr8 = new Button();
+            buttonEpr8 = new Button();
             buttonSetHalfThreads = new Button();
             buttonAsubdividetukey5flattop = new Button();
             buttonSetMaxThreads = new Button();
@@ -154,7 +154,7 @@
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
             groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
             groupBoxEncoderSettings.Controls.Add(labelSetCompression);
-            groupBoxEncoderSettings.Controls.Add(buttonepr8);
+            groupBoxEncoderSettings.Controls.Add(buttonEpr8);
             groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
             groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
             groupBoxEncoderSettings.Controls.Add(buttonSetMaxThreads);
@@ -260,15 +260,15 @@
             labelSetCompression.TabIndex = 2;
             labelSetCompression.Text = "Set:";
             // 
-            // buttonepr8
+            // buttonEpr8
             // 
-            buttonepr8.Location = new Point(122, 109);
-            buttonepr8.Name = "buttonepr8";
-            buttonepr8.Size = new Size(50, 23);
-            buttonepr8.TabIndex = 16;
-            buttonepr8.Text = "-epr8";
-            buttonepr8.UseVisualStyleBackColor = true;
-            buttonepr8.Click += buttonepr8_Click;
+            buttonEpr8.Location = new Point(122, 109);
+            buttonEpr8.Name = "buttonEpr8";
+            buttonEpr8.Size = new Size(50, 23);
+            buttonEpr8.TabIndex = 16;
+            buttonEpr8.Text = "-epr8";
+            buttonEpr8.UseVisualStyleBackColor = true;
+            buttonEpr8.Click += buttonEpr8_Click;
             // 
             // buttonSetHalfThreads
             // 
@@ -1068,23 +1068,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1360,7 +1360,7 @@
         private TextBox textBoxCommandLineOptionsEncoder;
         private ProgressBar progressBarEncoder;
         private Button buttonStartEncode;
-        private Button buttonepr8;
+        private Button buttonEpr8;
         private Button buttonAsubdividetukey5flattop;
         private Button buttonNoPadding;
         private Button buttonNoSeektable;
