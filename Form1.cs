@@ -2209,13 +2209,15 @@ namespace FLAC_Benchmark_H
                 string encoder = row.Cells["Encoder"].Value?.ToString();
                 string parameters = row.Cells["Parameters"].Value?.ToString();
                 string speedStr = row.Cells["Speed"].Value?.ToString()?.Replace("x", "")?.Trim();
+                string timeStr = row.Cells["Time"].Value?.ToString()?.Trim();
 
                 if (string.IsNullOrEmpty(audioFileDirectory) ||
                     string.IsNullOrEmpty(fileName) ||
                     string.IsNullOrEmpty(encoderDirectory) ||
                     string.IsNullOrEmpty(encoder) ||
                     string.IsNullOrEmpty(parameters) ||
-                    !double.TryParse(speedStr, out double speed))
+                    !double.TryParse(speedStr, out double speed) ||
+                    !double.TryParse(timeStr, out double time))
                 {
                     continue;
                 }
@@ -2232,6 +2234,7 @@ namespace FLAC_Benchmark_H
                     Encoder = encoder,
                     Parameters = parameters,
                     Speed = speedStr,
+                    Time = timeStr,
                     SpeedForeColor = row.Cells["Speed"].Style.ForeColor,
 
                     BitDepth = row.Cells["BitDepth"].Value?.ToString(),
@@ -2239,7 +2242,6 @@ namespace FLAC_Benchmark_H
                     InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
                     OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
                     Compression = row.Cells["Compression"].Value?.ToString(),
-                    Time = row.Cells["Time"].Value?.ToString(),
                     Version = row.Cells["Version"].Value?.ToString(),
                     EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString(),
                     FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
@@ -2256,17 +2258,30 @@ namespace FLAC_Benchmark_H
                 groupedEntries[key].Add(logEntry);
             }
 
-            // 2. For each group calculate average speed and keep one entry
+            // 2. For each group calculate average speed and time, and keep one entry
             var resultEntries = new List<LogEntry>();
             foreach (var group in groupedEntries.Values)
             {
+                // Calculate average speed
                 double avgSpeed = group.Average(x =>
                 {
                     string s = x.Speed?.Replace("x", "")?.Trim();
                     return double.TryParse(s, out double speed) ? speed : 0.0;
                 });
+
+                // Calculate average time
+                double avgTime = group.Average(x =>
+                {
+                    string t = x.Time?.Trim();
+                    return double.TryParse(t, out double time) ? time : 0.0;
+                });
+
                 var bestEntry = group.First(); // Take the first entry as a template
+
+                // Update with averaged values
                 bestEntry.Speed = avgSpeed.ToString("F3") + "x";
+                bestEntry.Time = avgTime.ToString("F3"); // Keep same formatting as original
+
                 resultEntries.Add(bestEntry);
             }
 
