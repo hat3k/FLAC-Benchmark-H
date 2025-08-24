@@ -1768,6 +1768,9 @@ namespace FLAC_Benchmark_H
                                 process.StartInfo.RedirectStandardOutput = true;
                                 process.StartInfo.CreateNoWindow = true;
 
+                                process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+                                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+
                                 process.Start();
 
                                 // Asynchronously read output and error streams to prevent deadlocks.
