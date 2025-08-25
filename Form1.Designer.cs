@@ -23,8 +23,8 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             checkBoxWarmupPass = new CheckBox();
             labelEncoderProgress = new Label();
@@ -172,6 +172,7 @@
             groupBoxEncoderSettings.Controls.Add(labelCompressionLevel);
             groupBoxEncoderSettings.Controls.Add(textBoxThreads);
             groupBoxEncoderSettings.Location = new Point(12, 278);
+            groupBoxEncoderSettings.MinimumSize = new Size(630, 171);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
             groupBoxEncoderSettings.Size = new Size(630, 171);
             groupBoxEncoderSettings.TabIndex = 2;
@@ -492,6 +493,7 @@
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
+            groupBoxEncoders.MinimumSize = new Size(777, 0);
             groupBoxEncoders.Name = "groupBoxEncoders";
             groupBoxEncoders.Size = new Size(777, 260);
             groupBoxEncoders.TabIndex = 0;
@@ -614,6 +616,7 @@
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
             groupBoxAudioFiles.Location = new Point(795, 12);
+            groupBoxAudioFiles.MinimumSize = new Size(777, 0);
             groupBoxAudioFiles.Name = "groupBoxAudioFiles";
             groupBoxAudioFiles.Size = new Size(777, 260);
             groupBoxAudioFiles.TabIndex = 1;
@@ -808,6 +811,7 @@
             groupBoxJobsList.Controls.Add(buttonImportJobList);
             groupBoxJobsList.Controls.Add(buttonClearJobList);
             groupBoxJobsList.Location = new Point(12, 455);
+            groupBoxJobsList.MinimumSize = new Size(777, 120);
             groupBoxJobsList.Name = "groupBoxJobsList";
             groupBoxJobsList.Size = new Size(777, 394);
             groupBoxJobsList.TabIndex = 6;
@@ -1000,6 +1004,7 @@
             groupBoxLog.Controls.Add(buttonCopyLog);
             groupBoxLog.Controls.Add(buttonOpenLogtxt);
             groupBoxLog.Location = new Point(795, 455);
+            groupBoxLog.MinimumSize = new Size(777, 120);
             groupBoxLog.Name = "groupBoxLog";
             groupBoxLog.Size = new Size(777, 394);
             groupBoxLog.TabIndex = 7;
@@ -1082,23 +1087,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(6, 22);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1129,6 +1134,7 @@
             groupBoxSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSettings.Controls.Add(checkBoxClearTempFolder);
             groupBoxSettings.Location = new Point(1389, 278);
+            groupBoxSettings.MinimumSize = new Size(183, 171);
             groupBoxSettings.Name = "groupBoxSettings";
             groupBoxSettings.Size = new Size(183, 171);
             groupBoxSettings.TabIndex = 5;
@@ -1220,6 +1226,7 @@
             groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
+            groupBoxDecoderSettings.MinimumSize = new Size(588, 171);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
             groupBoxDecoderSettings.Size = new Size(588, 171);
             groupBoxDecoderSettings.TabIndex = 4;
@@ -1307,6 +1314,7 @@
             groupBoxInformation.Controls.Add(labelCpuUsage);
             groupBoxInformation.Controls.Add(labelCpuInfo);
             groupBoxInformation.Location = new Point(648, 278);
+            groupBoxInformation.MinimumSize = new Size(141, 171);
             groupBoxInformation.Name = "groupBoxInformation";
             groupBoxInformation.Size = new Size(141, 171);
             groupBoxInformation.TabIndex = 3;
@@ -1328,6 +1336,8 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoScroll = true;
+            AutoScrollMinSize = new Size(0, 600);
             CancelButton = buttonStop;
             ClientSize = new Size(1584, 861);
             Controls.Add(groupBoxInformation);
