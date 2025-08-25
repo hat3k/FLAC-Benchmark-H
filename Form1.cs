@@ -2849,6 +2849,8 @@ namespace FLAC_Benchmark_H
                 // !!! IMPORTANT: Use the exact column Names from the DataGridView !!!
                 var columnsToInclude = new HashSet<string>
         {
+            "BitDepth",
+            "SamplingRate",
             "InputFileSize",
             "OutputFileSize",
             "Compression",
