@@ -102,6 +102,7 @@ namespace FLAC_Benchmark_H
             _process = new Process(); // Initialize _process to avoid nullability warning
 
             dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
+            dataGridViewLog.MouseDown += dataGridViewLog_MouseDown;
             buttonPauseResume.Click += buttonPauseResume_Click;
 
             // Enable custom drawing for listViewJobs
@@ -1635,7 +1636,6 @@ namespace FLAC_Benchmark_H
                         {
                             listViewAudioFiles.EndUpdate();
                         }
-                        dataGridViewLog.ClearSelection();
                     }); // End of UI update Invoke.
                 }); // End of background Task.Run.
             }
@@ -1651,7 +1651,6 @@ namespace FLAC_Benchmark_H
                     {
                         button.Text = originalText;
                         button.Enabled = true;
-                        dataGridViewLog.ClearSelection();
                     }));
                 }
             }
@@ -1877,7 +1876,6 @@ namespace FLAC_Benchmark_H
                     {
                         MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
-                    dataGridViewLog.ClearSelection();
                 });
 
             }
@@ -2140,6 +2138,14 @@ namespace FLAC_Benchmark_H
                         Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
+            }
+        }
+        private void dataGridViewLog_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = dataGridViewLog.HitTest(e.X, e.Y);
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
+            {
+                dataGridViewLog.ClearSelection();
             }
         }
 
@@ -2645,7 +2651,6 @@ namespace FLAC_Benchmark_H
                 dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = data.CompressionForeColor; // Compression
                 dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = data.SpeedForeColor; // Speed
             }
-            dataGridViewLog.ClearSelection();
         }
         private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
@@ -3562,8 +3567,6 @@ namespace FLAC_Benchmark_H
         // Actions (Buttons)
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
-            dataGridViewLog.ClearSelection(); // Clear selection
-
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
 
@@ -3582,7 +3585,6 @@ namespace FLAC_Benchmark_H
                 progressBarDecoder.Value = 0;
                 labelEncoderProgress.Text = string.Empty;
                 labelDecoderProgress.Text = string.Empty;
-                dataGridViewLog.ClearSelection();
             }));
 
             try
@@ -3601,8 +3603,6 @@ namespace FLAC_Benchmark_H
                     .Select(item => item.Tag.ToString()) // Get full path from Tag
                     .ToList();
 
-
-
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
                 {
@@ -3611,7 +3611,7 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // 5. Check if there is at least one audio file
+                // 2. Check if there is at least one audio file
                 if (selectedAudioFiles.Count == 0)
                 {
                     MessageBox.Show("Select at least one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -3624,9 +3624,6 @@ namespace FLAC_Benchmark_H
                 // Reset the progress bar
                 progressBarEncoder.Value = 0;
                 labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-
-                // Create a temporary directory for the output file
-                Directory.CreateDirectory(tempFolderPath);
 
                 foreach (var audioFilePath in selectedAudioFiles)
                 {
@@ -3770,14 +3767,11 @@ namespace FLAC_Benchmark_H
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = string.Empty;
                     labelDecoderProgress.Text = string.Empty;
-                    dataGridViewLog.ClearSelection();
                 }));
             }
         }
         private async void buttonStartDecode_Click(object? sender, EventArgs e)
         {
-            dataGridViewLog.ClearSelection(); // Clear selection
-
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
 
@@ -3796,7 +3790,6 @@ namespace FLAC_Benchmark_H
                 progressBarDecoder.Value = 0;
                 labelEncoderProgress.Text = string.Empty;
                 labelDecoderProgress.Text = string.Empty;
-                dataGridViewLog.ClearSelection();
             }));
 
             try
@@ -3822,7 +3815,7 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // 5. Check if there is at least one .flac audio file
+                // 2. Check if there is at least one .flac audio file
                 if (selectedFlacAudioFiles.Count == 0)
                 {
                     MessageBox.Show("Select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -3835,9 +3828,6 @@ namespace FLAC_Benchmark_H
                 // Reset the progress bar
                 progressBarDecoder.Value = 0; // Reset progress bar value
                 labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-
-                // Create a temporary directory for the output file
-                Directory.CreateDirectory(tempFolderPath);
 
                 foreach (var audioFilePath in selectedFlacAudioFiles)
                 {
@@ -3942,14 +3932,11 @@ namespace FLAC_Benchmark_H
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = string.Empty;
                     labelDecoderProgress.Text = string.Empty;
-                    dataGridViewLog.ClearSelection();
                 }));
             }
         }
         private async void buttonStartJobList_Click(object? sender, EventArgs e)
         {
-            dataGridViewLog.ClearSelection(); // Clear selection
-
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
 
@@ -3968,7 +3955,6 @@ namespace FLAC_Benchmark_H
                 progressBarDecoder.Value = 0;
                 labelEncoderProgress.Text = string.Empty;
                 labelDecoderProgress.Text = string.Empty;
-                dataGridViewLog.ClearSelection();
             }));
 
             try
@@ -4054,9 +4040,6 @@ namespace FLAC_Benchmark_H
 
                 labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                 labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-
-                // Create a temporary directory for the output file
-                Directory.CreateDirectory(tempFolderPath);
 
                 foreach (ListViewItem item in listViewJobs.Items)
                 {
@@ -4182,11 +4165,17 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
-                                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                                        finally
                                         {
-                                            progressBarEncoder.Value++;
-                                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                                        }));
+                                            progressBarEncoder.Invoke((MethodInvoker)(() =>
+                                            {
+                                                if (progressBarEncoder.Value < progressBarEncoder.Maximum)
+                                                {
+                                                    progressBarEncoder.Value++;
+                                                    labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                                                }
+                                            }));
+                                        }
                                     }
                                 }
                             }
@@ -4267,11 +4256,17 @@ namespace FLAC_Benchmark_H
                                             isExecuting = false;
                                             return;
                                         }
-                                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                                        finally
                                         {
-                                            progressBarDecoder.Value++;
-                                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                                        }));
+                                            progressBarDecoder.Invoke((MethodInvoker)(() =>
+                                            {
+                                                if (progressBarDecoder.Value < progressBarDecoder.Maximum)
+                                                {
+                                                    progressBarDecoder.Value++;
+                                                    labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                                                }
+                                            }));
+                                        }
                                     }
                                 }
                             }
@@ -4297,7 +4292,6 @@ namespace FLAC_Benchmark_H
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = string.Empty;
                     labelDecoderProgress.Text = string.Empty;
-                    dataGridViewLog.ClearSelection();
                 }));
             }
         }
@@ -4442,7 +4436,6 @@ namespace FLAC_Benchmark_H
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = $"";
                     labelDecoderProgress.Text = $"";
-                    dataGridViewLog.ClearSelection(); // Clear selection
                 }
             }
         }
