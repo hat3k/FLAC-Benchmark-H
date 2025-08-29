@@ -2187,8 +2187,8 @@ namespace FLAC_Benchmark_H
             // Get encoder information from cache
             var encoderInfo = await GetEncoderInfo(encoder); // Get encoder info
 
-            // Add raw data of the Pass to cache
-            _benchmarkPasses.Add(new BenchmarkPass
+            // Create benchmark pass object FIRST
+            var benchmarkPass = new BenchmarkPass
             {
                 AudioFilePath = audioFilePath,
                 EncoderPath = encoder,
@@ -2200,7 +2200,10 @@ namespace FLAC_Benchmark_H
                 BitDepth = audioFileInfo.BitDepth,
                 SamplingRate = audioFileInfo.SamplingRate,
                 Timestamp = DateTime.Now
-            });
+            };
+
+            // Add raw data of the Pass to cache
+            _benchmarkPasses.Add(benchmarkPass); // Add the object we created
 
             // Add record to DataGridView log
             int rowIndex = dataGridViewLog.Rows.Add(
@@ -2231,6 +2234,9 @@ namespace FLAC_Benchmark_H
                 string.Empty,                           // 24 "Duplicates"
                 string.Empty                            // 25 "Errors"
             );
+
+            // Add a tag to Log raw
+            dataGridViewLog.Rows[rowIndex].Tag = benchmarkPass;
 
             // Set text color based on file size comparison
             dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor =
@@ -3110,58 +3116,42 @@ namespace FLAC_Benchmark_H
         {
             if (e.KeyCode == Keys.Delete)
             {
-                // Collect unique keys for deletion: (AudioFilePath, EncoderPath, Parameters)
-                var keysToDelete = new HashSet<(string AudioFilePath, string EncoderPath, string Parameters)>();
+                // Collect objects associated with selected rows via Tag
+                var passesToDelete = new List<BenchmarkPass>();
 
-                // First, gather keys to avoid modifying collections during iteration
                 foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
                 {
                     if (row.IsNewRow) continue;
 
-                    string audioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString();
-                    string fileName = row.Cells["Name"].Value?.ToString();
-                    string encoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString();
-                    string encoder = row.Cells["Encoder"].Value?.ToString();
-                    string parameters = row.Cells["Parameters"].Value?.ToString();
-
-                    if (string.IsNullOrEmpty(audioFileDirectory) ||
-                        string.IsNullOrEmpty(fileName) ||
-                        string.IsNullOrEmpty(encoderDirectory) ||
-                        string.IsNullOrEmpty(encoder) ||
-                        string.IsNullOrEmpty(parameters))
+                    // Get benchmark pass object from row Tag
+                    if (row.Tag is BenchmarkPass pass)
                     {
-                        continue;
-                    }
-
-                    string audioFilePath = Path.Combine(audioFileDirectory, fileName);
-                    string encoderPath = Path.Combine(encoderDirectory, encoder);
-
-                    keysToDelete.Add((audioFilePath, encoderPath, parameters));
-                }
-
-                // Remove selected rows from DataGridView
-                foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
-                {
-                    if (!row.IsNewRow)
-                    {
-                        dataGridViewLog.Rows.Remove(row);
+                        passesToDelete.Add(pass);
                     }
                 }
 
-                // Remove corresponding benchmark passes from the internal cache
-                foreach (var key in keysToDelete)
+                // Remove selected rows from DataGridView (reverse order to avoid index issues)
+                var indexes = dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)
+                    .ToList();
+
+                foreach (int index in indexes)
                 {
-                    _benchmarkPasses.RemoveAll(pass =>
-                        pass.AudioFilePath == key.AudioFilePath &&
-                        pass.EncoderPath == key.EncoderPath &&
-                        pass.Parameters == key.Parameters);
+                    dataGridViewLog.Rows.RemoveAt(index);
+                }
+
+                // Remove corresponding benchmark passes from internal cache
+                foreach (var pass in passesToDelete)
+                {
+                    _benchmarkPasses.Remove(pass); // Remove specific object, not all matching parameters
                 }
 
                 // Suppress default key press behavior (e.g., error beep)
                 e.SuppressKeyPress = true;
             }
         }
-
         // Jobs
         private void ListViewJobs_DrawColumnHeader(object? sender, DrawListViewColumnHeaderEventArgs e)
         {
