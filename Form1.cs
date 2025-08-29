@@ -1485,18 +1485,20 @@ namespace FLAC_Benchmark_H
                                     string.Empty,               //  9: SpeedMax
                                     string.Empty,               // 10: SpeedRange
                                     string.Empty,               // 11: SpeedConsistency
-                                    string.Empty,               // 12: Passes
-                                    string.Empty,               // 13: Parameters
-                                    string.Empty,               // 14: Encoder
-                                    string.Empty,               // 15: Version
-                                    string.Empty,               // 16: Encoder directory path
-                                    string.Empty,               // 17: FastestEncoder
-                                    string.Empty,               // 18: BestSize
-                                    string.Empty,               // 19: SameSize
-                                    directoryPath,              // 20: AudioFileDirectory
-                                    "MD5 calculation failed",   // 21: MD5
-                                    string.Empty,               // 22: Duplicates
-                                    errorMessage                // 23: Errors
+                                    string.Empty,               // 12: CPULoadEncoder
+                                    string.Empty,               // 13: CPUClock
+                                    string.Empty,               // 14: Passes
+                                    string.Empty,               // 15: Parameters
+                                    string.Empty,               // 16: Encoder
+                                    string.Empty,               // 17: Version
+                                    string.Empty,               // 18: Encoder directory path
+                                    string.Empty,               // 19: FastestEncoder
+                                    string.Empty,               // 20: BestSize
+                                    string.Empty,               // 21: SameSize
+                                    directoryPath,              // 22: AudioFileDirectory
+                                    "MD5 calculation failed",   // 23: MD5
+                                    string.Empty,               // 24: Duplicates
+                                    errorMessage                // 25: Errors
                                 );
 
                                 // Highlight MD5 error rows in gray for visibility.
@@ -1550,18 +1552,20 @@ namespace FLAC_Benchmark_H
                                 string.Empty,        //  9: SpeedMax
                                 string.Empty,        // 10: SpeedRange
                                 string.Empty,        // 11: SpeedConsistency
-                                string.Empty,        // 12: Passes
-                                string.Empty,        // 13: Parameters
-                                string.Empty,        // 14: Encoder
-                                string.Empty,        // 15: Version
-                                string.Empty,        // 16: Encoder directory path
-                                string.Empty,        // 17: FastestEncoder
-                                string.Empty,        // 18: BestSize
-                                string.Empty,        // 19: SameSize
-                                directoryPath,       // 20: AudioFileDirectory
-                                md5Hash,             // 21: MD5
-                                duplicatesList,      // 22: Duplicates
-                                errorMessage         // 23: Errors
+                                string.Empty,        // 12: CPULoadEncoder
+                                string.Empty,        // 13: CPUClock
+                                string.Empty,        // 14: Passes
+                                string.Empty,        // 15: Parameters
+                                string.Empty,        // 16: Encoder
+                                string.Empty,        // 17: Version
+                                string.Empty,        // 18: Encoder directory path
+                                string.Empty,        // 19: FastestEncoder
+                                string.Empty,        // 20: BestSize
+                                string.Empty,        // 21: SameSize
+                                directoryPath,       // 22: AudioFileDirectory
+                                md5Hash,             // 23: MD5
+                                duplicatesList,      // 24: Duplicates
+                                errorMessage         // 25: Errors
                             );
 
                             // Highlight duplicate rows in brown for visibility.
@@ -1840,18 +1844,20 @@ namespace FLAC_Benchmark_H
                             string.Empty,                //  9: SpeedMax
                             string.Empty,                // 10: SpeedRange
                             string.Empty,                // 11: SpeedConsistency
-                            string.Empty,                // 12: Passes
-                            string.Empty,                // 13: Parameters
-                            string.Empty,                // 14: Encoder
-                            string.Empty,                // 15: Version
-                            string.Empty,                // 16: Encoder directory path
-                            string.Empty,                // 17: FastestEncoder
-                            string.Empty,                // 18: BestSize
-                            string.Empty,                // 19: SameSize
-                            directoryPath,               // 20: AudioFileDirectory
-                            "Integrity Check Failed",    // 21: MD5 (repurposed for this check)
-                            string.Empty,                // 22: Duplicates
-                            errorMessage                 // 23: Errors
+                            string.Empty,                // 12: CPULoadEncoder
+                            string.Empty,                // 13: CPUClock
+                            string.Empty,                // 14: Passes
+                            string.Empty,                // 15: Parameters
+                            string.Empty,                // 16: Encoder
+                            string.Empty,                // 17: Version
+                            string.Empty,                // 18: Encoder directory path
+                            string.Empty,                // 19: FastestEncoder
+                            string.Empty,                // 20: BestSize
+                            string.Empty,                // 21: SameSize
+                            directoryPath,               // 22: AudioFileDirectory
+                            "Integrity Check Failed",    // 23: MD5 (repurposed for this check)
+                            string.Empty,                // 24: Duplicates
+                            errorMessage                 // 25: Errors
                         );
 
                         // Highlight integrity check error rows in red for visibility.
@@ -2027,6 +2033,8 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("SpeedMax", "Speed Max.");
             dataGridViewLog.Columns.Add("SpeedRange", "Range");
             dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
+            dataGridViewLog.Columns.Add("CPULoadEncoder", "CPU Load");
+            dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
             dataGridViewLog.Columns.Add("Passes", "Passes");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
@@ -2068,6 +2076,8 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
@@ -2200,18 +2210,20 @@ namespace FLAC_Benchmark_H
                 string.Empty,                           //  9 "SpeedMax"
                 string.Empty,                           // 10 "SpeedRange"
                 string.Empty,                           // 11 "SpeedConsistency"
-                "1",                                    // 12 "Passes"
-                parameters,                             // 13 "Parameters"
-                encoderInfo.FileName,                   // 14 "Encoder"
-                encoderInfo.Version,                    // 15 "Version"
-                encoderInfo.DirectoryPath,              // 16 "EncoderDirectory"
-                string.Empty,                           // 17 "FastestEncoder"
-                string.Empty,                           // 18 "BestSize"
-                string.Empty,                           // 19 "SameSize"
-                audioFileDirectory,                     // 20 "AudioFileDirectory"
-                Md5Hash,                                // 21 "MD5"
-                string.Empty,                           // 22 "Duplicates"
-                string.Empty                            // 23 "Errors"
+                string.Empty,                           // 12 "CPULoadEncoder"
+                string.Empty,                           // 13 "CPUClock"
+                "1",                                    // 14 "Passes"
+                parameters,                             // 15 "Parameters"
+                encoderInfo.FileName,                   // 16 "Encoder"
+                encoderInfo.Version,                    // 17 "Version"
+                encoderInfo.DirectoryPath,              // 18 "EncoderDirectory"
+                string.Empty,                           // 19 "FastestEncoder"
+                string.Empty,                           // 20 "BestSize"
+                string.Empty,                           // 21 "SameSize"
+                audioFileDirectory,                     // 22 "AudioFileDirectory"
+                Md5Hash,                                // 23 "MD5"
+                string.Empty,                           // 24 "Duplicates"
+                string.Empty                            // 25 "Errors"
             );
 
             // Set text color based on file size comparison
@@ -2465,6 +2477,8 @@ namespace FLAC_Benchmark_H
                         entry.SpeedMax,
                         entry.SpeedRange,
                         entry.SpeedConsistency,
+                        entry.CPULoadEncoder,
+                        entry.CPUClock,
                         entry.Passes,
                         entry.Parameters,
                         entry.Encoder,
@@ -2504,6 +2518,8 @@ namespace FLAC_Benchmark_H
             public double SpeedP50 { get; set; }
             public double SpeedP90 { get; set; }
             public string SpeedConsistency { get; set; }
+            public string CPULoadEncoder { get; set; }
+            public string CPUClock { get; set; }
             public string Passes { get; set; }
             public string Parameters { get; set; }
             public string Encoder { get; set; }
@@ -2530,6 +2546,8 @@ namespace FLAC_Benchmark_H
             public long OutputSize { get; set; }
             public double Time { get; set; }
             public double Speed { get; set; }
+            public double CPULoadEncoder { get; set; }
+            public double CPUClock { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public DateTime Timestamp { get; set; }
@@ -2557,6 +2575,8 @@ namespace FLAC_Benchmark_H
                     SpeedMax = row.Cells["SpeedMax"].Value?.ToString(),
                     SpeedRange = row.Cells["SpeedRange"].Value?.ToString(),
                     SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString(),
+                    CPULoadEncoder = row.Cells["CPULoadEncoder"].Value?.ToString(),
+                    CPUClock = row.Cells["CPUClock"].Value?.ToString(),
                     Passes = row.Cells["Passes"].Value?.ToString(),
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
@@ -2604,6 +2624,8 @@ namespace FLAC_Benchmark_H
                     data.SpeedMax,
                     data.SpeedRange,
                     data.SpeedConsistency,
+                    data.CPULoadEncoder,
+                    data.CPUClock,
                     data.Passes,
                     data.Parameters,
                     data.Encoder,
@@ -2860,6 +2882,8 @@ namespace FLAC_Benchmark_H
             "SpeedMax",
             "SpeedRange",
             "SpeedConsistency",
+            "CPULoadEncoder",
+            "CPUClock",
             "Passes",
             "Parameters",
             "Encoder",
