@@ -3834,7 +3834,7 @@ namespace FLAC_Benchmark_H
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
                 // Reset the progress bar
                 progressBarDecoder.Value = 0; // Reset progress bar value
-                labelEncoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 // Create a temporary directory for the output file
                 Directory.CreateDirectory(tempFolderPath);
