@@ -2151,7 +2151,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder)
+        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
             if (!outputFile.Exists)
@@ -2182,12 +2182,16 @@ namespace FLAC_Benchmark_H
             // Get output audio file information
             long outputSize = outputFile.Length;
             string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
-            TimeSpan timeTaken = stopwatch.Elapsed;
+
             double compressionPercentage = ((double)outputSize / inputSize) * 100;
-            double encodingSpeed = (double)durationMs / timeTaken.TotalMilliseconds;
+            double encodingSpeed = (double)durationMs / elapsedTime.TotalMilliseconds;
 
             // Get encoder information from cache
             var encoderInfo = await GetEncoderInfo(encoder); // Get encoder info
+
+            // Calculate CPU Load
+            double totalCpuTime = (userProcessorTime + privilegedProcessorTime).TotalMilliseconds;
+            double cpuLoadEncoder = elapsedTime.TotalMilliseconds > 0 ? (totalCpuTime / elapsedTime.TotalMilliseconds) * 100 : 0;
 
             // Create benchmark pass object FIRST
             var benchmarkPass = new BenchmarkPass
@@ -2197,8 +2201,9 @@ namespace FLAC_Benchmark_H
                 Parameters = parameters,
                 InputSize = inputSize,
                 OutputSize = outputSize,
-                Time = timeTaken.TotalMilliseconds,
+                Time = elapsedTime.TotalMilliseconds,
                 Speed = encodingSpeed,
+                CPULoadEncoder = cpuLoadEncoder,
                 BitDepth = audioFileInfo.BitDepth,
                 SamplingRate = audioFileInfo.SamplingRate,
                 Timestamp = DateTime.Now
@@ -2215,13 +2220,13 @@ namespace FLAC_Benchmark_H
                 inputSizeFormatted,                     //  3 "InputFileSize"
                 outputSizeFormatted,                    //  4 "OutputFileSize"
                 $"{compressionPercentage:F3}%",         //  5 "Compression"
-                $"{timeTaken.TotalMilliseconds:F3}",    //  6 "Time"
+                $"{elapsedTime.TotalMilliseconds:F3}",  //  6 "Time"
                 $"{encodingSpeed:F3}x",                 //  7 "Speed"
                 string.Empty,                           //  8 "SpeedMin"
                 string.Empty,                           //  9 "SpeedMax"
                 string.Empty,                           // 10 "SpeedRange"
                 string.Empty,                           // 11 "SpeedConsistency"
-                string.Empty,                           // 12 "CPULoadEncoder"
+                $"{cpuLoadEncoder:F3}%",                // 12 "CPULoadEncoder"
                 string.Empty,                           // 13 "CPUClock"
                 "1",                                    // 14 "Passes"
                 parameters,                             // 15 "Parameters"
@@ -2267,8 +2272,9 @@ namespace FLAC_Benchmark_H
             $"Input size: {inputSize}\t" +
             $"Output size: {outputSize} bytes\t" +
             $"Compression: {compressionPercentage:F3}%\t" +
-            $"Time: {timeTaken.TotalMilliseconds:F3} ms\t" +
+            $"Time: {elapsedTime.TotalMilliseconds:F3} ms\t" +
             $"Speed: {encodingSpeed:F3}x\t" +
+            $"CPU Load: {cpuLoadEncoder:F1}%\t" +
             $"Parameters: {parameters.Trim()}\t" +
             $"Encoder: {encoderInfo.FileName}\t" +
             $"Version: {encoderInfo.Version}\t" +
@@ -3154,6 +3160,7 @@ namespace FLAC_Benchmark_H
                 e.SuppressKeyPress = true;
             }
         }
+
         // Jobs
         private void ListViewJobs_DrawColumnHeader(object? sender, DrawListViewColumnHeaderEventArgs e)
         {
@@ -3606,7 +3613,7 @@ namespace FLAC_Benchmark_H
                 // 2. Check if there is at least one audio file
                 if (selectedAudioFiles.Count == 0)
                 {
-                    MessageBox.Show("Select at least one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one audio file (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false; // Reset the flag if there are no files
                     return;
                 }
@@ -3647,6 +3654,10 @@ namespace FLAC_Benchmark_H
                         // Start the process and wait for completion
                         try
                         {
+                            TimeSpan elapsedTime = TimeSpan.Zero;
+                            TimeSpan userProcessorTime = TimeSpan.Zero;
+                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -3664,8 +3675,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    stopwatch.Reset();
-                                    stopwatch.Start();
+                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
@@ -3676,7 +3686,7 @@ namespace FLAC_Benchmark_H
                                         {
                                             if (!_process.HasExited)
                                             {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
                                             }
                                         }
                                         catch (InvalidOperationException)
@@ -3688,6 +3698,17 @@ namespace FLAC_Benchmark_H
                                     }
 
                                     stopwatch.Stop();
+                                    elapsedTime = stopwatch.Elapsed;
+
+                                    try
+                                    {
+                                        userProcessorTime = _process.UserProcessorTime;
+                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                    }
+
                                 }
                             });
 
@@ -3724,7 +3745,7 @@ namespace FLAC_Benchmark_H
                             }
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
+                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
                             }
                         }
                         catch (Exception ex)
@@ -3818,7 +3839,7 @@ namespace FLAC_Benchmark_H
                 // Set maximum values for the progress bar
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
                 // Reset the progress bar
-                progressBarDecoder.Value = 0; // Reset progress bar value
+                progressBarDecoder.Value = 0;
                 labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 foreach (var audioFilePath in selectedFlacAudioFiles)
@@ -3843,6 +3864,10 @@ namespace FLAC_Benchmark_H
                         // Start the process and wait for completion
                         try
                         {
+                            TimeSpan elapsedTime = TimeSpan.Zero;
+                            TimeSpan userProcessorTime = TimeSpan.Zero;
+                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -3860,8 +3885,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    stopwatch.Reset();
-                                    stopwatch.Start();
+                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
@@ -3872,7 +3896,7 @@ namespace FLAC_Benchmark_H
                                         {
                                             if (!_process.HasExited)
                                             {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
                                             }
                                         }
                                         catch (InvalidOperationException)
@@ -3884,12 +3908,23 @@ namespace FLAC_Benchmark_H
                                     }
 
                                     stopwatch.Stop();
+                                    elapsedTime = stopwatch.Elapsed;
+
+                                    try
+                                    {
+                                        userProcessorTime = _process.UserProcessorTime;
+                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                    }
+                                    catch (InvalidOperationException)
+                                    {
+                                    }
+
                                 }
                             });
 
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
+                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
                             }
                         }
                         catch (Exception ex)
@@ -3954,7 +3989,7 @@ namespace FLAC_Benchmark_H
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-            .Select(item => item.Tag.ToString()) // Get full path from Tag
+                    .Select(item => item.Tag.ToString()) // Get full path from Tag
                     .ToList();
 
                 // Get all selected .wav and .flac audio files
@@ -3962,7 +3997,7 @@ namespace FLAC_Benchmark_H
                     .Where(item => item.Checked &&
                         (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
                          Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-            .Select(item => item.Tag.ToString()) // Get full path from Tag
+                    .Select(item => item.Tag.ToString()) // Get full path from Tag
                     .ToList();
 
                 // Get all selected .flac audio files
@@ -3990,8 +4025,8 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // 2. Check if there is at least one encoder (for encode tasks)
-                if (totalEncodeTasks > 0 && selectedEncoders.Count == 0)
+                // 2. Check if there is at least one encoder
+                if (selectedEncoders.Count == 0)
                 {
                     MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
@@ -4069,6 +4104,10 @@ namespace FLAC_Benchmark_H
                                         // Start the process and wait for completion
                                         try
                                         {
+                                            TimeSpan elapsedTime = TimeSpan.Zero;
+                                            TimeSpan userProcessorTime = TimeSpan.Zero;
+                                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4086,8 +4125,7 @@ namespace FLAC_Benchmark_H
                                                         CreateNoWindow = true,
                                                     };
 
-                                                    stopwatch.Reset();
-                                                    stopwatch.Start();
+                                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                                                     if (!_isEncodingStopped)
                                                     {
@@ -4098,7 +4136,7 @@ namespace FLAC_Benchmark_H
                                                         {
                                                             if (!_process.HasExited)
                                                             {
-                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
                                                             }
                                                         }
                                                         catch (InvalidOperationException)
@@ -4110,6 +4148,18 @@ namespace FLAC_Benchmark_H
                                                     }
 
                                                     stopwatch.Stop();
+                                                    elapsedTime = stopwatch.Elapsed;
+
+                                                    // Get CPU times after process completion
+                                                    try
+                                                    {
+                                                        userProcessorTime = _process.UserProcessorTime;
+                                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                                    }
+                                                    catch (InvalidOperationException)
+                                                    {
+                                                        // Ignore
+                                                    }
                                                 }
                                             });
 
@@ -4146,7 +4196,7 @@ namespace FLAC_Benchmark_H
                                             }
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
+                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
                                             }
                                         }
                                         catch (Exception ex)
@@ -4191,6 +4241,10 @@ namespace FLAC_Benchmark_H
                                         // Start the process and wait for completion
                                         try
                                         {
+                                            TimeSpan elapsedTime = TimeSpan.Zero;
+                                            TimeSpan userProcessorTime = TimeSpan.Zero;
+                                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4208,8 +4262,7 @@ namespace FLAC_Benchmark_H
                                                         CreateNoWindow = true,
                                                     };
 
-                                                    stopwatch.Reset();
-                                                    stopwatch.Start();
+                                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                                                     if (!_isEncodingStopped)
                                                     {
@@ -4220,7 +4273,7 @@ namespace FLAC_Benchmark_H
                                                         {
                                                             if (!_process.HasExited)
                                                             {
-                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem.ToString());
+                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
                                                             }
                                                         }
                                                         catch (InvalidOperationException)
@@ -4232,12 +4285,24 @@ namespace FLAC_Benchmark_H
                                                     }
 
                                                     stopwatch.Stop();
+                                                    elapsedTime = stopwatch.Elapsed;
+
+                                                    // Get CPU times after process completion
+                                                    try
+                                                    {
+                                                        userProcessorTime = _process.UserProcessorTime;
+                                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                                    }
+                                                    catch (InvalidOperationException)
+                                                    {
+                                                        // Ignore
+                                                    }
                                                 }
                                             });
 
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder);
+                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
                                             }
                                         }
                                         catch (Exception ex)
