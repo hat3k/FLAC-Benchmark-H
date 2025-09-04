@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -10,6 +11,7 @@ using System.Management;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -3980,44 +3982,42 @@ namespace FLAC_Benchmark_H
                     .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
                     .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
 
-                // 1. Check if there is at least one encoder
-                if (selectedEncoders.Count == 0)
-                {
-                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
-                    return;
-                }
-
-                // 2. Check if there is at least one task (Encode or Decode)
+                // 1. Check if there is at least one job
                 if (totalEncodeTasks == 0 && totalDecodeTasks == 0)
                 {
                     MessageBox.Show("Select at least one job.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag before returning
+                    isExecuting = false;
                     return;
                 }
 
-                // 3. Check if there are FLAC files if Decode tasks are checked but Encode tasks are not
-                if (totalDecodeTasks > 0 && totalEncodeTasks == 0 && selectedFlacAudioFiles.Count == 0)
+                // 2. Check if there is at least one encoder (for encode tasks)
+                if (totalEncodeTasks > 0 && selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one FLAC file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag before returning
+                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    isExecuting = false;
                     return;
                 }
 
-                // 4. Check if there are audio files if Decode tasks are checked but Encode tasks are not
-                if (totalDecodeTasks > 0 && totalEncodeTasks == 0 && selectedAudioFiles.Count == 0)
+                // 3. Check if there are audio files for the tasks
+                if (totalEncodeTasks > 0)
                 {
-                    MessageBox.Show("Select at least one FLAC file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag before returning
-                    return;
+                    // For encoding: any WAV/FLAC files
+                    if (selectedAudioFiles.Count == 0)
+                    {
+                        MessageBox.Show("Select at least one audio file (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        isExecuting = false;
+                        return;
+                    }
                 }
-
-                // 5. Check if there is at least one audio file
-                if (selectedAudioFiles.Count == 0)
+                else if (totalDecodeTasks > 0)
                 {
-                    MessageBox.Show("Select at least one audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
-                    return;
+                    // For decoding: only FLAC files
+                    if (selectedFlacAudioFiles.Count == 0)
+                    {
+                        MessageBox.Show("Select at least one FLAC file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        isExecuting = false;
+                        return;
+                    }
                 }
 
                 // Set maximum values for progress bars
