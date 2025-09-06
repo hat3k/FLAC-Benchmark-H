@@ -2621,7 +2621,7 @@ namespace FLAC_Benchmark_H
             var sortedData = dataToSort
                 .OrderBy(x => x.AudioFileDirectory)
                 .ThenBy(x => x.Name)
-        .ThenBy(x => x.Parameters, new NaturalStringComparer())
+                .ThenBy(x => x.Parameters, new NaturalStringComparer())
                 .ThenBy(x => x.EncoderDirectory)
                 .ThenBy(x => x.Encoder)
                 .ToList();
@@ -3871,14 +3871,14 @@ namespace FLAC_Benchmark_H
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-            .Select(item => item.Tag.ToString()) // Get full path from Tag
+                    .Select(item => item.Tag.ToString()) // Get full path from Tag
                     .ToList();
 
                 // Get all selected .flac audio files
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked &&
                         (Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-            .Select(item => item.Tag.ToString()) // Get full path from Tag
+                    .Select(item => item.Tag.ToString()) // Get full path from Tag
                     .ToList();
 
                 // 1. Check if there is at least one encoder
