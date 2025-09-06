@@ -36,9 +36,6 @@ namespace FLAC_Benchmark_H
         private bool performanceCountersAvailable = false;       // True if counters initialized
         private System.Windows.Forms.Timer cpuUsageTimer;        // Updates CPU usage label
 
-        // Timing and performance
-        private Stopwatch stopwatch; // Measures encoding/decoding time
-
         // UI state
         private bool isCpuInfoLoaded = false; // Prevents duplicate CPU info load
 
@@ -70,7 +67,6 @@ namespace FLAC_Benchmark_H
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
             LoadCPUInfoAsync(); // Load CPU information
-            stopwatch = new Stopwatch(); // Initialize Stopwatch object
             try
             {
                 cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
@@ -2274,7 +2270,7 @@ namespace FLAC_Benchmark_H
             $"Compression: {compressionPercentage:F3}%\t" +
             $"Time: {elapsedTime.TotalMilliseconds:F3} ms\t" +
             $"Speed: {encodingSpeed:F3}x\t" +
-            $"CPU Load: {cpuLoadEncoder:F1}%\t" +
+            $"CPU Load: {cpuLoadEncoder:F3}%\t" +
             $"Parameters: {parameters.Trim()}\t" +
             $"Encoder: {encoderInfo.FileName}\t" +
             $"Version: {encoderInfo.Version}\t" +
@@ -2307,6 +2303,7 @@ namespace FLAC_Benchmark_H
                     PassesCount = g.Count(),
                     AvgTimeMs = g.Average(p => p.Time),
                     AvgSpeed = g.Average(p => p.Speed),
+                    AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
                     MinOutputSize = g.Min(p => p.OutputSize),
                     MaxOutputSize = g.Max(p => p.OutputSize),
                     InputSize = g.First().InputSize,
@@ -2392,6 +2389,8 @@ namespace FLAC_Benchmark_H
                     SpeedMax = speedMax,
                     SpeedRange = speedRange,
                     SpeedConsistency = speedConsistency,
+                    CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
+                    CPUClock = string.Empty,
                     Passes = group.PassesCount.ToString(),
                     Parameters = group.Parameters,
                     Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
@@ -2665,6 +2664,8 @@ namespace FLAC_Benchmark_H
                 dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = data.CompressionForeColor; // Compression
                 dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = data.SpeedForeColor; // Speed
             }
+
+            dataGridViewLog.ClearSelection();
         }
         private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
@@ -2695,7 +2696,6 @@ namespace FLAC_Benchmark_H
                             if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long inputFileSizeValue))
                             {
                                 worksheet.Cell(i + 2, j + 1).Value = inputFileSizeValue; // Write as number
-
                             }
                         }
                         else if (j == dataGridViewLog.Columns["BitDepth"].Index)
@@ -2754,6 +2754,20 @@ namespace FLAC_Benchmark_H
                                 worksheet.Cell(i + 2, j + 1).Value = passesValue;
                             }
                         }
+                        else if (j == dataGridViewLog.Columns["CPULoadEncoder"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double cpuLoadValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = cpuLoadValue / 100; // Write as percentage (0-1)
+                            }
+                        }
+                        else if (j == dataGridViewLog.Columns["CPUClock"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
+                            }
+                        }
                         else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
                         {
                             string path = cellValue?.ToString() ?? string.Empty;
@@ -2784,6 +2798,7 @@ namespace FLAC_Benchmark_H
                         {
                             worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Write value as string
                         }
+
                         // Copy text color if set
                         if (dataGridViewLog.Rows[i].Cells[j].Style.ForeColor != Color.Empty)
                         {
@@ -2831,6 +2846,14 @@ namespace FLAC_Benchmark_H
 
                 int speedConsistencyIndex = dataGridViewLog.Columns["SpeedConsistency"].Index + 1;
                 worksheet.Column(speedConsistencyIndex).Style.NumberFormat.Format = "0.000%";
+
+                // Set format for CPULoadEncoder column
+                int cpuLoadEncoderIndex = dataGridViewLog.Columns["CPULoadEncoder"].Index + 1;
+                worksheet.Column(cpuLoadEncoderIndex).Style.NumberFormat.Format = "0.000%";
+
+                // Set format for CPUClock column
+                int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
+                worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
 
                 // Set format for Passes column
                 int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
@@ -3675,7 +3698,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                                    var stopwatch = Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
@@ -3885,7 +3908,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                                    var stopwatch = Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
@@ -4125,7 +4148,7 @@ namespace FLAC_Benchmark_H
                                                         CreateNoWindow = true,
                                                     };
 
-                                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                                                    var stopwatch = Stopwatch.StartNew();
 
                                                     if (!_isEncodingStopped)
                                                     {
@@ -4262,7 +4285,7 @@ namespace FLAC_Benchmark_H
                                                         CreateNoWindow = true,
                                                     };
 
-                                                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                                                    var stopwatch = Stopwatch.StartNew();
 
                                                     if (!_isEncodingStopped)
                                                     {
