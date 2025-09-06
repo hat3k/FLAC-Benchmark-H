@@ -1485,7 +1485,7 @@ namespace FLAC_Benchmark_H
                                     string.Empty,               // 10: SpeedRange
                                     string.Empty,               // 11: SpeedConsistency
                                     string.Empty,               // 12: CPULoadEncoder
-                                    string.Empty,               // 13: CPUClock
+                                    //string.Empty,               // 13: CPUClock
                                     string.Empty,               // 14: Passes
                                     string.Empty,               // 15: Parameters
                                     string.Empty,               // 16: Encoder
@@ -1552,7 +1552,7 @@ namespace FLAC_Benchmark_H
                                 string.Empty,        // 10: SpeedRange
                                 string.Empty,        // 11: SpeedConsistency
                                 string.Empty,        // 12: CPULoadEncoder
-                                string.Empty,        // 13: CPUClock
+                                //string.Empty,        // 13: CPUClock
                                 string.Empty,        // 14: Passes
                                 string.Empty,        // 15: Parameters
                                 string.Empty,        // 16: Encoder
@@ -1842,7 +1842,7 @@ namespace FLAC_Benchmark_H
                             string.Empty,                // 10: SpeedRange
                             string.Empty,                // 11: SpeedConsistency
                             string.Empty,                // 12: CPULoadEncoder
-                            string.Empty,                // 13: CPUClock
+                            //string.Empty,                // 13: CPUClock
                             string.Empty,                // 14: Passes
                             string.Empty,                // 15: Parameters
                             string.Empty,                // 16: Encoder
@@ -2030,7 +2030,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("SpeedRange", "Range");
             dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
             dataGridViewLog.Columns.Add("CPULoadEncoder", "CPU Load");
-            dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
+            //dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
             dataGridViewLog.Columns.Add("Passes", "Passes");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
@@ -2073,7 +2073,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            //dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
@@ -2223,7 +2223,7 @@ namespace FLAC_Benchmark_H
                 string.Empty,                           // 10 "SpeedRange"
                 string.Empty,                           // 11 "SpeedConsistency"
                 $"{cpuLoadEncoder:F3}%",                // 12 "CPULoadEncoder"
-                string.Empty,                           // 13 "CPUClock"
+                //string.Empty,                           // 13 "CPUClock"
                 "1",                                    // 14 "Passes"
                 parameters,                             // 15 "Parameters"
                 encoderInfo.FileName,                   // 16 "Encoder"
@@ -2390,7 +2390,7 @@ namespace FLAC_Benchmark_H
                     SpeedRange = speedRange,
                     SpeedConsistency = speedConsistency,
                     CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
-                    CPUClock = string.Empty,
+                    //CPUClock = string.Empty,
                     Passes = group.PassesCount.ToString(),
                     Parameters = group.Parameters,
                     Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
@@ -2497,7 +2497,7 @@ namespace FLAC_Benchmark_H
                         entry.SpeedRange,
                         entry.SpeedConsistency,
                         entry.CPULoadEncoder,
-                        entry.CPUClock,
+                        //entry.CPUClock,
                         entry.Passes,
                         entry.Parameters,
                         entry.Encoder,
@@ -2538,7 +2538,7 @@ namespace FLAC_Benchmark_H
             public double SpeedP90 { get; set; }
             public string SpeedConsistency { get; set; }
             public string CPULoadEncoder { get; set; }
-            public string CPUClock { get; set; }
+            //public string CPUClock { get; set; }
             public string Passes { get; set; }
             public string Parameters { get; set; }
             public string Encoder { get; set; }
@@ -2566,7 +2566,7 @@ namespace FLAC_Benchmark_H
             public double Time { get; set; }
             public double Speed { get; set; }
             public double CPULoadEncoder { get; set; }
-            public double CPUClock { get; set; }
+            //public double CPUClock { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public DateTime Timestamp { get; set; }
@@ -2595,7 +2595,7 @@ namespace FLAC_Benchmark_H
                     SpeedRange = row.Cells["SpeedRange"].Value?.ToString(),
                     SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString(),
                     CPULoadEncoder = row.Cells["CPULoadEncoder"].Value?.ToString(),
-                    CPUClock = row.Cells["CPUClock"].Value?.ToString(),
+                    //CPUClock = row.Cells["CPUClock"].Value?.ToString(),
                     Passes = row.Cells["Passes"].Value?.ToString(),
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
@@ -2644,7 +2644,7 @@ namespace FLAC_Benchmark_H
                     data.SpeedRange,
                     data.SpeedConsistency,
                     data.CPULoadEncoder,
-                    data.CPUClock,
+                    //data.CPUClock,
                     data.Passes,
                     data.Parameters,
                     data.Encoder,
@@ -2799,13 +2799,13 @@ namespace FLAC_Benchmark_H
                                 worksheet.Cell(i + 2, j + 1).Value = cpuLoadValue / 100; // Write as percentage (0-1)
                             }
                         }
-                        else if (j == dataGridViewLog.Columns["CPUClock"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
-                            }
-                        }
+                        //else if (j == dataGridViewLog.Columns["CPUClock"].Index)
+                        //{
+                        //   if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
+                        //    {
+                        //        worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
+                        //    }
+                        //}
                         else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
                         {
                             string path = cellValue?.ToString() ?? string.Empty;
@@ -2890,8 +2890,8 @@ namespace FLAC_Benchmark_H
                 worksheet.Column(cpuLoadEncoderIndex).Style.NumberFormat.Format = "0.000%";
 
                 // Set format for CPUClock column
-                int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
-                worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
+                //int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
+                //worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
 
                 // Set format for Passes column
                 int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
@@ -2963,7 +2963,7 @@ namespace FLAC_Benchmark_H
             "SpeedRange",
             "SpeedConsistency",
             "CPULoadEncoder",
-            "CPUClock",
+            //"CPUClock",
             "Passes",
             "Parameters",
             "Encoder",
