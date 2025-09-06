@@ -2617,11 +2617,11 @@ namespace FLAC_Benchmark_H
                 dataToSort.Add(logEntry);
             }
 
-            // Perform multi-level sorting
+            // Perform multi-level sorting with natural sort for Parameters
             var sortedData = dataToSort
                 .OrderBy(x => x.AudioFileDirectory)
                 .ThenBy(x => x.Name)
-                .ThenBy(x => x.Parameters)
+        .ThenBy(x => x.Parameters, new NaturalStringComparer())
                 .ThenBy(x => x.EncoderDirectory)
                 .ThenBy(x => x.Encoder)
                 .ToList();
@@ -2658,7 +2658,6 @@ namespace FLAC_Benchmark_H
                     data.Duplicates,
                     data.Errors);
 
-
                 // Set text color
                 dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = data.OutputForeColor; // OutputFileSize
                 dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = data.CompressionForeColor; // Compression
@@ -2666,6 +2665,45 @@ namespace FLAC_Benchmark_H
             }
 
             dataGridViewLog.ClearSelection();
+        }
+        private class NaturalStringComparer : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                if (x == null && y == null) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+
+                return CompareNatural(x, y);
+            }
+
+            private static int CompareNatural(string strA, string strB)
+            {
+                int i1 = 0, i2 = 0;
+                while (i1 < strA.Length && i2 < strB.Length)
+                {
+                    if (char.IsDigit(strA[i1]) && char.IsDigit(strB[i2]))
+                    {
+                        long n1 = 0, n2 = 0;
+                        while (i1 < strA.Length && char.IsDigit(strA[i1]))
+                            n1 = n1 * 10 + (strA[i1++] - '0');
+                        while (i2 < strB.Length && char.IsDigit(strB[i2]))
+                            n2 = n2 * 10 + (strB[i2++] - '0');
+
+                        if (n1 != n2)
+                            return n1.CompareTo(n2);
+                    }
+                    else
+                    {
+                        int cmp = char.ToLower(strA[i1]).CompareTo(char.ToLower(strB[i2]));
+                        if (cmp != 0)
+                            return cmp;
+                        i1++;
+                        i2++;
+                    }
+                }
+                return strA.Length.CompareTo(strB.Length);
+            }
         }
         private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
