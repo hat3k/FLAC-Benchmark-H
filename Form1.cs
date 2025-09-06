@@ -3633,7 +3633,6 @@ namespace FLAC_Benchmark_H
             if (isExecuting) return; // Check if process is already running
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
-
             _isPaused = false;
             _pauseEvent.Set();
 
@@ -3651,17 +3650,17 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked)
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // Get all selected .wav and .flac audio files
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked &&
-                        (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                         Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked &&
+                (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
@@ -3712,13 +3711,23 @@ namespace FLAC_Benchmark_H
                         DeleteFileIfExists(outputFilePath); // Delete the old file
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
+                        string priorityText;
+                        if (comboBoxCPUPriority.InvokeRequired)
+                        {
+                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                        }
+                        else
+                        {
+                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                        }
+
+                        TimeSpan elapsedTime = TimeSpan.Zero;
+                        TimeSpan userProcessorTime = TimeSpan.Zero;
+                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                         // Start the process and wait for completion
                         try
                         {
-                            TimeSpan elapsedTime = TimeSpan.Zero;
-                            TimeSpan userProcessorTime = TimeSpan.Zero;
-                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -3740,22 +3749,26 @@ namespace FLAC_Benchmark_H
 
                                     if (!_isEncodingStopped)
                                     {
-                                        _process.Start();
-
-                                        // Set process priority
                                         try
                                         {
-                                            if (!_process.HasExited)
-                                            {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
-                                            }
-                                        }
-                                        catch (InvalidOperationException)
-                                        {
-                                            // Process has completed, log or handle as needed
-                                        }
+                                            _process.Start();
 
-                                        _process.WaitForExit();
+                                            // Set process priority
+                                            try
+                                            {
+                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                            }
+                                            catch (InvalidOperationException)
+                                            {
+                                                // Process has completed too early
+                                            }
+
+                                            _process.WaitForExit();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Debug.WriteLine($"Process start error: {ex.Message}");
+                                        }
                                     }
 
                                     stopwatch.Stop();
@@ -3769,7 +3782,6 @@ namespace FLAC_Benchmark_H
                                     catch (InvalidOperationException)
                                     {
                                     }
-
                                 }
                             });
 
@@ -3852,7 +3864,6 @@ namespace FLAC_Benchmark_H
             if (isExecuting) return; // Check if process is already running
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
-
             _isPaused = false;
             _pauseEvent.Set();
 
@@ -3870,16 +3881,16 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked)
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // Get all selected .flac audio files
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked &&
-                        (Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked &&
+                (Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
@@ -3922,13 +3933,23 @@ namespace FLAC_Benchmark_H
                         DeleteFileIfExists(outputFilePath); // Delete the old file
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
+                        string priorityText;
+                        if (comboBoxCPUPriority.InvokeRequired)
+                        {
+                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                        }
+                        else
+                        {
+                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                        }
+
+                        TimeSpan elapsedTime = TimeSpan.Zero;
+                        TimeSpan userProcessorTime = TimeSpan.Zero;
+                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                         // Start the process and wait for completion
                         try
                         {
-                            TimeSpan elapsedTime = TimeSpan.Zero;
-                            TimeSpan userProcessorTime = TimeSpan.Zero;
-                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -3950,22 +3971,26 @@ namespace FLAC_Benchmark_H
 
                                     if (!_isEncodingStopped)
                                     {
-                                        _process.Start();
-
-                                        // Set process priority
                                         try
                                         {
-                                            if (!_process.HasExited)
-                                            {
-                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
-                                            }
-                                        }
-                                        catch (InvalidOperationException)
-                                        {
-                                            // Process has completed, log or handle as needed
-                                        }
+                                            _process.Start();
 
-                                        _process.WaitForExit();
+                                            // Set process priority
+                                            try
+                                            {
+                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                            }
+                                            catch (InvalidOperationException)
+                                            {
+                                                // Process has completed too early
+                                            }
+
+                                            _process.WaitForExit();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Debug.WriteLine($"Process start error: {ex.Message}");
+                                        }
                                     }
 
                                     stopwatch.Stop();
@@ -3979,7 +4004,6 @@ namespace FLAC_Benchmark_H
                                     catch (InvalidOperationException)
                                     {
                                     }
-
                                 }
                             });
 
@@ -4031,7 +4055,6 @@ namespace FLAC_Benchmark_H
             if (isExecuting) return; // Check if process is already running
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
-
             _isPaused = false;
             _pauseEvent.Set();
 
@@ -4049,34 +4072,34 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked)
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // Get all selected .wav and .flac audio files
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                    .Where(item => item.Checked &&
-                        (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                         Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                    .Select(item => item.Tag.ToString()) // Get full path from Tag
-                    .ToList();
+                .Where(item => item.Checked &&
+                (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
+                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .ToList();
 
                 // Get all selected .flac audio files
                 var selectedFlacAudioFiles = selectedAudioFiles
-                    .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
                 // Count the number of tasks and passes for Encode
                 int totalEncodeTasks = listViewJobs.Items
-                    .Cast<ListViewItem>()
-                    .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
-                    .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+                .Cast<ListViewItem>()
+                .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
+                .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
 
                 // Count the number of tasks and passes for Decode
                 int totalDecodeTasks = listViewJobs.Items
-                    .Cast<ListViewItem>()
-                    .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
-                    .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+                .Cast<ListViewItem>()
+                .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
+                .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
 
                 // 1. Check if there is at least one job
                 if (totalEncodeTasks == 0 && totalDecodeTasks == 0)
@@ -4162,13 +4185,23 @@ namespace FLAC_Benchmark_H
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
                                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
+                                        string priorityText;
+                                        if (comboBoxCPUPriority.InvokeRequired)
+                                        {
+                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                                        }
+                                        else
+                                        {
+                                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                                        }
+
+                                        TimeSpan elapsedTime = TimeSpan.Zero;
+                                        TimeSpan userProcessorTime = TimeSpan.Zero;
+                                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                                         // Start the process and wait for completion
                                         try
                                         {
-                                            TimeSpan elapsedTime = TimeSpan.Zero;
-                                            TimeSpan userProcessorTime = TimeSpan.Zero;
-                                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4190,22 +4223,26 @@ namespace FLAC_Benchmark_H
 
                                                     if (!_isEncodingStopped)
                                                     {
-                                                        _process.Start();
-
-                                                        // Set process priority
                                                         try
                                                         {
-                                                            if (!_process.HasExited)
-                                                            {
-                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
-                                                            }
-                                                        }
-                                                        catch (InvalidOperationException)
-                                                        {
-                                                            // Process has completed, log or handle as needed
-                                                        }
+                                                            _process.Start();
 
-                                                        _process.WaitForExit();
+                                                            // Set process priority
+                                                            try
+                                                            {
+                                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                            }
+                                                            catch (InvalidOperationException)
+                                                            {
+                                                                // Process has completed too early
+                                                            }
+
+                                                            _process.WaitForExit();
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            Debug.WriteLine($"Process start error: {ex.Message}");
+                                                        }
                                                     }
 
                                                     stopwatch.Stop();
@@ -4219,7 +4256,7 @@ namespace FLAC_Benchmark_H
                                                     }
                                                     catch (InvalidOperationException)
                                                     {
-                                                        // Ignore
+                                                        // Process already exited or inaccessible
                                                     }
                                                 }
                                             });
@@ -4299,13 +4336,23 @@ namespace FLAC_Benchmark_H
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
                                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
+                                        string priorityText;
+                                        if (comboBoxCPUPriority.InvokeRequired)
+                                        {
+                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                                        }
+                                        else
+                                        {
+                                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                                        }
+
+                                        TimeSpan elapsedTime = TimeSpan.Zero;
+                                        TimeSpan userProcessorTime = TimeSpan.Zero;
+                                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
                                         // Start the process and wait for completion
                                         try
                                         {
-                                            TimeSpan elapsedTime = TimeSpan.Zero;
-                                            TimeSpan userProcessorTime = TimeSpan.Zero;
-                                            TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4327,22 +4374,26 @@ namespace FLAC_Benchmark_H
 
                                                     if (!_isEncodingStopped)
                                                     {
-                                                        _process.Start();
-
-                                                        // Set process priority
                                                         try
                                                         {
-                                                            if (!_process.HasExited)
-                                                            {
-                                                                _process.PriorityClass = GetProcessPriorityClass(comboBoxCPUPriority.SelectedItem?.ToString());
-                                                            }
-                                                        }
-                                                        catch (InvalidOperationException)
-                                                        {
-                                                            // Process has completed, log or handle as needed
-                                                        }
+                                                            _process.Start();
 
-                                                        _process.WaitForExit();
+                                                            // Set process priority
+                                                            try
+                                                            {
+                                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                            }
+                                                            catch (InvalidOperationException)
+                                                            {
+                                                                // Process has completed too early
+                                                            }
+
+                                                            _process.WaitForExit();
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            Debug.WriteLine($"Process start error: {ex.Message}");
+                                                        }
                                                     }
 
                                                     stopwatch.Stop();
@@ -4356,7 +4407,7 @@ namespace FLAC_Benchmark_H
                                                     }
                                                     catch (InvalidOperationException)
                                                     {
-                                                        // Ignore
+                                                        // Process already exited or inaccessible
                                                     }
                                                 }
                                             });
@@ -4546,8 +4597,6 @@ namespace FLAC_Benchmark_H
                 }
                 finally
                 {
-                    _process.Dispose(); // Release resources
-                    _process = null; // Null the process reference
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
                     labelEncoderProgress.Text = $"";
