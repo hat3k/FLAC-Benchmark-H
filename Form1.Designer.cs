@@ -51,7 +51,7 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
-            labelCpuUsage = new Label();
+            labelCpuUsageTitle = new Label();
             labelCpuInfo = new Label();
             buttonStop = new Button();
             buttonStartDecode = new Button();
@@ -133,6 +133,7 @@
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
+            labelCpuUsageValue = new Label();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -195,10 +196,11 @@
             // 
             labelEncoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelEncoderProgress.AutoSize = true;
-            labelEncoderProgress.Location = new Point(379, 145);
+            labelEncoderProgress.Location = new Point(364, 145);
             labelEncoderProgress.Name = "labelEncoderProgress";
-            labelEncoderProgress.Size = new Size(0, 15);
+            labelEncoderProgress.Size = new Size(60, 15);
             labelEncoderProgress.TabIndex = 25;
+            labelEncoderProgress.Text = "9999/9999";
             // 
             // labelCommandLineEncoder
             // 
@@ -423,12 +425,13 @@
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(textBoxThreads, "If you use FLAC 1.4.3 and earlier set this parameter to 1 or 0");
             // 
-            // labelCpuUsage
+            // labelCpuUsageTitle
             // 
-            labelCpuUsage.Location = new Point(5, 49);
-            labelCpuUsage.Name = "labelCpuUsage";
-            labelCpuUsage.Size = new Size(132, 30);
-            labelCpuUsage.TabIndex = 1;
+            labelCpuUsageTitle.Location = new Point(5, 49);
+            labelCpuUsageTitle.Name = "labelCpuUsageTitle";
+            labelCpuUsageTitle.Size = new Size(69, 30);
+            labelCpuUsageTitle.TabIndex = 1;
+            labelCpuUsageTitle.Text = "CPU Load:\r\nCPU Clock:";
             // 
             // labelCpuInfo
             // 
@@ -1238,10 +1241,11 @@
             labelDecoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelDecoderProgress.AutoSize = true;
             labelDecoderProgress.BackColor = SystemColors.Control;
-            labelDecoderProgress.Location = new Point(373, 145);
+            labelDecoderProgress.Location = new Point(352, 145);
             labelDecoderProgress.Name = "labelDecoderProgress";
-            labelDecoderProgress.Size = new Size(0, 15);
+            labelDecoderProgress.Size = new Size(60, 15);
             labelDecoderProgress.TabIndex = 25;
+            labelDecoderProgress.Text = "9999/9999";
             // 
             // labelCommandLineDecoder
             // 
@@ -1311,7 +1315,8 @@
             // 
             groupBoxInformation.Controls.Add(checkBoxCheckForUpdatesOnStartup);
             groupBoxInformation.Controls.Add(buttonAbout);
-            groupBoxInformation.Controls.Add(labelCpuUsage);
+            groupBoxInformation.Controls.Add(labelCpuUsageValue);
+            groupBoxInformation.Controls.Add(labelCpuUsageTitle);
             groupBoxInformation.Controls.Add(labelCpuInfo);
             groupBoxInformation.Location = new Point(648, 278);
             groupBoxInformation.MinimumSize = new Size(141, 171);
@@ -1331,6 +1336,14 @@
             buttonAbout.Text = "About";
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += buttonAbout_Click;
+            // 
+            // labelCpuUsageValue
+            // 
+            labelCpuUsageValue.Location = new Point(69, 49);
+            labelCpuUsageValue.Name = "labelCpuUsageValue";
+            labelCpuUsageValue.Size = new Size(66, 30);
+            labelCpuUsageValue.TabIndex = 1;
+            labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
             // 
             // Form1
             // 
@@ -1472,7 +1485,7 @@
         private Label labelEncoderProgress;
         private Label labelDecoderProgress;
         private Button buttonPauseResume;
-        private Label labelCpuUsage;
+        private Label labelCpuUsageTitle;
         private CheckBox checkBoxAddMD5OnLoadWav;
         private CheckBox checkBoxRemoveMetadata;
         private GroupBox groupBoxInformation;
@@ -1485,5 +1498,6 @@
         private Button buttonCopyLogAsBBCode;
         private CheckBox checkBoxWarningsAsErrors;
         private CheckBox checkBoxWarmupPass;
+        private Label labelCpuUsageValue;
     }
 }

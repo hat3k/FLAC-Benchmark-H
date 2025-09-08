@@ -24,7 +24,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.5 build 20250906"; // Current app version
+        public string programVersionCurrent = "1.6 build 20250908"; // Current app version
         public string programVersionIgnored = null;                 // Previously ignored update
 
         // Hardware info
@@ -32,9 +32,13 @@ namespace FLAC_Benchmark_H
         private int threadCount;   // Total logical threads
 
         // CPU monitoring
-        private PerformanceCounter cpuCounter = null;            // CPU usage counter
-        private bool performanceCountersAvailable = false;       // True if counters initialized
-        private System.Windows.Forms.Timer cpuUsageTimer;        // Updates CPU usage label
+        private PerformanceCounter cpuLoadCounter = null;       // CPU Load counter (whole system)
+        private bool performanceCountersAvailable = false;      // True if counters initialized
+        private System.Windows.Forms.Timer cpuUsageTimer;       // Updates CPU usage label
+
+        private PerformanceCounter _cpuClockCounter;            // CPU clock counter (as % of base freq)
+        private List<double> _cpuClockReadings;
+        private int _baseClockMhz = 0;                          // Base CPU frequency in MHz
 
         // UI state
         private bool isCpuInfoLoaded = false; // Prevents duplicate CPU info load
@@ -66,10 +70,12 @@ namespace FLAC_Benchmark_H
             this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
-            LoadCPUInfoAsync(); // Load CPU information
+            LoadCPUInfoAsync();
+
+            // Initialize CPU Usage counter (Current CPU Load in %)
             try
             {
-                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                cpuLoadCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
                 performanceCountersAvailable = true;
             }
             catch (Exception ex) when (
@@ -94,6 +100,28 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Interval = 250; // Every 250 ms
             cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
             cpuUsageTimer.Start();
+
+            // Initialize CPU Clock counter (% of base frequency)
+            try
+            {
+                _cpuClockCounter = new PerformanceCounter("Processor Information", "% Processor Performance", "_Total");
+                Debug.WriteLine("CPU Clock counter (% Processor Performance) initialized successfully.");
+            }
+            catch (Exception ex1)
+            {
+                Debug.WriteLine($"Failed to initialize CPU Clock counter with 'Processor Information': {ex1.Message}");
+                try
+                {
+                    _cpuClockCounter = new PerformanceCounter("Processor", "% Processor Performance", "_Total");
+                    Debug.WriteLine("CPU Clock counter (Processor) initialized successfully.");
+                }
+                catch (Exception ex2)
+                {
+                    Debug.WriteLine($"Failed to initialize CPU Clock counter with 'Processor': {ex2.Message}");
+                    _cpuClockCounter = null;
+                }
+            }
+
             InitializedataGridViewLog();
 
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Initialize the path to the temporary folder
@@ -109,6 +137,7 @@ namespace FLAC_Benchmark_H
             listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
             comboBoxCPUPriority.SelectedIndex = 3;
         }
+
         private string NormalizeSpaces(string input)
         {
             return Regex.Replace(input.Trim(), @"\s+", " "); // Remove extra spaces inside the string
@@ -121,8 +150,8 @@ namespace FLAC_Benchmark_H
             {
                 physicalCores = 0;
                 threadCount = 0;
+                _baseClockMhz = 0;
 
-                // Create a query to get processor information
                 await Task.Run(() =>
                 {
                     using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_Processor"))
@@ -133,6 +162,12 @@ namespace FLAC_Benchmark_H
                             {
                                 physicalCores += int.Parse(obj["NumberOfCores"].ToString()!);
                                 threadCount += int.Parse(obj["ThreadCount"].ToString()!);
+                            }
+
+                            // Get base clock speed in MHz
+                            if (_baseClockMhz == 0 && obj["MaxClockSpeed"] != null)
+                            {
+                                _baseClockMhz = Convert.ToInt32(obj["MaxClockSpeed"]);
                             }
                         }
                     }
@@ -153,54 +188,50 @@ namespace FLAC_Benchmark_H
 
         private async Task UpdateCpuUsageAsync()
         {
-            // Assume unavailable until proven otherwise
-            bool isAvailable = performanceCountersAvailable && cpuCounter != null;
-            float cpuUsage = 0f;
+            float cpuLoad = 0f;
+            double clockMhz = 0f;
 
-            // Get the counter value if it's available
-            if (isAvailable)
+            // Get CPU Usage
+            if (performanceCountersAvailable && cpuLoadCounter != null)
             {
                 try
                 {
-                    // NextValue() can throw exceptions, for example,
-                    // if the counter becomes unavailable or corrupted
-                    cpuUsage = cpuCounter.NextValue();
-                    // Ensure the value is valid before using it
-                    isAvailable = !float.IsNaN(cpuUsage) && !float.IsInfinity(cpuUsage);
+                    cpuLoad = cpuLoadCounter.NextValue();
                 }
-                catch (Exception ex) // PlatformNotSupportedException, InvalidOperationException, etc.
-                {
-                    // Log the error for diagnostics if needed
-                    // System.Diagnostics.Debug.WriteLine($"Error reading CPU counter: {ex.Message}");
-                    isAvailable = false;
-                }
+                catch { }
             }
 
-            // Update the UI. Since this method is called by a timer,
-            // we should always use Invoke/InvokeAsync for thread safety.
-            // We use Invoke for simplicity and synchronous UI updates.
-            // Checking InvokeRequired is not mandatory, but it's a good practice.
-            if (labelCpuUsage.InvokeRequired)
+            // Get CPU Clock
+            if (_cpuClockCounter != null && _baseClockMhz > 0)
             {
-                // Use MethodInvoker for a simple parameterless delegate
-                labelCpuUsage.Invoke((MethodInvoker)delegate
+                try
                 {
-                    // UI update happens on the UI thread
-                    labelCpuUsage.Text = isAvailable
-                        ? $"CPU Usage: {cpuUsage:F2}%"
-                        : "CPU Usage: N/A";
+                    _cpuClockCounter.NextValue(); // Warm up
+                    await Task.Delay(1);
+                    double clockPercent = _cpuClockCounter.NextValue();
+                    if (clockPercent > 0)
+                    {
+                        clockMhz = (clockPercent / 100.0) * _baseClockMhz;
+                    }
+                }
+                catch { }
+            }
+
+            // Update UI
+            if (labelCpuUsageTitle.InvokeRequired)
+            {
+                labelCpuUsageTitle.Invoke((MethodInvoker)delegate
+                {
+                    labelCpuUsageTitle.Text = "CPU Load:\nCPU Clock:";
+                    labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
                 });
             }
             else
             {
-                // In case the method is somehow called from the UI thread
-                labelCpuUsage.Text = isAvailable
-                    ? $"CPU Usage: {cpuUsage:F2}%"
-                    : "CPU Usage: N/A";
-                // progressBarCPU.Value = isAvailable ? (int)Math.Min(100, Math.Max(0, cpuUsage)) : 0;
+                labelCpuUsageTitle.Text = "CPU Load:\nCPU Clock:";
+                labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
             }
         }
-
         // Method to save settings to .txt files
         private void SaveSettings()
         {
@@ -1485,7 +1516,7 @@ namespace FLAC_Benchmark_H
                                     string.Empty,               // 10: SpeedRange
                                     string.Empty,               // 11: SpeedConsistency
                                     string.Empty,               // 12: CPULoadEncoder
-                                    //string.Empty,               // 13: CPUClock
+                                    string.Empty,               // 13: CPUClock
                                     string.Empty,               // 14: Passes
                                     string.Empty,               // 15: Parameters
                                     string.Empty,               // 16: Encoder
@@ -1552,7 +1583,7 @@ namespace FLAC_Benchmark_H
                                 string.Empty,        // 10: SpeedRange
                                 string.Empty,        // 11: SpeedConsistency
                                 string.Empty,        // 12: CPULoadEncoder
-                                //string.Empty,        // 13: CPUClock
+                                string.Empty,        // 13: CPUClock
                                 string.Empty,        // 14: Passes
                                 string.Empty,        // 15: Parameters
                                 string.Empty,        // 16: Encoder
@@ -1701,7 +1732,8 @@ namespace FLAC_Benchmark_H
                     {
                         UpdateGroupBoxAudioFilesHeader();
                         // Show message on UI thread
-                        this.Invoke((MethodInvoker)delegate {
+                        this.Invoke((MethodInvoker)delegate
+                        {
                             ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
                         });
                     }
@@ -1842,7 +1874,7 @@ namespace FLAC_Benchmark_H
                             string.Empty,                // 10: SpeedRange
                             string.Empty,                // 11: SpeedConsistency
                             string.Empty,                // 12: CPULoadEncoder
-                            //string.Empty,                // 13: CPUClock
+                            string.Empty,                // 13: CPUClock
                             string.Empty,                // 14: Passes
                             string.Empty,                // 15: Parameters
                             string.Empty,                // 16: Encoder
@@ -2030,7 +2062,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("SpeedRange", "Range");
             dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
             dataGridViewLog.Columns.Add("CPULoadEncoder", "CPU Load");
-            //dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
+            dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
             dataGridViewLog.Columns.Add("Passes", "Passes");
             dataGridViewLog.Columns.Add("Parameters", "Parameters");
             dataGridViewLog.Columns.Add("Encoder", "Encoder");
@@ -2073,13 +2105,13 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            //dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
             dataGridViewLog.Columns["Duplicates"].Visible = false;
             dataGridViewLog.Columns["Errors"].Visible = false;
-            
+
             foreach (DataGridViewColumn column in dataGridViewLog.Columns)
             {
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -2147,7 +2179,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime)
+        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime, double avgClock)
         {
             FileInfo outputFile = new FileInfo(outputFilePath);
             if (!outputFile.Exists)
@@ -2200,13 +2232,14 @@ namespace FLAC_Benchmark_H
                 Time = elapsedTime.TotalMilliseconds,
                 Speed = encodingSpeed,
                 CPULoadEncoder = cpuLoadEncoder,
+                CPUClock = avgClock,
                 BitDepth = audioFileInfo.BitDepth,
                 SamplingRate = audioFileInfo.SamplingRate,
                 Timestamp = DateTime.Now
             };
 
             // Add raw data of the Pass to cache
-            _benchmarkPasses.Add(benchmarkPass); // Add the object we created
+            _benchmarkPasses.Add(benchmarkPass);
 
             // Add record to DataGridView log
             int rowIndex = dataGridViewLog.Rows.Add(
@@ -2223,7 +2256,7 @@ namespace FLAC_Benchmark_H
                 string.Empty,                           // 10 "SpeedRange"
                 string.Empty,                           // 11 "SpeedConsistency"
                 $"{cpuLoadEncoder:F3}%",                // 12 "CPULoadEncoder"
-                //string.Empty,                           // 13 "CPUClock"
+                $"{avgClock:F0} MHz",                   // 13 "CPUClock"
                 "1",                                    // 14 "Passes"
                 parameters,                             // 15 "Parameters"
                 encoderInfo.FileName,                   // 16 "Encoder"
@@ -2271,6 +2304,7 @@ namespace FLAC_Benchmark_H
             $"Time: {elapsedTime.TotalMilliseconds:F3} ms\t" +
             $"Speed: {encodingSpeed:F3}x\t" +
             $"CPU Load: {cpuLoadEncoder:F3}%\t" +
+            $"CPU Clock: {avgClock:F0} MHz\t" +
             $"Parameters: {parameters.Trim()}\t" +
             $"Encoder: {encoderInfo.FileName}\t" +
             $"Version: {encoderInfo.Version}\t" +
@@ -2304,6 +2338,7 @@ namespace FLAC_Benchmark_H
                     AvgTimeMs = g.Average(p => p.Time),
                     AvgSpeed = g.Average(p => p.Speed),
                     AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
+                    AvgCPUClock = g.Average(p => p.CPUClock),
                     MinOutputSize = g.Min(p => p.OutputSize),
                     MaxOutputSize = g.Max(p => p.OutputSize),
                     InputSize = g.First().InputSize,
@@ -2390,7 +2425,7 @@ namespace FLAC_Benchmark_H
                     SpeedRange = speedRange,
                     SpeedConsistency = speedConsistency,
                     CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
-                    //CPUClock = string.Empty,
+                    CPUClock = $"{group.AvgCPUClock:F0} MHz",
                     Passes = group.PassesCount.ToString(),
                     Parameters = group.Parameters,
                     Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
@@ -2497,7 +2532,7 @@ namespace FLAC_Benchmark_H
                         entry.SpeedRange,
                         entry.SpeedConsistency,
                         entry.CPULoadEncoder,
-                        //entry.CPUClock,
+                        entry.CPUClock,
                         entry.Passes,
                         entry.Parameters,
                         entry.Encoder,
@@ -2538,7 +2573,7 @@ namespace FLAC_Benchmark_H
             public double SpeedP90 { get; set; }
             public string SpeedConsistency { get; set; }
             public string CPULoadEncoder { get; set; }
-            //public string CPUClock { get; set; }
+            public string CPUClock { get; set; }
             public string Passes { get; set; }
             public string Parameters { get; set; }
             public string Encoder { get; set; }
@@ -2566,7 +2601,7 @@ namespace FLAC_Benchmark_H
             public double Time { get; set; }
             public double Speed { get; set; }
             public double CPULoadEncoder { get; set; }
-            //public double CPUClock { get; set; }
+            public double CPUClock { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public DateTime Timestamp { get; set; }
@@ -2595,7 +2630,7 @@ namespace FLAC_Benchmark_H
                     SpeedRange = row.Cells["SpeedRange"].Value?.ToString(),
                     SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString(),
                     CPULoadEncoder = row.Cells["CPULoadEncoder"].Value?.ToString(),
-                    //CPUClock = row.Cells["CPUClock"].Value?.ToString(),
+                    CPUClock = row.Cells["CPUClock"].Value?.ToString(),
                     Passes = row.Cells["Passes"].Value?.ToString(),
                     Parameters = row.Cells["Parameters"].Value?.ToString(),
                     Encoder = row.Cells["Encoder"].Value?.ToString(),
@@ -2644,7 +2679,7 @@ namespace FLAC_Benchmark_H
                     data.SpeedRange,
                     data.SpeedConsistency,
                     data.CPULoadEncoder,
-                    //data.CPUClock,
+                    data.CPUClock,
                     data.Passes,
                     data.Parameters,
                     data.Encoder,
@@ -2799,13 +2834,13 @@ namespace FLAC_Benchmark_H
                                 worksheet.Cell(i + 2, j + 1).Value = cpuLoadValue / 100; // Write as percentage (0-1)
                             }
                         }
-                        //else if (j == dataGridViewLog.Columns["CPUClock"].Index)
-                        //{
-                        //   if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
-                        //    {
-                        //        worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
-                        //    }
-                        //}
+                        else if (j == dataGridViewLog.Columns["CPUClock"].Index)
+                        {
+                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
+                            {
+                                worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
+                            }
+                        }
                         else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
                         {
                             string path = cellValue?.ToString() ?? string.Empty;
@@ -2890,8 +2925,8 @@ namespace FLAC_Benchmark_H
                 worksheet.Column(cpuLoadEncoderIndex).Style.NumberFormat.Format = "0.000%";
 
                 // Set format for CPUClock column
-                //int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
-                //worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
+                int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
+                worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
 
                 // Set format for Passes column
                 int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
@@ -2963,7 +2998,7 @@ namespace FLAC_Benchmark_H
             "SpeedRange",
             "SpeedConsistency",
             "CPULoadEncoder",
-            //"CPUClock",
+            "CPUClock",
             "Passes",
             "Parameters",
             "Encoder",
@@ -3714,12 +3749,36 @@ namespace FLAC_Benchmark_H
                         string priorityText;
                         if (comboBoxCPUPriority.InvokeRequired)
                         {
-                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
                         }
                         else
                         {
-                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
                         }
+
+                        // Prepare for CPU clock monitoring
+                        _cpuClockReadings = new List<double>();
+                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                        bool isFirstValue = true;
+                        clockTimer.Elapsed += (s, e) =>
+                        {
+                            if (_cpuClockCounter != null && !_isEncodingStopped)
+                            {
+                                try
+                                {
+                                    double clock = _cpuClockCounter.NextValue();
+                                    if (!isFirstValue && clock > 0)
+                                    {
+                                        _cpuClockReadings.Add(clock);
+                                    }
+                                    isFirstValue = false;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                }
+                            }
+                        };
 
                         TimeSpan elapsedTime = TimeSpan.Zero;
                         TimeSpan userProcessorTime = TimeSpan.Zero;
@@ -3728,6 +3787,8 @@ namespace FLAC_Benchmark_H
                         // Start the process and wait for completion
                         try
                         {
+                            clockTimer.Start(); // Start clock monitoring
+
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -3760,7 +3821,7 @@ namespace FLAC_Benchmark_H
                                             }
                                             catch (InvalidOperationException)
                                             {
-                                                // Process has completed too early
+                                                // Process completed too early
                                             }
 
                                             _process.WaitForExit();
@@ -3781,10 +3842,18 @@ namespace FLAC_Benchmark_H
                                     }
                                     catch (InvalidOperationException)
                                     {
+                                        // Process already exited
                                     }
                                 }
                             });
+                            clockTimer.Stop(); // Stop clock monitoring
 
+                            double avgClock = 0;
+                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                            {
+                                double avgPercent = _cpuClockReadings.Average();
+                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                            }
                             if (!_isEncodingStopped)
                             {
                                 // Check checkbox state
@@ -3816,24 +3885,30 @@ namespace FLAC_Benchmark_H
                                     }
                                 }
                             }
+
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
+                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
                             }
                         }
                         catch (Exception ex)
                         {
+                            clockTimer.Stop();
                             MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             isExecuting = false;
                             return;
                         }
-                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                        finally
                         {
-                            progressBarEncoder.Value++;
-                            labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                        }));
+                            progressBarEncoder.Invoke((MethodInvoker)(() =>
+                            {
+                                progressBarEncoder.Value++;
+                                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                            }));
+                        }
                     }
                 }
+
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
                     await AnalyzeLogAsync();
@@ -3936,12 +4011,31 @@ namespace FLAC_Benchmark_H
                         string priorityText;
                         if (comboBoxCPUPriority.InvokeRequired)
                         {
-                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
                         }
                         else
                         {
-                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
                         }
+
+                        // Prepare for CPU clock monitoring
+                        _cpuClockReadings = new List<double>();
+                        var clockTimer = new System.Timers.Timer(100);
+                        clockTimer.Elapsed += (s, e) =>
+                        {
+                            if (_cpuClockCounter != null && !_isEncodingStopped)
+                            {
+                                try
+                                {
+                                    double clock = _cpuClockCounter.NextValue();
+                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                }
+                            }
+                        };
 
                         TimeSpan elapsedTime = TimeSpan.Zero;
                         TimeSpan userProcessorTime = TimeSpan.Zero;
@@ -3950,6 +4044,8 @@ namespace FLAC_Benchmark_H
                         // Start the process and wait for completion
                         try
                         {
+                            clockTimer.Start(); // Start clock monitoring
+
                             await Task.Run(() =>
                             {
                                 if (_isPaused)
@@ -4003,28 +4099,42 @@ namespace FLAC_Benchmark_H
                                     }
                                     catch (InvalidOperationException)
                                     {
+                                        // Process already exited
                                     }
                                 }
                             });
+                            clockTimer.Stop(); // Stop clock monitoring
 
+
+                            double avgClock = 0;
+                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                            {
+                                double avgPercent = _cpuClockReadings.Average();
+                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                            }
                             if (!_isEncodingStopped)
                             {
-                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
+                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
                             }
                         }
                         catch (Exception ex)
                         {
+                            clockTimer.Stop();
                             MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             isExecuting = false;
                             return;
                         }
-                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                        finally
                         {
-                            progressBarDecoder.Value++;
-                            labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                        }));
+                            progressBarDecoder.Invoke((MethodInvoker)(() =>
+                            {
+                                progressBarDecoder.Value++;
+                                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                            }));
+                        }
                     }
                 }
+
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
                     await AnalyzeLogAsync();
@@ -4188,12 +4298,31 @@ namespace FLAC_Benchmark_H
                                         string priorityText;
                                         if (comboBoxCPUPriority.InvokeRequired)
                                         {
-                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
                                         }
                                         else
                                         {
-                                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
                                         }
+
+                                        // Prepare for CPU clock monitoring
+                                        _cpuClockReadings = new List<double>();
+                                        var clockTimer = new System.Timers.Timer(100);
+                                        clockTimer.Elapsed += (s, e) =>
+                                        {
+                                            if (_cpuClockCounter != null && !_isEncodingStopped)
+                                            {
+                                                try
+                                                {
+                                                    double clock = _cpuClockCounter.NextValue();
+                                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                                }
+                                            }
+                                        };
 
                                         TimeSpan elapsedTime = TimeSpan.Zero;
                                         TimeSpan userProcessorTime = TimeSpan.Zero;
@@ -4202,6 +4331,8 @@ namespace FLAC_Benchmark_H
                                         // Start the process and wait for completion
                                         try
                                         {
+                                            clockTimer.Start(); // Start clock monitoring
+
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4234,7 +4365,7 @@ namespace FLAC_Benchmark_H
                                                             }
                                                             catch (InvalidOperationException)
                                                             {
-                                                                // Process has completed too early
+                                                                // Process completed too early
                                                             }
 
                                                             _process.WaitForExit();
@@ -4256,11 +4387,18 @@ namespace FLAC_Benchmark_H
                                                     }
                                                     catch (InvalidOperationException)
                                                     {
-                                                        // Process already exited or inaccessible
+                                                        // Process already exited
                                                     }
                                                 }
                                             });
+                                            clockTimer.Stop(); // Stop clock monitoring
 
+                                            double avgClock = 0;
+                                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                                            {
+                                                double avgPercent = _cpuClockReadings.Average();
+                                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                            }
                                             if (!_isEncodingStopped)
                                             {
                                                 // Check checkbox state
@@ -4294,7 +4432,7 @@ namespace FLAC_Benchmark_H
                                             }
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
+                                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
                                             }
                                         }
                                         catch (Exception ex)
@@ -4339,12 +4477,31 @@ namespace FLAC_Benchmark_H
                                         string priorityText;
                                         if (comboBoxCPUPriority.InvokeRequired)
                                         {
-                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString());
+                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
                                         }
                                         else
                                         {
-                                            priorityText = (comboBoxCPUPriority.SelectedItem?.ToString());
+                                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
                                         }
+
+                                        // Prepare for CPU clock monitoring
+                                        _cpuClockReadings = new List<double>();
+                                        var clockTimer = new System.Timers.Timer(100);
+                                        clockTimer.Elapsed += (s, e) =>
+                                        {
+                                            if (_cpuClockCounter != null && !_isEncodingStopped)
+                                            {
+                                                try
+                                                {
+                                                    double clock = _cpuClockCounter.NextValue();
+                                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                                }
+                                            }
+                                        };
 
                                         TimeSpan elapsedTime = TimeSpan.Zero;
                                         TimeSpan userProcessorTime = TimeSpan.Zero;
@@ -4353,6 +4510,8 @@ namespace FLAC_Benchmark_H
                                         // Start the process and wait for completion
                                         try
                                         {
+                                            clockTimer.Start(); // Start clock monitoring
+
                                             await Task.Run(() =>
                                             {
                                                 if (_isPaused)
@@ -4407,18 +4566,27 @@ namespace FLAC_Benchmark_H
                                                     }
                                                     catch (InvalidOperationException)
                                                     {
-                                                        // Process already exited or inaccessible
+                                                        // Process already exited
                                                     }
                                                 }
                                             });
+                                            clockTimer.Stop(); // Stop clock monitoring
+
+                                            double avgClock = 0;
+                                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                                            {
+                                                double avgPercent = _cpuClockReadings.Average();
+                                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                            }
 
                                             if (!_isEncodingStopped)
                                             {
-                                                LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime);
+                                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
                                             }
                                         }
                                         catch (Exception ex)
                                         {
+                                            clockTimer.Stop();
                                             MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                             isExecuting = false;
                                             return;
@@ -4440,6 +4608,7 @@ namespace FLAC_Benchmark_H
                         }
                     }
                 }
+
                 if (checkBoxAutoAnalyzeLog.Checked)
                 {
                     await AnalyzeLogAsync();
@@ -4880,6 +5049,8 @@ namespace FLAC_Benchmark_H
         private async void Form1_Load(object? sender, EventArgs e)
         {
             this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
+            labelEncoderProgress.Text = string.Empty;
+            labelDecoderProgress.Text = string.Empty;
 
             LoadSettings(); // Load settings
             LoadEncoders(); // Load executable files
@@ -4888,7 +5059,6 @@ namespace FLAC_Benchmark_H
             await CheckForUpdatesAsync();
             this.ActiveControl = null; // Remove focus from all elements
             dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells); // This minimizes column widths in the log
-
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
@@ -4901,7 +5071,7 @@ namespace FLAC_Benchmark_H
             // Stop and dispose UI timers and performance counters
             cpuUsageTimer?.Stop();
             cpuUsageTimer?.Dispose();
-            cpuCounter?.Dispose();
+            cpuLoadCounter?.Dispose();
 
             // Dispose pause/resume synchronization object
             _pauseEvent?.Dispose();
