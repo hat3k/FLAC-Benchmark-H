@@ -24,7 +24,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.6 build 20250908"; // Current app version
+        public string programVersionCurrent = "1.6 build 20250911"; // Current app version
         public string programVersionIgnored = null;                 // Previously ignored update
 
         // Hardware info
@@ -2339,7 +2339,9 @@ namespace FLAC_Benchmark_H
                     AvgTimeMs = g.Average(p => p.Time),
                     AvgSpeed = g.Average(p => p.Speed),
                     AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
-                    AvgCPUClock = g.Average(p => p.CPUClock),
+                    AvgCPUClock = g.Where(p => p.CPUClock > 0).Any()
+                        ? g.Where(p => p.CPUClock > 0).Average(p => p.CPUClock)
+                        : 0,
                     MinOutputSize = g.Min(p => p.OutputSize),
                     MaxOutputSize = g.Max(p => p.OutputSize),
                     InputSize = g.First().InputSize,
@@ -2426,7 +2428,7 @@ namespace FLAC_Benchmark_H
                     SpeedRange = speedRange,
                     SpeedConsistency = speedConsistency,
                     CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
-                    CPUClock = $"{group.AvgCPUClock:F0} MHz",
+                    CPUClock = group.AvgCPUClock > 0 ? $"{group.AvgCPUClock:F0} MHz" : "N/A",
                     Passes = group.PassesCount.ToString(),
                     Parameters = group.Parameters,
                     Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
@@ -3757,7 +3759,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
-                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -3766,7 +3768,7 @@ namespace FLAC_Benchmark_H
                                 try
                                 {
                                     double clock = _cpuClockCounter.NextValue();
-                                    if (!isFirstValue && clock > 0)
+                                    if (!isFirstValue && clock >= 1)
                                     {
                                         _cpuClockReadings.Add(clock);
                                     }
@@ -4018,7 +4020,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
-                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -4027,7 +4029,7 @@ namespace FLAC_Benchmark_H
                                 try
                                 {
                                     double clock = _cpuClockCounter.NextValue();
-                                    if (!isFirstValue && clock > 0)
+                                    if (!isFirstValue && clock >= 1)
                                     {
                                         _cpuClockReadings.Add(clock);
                                     }
@@ -4307,7 +4309,7 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
                                         bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
@@ -4316,7 +4318,7 @@ namespace FLAC_Benchmark_H
                                                 try
                                                 {
                                                     double clock = _cpuClockCounter.NextValue();
-                                                    if (!isFirstValue && clock > 0)
+                                                    if (!isFirstValue && clock >= 1)
                                                     {
                                                         _cpuClockReadings.Add(clock);
                                                     }
@@ -4492,7 +4494,7 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
                                         bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
@@ -4501,7 +4503,7 @@ namespace FLAC_Benchmark_H
                                                 try
                                                 {
                                                     double clock = _cpuClockCounter.NextValue();
-                                                    if (!isFirstValue && clock > 0)
+                                                    if (!isFirstValue && clock >= 1)
                                                     {
                                                         _cpuClockReadings.Add(clock);
                                                     }
