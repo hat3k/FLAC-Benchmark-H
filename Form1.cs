@@ -232,6 +232,7 @@ namespace FLAC_Benchmark_H
                 labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
             }
         }
+
         // Method to save settings to .txt files
         private void SaveSettings()
         {
@@ -3701,7 +3702,7 @@ namespace FLAC_Benchmark_H
                 if (selectedEncoders.Count == 0)
                 {
                     MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
+                    isExecuting = false;
                     return;
                 }
 
@@ -3709,14 +3710,12 @@ namespace FLAC_Benchmark_H
                 if (selectedAudioFiles.Count == 0)
                 {
                     MessageBox.Show("Select at least one audio file (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
+                    isExecuting = false;
                     return;
                 }
 
                 // Set maximum values for the progress bar
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count;
-                // Reset the progress bar
-                progressBarEncoder.Value = 0;
                 labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
 
                 foreach (var audioFilePath in selectedAudioFiles)
@@ -3835,6 +3834,7 @@ namespace FLAC_Benchmark_H
                                     stopwatch.Stop();
                                     elapsedTime = stopwatch.Elapsed;
 
+                                    // Get CPU times after process completion
                                     try
                                     {
                                         userProcessorTime = _process.UserProcessorTime;
@@ -3846,7 +3846,7 @@ namespace FLAC_Benchmark_H
                                     }
                                 }
                             });
-                            clockTimer.Stop(); // Stop clock monitoring
+                            clockTimer.Stop();
 
                             double avgClock = 0;
                             if (_cpuClockReadings.Any() && _baseClockMhz > 0)
@@ -3985,8 +3985,6 @@ namespace FLAC_Benchmark_H
 
                 // Set maximum values for the progress bar
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
-                // Reset the progress bar
-                progressBarDecoder.Value = 0;
                 labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 foreach (var audioFilePath in selectedFlacAudioFiles)
@@ -4020,7 +4018,8 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
-                        var clockTimer = new System.Timers.Timer(100);
+                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                        bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
                             if (_cpuClockCounter != null && !_isEncodingStopped)
@@ -4028,7 +4027,11 @@ namespace FLAC_Benchmark_H
                                 try
                                 {
                                     double clock = _cpuClockCounter.NextValue();
-                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                    if (!isFirstValue && clock > 0)
+                                    {
+                                        _cpuClockReadings.Add(clock);
+                                    }
+                                    isFirstValue = false;
                                 }
                                 catch (Exception ex)
                                 {
@@ -4078,7 +4081,7 @@ namespace FLAC_Benchmark_H
                                             }
                                             catch (InvalidOperationException)
                                             {
-                                                // Process has completed too early
+                                                // Process completed too early
                                             }
 
                                             _process.WaitForExit();
@@ -4092,6 +4095,7 @@ namespace FLAC_Benchmark_H
                                     stopwatch.Stop();
                                     elapsedTime = stopwatch.Elapsed;
 
+                                    // Get CPU times after process completion
                                     try
                                     {
                                         userProcessorTime = _process.UserProcessorTime;
@@ -4103,8 +4107,7 @@ namespace FLAC_Benchmark_H
                                     }
                                 }
                             });
-                            clockTimer.Stop(); // Stop clock monitoring
-
+                            clockTimer.Stop();
 
                             double avgClock = 0;
                             if (_cpuClockReadings.Any() && _baseClockMhz > 0)
@@ -4112,6 +4115,7 @@ namespace FLAC_Benchmark_H
                                 double avgPercent = _cpuClockReadings.Average();
                                 avgClock = (avgPercent / 100.0) * _baseClockMhz;
                             }
+
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
@@ -4252,11 +4256,6 @@ namespace FLAC_Benchmark_H
                 // Set maximum values for progress bars
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count * totalEncodeTasks;
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count * totalDecodeTasks;
-
-                // Reset progress bars
-                progressBarEncoder.Value = 0;
-                progressBarDecoder.Value = 0;
-
                 labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                 labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
@@ -4290,6 +4289,7 @@ namespace FLAC_Benchmark_H
 
                                         // Form the parameter string
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
@@ -4307,7 +4307,8 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(100);
+                                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                                        bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
                                             if (_cpuClockCounter != null && !_isEncodingStopped)
@@ -4315,7 +4316,11 @@ namespace FLAC_Benchmark_H
                                                 try
                                                 {
                                                     double clock = _cpuClockCounter.NextValue();
-                                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                                    if (!isFirstValue && clock > 0)
+                                                    {
+                                                        _cpuClockReadings.Add(clock);
+                                                    }
+                                                    isFirstValue = false;
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -4391,7 +4396,7 @@ namespace FLAC_Benchmark_H
                                                     }
                                                 }
                                             });
-                                            clockTimer.Stop(); // Stop clock monitoring
+                                            clockTimer.Stop();
 
                                             double avgClock = 0;
                                             if (_cpuClockReadings.Any() && _baseClockMhz > 0)
@@ -4430,6 +4435,7 @@ namespace FLAC_Benchmark_H
                                                     }
                                                 }
                                             }
+
                                             if (!_isEncodingStopped)
                                             {
                                                 await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
@@ -4437,6 +4443,7 @@ namespace FLAC_Benchmark_H
                                         }
                                         catch (Exception ex)
                                         {
+                                            clockTimer.Stop();
                                             MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                             isExecuting = false;
                                             return;
@@ -4445,11 +4452,8 @@ namespace FLAC_Benchmark_H
                                         {
                                             progressBarEncoder.Invoke((MethodInvoker)(() =>
                                             {
-                                                if (progressBarEncoder.Value < progressBarEncoder.Maximum)
-                                                {
-                                                    progressBarEncoder.Value++;
-                                                    labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                                                }
+                                                progressBarEncoder.Value++;
+                                                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                                             }));
                                         }
                                     }
@@ -4469,6 +4473,8 @@ namespace FLAC_Benchmark_H
 
                                         // Form the parameter string
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+
+
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
                                         DeleteFileIfExists(outputFilePath); // Delete the old file
@@ -4486,7 +4492,8 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(100);
+                                        var clockTimer = new System.Timers.Timer(100); // Read every 100ms
+                                        bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
                                             if (_cpuClockCounter != null && !_isEncodingStopped)
@@ -4494,7 +4501,11 @@ namespace FLAC_Benchmark_H
                                                 try
                                                 {
                                                     double clock = _cpuClockCounter.NextValue();
-                                                    if (clock > 0) _cpuClockReadings.Add(clock);
+                                                    if (!isFirstValue && clock > 0)
+                                                    {
+                                                        _cpuClockReadings.Add(clock);
+                                                    }
+                                                    isFirstValue = false;
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -4544,7 +4555,7 @@ namespace FLAC_Benchmark_H
                                                             }
                                                             catch (InvalidOperationException)
                                                             {
-                                                                // Process has completed too early
+                                                                // Process completed too early
                                                             }
 
                                                             _process.WaitForExit();
@@ -4570,7 +4581,7 @@ namespace FLAC_Benchmark_H
                                                     }
                                                 }
                                             });
-                                            clockTimer.Stop(); // Stop clock monitoring
+                                            clockTimer.Stop();
 
                                             double avgClock = 0;
                                             if (_cpuClockReadings.Any() && _baseClockMhz > 0)
@@ -4595,11 +4606,8 @@ namespace FLAC_Benchmark_H
                                         {
                                             progressBarDecoder.Invoke((MethodInvoker)(() =>
                                             {
-                                                if (progressBarDecoder.Value < progressBarDecoder.Maximum)
-                                                {
-                                                    progressBarDecoder.Value++;
-                                                    labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                                                }
+                                                progressBarDecoder.Value++;
+                                                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
                                             }));
                                         }
                                     }
