@@ -26,7 +26,6 @@
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
-            checkBoxWarmupPass = new CheckBox();
             labelEncoderProgress = new Label();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
@@ -51,6 +50,7 @@
             textBoxCompressionLevel = new TextBox();
             labelCompressionLevel = new Label();
             textBoxThreads = new TextBox();
+            checkBoxWarmupPass = new CheckBox();
             labelCpuUsageTitle = new Label();
             labelCpuInfo = new Label();
             buttonStop = new Button();
@@ -115,6 +115,7 @@
             dataGridViewLog = new DataGridView();
             buttonCopyLog = new Button();
             groupBoxSettings = new GroupBox();
+            checkBoxCheckForUpdatesOnStartup = new CheckBox();
             checkBoxAutoAnalyzeLog = new CheckBox();
             checkBoxAddMD5OnLoadWav = new CheckBox();
             checkBoxRemoveMetadata = new CheckBox();
@@ -130,7 +131,6 @@
             progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
             toolTip1 = new ToolTip(components);
-            checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
             labelCpuUsageValue = new Label();
@@ -147,7 +147,6 @@
             // 
             // groupBoxEncoderSettings
             // 
-            groupBoxEncoderSettings.Controls.Add(checkBoxWarmupPass);
             groupBoxEncoderSettings.Controls.Add(labelEncoderProgress);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
@@ -180,27 +179,15 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             // 
-            // checkBoxWarmupPass
-            // 
-            checkBoxWarmupPass.AutoSize = true;
-            checkBoxWarmupPass.Enabled = false;
-            checkBoxWarmupPass.Location = new Point(520, 54);
-            checkBoxWarmupPass.Name = "checkBoxWarmupPass";
-            checkBoxWarmupPass.Size = new Size(103, 19);
-            checkBoxWarmupPass.TabIndex = 26;
-            checkBoxWarmupPass.Text = "Warm-up Pass";
-            checkBoxWarmupPass.UseVisualStyleBackColor = true;
-            checkBoxWarmupPass.Visible = false;
-            // 
             // labelEncoderProgress
             // 
             labelEncoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelEncoderProgress.AutoSize = true;
             labelEncoderProgress.Location = new Point(364, 145);
             labelEncoderProgress.Name = "labelEncoderProgress";
-            labelEncoderProgress.Size = new Size(60, 15);
+            labelEncoderProgress.Size = new Size(72, 15);
             labelEncoderProgress.TabIndex = 25;
-            labelEncoderProgress.Text = "9999/9999";
+            labelEncoderProgress.Text = "99999/99999";
             // 
             // labelCommandLineEncoder
             // 
@@ -424,6 +411,17 @@
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(textBoxThreads, "If you use FLAC 1.4.3 and earlier set this parameter to 1 or 0");
+            // 
+            // checkBoxWarmupPass
+            // 
+            checkBoxWarmupPass.AutoSize = true;
+            checkBoxWarmupPass.Location = new Point(6, 73);
+            checkBoxWarmupPass.Name = "checkBoxWarmupPass";
+            checkBoxWarmupPass.Size = new Size(128, 19);
+            checkBoxWarmupPass.TabIndex = 2;
+            checkBoxWarmupPass.Text = "Add Warm-up Pass";
+            toolTip1.SetToolTip(checkBoxWarmupPass, resources.GetString("checkBoxWarmupPass.ToolTip"));
+            checkBoxWarmupPass.UseVisualStyleBackColor = true;
             // 
             // labelCpuUsageTitle
             // 
@@ -1129,6 +1127,8 @@
             // 
             // groupBoxSettings
             // 
+            groupBoxSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
+            groupBoxSettings.Controls.Add(checkBoxWarmupPass);
             groupBoxSettings.Controls.Add(checkBoxAutoAnalyzeLog);
             groupBoxSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
             groupBoxSettings.Controls.Add(checkBoxRemoveMetadata);
@@ -1136,22 +1136,33 @@
             groupBoxSettings.Controls.Add(comboBoxCPUPriority);
             groupBoxSettings.Controls.Add(buttonSelectTempFolder);
             groupBoxSettings.Controls.Add(checkBoxClearTempFolder);
-            groupBoxSettings.Location = new Point(1389, 278);
-            groupBoxSettings.MinimumSize = new Size(183, 171);
+            groupBoxSettings.Location = new Point(1218, 278);
+            groupBoxSettings.MinimumSize = new Size(354, 171);
             groupBoxSettings.Name = "groupBoxSettings";
-            groupBoxSettings.Size = new Size(183, 171);
+            groupBoxSettings.Size = new Size(354, 171);
             groupBoxSettings.TabIndex = 5;
             groupBoxSettings.TabStop = false;
             groupBoxSettings.Text = "Settings";
             // 
+            // checkBoxCheckForUpdatesOnStartup
+            // 
+            checkBoxCheckForUpdatesOnStartup.AutoSize = true;
+            checkBoxCheckForUpdatesOnStartup.Location = new Point(183, 73);
+            checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
+            checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
+            checkBoxCheckForUpdatesOnStartup.TabIndex = 8;
+            checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
+            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup");
+            checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
+            // 
             // checkBoxAutoAnalyzeLog
             // 
             checkBoxAutoAnalyzeLog.AutoSize = true;
-            checkBoxAutoAnalyzeLog.Location = new Point(6, 73);
+            checkBoxAutoAnalyzeLog.Location = new Point(6, 98);
             checkBoxAutoAnalyzeLog.Name = "checkBoxAutoAnalyzeLog";
-            checkBoxAutoAnalyzeLog.Size = new Size(159, 19);
-            checkBoxAutoAnalyzeLog.TabIndex = 6;
-            checkBoxAutoAnalyzeLog.Text = "Analyze Log on job finish";
+            checkBoxAutoAnalyzeLog.Size = new Size(165, 19);
+            checkBoxAutoAnalyzeLog.TabIndex = 3;
+            checkBoxAutoAnalyzeLog.Text = "Analyze Log on Jobs finish";
             toolTip1.SetToolTip(checkBoxAutoAnalyzeLog, "Starts log analysis automatically after all encoding/decoding jobs are finished.");
             checkBoxAutoAnalyzeLog.UseVisualStyleBackColor = true;
             checkBoxAutoAnalyzeLog.CheckedChanged += checkBoxAutoAnalyzeLog_CheckedChanged;
@@ -1180,42 +1191,47 @@
             // 
             // labelCPUPriority
             // 
+            labelCPUPriority.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelCPUPriority.AutoSize = true;
-            labelCPUPriority.Location = new Point(6, 96);
+            labelCPUPriority.Location = new Point(6, 145);
             labelCPUPriority.Name = "labelCPUPriority";
             labelCPUPriority.Size = new Size(48, 15);
-            labelCPUPriority.TabIndex = 2;
+            labelCPUPriority.TabIndex = 4;
             labelCPUPriority.Text = "Priority:";
+            toolTip1.SetToolTip(labelCPUPriority, "Encoding/Decoding process priority");
             // 
             // comboBoxCPUPriority
             // 
+            comboBoxCPUPriority.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCPUPriority.FormattingEnabled = true;
             comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
-            comboBoxCPUPriority.Location = new Point(60, 93);
-            comboBoxCPUPriority.MaxDropDownItems = 6;
+            comboBoxCPUPriority.Location = new Point(60, 141);
+            comboBoxCPUPriority.MaxDropDownItems = 5;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
             comboBoxCPUPriority.Size = new Size(117, 23);
             comboBoxCPUPriority.TabIndex = 3;
+            toolTip1.SetToolTip(comboBoxCPUPriority, "Encoding/Decoding process priority");
             // 
             // buttonSelectTempFolder
             // 
-            buttonSelectTempFolder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            buttonSelectTempFolder.Location = new Point(6, 141);
+            buttonSelectTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonSelectTempFolder.Location = new Point(183, 21);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(171, 23);
-            buttonSelectTempFolder.TabIndex = 5;
+            buttonSelectTempFolder.Size = new Size(165, 23);
+            buttonSelectTempFolder.TabIndex = 6;
             buttonSelectTempFolder.Text = "Select temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
             buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
             // 
             // checkBoxClearTempFolder
             // 
+            checkBoxClearTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Location = new Point(6, 116);
+            checkBoxClearTempFolder.Location = new Point(183, 48);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
-            checkBoxClearTempFolder.TabIndex = 4;
+            checkBoxClearTempFolder.TabIndex = 7;
             checkBoxClearTempFolder.Text = "Clear temp folder on exit";
             checkBoxClearTempFolder.UseVisualStyleBackColor = true;
             // 
@@ -1229,23 +1245,22 @@
             groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
-            groupBoxDecoderSettings.MinimumSize = new Size(588, 171);
+            groupBoxDecoderSettings.MinimumSize = new Size(417, 171);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
-            groupBoxDecoderSettings.Size = new Size(588, 171);
+            groupBoxDecoderSettings.Size = new Size(417, 171);
             groupBoxDecoderSettings.TabIndex = 4;
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
             // 
             // labelDecoderProgress
             // 
-            labelDecoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            labelDecoderProgress.Anchor = AnchorStyles.None;
             labelDecoderProgress.AutoSize = true;
-            labelDecoderProgress.BackColor = SystemColors.Control;
-            labelDecoderProgress.Location = new Point(352, 145);
+            labelDecoderProgress.Location = new Point(273, 145);
             labelDecoderProgress.Name = "labelDecoderProgress";
-            labelDecoderProgress.Size = new Size(60, 15);
+            labelDecoderProgress.Size = new Size(72, 15);
             labelDecoderProgress.TabIndex = 25;
-            labelDecoderProgress.Text = "9999/9999";
+            labelDecoderProgress.Text = "99999/99999";
             // 
             // labelCommandLineDecoder
             // 
@@ -1272,7 +1287,7 @@
             // 
             textBoxCommandLineOptionsDecoder.Location = new Point(122, 21);
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
-            textBoxCommandLineOptionsDecoder.Size = new Size(399, 23);
+            textBoxCommandLineOptionsDecoder.Size = new Size(228, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 1;
             // 
             // progressBarDecoder
@@ -1280,12 +1295,12 @@
             progressBarDecoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             progressBarDecoder.Location = new Point(238, 141);
             progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(283, 23);
+            progressBarDecoder.Size = new Size(112, 23);
             progressBarDecoder.TabIndex = 5;
             // 
             // buttonClearCommandLineDecoder
             // 
-            buttonClearCommandLineDecoder.Location = new Point(527, 21);
+            buttonClearCommandLineDecoder.Location = new Point(356, 21);
             buttonClearCommandLineDecoder.Name = "buttonClearCommandLineDecoder";
             buttonClearCommandLineDecoder.Size = new Size(55, 23);
             buttonClearCommandLineDecoder.TabIndex = 2;
@@ -1299,21 +1314,8 @@
             toolTip1.InitialDelay = 500;
             toolTip1.ReshowDelay = 100;
             // 
-            // checkBoxCheckForUpdatesOnStartup
-            // 
-            checkBoxCheckForUpdatesOnStartup.AutoSize = true;
-            checkBoxCheckForUpdatesOnStartup.Location = new Point(6, 116);
-            checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
-            checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
-            checkBoxCheckForUpdatesOnStartup.TabIndex = 2;
-            checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
-            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup");
-            checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
-            checkBoxCheckForUpdatesOnStartup.CheckedChanged += checkBoxCheckForUpdatesOnStartup_CheckedChanged;
-            // 
             // groupBoxInformation
             // 
-            groupBoxInformation.Controls.Add(checkBoxCheckForUpdatesOnStartup);
             groupBoxInformation.Controls.Add(buttonAbout);
             groupBoxInformation.Controls.Add(labelCpuUsageValue);
             groupBoxInformation.Controls.Add(labelCpuUsageTitle);
@@ -1329,7 +1331,7 @@
             // buttonAbout
             // 
             buttonAbout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            buttonAbout.Location = new Point(5, 141);
+            buttonAbout.Location = new Point(6, 141);
             buttonAbout.Name = "buttonAbout";
             buttonAbout.Size = new Size(129, 23);
             buttonAbout.TabIndex = 3;
@@ -1342,7 +1344,7 @@
             labelCpuUsageValue.Location = new Point(69, 49);
             labelCpuUsageValue.Name = "labelCpuUsageValue";
             labelCpuUsageValue.Size = new Size(66, 30);
-            labelCpuUsageValue.TabIndex = 1;
+            labelCpuUsageValue.TabIndex = 2;
             labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
             // 
             // Form1
@@ -1382,7 +1384,6 @@
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             groupBoxInformation.ResumeLayout(false);
-            groupBoxInformation.PerformLayout();
             ResumeLayout(false);
         }
 

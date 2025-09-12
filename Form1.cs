@@ -24,7 +24,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.6 build 20250911"; // Current app version
+        public string programVersionCurrent = "1.7.0 build 20250912"; // Current app version
         public string programVersionIgnored = null;                 // Previously ignored update
 
         // Hardware info
@@ -249,6 +249,7 @@ namespace FLAC_Benchmark_H
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
+                    $"AddWarmupPass={checkBoxWarmupPass.Checked}",
                     $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
@@ -350,6 +351,9 @@ namespace FLAC_Benchmark_H
                                 break;
                             case "AddMD5OnLoadWav":
                                 checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
+                                break;
+                            case "AddWarmupPass":
+                                checkBoxWarmupPass.Checked = bool.Parse(value);
                                 break;
                             case "WarningsAsErrors":
                                 checkBoxWarningsAsErrors.Checked = bool.Parse(value);
@@ -3716,6 +3720,89 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
+                // === WARM-UP PASS (before main loop) ===
+                if (checkBoxWarmupPass.Checked)
+                {
+                    var firstAudioFile = selectedAudioFiles.FirstOrDefault();
+                    var firstEncoder = selectedEncoders.FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
+                    {
+                        // Use current UI settings to form parameters
+                        string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
+                        string threads = NormalizeSpaces(textBoxThreads.Text);
+                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
+                        string parameters = $"-{compressionLevel} {commandLine}".Trim();
+
+                        if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+                        {
+                            parameters += $" -j{threads}";
+                        }
+
+                        string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
+                        DeleteFileIfExists(outputFilePath);
+
+                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+
+                        string priorityText = (comboBoxCPUPriority.InvokeRequired)
+                            ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                            : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+
+                        try
+                        {
+                            using (var warmupProcess = new Process())
+                            {
+                                warmupProcess.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = firstEncoder,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
+
+                                var stopwatch = Stopwatch.StartNew();
+                                warmupProcess.Start();
+
+                                try
+                                {
+                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                                }
+                                catch (InvalidOperationException) { }
+
+                                // Wait up to 10 seconds
+                                bool exited = warmupProcess.WaitForExit(10_000);
+
+                                stopwatch.Stop();
+
+                                if (!exited)
+                                {
+                                    try
+                                    {
+                                        warmupProcess.Kill();
+                                        Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                    }
+                                    catch (Exception killEx)
+                                    {
+                                        Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                    }
+                                }
+                                else
+                                {
+                                    Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                        }
+
+                        // Clean up temp file
+                        DeleteFileIfExists(outputFilePath);
+                    }
+                }
+                // === END OF WARM-UP PASS ===
+
                 // Set maximum values for the progress bar
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count;
                 labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
@@ -3984,6 +4071,82 @@ namespace FLAC_Benchmark_H
                     isExecuting = false; // Reset the flag if there are no files
                     return;
                 }
+
+                // === WARM-UP PASS (before main loop) ===
+                if (checkBoxWarmupPass.Checked)
+                {
+                    var firstAudioFile = selectedFlacAudioFiles.FirstOrDefault();
+                    var firstEncoder = selectedEncoders.FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
+                    {
+                        // Use current decoder parameters
+                        string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
+                        string parameters = $"-d {commandLine}".Trim();
+
+                        string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
+                        DeleteFileIfExists(outputFilePath);
+
+                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+
+                        string priorityText = (comboBoxCPUPriority.InvokeRequired)
+                            ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                            : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+
+                        try
+                        {
+                            using (var warmupProcess = new Process())
+                            {
+                                warmupProcess.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = firstEncoder,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
+
+                                var stopwatch = Stopwatch.StartNew();
+                                warmupProcess.Start();
+
+                                try
+                                {
+                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                                }
+                                catch (InvalidOperationException) { }
+
+                                // Wait up to 10 seconds
+                                bool exited = warmupProcess.WaitForExit(10_000);
+
+                                stopwatch.Stop();
+
+                                if (!exited)
+                                {
+                                    try
+                                    {
+                                        warmupProcess.Kill();
+                                        Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                    }
+                                    catch (Exception killEx)
+                                    {
+                                        Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                    }
+                                }
+                                else
+                                {
+                                    Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                        }
+
+                        // Clean up temp file
+                        DeleteFileIfExists(outputFilePath);
+                    }
+                }
+                // === END OF WARM-UP PASS ===
 
                 // Set maximum values for the progress bar
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
@@ -4255,6 +4418,105 @@ namespace FLAC_Benchmark_H
                     }
                 }
 
+                // === WARM-UP PASS (before main loop) ===
+                if (checkBoxWarmupPass.Checked)
+                {
+                    // Find first checked job in listViewJobs
+                    var firstJobItem = listViewJobs.Items.Cast<ListViewItem>().FirstOrDefault(item => item.Checked);
+                    if (firstJobItem == null) return;
+
+                    string jobType = NormalizeSpaces(firstJobItem.Text);
+                    string parameters = NormalizeSpaces(firstJobItem.SubItems[2].Text.Trim());
+
+                    // Choose first available file and encoder
+                    string audioFilePath = null;
+                    string arguments = null;
+                    string outputFilePath = null;
+
+                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        audioFilePath = selectedAudioFiles.FirstOrDefault();
+                        if (string.IsNullOrEmpty(audioFilePath)) return;
+
+                        outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
+                        DeleteFileIfExists(outputFilePath);
+                        arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                    }
+                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        audioFilePath = selectedFlacAudioFiles.FirstOrDefault();
+                        if (string.IsNullOrEmpty(audioFilePath)) return;
+
+                        outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
+                        DeleteFileIfExists(outputFilePath);
+                        arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                    }
+                    else
+                    {
+                        return; // Unknown job type
+                    }
+
+                    var firstEncoder = selectedEncoders.FirstOrDefault();
+                    if (string.IsNullOrEmpty(firstEncoder)) return;
+
+                    string priorityText = (comboBoxCPUPriority.InvokeRequired)
+                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                        : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+
+                    try
+                    {
+                        using (var warmupProcess = new Process())
+                        {
+                            warmupProcess.StartInfo = new ProcessStartInfo
+                            {
+                                FileName = firstEncoder,
+                                Arguments = arguments,
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                            };
+
+                            var stopwatch = Stopwatch.StartNew();
+                            warmupProcess.Start();
+
+                            try
+                            {
+                                warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                            }
+                            catch (InvalidOperationException) { }
+
+                            // Wait up to 10 seconds
+                            bool exited = warmupProcess.WaitForExit(10_000);
+
+                            stopwatch.Stop();
+
+                            if (!exited)
+                            {
+                                try
+                                {
+                                    warmupProcess.Kill();
+                                    Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                }
+                                catch (Exception killEx)
+                                {
+                                    Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                    }
+
+                    // Clean up temp file
+                    DeleteFileIfExists(outputFilePath);
+                }
+                // === END OF WARM-UP PASS ===
+
                 // Set maximum values for progress bars
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count * totalEncodeTasks;
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count * totalDecodeTasks;
@@ -4475,7 +4737,6 @@ namespace FLAC_Benchmark_H
 
                                         // Form the parameter string
                                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
-
 
                                         // Form the arguments for execution
                                         string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
@@ -4951,10 +5212,6 @@ namespace FLAC_Benchmark_H
         {
 
         }
-        private async void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
-        {
-            await CheckForUpdatesAsync();
-        }
         private async Task CheckForUpdatesAsync()
         {
             if (!checkBoxCheckForUpdatesOnStartup.Checked)
@@ -4978,10 +5235,10 @@ namespace FLAC_Benchmark_H
                         return;
 
                     var result = MessageBox.Show(
-                        $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionLatestOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
-                        "Update Available",
-                        MessageBoxButtons.YesNoCancel,
-                        MessageBoxIcon.Information);
+                    $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionLatestOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
+                    "Update Available",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Information);
 
                     if (result == DialogResult.Yes)
                     {
@@ -4997,24 +5254,40 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+            catch (TaskCanceledException)
+            {
+                // Timeout or network issue - silently ignore or log if needed
+                // Optionally: show a message after repeated failures
+            }
+            catch (HttpRequestException)
+            {
+                // Network unreachable, HTTP error
+            }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error checking for updates:\n{ex.Message}",
-                              "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private Version ParseVersion(string versionStr)
         {
-            if (string.IsNullOrEmpty(versionStr))
+            if (string.IsNullOrWhiteSpace(versionStr))
                 return new Version("0.0.0");
 
-            var parts = versionStr.Split(' ');
-            if (parts.Length >= 3 && parts[1] == "build")
+            var parts = versionStr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 3 && parts[1].Equals("build", StringComparison.OrdinalIgnoreCase))
             {
                 if (int.TryParse(parts[2], out int buildNumber))
                 {
-                    // Version will be compared in Major.Minor.Build format
-                    return new Version($"{parts[0]}.{buildNumber}");
+                    string[] versionParts = parts[0].Split('.');
+                    if (versionParts.Length >= 2)
+                    {
+                        int major = int.TryParse(versionParts[0], out int m) ? m : 0;
+                        int minor = int.TryParse(versionParts[1], out int n) ? n : 0;
+                        int patch = (versionParts.Length > 2 && int.TryParse(versionParts[2], out int p)) ? p : 0;
+
+                        return new Version(major, minor, patch, buildNumber);
+                    }
                 }
             }
 

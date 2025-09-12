@@ -120,6 +120,13 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="checkBoxWarmupPass.ToolTip" xml:space="preserve">
+    <value>Enables a short warm-up pass before benchmarking begins.
+
+When enabled: All encoders start under identical thermal and CPU frequency conditions, ensuring fair comparison.
+
+When disabled: The first test pass may show slower performance due to CPU frequency ramp-up (turbo boost not yet active).</value>
+  </data>
   <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
     <value>Tests all FLAC files in the list (checked and unchecked) for errors.
 
