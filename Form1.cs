@@ -3846,7 +3846,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
-                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
+                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -4183,7 +4183,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
-                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
+                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -4571,7 +4571,7 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
+                                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                                         bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
@@ -4755,7 +4755,7 @@ namespace FLAC_Benchmark_H
 
                                         // Prepare for CPU clock monitoring
                                         _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(50); // Read every 50ms
+                                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                                         bool isFirstValue = true;
                                         clockTimer.Elapsed += (s, e) =>
                                         {
