@@ -26,11 +26,10 @@
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
-            labelEncoderProgress = new Label();
+            progressBarEncoder = new ProgressBarEx();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
             buttonStartEncode = new Button();
-            progressBarEncoder = new ProgressBar();
             labelSetThreads = new Label();
             labelSetCores = new Label();
             textBoxCommandLineOptionsEncoder = new TextBox();
@@ -124,11 +123,10 @@
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
-            labelDecoderProgress = new Label();
+            progressBarDecoder = new ProgressBarEx();
             labelCommandLineDecoder = new Label();
             buttonAddJobToJobListDecoder = new Button();
             textBoxCommandLineOptionsDecoder = new TextBox();
-            progressBarDecoder = new ProgressBar();
             buttonClearCommandLineDecoder = new Button();
             toolTip1 = new ToolTip(components);
             groupBoxInformation = new GroupBox();
@@ -147,11 +145,10 @@
             // 
             // groupBoxEncoderSettings
             // 
-            groupBoxEncoderSettings.Controls.Add(labelEncoderProgress);
+            groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
-            groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
             groupBoxEncoderSettings.Controls.Add(labelSetThreads);
             groupBoxEncoderSettings.Controls.Add(labelSetCores);
             groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
@@ -179,15 +176,13 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             // 
-            // labelEncoderProgress
+            // progressBarEncoder
             // 
-            labelEncoderProgress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            labelEncoderProgress.AutoSize = true;
-            labelEncoderProgress.Location = new Point(364, 145);
-            labelEncoderProgress.Name = "labelEncoderProgress";
-            labelEncoderProgress.Size = new Size(72, 15);
-            labelEncoderProgress.TabIndex = 25;
-            labelEncoderProgress.Text = "99999/99999";
+            progressBarEncoder.DisplayType = ProgressBarEx.TextDisplayType.Manual;
+            progressBarEncoder.Location = new Point(238, 141);
+            progressBarEncoder.Name = "progressBarEncoder";
+            progressBarEncoder.Size = new Size(324, 23);
+            progressBarEncoder.TabIndex = 22;
             // 
             // labelCommandLineEncoder
             // 
@@ -221,14 +216,6 @@
             toolTip1.SetToolTip(buttonStartEncode, "Encode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartEncode.UseVisualStyleBackColor = true;
             buttonStartEncode.Click += buttonStartEncode_Click;
-            // 
-            // progressBarEncoder
-            // 
-            progressBarEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            progressBarEncoder.Location = new Point(238, 141);
-            progressBarEncoder.Name = "progressBarEncoder";
-            progressBarEncoder.Size = new Size(324, 23);
-            progressBarEncoder.TabIndex = 22;
             // 
             // labelSetThreads
             // 
@@ -1209,7 +1196,7 @@
             comboBoxCPUPriority.Location = new Point(60, 141);
             comboBoxCPUPriority.MaxDropDownItems = 5;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
-            comboBoxCPUPriority.Size = new Size(117, 23);
+            comboBoxCPUPriority.Size = new Size(110, 23);
             comboBoxCPUPriority.TabIndex = 3;
             toolTip1.SetToolTip(comboBoxCPUPriority, "Encoding/Decoding process priority");
             // 
@@ -1237,12 +1224,11 @@
             // 
             // groupBoxDecoderSettings
             // 
-            groupBoxDecoderSettings.Controls.Add(labelDecoderProgress);
+            groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonStartDecode);
             groupBoxDecoderSettings.Controls.Add(labelCommandLineDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonAddJobToJobListDecoder);
             groupBoxDecoderSettings.Controls.Add(textBoxCommandLineOptionsDecoder);
-            groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
             groupBoxDecoderSettings.MinimumSize = new Size(417, 171);
@@ -1252,15 +1238,13 @@
             groupBoxDecoderSettings.TabStop = false;
             groupBoxDecoderSettings.Text = "Decoder Settings";
             // 
-            // labelDecoderProgress
+            // progressBarDecoder
             // 
-            labelDecoderProgress.Anchor = AnchorStyles.None;
-            labelDecoderProgress.AutoSize = true;
-            labelDecoderProgress.Location = new Point(273, 145);
-            labelDecoderProgress.Name = "labelDecoderProgress";
-            labelDecoderProgress.Size = new Size(72, 15);
-            labelDecoderProgress.TabIndex = 25;
-            labelDecoderProgress.Text = "99999/99999";
+            progressBarDecoder.DisplayType = ProgressBarEx.TextDisplayType.Manual;
+            progressBarDecoder.Location = new Point(238, 141);
+            progressBarDecoder.Name = "progressBarDecoder";
+            progressBarDecoder.Size = new Size(112, 23);
+            progressBarDecoder.TabIndex = 5;
             // 
             // labelCommandLineDecoder
             // 
@@ -1289,14 +1273,6 @@
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
             textBoxCommandLineOptionsDecoder.Size = new Size(228, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 1;
-            // 
-            // progressBarDecoder
-            // 
-            progressBarDecoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            progressBarDecoder.Location = new Point(238, 141);
-            progressBarDecoder.Name = "progressBarDecoder";
-            progressBarDecoder.Size = new Size(112, 23);
-            progressBarDecoder.TabIndex = 5;
             // 
             // buttonClearCommandLineDecoder
             // 
@@ -1396,7 +1372,6 @@
         private TextBox textBoxThreads;
         private TextBox textBoxCompressionLevel;
         private TextBox textBoxCommandLineOptionsEncoder;
-        private ProgressBar progressBarEncoder;
         private Button buttonStartEncode;
         private Button buttonEpr8;
         private Button buttonAsubdividetukey5flattop;
@@ -1441,7 +1416,6 @@
         private Button buttonAddJobToJobListDecoder;
         private TextBox textBoxCommandLineOptionsDecoder;
         private Button buttonClearCommandLineDecoder;
-        private ProgressBar progressBarDecoder;
         private Label labelSetCompression;
         private CheckBox checkBoxClearTempFolder;
         private ColumnHeader FileName;
@@ -1483,8 +1457,6 @@
         private Button buttonTestForErrors;
         private ColumnHeader FilePath;
         private ToolTip toolTip1;
-        private Label labelEncoderProgress;
-        private Label labelDecoderProgress;
         private Button buttonPauseResume;
         private Label labelCpuUsageTitle;
         private CheckBox checkBoxAddMD5OnLoadWav;
@@ -1500,5 +1472,7 @@
         private CheckBox checkBoxWarningsAsErrors;
         private CheckBox checkBoxWarmupPass;
         private Label labelCpuUsageValue;
+        private ProgressBarEx progressBarEncoder;
+        private ProgressBarEx progressBarDecoder;
     }
 }

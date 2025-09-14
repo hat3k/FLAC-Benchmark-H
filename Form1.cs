@@ -3684,8 +3684,8 @@ namespace FLAC_Benchmark_H
                 buttonPauseResume.Enabled = true;
                 progressBarEncoder.Value = 0;
                 progressBarDecoder.Value = 0;
-                labelEncoderProgress.Text = string.Empty;
-                labelDecoderProgress.Text = string.Empty;
+                progressBarEncoder.ManualText = string.Empty;
+                progressBarDecoder.ManualText = string.Empty;
             }));
 
             try
@@ -3805,7 +3805,7 @@ namespace FLAC_Benchmark_H
 
                 // Set maximum values for the progress bar
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count;
-                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
 
                 foreach (var audioFilePath in selectedAudioFiles)
                 {
@@ -3992,7 +3992,7 @@ namespace FLAC_Benchmark_H
                             progressBarEncoder.Invoke((MethodInvoker)(() =>
                             {
                                 progressBarEncoder.Value++;
-                                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                                progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                             }));
                         }
                     }
@@ -4015,8 +4015,8 @@ namespace FLAC_Benchmark_H
                     buttonPauseResume.Enabled = false;
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = string.Empty;
-                    labelDecoderProgress.Text = string.Empty;
+                    progressBarEncoder.ManualText = string.Empty;
+                    progressBarDecoder.ManualText = string.Empty;
                 }));
             }
         }
@@ -4037,8 +4037,8 @@ namespace FLAC_Benchmark_H
                 buttonPauseResume.Enabled = true;
                 progressBarEncoder.Value = 0;
                 progressBarDecoder.Value = 0;
-                labelEncoderProgress.Text = string.Empty;
-                labelDecoderProgress.Text = string.Empty;
+                progressBarEncoder.ManualText = string.Empty;
+                progressBarDecoder.ManualText = string.Empty;
             }));
 
             try
@@ -4150,7 +4150,7 @@ namespace FLAC_Benchmark_H
 
                 // Set maximum values for the progress bar
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
-                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 foreach (var audioFilePath in selectedFlacAudioFiles)
                 {
@@ -4298,7 +4298,7 @@ namespace FLAC_Benchmark_H
                             progressBarDecoder.Invoke((MethodInvoker)(() =>
                             {
                                 progressBarDecoder.Value++;
-                                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                                progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
                             }));
                         }
                     }
@@ -4321,8 +4321,8 @@ namespace FLAC_Benchmark_H
                     buttonPauseResume.Enabled = false;
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = string.Empty;
-                    labelDecoderProgress.Text = string.Empty;
+                    progressBarEncoder.ManualText = string.Empty;
+                    progressBarDecoder.ManualText = string.Empty;
                 }));
             }
         }
@@ -4343,8 +4343,8 @@ namespace FLAC_Benchmark_H
                 buttonPauseResume.Enabled = true;
                 progressBarEncoder.Value = 0;
                 progressBarDecoder.Value = 0;
-                labelEncoderProgress.Text = string.Empty;
-                labelDecoderProgress.Text = string.Empty;
+                progressBarEncoder.ManualText = string.Empty;
+                progressBarDecoder.ManualText = string.Empty;
             }));
 
             try
@@ -4520,8 +4520,8 @@ namespace FLAC_Benchmark_H
                 // Set maximum values for progress bars
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count * totalEncodeTasks;
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count * totalDecodeTasks;
-                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
                 foreach (ListViewItem item in listViewJobs.Items)
                 {
@@ -4717,7 +4717,7 @@ namespace FLAC_Benchmark_H
                                             progressBarEncoder.Invoke((MethodInvoker)(() =>
                                             {
                                                 progressBarEncoder.Value++;
-                                                labelEncoderProgress.Text = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                                                progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                                             }));
                                         }
                                     }
@@ -4870,7 +4870,7 @@ namespace FLAC_Benchmark_H
                                             progressBarDecoder.Invoke((MethodInvoker)(() =>
                                             {
                                                 progressBarDecoder.Value++;
-                                                labelDecoderProgress.Text = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                                                progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
                                             }));
                                         }
                                     }
@@ -4897,8 +4897,8 @@ namespace FLAC_Benchmark_H
                     buttonPauseResume.Enabled = false;
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = string.Empty;
-                    labelDecoderProgress.Text = string.Empty;
+                    progressBarEncoder.ManualText = string.Empty;
+                    progressBarDecoder.ManualText = string.Empty;
                 }));
             }
         }
@@ -5039,8 +5039,8 @@ namespace FLAC_Benchmark_H
                 {
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
-                    labelEncoderProgress.Text = $"";
-                    labelDecoderProgress.Text = $"";
+                    progressBarEncoder.ManualText = $"";
+                    progressBarDecoder.ManualText = $"";
                 }
             }
         }
@@ -5332,16 +5332,16 @@ namespace FLAC_Benchmark_H
         private async void Form1_Load(object? sender, EventArgs e)
         {
             this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
-            labelEncoderProgress.Text = string.Empty;
-            labelDecoderProgress.Text = string.Empty;
+            progressBarEncoder.ManualText = string.Empty;
+            progressBarDecoder.ManualText = string.Empty;
 
-            LoadSettings(); // Load settings
-            LoadEncoders(); // Load executable files
-            LoadAudioFiles(); // Load audio files
-            LoadJobs(); // Load contents of Settings_joblist.txt
+            LoadSettings();
+            LoadEncoders();
+            LoadAudioFiles();
+            LoadJobs();
             await CheckForUpdatesAsync();
             this.ActiveControl = null; // Remove focus from all elements
-            dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells); // This minimizes column widths in the log
+            dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
