@@ -155,21 +155,24 @@ This function is resource-expensive when you have a large number of files!</valu
     <value>Copy log as a BBCode to paste it in forums as a table.
 
 Columns to copy:
- "Bit Depth",
- "Sampling Rate",
- "Input File Size",
- "Output File Size",
- "Compression",
- "Time",
- "Speed",
- "Speed Min",
- "Speed Max",
- "Speed Range",
- "Speed Consistency",
- "Passes",
- "Parameters",
- "Encoder",
- "Version"
+
+"Bit Depth",
+"Sampling Rate",
+"Input File Size",
+"Output File Size",
+"Compression",
+"Time",
+"Speed",
+"Speed Min",
+"Speed Max",
+"Speed Range",
+"Speed Consistency",
+"CPU Load Encoder",
+"CPU Clock",
+"Passes",
+"Parameters",
+"Encoder",
+"Version"
 
 This feature is in BETA. Feel free to report issues.</value>
   </data>

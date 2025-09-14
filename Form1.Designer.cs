@@ -1410,7 +1410,6 @@
         private Button buttonCopyLog;
         private Label labelCommandLineEncoder;
         private Button buttonStop;
-        private DataGridView dataGridViewLog;
         private GroupBox groupBoxDecoderSettings;
         private Label labelCommandLineDecoder;
         private Button buttonAddJobToJobListDecoder;
@@ -1474,5 +1473,6 @@
         private Label labelCpuUsageValue;
         private ProgressBarEx progressBarEncoder;
         private ProgressBarEx progressBarDecoder;
+        private DataGridViewEx dataGridViewLog;
     }
 }

@@ -2982,104 +2982,107 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                // Check if there are any rows in the DataGridView
-                if (dataGridViewLog.Rows.Count == 0)
+                int rowCount = dataGridViewLog.Rows.Count;
+
+                // Check if there are any rows (considering only non-new rows)
+                bool hasRows = false;
+                for (int i = 0; i < rowCount; i++)
+                {
+                    if (!dataGridViewLog.Rows[i].IsNewRow)
+                    {
+                        hasRows = true;
+                        break;
+                    }
+                }
+
+                if (!hasRows)
                 {
                     MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 // Define the list of column names to INCLUDE
-                // !!! IMPORTANT: Use the exact column Names from the DataGridView !!!
                 var columnsToInclude = new HashSet<string>
-        {
-            "BitDepth",
-            "SamplingRate",
-            "InputFileSize",
-            "OutputFileSize",
-            "Compression",
-            "Time",
-            "Speed",
-            "SpeedMin",
-            "SpeedMax",
-            "SpeedRange",
-            "SpeedConsistency",
-            "CPULoadEncoder",
-            "CPUClock",
-            "Passes",
-            "Parameters",
-            "Encoder",
-            "Version"
-        };
+                {
+                "BitDepth",
+                "SamplingRate",
+                "InputFileSize",
+                "OutputFileSize",
+                "Compression",
+                "Time",
+                "Speed",
+                "SpeedMin",
+                "SpeedMax",
+                "SpeedRange",
+                "SpeedConsistency",
+                "CPULoadEncoder",
+                "CPUClock",
+                "Passes",
+                "Parameters",
+                "Encoder",
+                "Version"
+                };
 
-                // Create a StringBuilder to build the BBCode
-                StringBuilder bbCodeText = new StringBuilder();
+                // Pre-cache included columns in display order with their indices
+                var includedColumns = dataGridViewLog.Columns
+                .Cast<DataGridViewColumn>()
+                .Where(col => columnsToInclude.Contains(col.Name))
+                .OrderBy(col => col.DisplayIndex)
+                .Select(col => new { col.Index, col.HeaderText })
+                .ToArray();
+
+                if (includedColumns.Length == 0)
+                {
+                    MessageBox.Show("No valid columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Create a StringBuilder with estimated capacity
+                int estimatedCapacity = rowCount * includedColumns.Length * 20; // Rough estimation
+                StringBuilder bbCodeText = new StringBuilder(estimatedCapacity);
 
                 // Start of BBCode table
                 bbCodeText.AppendLine("[table]");
 
                 // --- Generate headers ---
-                bbCodeText.AppendLine("[tr]"); // Start of header row
-
-                // Iterate through ALL columns in the order they are displayed in the DataGridView
-                // and add headers only for the included columns
-                foreach (DataGridViewColumn column in dataGridViewLog.Columns.Cast<DataGridViewColumn>().OrderBy(c => c.DisplayIndex))
+                bbCodeText.Append("[tr]");
+                foreach (var col in includedColumns)
                 {
-                    // Check if this column should be included
-                    if (columnsToInclude.Contains(column.Name))
-                    {
-                        // Use [b] to make headers bold (optional)
-                        bbCodeText.Append("[td][b]").Append(column.HeaderText).Append("[/b][/td]");
-                    }
+                    bbCodeText.Append("[td][b]").Append(col.HeaderText).Append("[/b][/td]");
                 }
-                bbCodeText.AppendLine("[/tr]"); // End of header row
+                bbCodeText.AppendLine("[/tr]");
 
                 // --- Generate data rows ---
-                // Add data rows
-                foreach (DataGridViewRow row in dataGridViewLog.Rows)
+                for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
                 {
-                    // Skip the new row (if it exists)
+                    DataGridViewRow row = dataGridViewLog.Rows[rowIndex];
                     if (row.IsNewRow) continue;
 
-                    bbCodeText.AppendLine("[tr]"); // Start of data row
+                    bbCodeText.Append("[tr]");
 
-                    // Iterate through ALL cells in the row in the order of DataGridView columns
-                    foreach (DataGridViewColumn column in dataGridViewLog.Columns.Cast<DataGridViewColumn>().OrderBy(c => c.DisplayIndex))
+                    foreach (var col in includedColumns)
                     {
-                        // Check if this column should be included
-                        if (columnsToInclude.Contains(column.Name))
-                        {
-                            // Get the cell by column index
-                            DataGridViewCell cell = row.Cells[column.Index];
-                            // Get the cell value, replace null with an empty string
-                            string cellValue = cell.Value?.ToString() ?? "";
-                            // Add the cell content to the table
-                            bbCodeText.Append("[td]").Append(cellValue).Append("[/td]");
-                        }
+                        DataGridViewCell cell = row.Cells[col.Index];
+                        string cellValue = cell.Value?.ToString() ?? "";
+                        bbCodeText.Append("[td]").Append(cellValue).Append("[/td]");
                     }
-                    bbCodeText.AppendLine("[/tr]"); // End of data row
+
+                    bbCodeText.AppendLine("[/tr]");
                 }
 
                 // End of BBCode table
-                bbCodeText.AppendLine("[/table]");
+                bbCodeText.Append("[/table]");
 
-                // Copy the generated BBCode to the clipboard
+                // Copy to clipboard
                 if (bbCodeText.Length > 0)
                 {
                     Clipboard.SetText(bbCodeText.ToString());
-                    // Optionally: show a success message
-                    // MessageBox.Show("Log (selected columns) copied to clipboard as BBCode!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    // This block is unlikely to execute due to the initial check, but logic requires it
-                    MessageBox.Show("There is no log data to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                // Handle possible errors when working with the clipboard
-                MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
