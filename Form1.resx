@@ -155,7 +155,6 @@ This function is resource-expensive when you have a large number of files!</valu
     <value>Copy log as a BBCode to paste it in forums as a table.
 
 Columns to copy:
-
 "Bit Depth",
 "Sampling Rate",
 "Input File Size",
@@ -173,6 +172,9 @@ Columns to copy:
 "Parameters",
 "Encoder",
 "Version"
+
+Hold 'Shift" to include column:
+"Name"
 
 This feature is in BETA. Feel free to report issues.</value>
   </data>

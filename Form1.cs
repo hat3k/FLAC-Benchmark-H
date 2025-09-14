@@ -2984,7 +2984,7 @@ namespace FLAC_Benchmark_H
             {
                 int rowCount = dataGridViewLog.Rows.Count;
 
-                // Check if there are any rows (considering only non-new rows)
+                // Check if there are any non-new rows
                 bool hasRows = false;
                 for (int i = 0; i < rowCount; i++)
                 {
@@ -3001,35 +3001,43 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // Define the list of column names to INCLUDE
-                var columnsToInclude = new HashSet<string>
+                // Define base columns to include
+                var baseColumnsToInclude = new HashSet<string>
                 {
-                "BitDepth",
-                "SamplingRate",
-                "InputFileSize",
-                "OutputFileSize",
-                "Compression",
-                "Time",
-                "Speed",
-                "SpeedMin",
-                "SpeedMax",
-                "SpeedRange",
-                "SpeedConsistency",
-                "CPULoadEncoder",
-                "CPUClock",
-                "Passes",
-                "Parameters",
-                "Encoder",
-                "Version"
+                    "BitDepth",
+                    "SamplingRate",
+                    "InputFileSize",
+                    "OutputFileSize",
+                    "Compression",
+                    "Time",
+                    "Speed",
+                    "SpeedMin",
+                    "SpeedMax",
+                    "SpeedRange",
+                    "SpeedConsistency",
+                    "CPULoadEncoder",
+                    "CPUClock",
+                    "Passes",
+                    "Parameters",
+                    "Encoder",
+                    "Version"
                 };
 
-                // Pre-cache included columns in display order with their indices
+                // Check if Shift is pressed
+                bool includeNameColumn = ModifierKeys.HasFlag(Keys.Shift);
+
+                if (includeNameColumn)
+                {
+                    baseColumnsToInclude.Add("Name");
+                }
+
+                // Pre-cache included columns in display order
                 var includedColumns = dataGridViewLog.Columns
-                .Cast<DataGridViewColumn>()
-                .Where(col => columnsToInclude.Contains(col.Name))
-                .OrderBy(col => col.DisplayIndex)
-                .Select(col => new { col.Index, col.HeaderText })
-                .ToArray();
+                    .Cast<DataGridViewColumn>()
+                    .Where(col => baseColumnsToInclude.Contains(col.Name))
+                    .OrderBy(col => col.DisplayIndex)
+                    .Select(col => new { col.Index, col.HeaderText })
+                    .ToArray();
 
                 if (includedColumns.Length == 0)
                 {
@@ -3037,43 +3045,37 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // Create a StringBuilder with estimated capacity
-                int estimatedCapacity = rowCount * includedColumns.Length * 20; // Rough estimation
+                // Estimate capacity and build BBCode
+                int estimatedCapacity = rowCount * includedColumns.Length * 20;
                 StringBuilder bbCodeText = new StringBuilder(estimatedCapacity);
 
-                // Start of BBCode table
                 bbCodeText.AppendLine("[table]");
 
-                // --- Generate headers ---
+                // Headers
                 bbCodeText.Append("[tr]");
                 foreach (var col in includedColumns)
                 {
-                    bbCodeText.Append("[td][b]").Append(col.HeaderText).Append("[/b][/td]");
+                    bbCodeText.Append($"[td][b]{col.HeaderText}[/b][/td]");
                 }
                 bbCodeText.AppendLine("[/tr]");
 
-                // --- Generate data rows ---
+                // Rows
                 for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
                 {
                     DataGridViewRow row = dataGridViewLog.Rows[rowIndex];
                     if (row.IsNewRow) continue;
 
                     bbCodeText.Append("[tr]");
-
                     foreach (var col in includedColumns)
                     {
-                        DataGridViewCell cell = row.Cells[col.Index];
-                        string cellValue = cell.Value?.ToString() ?? "";
-                        bbCodeText.Append("[td]").Append(cellValue).Append("[/td]");
+                        string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? "";
+                        bbCodeText.Append($"[td]{cellValue}[/td]");
                     }
-
                     bbCodeText.AppendLine("[/tr]");
                 }
 
-                // End of BBCode table
                 bbCodeText.Append("[/table]");
 
-                // Copy to clipboard
                 if (bbCodeText.Length > 0)
                 {
                     Clipboard.SetText(bbCodeText.ToString());
