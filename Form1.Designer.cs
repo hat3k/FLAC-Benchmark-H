@@ -111,7 +111,7 @@
             buttonLogToExcel = new Button();
             buttonAnalyzeLog = new Button();
             labelStopped = new Label();
-            dataGridViewLog = new DataGridView();
+            dataGridViewLog = new DataGridViewEx();
             buttonCopyLog = new Button();
             groupBoxSettings = new GroupBox();
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
