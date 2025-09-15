@@ -1,3 +1,6 @@
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml;
+using MediaInfoLib;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,16 +11,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml;
-using MediaInfoLib;
 
 namespace FLAC_Benchmark_H
 {
@@ -41,7 +41,16 @@ namespace FLAC_Benchmark_H
         private int _baseClockMhz = 0;                          // Base CPU frequency in MHz
 
         // UI state
-        private bool isCpuInfoLoaded = false; // Prevents duplicate CPU info load
+        private bool isCpuInfoLoaded = false;
+
+        // Prevents the system from entering sleep or turning off the display
+        [DllImport("kernel32.dll")]
+        static extern uint SetThreadExecutionState(uint esFlags);
+
+        // Flags for SetThreadExecutionState
+        const uint ES_CONTINUOUS = 0x80000000;
+        const uint ES_SYSTEM_REQUIRED = 0x00000001;
+        const uint ES_DISPLAY_REQUIRED = 0x00000002;
 
         // Paths and files
         private const string SettingsGeneralFilePath = "Settings_general.txt";              // General settings file
@@ -252,6 +261,7 @@ namespace FLAC_Benchmark_H
                     $"AddWarmupPass={checkBoxWarmupPass.Checked}",
                     $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
+                    $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
@@ -360,6 +370,9 @@ namespace FLAC_Benchmark_H
                                 break;
                             case "AutoAnalyzeLog":
                                 checkBoxAutoAnalyzeLog.Checked = bool.Parse(value);
+                                break;
+                            case "PreventSleep":
+                                checkBoxPreventSleep.Checked = bool.Parse(value);
                                 break;
                             case "CheckForUpdatesOnStartup":
                                 checkBoxCheckForUpdatesOnStartup.Checked = bool.Parse(value);
@@ -5217,11 +5230,26 @@ namespace FLAC_Benchmark_H
         {
 
         }
+        private void checkBoxPreventSleep_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxPreventSleep.Checked)
+            {
+                SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
+            }
+            else
+            {
+                SetThreadExecutionState(ES_CONTINUOUS);
+            }
+        }
+        private void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxCheckForUpdatesOnStartup.Checked)
+            {
+                _ = CheckForUpdatesAsync();
+            }
+        }
         private async Task CheckForUpdatesAsync()
         {
-            if (!checkBoxCheckForUpdatesOnStartup.Checked)
-                return;
-
             try
             {
                 using var client = new HttpClient();
@@ -5261,12 +5289,11 @@ namespace FLAC_Benchmark_H
             }
             catch (TaskCanceledException)
             {
-                // Timeout or network issue - silently ignore or log if needed
-                // Optionally: show a message after repeated failures
+                // Timeout or network issue - silently ignore
             }
             catch (HttpRequestException)
             {
-                // Network unreachable, HTTP error
+                // Network unreachable, HTTP error - silently ignore
             }
             catch (Exception ex)
             {
@@ -5344,7 +5371,6 @@ namespace FLAC_Benchmark_H
             LoadEncoders();
             LoadAudioFiles();
             LoadJobs();
-            await CheckForUpdatesAsync();
             this.ActiveControl = null; // Remove focus from all elements
             dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }

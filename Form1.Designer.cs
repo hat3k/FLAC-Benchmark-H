@@ -114,6 +114,7 @@
             dataGridViewLog = new DataGridViewEx();
             buttonCopyLog = new Button();
             groupBoxSettings = new GroupBox();
+            checkBoxPreventSleep = new CheckBox();
             checkBoxCheckForUpdatesOnStartup = new CheckBox();
             checkBoxAutoAnalyzeLog = new CheckBox();
             checkBoxAddMD5OnLoadWav = new CheckBox();
@@ -1114,6 +1115,7 @@
             // 
             // groupBoxSettings
             // 
+            groupBoxSettings.Controls.Add(checkBoxPreventSleep);
             groupBoxSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
             groupBoxSettings.Controls.Add(checkBoxWarmupPass);
             groupBoxSettings.Controls.Add(checkBoxAutoAnalyzeLog);
@@ -1131,16 +1133,29 @@
             groupBoxSettings.TabStop = false;
             groupBoxSettings.Text = "Settings";
             // 
+            // checkBoxPreventSleep
+            // 
+            checkBoxPreventSleep.AutoSize = true;
+            checkBoxPreventSleep.Location = new Point(183, 73);
+            checkBoxPreventSleep.Name = "checkBoxPreventSleep";
+            checkBoxPreventSleep.Size = new Size(131, 19);
+            checkBoxPreventSleep.TabIndex = 8;
+            checkBoxPreventSleep.Text = "Prevent Sleep mode";
+            toolTip1.SetToolTip(checkBoxPreventSleep, "When enabled, prevents Windows from entering sleep mode.");
+            checkBoxPreventSleep.UseVisualStyleBackColor = true;
+            checkBoxPreventSleep.CheckedChanged += checkBoxPreventSleep_CheckedChanged;
+            // 
             // checkBoxCheckForUpdatesOnStartup
             // 
             checkBoxCheckForUpdatesOnStartup.AutoSize = true;
-            checkBoxCheckForUpdatesOnStartup.Location = new Point(183, 73);
+            checkBoxCheckForUpdatesOnStartup.Location = new Point(183, 98);
             checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
             checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
-            checkBoxCheckForUpdatesOnStartup.TabIndex = 8;
+            checkBoxCheckForUpdatesOnStartup.TabIndex = 9;
             checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
             toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup");
             checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
+            checkBoxCheckForUpdatesOnStartup.CheckedChanged += checkBoxCheckForUpdatesOnStartup_CheckedChanged;
             // 
             // checkBoxAutoAnalyzeLog
             // 
@@ -1474,5 +1489,6 @@
         private ProgressBarEx progressBarEncoder;
         private ProgressBarEx progressBarDecoder;
         private DataGridViewEx dataGridViewLog;
+        private CheckBox checkBoxPreventSleep;
     }
 }
