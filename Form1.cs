@@ -24,8 +24,8 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.7.0 build 20250912"; // Current app version
-        public string programVersionIgnored = null;                 // Previously ignored update
+        public string programVersionCurrent = "1.7.1 build 20250917"; // Current app version
+        public string programVersionIgnored = null;                   // Previously ignored update
 
         // Hardware info
         private int physicalCores; // Number of physical CPU cores
@@ -50,7 +50,6 @@ namespace FLAC_Benchmark_H
         // Flags for SetThreadExecutionState
         const uint ES_CONTINUOUS = 0x80000000;
         const uint ES_SYSTEM_REQUIRED = 0x00000001;
-        const uint ES_DISPLAY_REQUIRED = 0x00000002;
 
         // Paths and files
         private const string SettingsGeneralFilePath = "Settings_general.txt";              // General settings file
@@ -4078,7 +4077,7 @@ namespace FLAC_Benchmark_H
                 if (selectedEncoders.Count == 0)
                 {
                     MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
+                    isExecuting = false;
                     return;
                 }
 
@@ -4086,7 +4085,7 @@ namespace FLAC_Benchmark_H
                 if (selectedFlacAudioFiles.Count == 0)
                 {
                     MessageBox.Show("Select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    isExecuting = false; // Reset the flag if there are no files
+                    isExecuting = false;
                     return;
                 }
 
@@ -4098,7 +4097,7 @@ namespace FLAC_Benchmark_H
 
                     if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
                     {
-                        // Use current decoder parameters
+                        // Use current UI settings to form parameters
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
                         string parameters = $"-d {commandLine}".Trim();
 

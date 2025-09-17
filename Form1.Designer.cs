@@ -1141,7 +1141,7 @@
             checkBoxPreventSleep.Size = new Size(131, 19);
             checkBoxPreventSleep.TabIndex = 8;
             checkBoxPreventSleep.Text = "Prevent Sleep mode";
-            toolTip1.SetToolTip(checkBoxPreventSleep, "When enabled, prevents Windows from entering sleep mode.");
+            toolTip1.SetToolTip(checkBoxPreventSleep, "When enabled, prevents the computer from entering sleep or hibernation mode\r\n\r\nNote: This does not prevent the display from turning off.");
             checkBoxPreventSleep.UseVisualStyleBackColor = true;
             checkBoxPreventSleep.CheckedChanged += checkBoxPreventSleep_CheckedChanged;
             // 
