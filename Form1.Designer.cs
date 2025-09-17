@@ -1017,7 +1017,7 @@
             buttonLogColumnsAutoWidth.Location = new Point(39, 0);
             buttonLogColumnsAutoWidth.Name = "buttonLogColumnsAutoWidth";
             buttonLogColumnsAutoWidth.Size = new Size(42, 18);
-            buttonLogColumnsAutoWidth.TabIndex = 8;
+            buttonLogColumnsAutoWidth.TabIndex = 9;
             buttonLogColumnsAutoWidth.Text = "⟷";
             toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width");
             buttonLogColumnsAutoWidth.UseVisualStyleBackColor = true;
