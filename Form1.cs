@@ -24,7 +24,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.7.1 build 20250917"; // Current app version
+        public string programVersionCurrent = "1.7.2 build 20250921"; // Current app version
         public string programVersionIgnored = null;                   // Previously ignored update
 
         // Hardware info
@@ -42,6 +42,7 @@ namespace FLAC_Benchmark_H
 
         // UI state
         private bool isCpuInfoLoaded = false;
+        private ScriptConstructorForm? scriptForm = null;
 
         // Prevents the system from entering sleep or turning off the display
         [DllImport("kernel32.dll")]
@@ -3683,6 +3684,44 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        // Script Constructor
+        private void buttonScriptConstructor_Click(object sender, EventArgs e)
+        {
+            string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
+            string threads = NormalizeSpaces(textBoxThreads.Text);
+            string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
+
+            string parameters = $"-{compressionLevel} {commandLine}".Trim();
+
+            if (int.TryParse(threads, out int threadCount) && threadCount > 1)
+            {
+                parameters += $" -j{threads}";
+            }
+
+            parameters = Regex.Replace(parameters, @"\s+", " ").Trim();
+
+            if (scriptForm == null || scriptForm.IsDisposed)
+            {
+                scriptForm = new ScriptConstructorForm();
+
+                scriptForm.OnJobsAdded += (jobs) =>
+                {
+                    foreach (var job in jobs)
+                    {
+                        listViewJobs.Items.Add(job);
+                    }
+                };
+
+                scriptForm.FormClosed += (s, e) => scriptForm = null;
+            }
+
+            scriptForm.InitialScriptText = parameters;
+
+            scriptForm.Show(this);
+            scriptForm.BringToFront();
+            scriptForm.Focus();
+        }
+
         // Actions (Buttons)
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
@@ -3786,8 +3825,8 @@ namespace FLAC_Benchmark_H
                                 }
                                 catch (InvalidOperationException) { }
 
-                                // Wait up to 10 seconds
-                                bool exited = warmupProcess.WaitForExit(10_000);
+                                // Wait up to 5 seconds
+                                bool exited = warmupProcess.WaitForExit(5_000);
 
                                 stopwatch.Stop();
 
@@ -4131,8 +4170,8 @@ namespace FLAC_Benchmark_H
                                 }
                                 catch (InvalidOperationException) { }
 
-                                // Wait up to 10 seconds
-                                bool exited = warmupProcess.WaitForExit(10_000);
+                                // Wait up to 5 seconds
+                                bool exited = warmupProcess.WaitForExit(5_000);
 
                                 stopwatch.Stop();
 
@@ -4385,16 +4424,47 @@ namespace FLAC_Benchmark_H
                 .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
+                // Create expanded Job List (Virtual Job List)
+                var listViewJobsExpanded = new List<ListViewItem>();
+
+                foreach (ListViewItem item in listViewJobs.Items)
+                {
+                    if (item.Checked)
+                    {
+                        string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+
+                        // Check if parameters contain script patterns (like {0..8} or {1,2,3})
+                        if (parameters.Contains('{') && parameters.Contains('}'))
+                        {
+                            // Expand script using ScriptParser
+                            var expandedParameters = ScriptParser.ExpandScriptLine(parameters);
+
+                            foreach (string expandedParam in expandedParameters)
+                            {
+                                // Create new job item for each expanded parameter set
+                                ListViewItem newItem = new ListViewItem(item.Text);
+                                newItem.SubItems.Add(item.SubItems[1].Text);
+                                newItem.SubItems.Add(expandedParam);
+                                newItem.Checked = true;
+                                listViewJobsExpanded.Add(newItem);
+                            }
+                        }
+                        else
+                        {
+                            // Regular job without script expansion
+                            listViewJobsExpanded.Add(item);
+                        }
+                    }
+                }
+
                 // Count the number of tasks and passes for Encode
-                int totalEncodeTasks = listViewJobs.Items
-                .Cast<ListViewItem>()
-                .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
+                int totalEncodeTasks = listViewJobsExpanded
+                .Where(item => string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
                 .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
 
                 // Count the number of tasks and passes for Decode
-                int totalDecodeTasks = listViewJobs.Items
-                .Cast<ListViewItem>()
-                .Where(item => item.Checked && string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
+                int totalDecodeTasks = listViewJobsExpanded
+                .Where(item => string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
                 .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
 
                 // 1. Check if there is at least one job
@@ -4501,8 +4571,8 @@ namespace FLAC_Benchmark_H
                             }
                             catch (InvalidOperationException) { }
 
-                            // Wait up to 10 seconds
-                            bool exited = warmupProcess.WaitForExit(10_000);
+                            // Wait up to 5 seconds
+                            bool exited = warmupProcess.WaitForExit(5_000);
 
                             stopwatch.Stop();
 
@@ -4540,356 +4610,352 @@ namespace FLAC_Benchmark_H
                 progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                 progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
-                foreach (ListViewItem item in listViewJobs.Items)
+                foreach (ListViewItem item in listViewJobsExpanded)
                 {
-                    // Check if the task is checked
-                    if (item.Checked)
+                    string jobType = NormalizeSpaces(item.Text);
+                    int passes = int.Parse(item.SubItems[1].Text.Trim());
+
+                    for (int i = 0; i < passes; i++) // Loop for the number of passes
                     {
-                        string jobType = NormalizeSpaces(item.Text);
-                        int passes = int.Parse(item.SubItems[1].Text.Trim());
-
-                        for (int i = 0; i < passes; i++) // Loop for the number of passes
+                        if (_isEncodingStopped)
                         {
-                            if (_isEncodingStopped)
-                            {
-                                isExecuting = false;
-                                return;
-                            }
+                            isExecuting = false;
+                            return;
+                        }
 
-                            if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (var audioFilePath in selectedAudioFiles)
                             {
-                                foreach (var audioFilePath in selectedAudioFiles)
+                                foreach (var encoder in selectedEncoders)
                                 {
-                                    foreach (var encoder in selectedEncoders)
+                                    if (_isEncodingStopped)
                                     {
-                                        if (_isEncodingStopped)
-                                        {
-                                            isExecuting = false;
-                                            return;
-                                        }
+                                        isExecuting = false;
+                                        return;
+                                    }
 
-                                        // Form the parameter string
-                                        string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+                                    // Form the parameter string
+                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
 
-                                        // Form the arguments for execution
-                                        string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
-                                        DeleteFileIfExists(outputFilePath); // Delete the old file
-                                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                                    // Form the arguments for execution
+                                    string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
+                                    DeleteFileIfExists(outputFilePath); // Delete the old file
+                                    string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                                        string priorityText;
-                                        if (comboBoxCPUPriority.InvokeRequired)
-                                        {
-                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                                        }
-                                        else
-                                        {
-                                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                                        }
+                                    string priorityText;
+                                    if (comboBoxCPUPriority.InvokeRequired)
+                                    {
+                                        priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+                                    }
+                                    else
+                                    {
+                                        priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
+                                    }
 
-                                        // Prepare for CPU clock monitoring
-                                        _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
-                                        bool isFirstValue = true;
-                                        clockTimer.Elapsed += (s, e) =>
+                                    // Prepare for CPU clock monitoring
+                                    _cpuClockReadings = new List<double>();
+                                    var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                                    bool isFirstValue = true;
+                                    clockTimer.Elapsed += (s, e) =>
+                                    {
+                                        if (_cpuClockCounter != null && !_isEncodingStopped)
                                         {
-                                            if (_cpuClockCounter != null && !_isEncodingStopped)
+                                            try
                                             {
-                                                try
+                                                double clock = _cpuClockCounter.NextValue();
+                                                if (!isFirstValue && clock >= 1)
                                                 {
-                                                    double clock = _cpuClockCounter.NextValue();
-                                                    if (!isFirstValue && clock >= 1)
-                                                    {
-                                                        _cpuClockReadings.Add(clock);
-                                                    }
-                                                    isFirstValue = false;
+                                                    _cpuClockReadings.Add(clock);
                                                 }
-                                                catch (Exception ex)
-                                                {
-                                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
-                                                }
+                                                isFirstValue = false;
                                             }
-                                        };
-
-                                        TimeSpan elapsedTime = TimeSpan.Zero;
-                                        TimeSpan userProcessorTime = TimeSpan.Zero;
-                                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
-                                        // Start the process and wait for completion
-                                        try
-                                        {
-                                            clockTimer.Start(); // Start clock monitoring
-
-                                            await Task.Run(() =>
+                                            catch (Exception ex)
                                             {
-                                                if (_isPaused)
+                                                Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                            }
+                                        }
+                                    };
+
+                                    TimeSpan elapsedTime = TimeSpan.Zero;
+                                    TimeSpan userProcessorTime = TimeSpan.Zero;
+                                    TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
+                                    // Start the process and wait for completion
+                                    try
+                                    {
+                                        clockTimer.Start(); // Start clock monitoring
+
+                                        await Task.Run(() =>
+                                        {
+                                            if (_isPaused)
+                                            {
+                                                _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                            }
+
+                                            using (_process = new Process())
+                                            {
+                                                _process.StartInfo = new ProcessStartInfo
                                                 {
-                                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
-                                                }
+                                                    FileName = encoder,
+                                                    Arguments = arguments,
+                                                    UseShellExecute = false,
+                                                    CreateNoWindow = true,
+                                                };
 
-                                                using (_process = new Process())
+                                                var stopwatch = Stopwatch.StartNew();
+
+                                                if (!_isEncodingStopped)
                                                 {
-                                                    _process.StartInfo = new ProcessStartInfo
+                                                    try
                                                     {
-                                                        FileName = encoder,
-                                                        Arguments = arguments,
-                                                        UseShellExecute = false,
-                                                        CreateNoWindow = true,
-                                                    };
+                                                        _process.Start();
 
-                                                    var stopwatch = Stopwatch.StartNew();
-
-                                                    if (!_isEncodingStopped)
-                                                    {
+                                                        // Set process priority
                                                         try
                                                         {
-                                                            _process.Start();
-
-                                                            // Set process priority
-                                                            try
-                                                            {
-                                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
-                                                            }
-                                                            catch (InvalidOperationException)
-                                                            {
-                                                                // Process completed too early
-                                                            }
-
-                                                            _process.WaitForExit();
+                                                            _process.PriorityClass = GetProcessPriorityClass(priorityText);
                                                         }
-                                                        catch (Exception ex)
+                                                        catch (InvalidOperationException)
                                                         {
-                                                            Debug.WriteLine($"Process start error: {ex.Message}");
+                                                            // Process completed too early
                                                         }
-                                                    }
 
-                                                    stopwatch.Stop();
-                                                    elapsedTime = stopwatch.Elapsed;
-
-                                                    // Get CPU times after process completion
-                                                    try
-                                                    {
-                                                        userProcessorTime = _process.UserProcessorTime;
-                                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
-                                                    }
-                                                    catch (InvalidOperationException)
-                                                    {
-                                                        // Process already exited
-                                                    }
-                                                }
-                                            });
-                                            clockTimer.Stop();
-
-                                            double avgClock = 0;
-                                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
-                                            {
-                                                double avgPercent = _cpuClockReadings.Average();
-                                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
-                                            }
-                                            if (!_isEncodingStopped)
-                                            {
-                                                // Check checkbox state
-                                                if (checkBoxRemoveMetadata.Checked)
-                                                {
-                                                    // Run metaflac.exe --remove-all if checkbox is checked
-                                                    try
-                                                    {
-                                                        using (var metaflacProcess = new Process())
-                                                        {
-                                                            metaflacProcess.StartInfo = new ProcessStartInfo
-                                                            {
-                                                                FileName = "metaflac.exe",
-                                                                Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
-                                                                UseShellExecute = false,
-                                                                CreateNoWindow = true,
-                                                            };
-
-                                                            await Task.Run(() =>
-                                                            {
-                                                                metaflacProcess.Start();
-                                                                metaflacProcess.WaitForExit();
-                                                            });
-                                                        }
+                                                        _process.WaitForExit();
                                                     }
                                                     catch (Exception ex)
                                                     {
-                                                        MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                                        Debug.WriteLine($"Process start error: {ex.Message}");
                                                     }
                                                 }
-                                            }
 
-                                            if (!_isEncodingStopped)
-                                            {
-                                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            clockTimer.Stop();
-                                            MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                            isExecuting = false;
-                                            return;
-                                        }
-                                        finally
-                                        {
-                                            progressBarEncoder.Invoke((MethodInvoker)(() =>
-                                            {
-                                                progressBarEncoder.Value++;
-                                                progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
-                                            }));
-                                        }
-                                    }
-                                }
-                            }
-                            else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
-                            {
-                                foreach (var audioFilePath in selectedFlacAudioFiles)
-                                {
-                                    foreach (var encoder in selectedEncoders)
-                                    {
-                                        if (_isEncodingStopped)
-                                        {
-                                            isExecuting = false;
-                                            return;
-                                        }
+                                                stopwatch.Stop();
+                                                elapsedTime = stopwatch.Elapsed;
 
-                                        // Form the parameter string
-                                        string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
-
-                                        // Form the arguments for execution
-                                        string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
-                                        DeleteFileIfExists(outputFilePath); // Delete the old file
-                                        string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
-
-                                        string priorityText;
-                                        if (comboBoxCPUPriority.InvokeRequired)
-                                        {
-                                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                                        }
-                                        else
-                                        {
-                                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                                        }
-
-                                        // Prepare for CPU clock monitoring
-                                        _cpuClockReadings = new List<double>();
-                                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
-                                        bool isFirstValue = true;
-                                        clockTimer.Elapsed += (s, e) =>
-                                        {
-                                            if (_cpuClockCounter != null && !_isEncodingStopped)
-                                            {
+                                                // Get CPU times after process completion
                                                 try
                                                 {
-                                                    double clock = _cpuClockCounter.NextValue();
-                                                    if (!isFirstValue && clock >= 1)
+                                                    userProcessorTime = _process.UserProcessorTime;
+                                                    privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                                }
+                                                catch (InvalidOperationException)
+                                                {
+                                                    // Process already exited
+                                                }
+                                            }
+                                        });
+                                        clockTimer.Stop();
+
+                                        double avgClock = 0;
+                                        if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                                        {
+                                            double avgPercent = _cpuClockReadings.Average();
+                                            avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                        }
+                                        if (!_isEncodingStopped)
+                                        {
+                                            // Check checkbox state
+                                            if (checkBoxRemoveMetadata.Checked)
+                                            {
+                                                // Run metaflac.exe --remove-all if checkbox is checked
+                                                try
+                                                {
+                                                    using (var metaflacProcess = new Process())
                                                     {
-                                                        _cpuClockReadings.Add(clock);
+                                                        metaflacProcess.StartInfo = new ProcessStartInfo
+                                                        {
+                                                            FileName = "metaflac.exe",
+                                                            Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                                            UseShellExecute = false,
+                                                            CreateNoWindow = true,
+                                                        };
+
+                                                        await Task.Run(() =>
+                                                        {
+                                                            metaflacProcess.Start();
+                                                            metaflacProcess.WaitForExit();
+                                                        });
                                                     }
-                                                    isFirstValue = false;
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                                    MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                                 }
                                             }
-                                        };
+                                        }
 
-                                        TimeSpan elapsedTime = TimeSpan.Zero;
-                                        TimeSpan userProcessorTime = TimeSpan.Zero;
-                                        TimeSpan privilegedProcessorTime = TimeSpan.Zero;
-
-                                        // Start the process and wait for completion
-                                        try
+                                        if (!_isEncodingStopped)
                                         {
-                                            clockTimer.Start(); // Start clock monitoring
+                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        clockTimer.Stop();
+                                        MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false;
+                                        return;
+                                    }
+                                    finally
+                                    {
+                                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                                        {
+                                            progressBarEncoder.Value++;
+                                            progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
+                                        }));
+                                    }
+                                }
+                            }
+                        }
+                        else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (var audioFilePath in selectedFlacAudioFiles)
+                            {
+                                foreach (var encoder in selectedEncoders)
+                                {
+                                    if (_isEncodingStopped)
+                                    {
+                                        isExecuting = false;
+                                        return;
+                                    }
 
-                                            await Task.Run(() =>
+                                    // Form the parameter string
+                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+
+                                    // Form the arguments for execution
+                                    string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
+                                    DeleteFileIfExists(outputFilePath); // Delete the old file
+                                    string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+
+                                    string priorityText;
+                                    if (comboBoxCPUPriority.InvokeRequired)
+                                    {
+                                        priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+                                    }
+                                    else
+                                    {
+                                        priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
+                                    }
+
+                                    // Prepare for CPU clock monitoring
+                                    _cpuClockReadings = new List<double>();
+                                    var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                                    bool isFirstValue = true;
+                                    clockTimer.Elapsed += (s, e) =>
+                                    {
+                                        if (_cpuClockCounter != null && !_isEncodingStopped)
+                                        {
+                                            try
                                             {
-                                                if (_isPaused)
+                                                double clock = _cpuClockCounter.NextValue();
+                                                if (!isFirstValue && clock >= 1)
                                                 {
-                                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                                    _cpuClockReadings.Add(clock);
                                                 }
+                                                isFirstValue = false;
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Debug.WriteLine($"Error reading CPU clock: {ex.Message}");
+                                            }
+                                        }
+                                    };
 
-                                                using (_process = new Process())
+                                    TimeSpan elapsedTime = TimeSpan.Zero;
+                                    TimeSpan userProcessorTime = TimeSpan.Zero;
+                                    TimeSpan privilegedProcessorTime = TimeSpan.Zero;
+
+                                    // Start the process and wait for completion
+                                    try
+                                    {
+                                        clockTimer.Start(); // Start clock monitoring
+
+                                        await Task.Run(() =>
+                                        {
+                                            if (_isPaused)
+                                            {
+                                                _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                            }
+
+                                            using (_process = new Process())
+                                            {
+                                                _process.StartInfo = new ProcessStartInfo
                                                 {
-                                                    _process.StartInfo = new ProcessStartInfo
-                                                    {
-                                                        FileName = encoder,
-                                                        Arguments = arguments,
-                                                        UseShellExecute = false,
-                                                        CreateNoWindow = true,
-                                                    };
+                                                    FileName = encoder,
+                                                    Arguments = arguments,
+                                                    UseShellExecute = false,
+                                                    CreateNoWindow = true,
+                                                };
 
-                                                    var stopwatch = Stopwatch.StartNew();
+                                                var stopwatch = Stopwatch.StartNew();
 
-                                                    if (!_isEncodingStopped)
-                                                    {
-                                                        try
-                                                        {
-                                                            _process.Start();
-
-                                                            // Set process priority
-                                                            try
-                                                            {
-                                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
-                                                            }
-                                                            catch (InvalidOperationException)
-                                                            {
-                                                                // Process completed too early
-                                                            }
-
-                                                            _process.WaitForExit();
-                                                        }
-                                                        catch (Exception ex)
-                                                        {
-                                                            Debug.WriteLine($"Process start error: {ex.Message}");
-                                                        }
-                                                    }
-
-                                                    stopwatch.Stop();
-                                                    elapsedTime = stopwatch.Elapsed;
-
-                                                    // Get CPU times after process completion
+                                                if (!_isEncodingStopped)
+                                                {
                                                     try
                                                     {
-                                                        userProcessorTime = _process.UserProcessorTime;
-                                                        privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                                        _process.Start();
+
+                                                        // Set process priority
+                                                        try
+                                                        {
+                                                            _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                        }
+                                                        catch (InvalidOperationException)
+                                                        {
+                                                            // Process completed too early
+                                                        }
+
+                                                        _process.WaitForExit();
                                                     }
-                                                    catch (InvalidOperationException)
+                                                    catch (Exception ex)
                                                     {
-                                                        // Process already exited
+                                                        Debug.WriteLine($"Process start error: {ex.Message}");
                                                     }
                                                 }
-                                            });
-                                            clockTimer.Stop();
 
-                                            double avgClock = 0;
-                                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
-                                            {
-                                                double avgPercent = _cpuClockReadings.Average();
-                                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
-                                            }
+                                                stopwatch.Stop();
+                                                elapsedTime = stopwatch.Elapsed;
 
-                                            if (!_isEncodingStopped)
-                                            {
-                                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
+                                                // Get CPU times after process completion
+                                                try
+                                                {
+                                                    userProcessorTime = _process.UserProcessorTime;
+                                                    privilegedProcessorTime = _process.PrivilegedProcessorTime;
+                                                }
+                                                catch (InvalidOperationException)
+                                                {
+                                                    // Process already exited
+                                                }
                                             }
-                                        }
-                                        catch (Exception ex)
+                                        });
+                                        clockTimer.Stop();
+
+                                        double avgClock = 0;
+                                        if (_cpuClockReadings.Any() && _baseClockMhz > 0)
                                         {
-                                            clockTimer.Stop();
-                                            MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                            isExecuting = false;
-                                            return;
+                                            double avgPercent = _cpuClockReadings.Average();
+                                            avgClock = (avgPercent / 100.0) * _baseClockMhz;
                                         }
-                                        finally
+
+                                        if (!_isEncodingStopped)
                                         {
-                                            progressBarDecoder.Invoke((MethodInvoker)(() =>
-                                            {
-                                                progressBarDecoder.Value++;
-                                                progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
-                                            }));
+                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock);
                                         }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        clockTimer.Stop();
+                                        MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        isExecuting = false;
+                                        return;
+                                    }
+                                    finally
+                                    {
+                                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                                        {
+                                            progressBarDecoder.Value++;
+                                            progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
+                                        }));
                                     }
                                 }
                             }

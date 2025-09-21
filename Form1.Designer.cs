@@ -26,6 +26,7 @@
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
+            buttonScriptConstructor = new Button();
             progressBarEncoder = new ProgressBarEx();
             labelCommandLineEncoder = new Label();
             buttonAddJobToJobListEncoder = new Button();
@@ -146,6 +147,7 @@
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(buttonScriptConstructor);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
             groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
@@ -177,13 +179,23 @@
             groupBoxEncoderSettings.TabStop = false;
             groupBoxEncoderSettings.Text = "Encoder Settings";
             // 
+            // buttonScriptConstructor
+            // 
+            buttonScriptConstructor.Location = new Point(238, 141);
+            buttonScriptConstructor.Name = "buttonScriptConstructor";
+            buttonScriptConstructor.Size = new Size(112, 23);
+            buttonScriptConstructor.TabIndex = 22;
+            buttonScriptConstructor.Text = "Script Constructor";
+            buttonScriptConstructor.UseVisualStyleBackColor = true;
+            buttonScriptConstructor.Click += buttonScriptConstructor_Click;
+            // 
             // progressBarEncoder
             // 
             progressBarEncoder.DisplayType = ProgressBarEx.TextDisplayType.Manual;
-            progressBarEncoder.Location = new Point(238, 141);
+            progressBarEncoder.Location = new Point(356, 141);
             progressBarEncoder.Name = "progressBarEncoder";
-            progressBarEncoder.Size = new Size(324, 23);
-            progressBarEncoder.TabIndex = 22;
+            progressBarEncoder.Size = new Size(206, 23);
+            progressBarEncoder.TabIndex = 23;
             // 
             // labelCommandLineEncoder
             // 
@@ -256,7 +268,7 @@
             // 
             buttonEpr8.Location = new Point(122, 109);
             buttonEpr8.Name = "buttonEpr8";
-            buttonEpr8.Size = new Size(50, 23);
+            buttonEpr8.Size = new Size(43, 23);
             buttonEpr8.TabIndex = 16;
             buttonEpr8.Text = "-epr8";
             buttonEpr8.UseVisualStyleBackColor = true;
@@ -274,9 +286,9 @@
             // 
             // buttonAsubdividetukey5flattop
             // 
-            buttonAsubdividetukey5flattop.Location = new Point(178, 109);
+            buttonAsubdividetukey5flattop.Location = new Point(171, 109);
             buttonAsubdividetukey5flattop.Name = "buttonAsubdividetukey5flattop";
-            buttonAsubdividetukey5flattop.Size = new Size(192, 23);
+            buttonAsubdividetukey5flattop.Size = new Size(179, 23);
             buttonAsubdividetukey5flattop.TabIndex = 17;
             buttonAsubdividetukey5flattop.Text = "-A \"subdivide_tukey(5);flattop\"";
             buttonAsubdividetukey5flattop.UseVisualStyleBackColor = true;
@@ -294,9 +306,9 @@
             // 
             // buttonNoPadding
             // 
-            buttonNoPadding.Location = new Point(376, 109);
+            buttonNoPadding.Location = new Point(356, 109);
             buttonNoPadding.Name = "buttonNoPadding";
-            buttonNoPadding.Size = new Size(90, 23);
+            buttonNoPadding.Size = new Size(100, 23);
             buttonNoPadding.TabIndex = 18;
             buttonNoPadding.Text = "No Padding";
             buttonNoPadding.UseVisualStyleBackColor = true;
@@ -314,9 +326,9 @@
             // 
             // buttonNoSeektable
             // 
-            buttonNoSeektable.Location = new Point(472, 109);
+            buttonNoSeektable.Location = new Point(462, 109);
             buttonNoSeektable.Name = "buttonNoSeektable";
-            buttonNoSeektable.Size = new Size(90, 23);
+            buttonNoSeektable.Size = new Size(100, 23);
             buttonNoSeektable.TabIndex = 19;
             buttonNoSeektable.Text = "No Seektable";
             buttonNoSeektable.UseVisualStyleBackColor = true;
@@ -811,7 +823,7 @@
             // 
             labelPasses.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelPasses.AutoSize = true;
-            labelPasses.Location = new Point(270, 368);
+            labelPasses.Location = new Point(261, 368);
             labelPasses.Name = "labelPasses";
             labelPasses.Size = new Size(41, 15);
             labelPasses.TabIndex = 6;
@@ -821,7 +833,7 @@
             // buttonMinusPass
             // 
             buttonMinusPass.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonMinusPass.Location = new Point(240, 364);
+            buttonMinusPass.Location = new Point(231, 364);
             buttonMinusPass.Name = "buttonMinusPass";
             buttonMinusPass.Size = new Size(24, 23);
             buttonMinusPass.TabIndex = 5;
@@ -833,7 +845,7 @@
             // buttonPlusPass
             // 
             buttonPlusPass.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonPlusPass.Location = new Point(317, 364);
+            buttonPlusPass.Location = new Point(307, 364);
             buttonPlusPass.Name = "buttonPlusPass";
             buttonPlusPass.Size = new Size(24, 23);
             buttonPlusPass.TabIndex = 7;
@@ -948,10 +960,10 @@
             // buttonExportJobList
             // 
             buttonExportJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonExportJobList.Location = new Point(437, 364);
+            buttonExportJobList.Location = new Point(472, 364);
             buttonExportJobList.Name = "buttonExportJobList";
             buttonExportJobList.Size = new Size(55, 23);
-            buttonExportJobList.TabIndex = 9;
+            buttonExportJobList.TabIndex = 8;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
             buttonExportJobList.Click += buttonExportJobList_Click;
@@ -959,10 +971,10 @@
             // buttonImportJobList
             // 
             buttonImportJobList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonImportJobList.Location = new Point(376, 364);
+            buttonImportJobList.Location = new Point(533, 364);
             buttonImportJobList.Name = "buttonImportJobList";
             buttonImportJobList.Size = new Size(55, 23);
-            buttonImportJobList.TabIndex = 8;
+            buttonImportJobList.TabIndex = 9;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
             buttonImportJobList.Click += buttonImportJobList_Click;
@@ -1490,5 +1502,6 @@
         private ProgressBarEx progressBarDecoder;
         private DataGridViewEx dataGridViewLog;
         private CheckBox checkBoxPreventSleep;
+        private Button buttonScriptConstructor;
     }
 }
