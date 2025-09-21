@@ -3835,7 +3835,7 @@ namespace FLAC_Benchmark_H
                                     try
                                     {
                                         warmupProcess.Kill();
-                                        Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                        Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
                                     }
                                     catch (Exception killEx)
                                     {
@@ -4180,7 +4180,7 @@ namespace FLAC_Benchmark_H
                                     try
                                     {
                                         warmupProcess.Kill();
-                                        Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                        Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
                                     }
                                     catch (Exception killEx)
                                     {
@@ -4581,7 +4581,7 @@ namespace FLAC_Benchmark_H
                                 try
                                 {
                                     warmupProcess.Kill();
-                                    Debug.WriteLine("Warm-up pass terminated: exceeded 10 seconds.");
+                                    Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
                                 }
                                 catch (Exception killEx)
                                 {
