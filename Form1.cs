@@ -2399,9 +2399,9 @@ namespace FLAC_Benchmark_H
                 // --- Speed Stability Analysis ---
                 var speeds = group.Speeds; // Use pre-extracted list
 
-                string speedMin = "N/A", speedMax = "N/A", speedRange = "N/A", speedConsistency = "N/A";
+                string speedMin = "", speedMax = "", speedRange = "", speedConsistency = "";
 
-                if (speeds.Any())
+                if (group.PassesCount > 1 && speeds.Any())
                 {
                     // Since 'speeds' is already sorted in ascending order:
                     double minSpeed = speeds.First();  // Equivalent to Min()
