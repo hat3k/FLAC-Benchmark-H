@@ -1589,14 +1589,17 @@ namespace FLAC_Benchmark_H
                     dataGridViewLog.Rows.Remove(row);
                 }
 
-                // Update checkboxes and MD5 display
+                // Update checkboxes and MD5 display if changed
                 foreach (ListViewItem item in listViewAudioFiles.Items)
                 {
                     string path = item.Tag.ToString();
                     item.Checked = !itemsToUncheck.Contains(path);
                     if (audioInfoCache.TryGetValue(path, out var info))
                     {
-                        item.SubItems[5].Text = info.Md5Hash;
+                        if (item.SubItems[5].Text != info.Md5Hash)
+                        {
+                            item.SubItems[5].Text = info.Md5Hash;
+                        }
                     }
                 }
 
