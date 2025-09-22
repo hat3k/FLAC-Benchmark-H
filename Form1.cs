@@ -277,14 +277,21 @@ namespace FLAC_Benchmark_H
             try
             {
                 var encoders = listViewEncoders.Items
-                .Cast<ListViewItem>()
-                .Select(item => $"{item.Tag}~{item.Checked}")
-                .ToArray();
-                File.WriteAllLines(SettingsEncodersFilePath, encoders);
+                    .Cast<ListViewItem>()
+                    .Select(item =>
+                    {
+                        string status = item.Checked ? "Checked" : "Unchecked";
+                        string path = item.Tag?.ToString() ?? "";
+                        return $"{status}|{path}";
+                    })
+                    .ToArray();
+
+                File.WriteAllLines(SettingsEncodersFilePath, encoders, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving encoders: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveAudioFiles()
@@ -292,31 +299,47 @@ namespace FLAC_Benchmark_H
             try
             {
                 var audioFiles = listViewAudioFiles.Items
-                .Cast<ListViewItem>()
-                .Select(item => $"{item.Tag}~{item.Checked}")
-                .ToArray();
-                File.WriteAllLines(SettingsAudioFilesFilePath, audioFiles);
+                    .Cast<ListViewItem>()
+                    .Select(item =>
+                    {
+                        string status = item.Checked ? "Checked" : "Unchecked";
+                        string path = item.Tag?.ToString() ?? "";
+                        return $"{status}|{path}";
+                    })
+                    .ToArray();
+
+                File.WriteAllLines(SettingsAudioFilesFilePath, audioFiles, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving audio files: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveJobs()
         {
             try
             {
-                var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}") // Save text, checkbox state, number of passes, and parameters
-                .ToArray();
-                File.WriteAllLines(SettingsJobsFilePath, jobList);
+                var lines = listViewJobs.Items.Cast<ListViewItem>()
+                    .Select(item =>
+                    {
+                        string status = item.Checked ? "Checked" : "Unchecked";
+                        string type = item.Text;
+                        string passes = item.SubItems[1].Text;
+                        string parameters = item.SubItems[2].Text;
+
+                        return $"{status}|{type}|{passes}|{parameters}";
+                    })
+                    .ToArray();
+
+                File.WriteAllLines(SettingsJobsFilePath, lines, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         // Method to load settings from .txt files
         private void LoadSettings()
         {
@@ -390,150 +413,232 @@ namespace FLAC_Benchmark_H
         }
         private async void LoadEncoders()
         {
-            if (File.Exists(SettingsEncodersFilePath))
+            if (!File.Exists(SettingsEncodersFilePath))
+                return;
+
+            try
             {
-                try
+                string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
+                listViewEncoders.Items.Clear();
+
+                var missingFiles = new List<string>();
+                var tasks = lines.Select(async line =>
                 {
-                    // Read all lines from the file
-                    string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
-                    listViewEncoders.Items.Clear(); // Clear the ListView
+                    if (string.IsNullOrWhiteSpace(line))
+                        return null;
 
-                    var missingFiles = new List<string>(); // List of missing files
-                    var tasks = lines.Select(async line =>
+                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
-                        var parts = line.Split('~');
-                        if (parts.Length == 2)
-                        {
-                            string encoderPath = parts[0];
-                            bool isChecked = bool.Parse(parts[1]); // Read the "checked" status
+                        // New format: Checked|path
+                        int separatorIndex = line.IndexOf('|');
+                        if (separatorIndex == -1 || separatorIndex == line.Length - 1)
+                            return null;
 
-                            // Check if the file exists
+                        bool isChecked = line.StartsWith("Checked");
+                        string encoderPath = line.Substring(separatorIndex + 1);
+
+                        if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
+                        {
+                            var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
+                            if (item != null)
+                            {
+                                item.Checked = isChecked;
+                                return item;
+                            }
+                        }
+                        else
+                        {
+                            missingFiles.Add(encoderPath);
+                        }
+                    }
+                    else if (line.Contains('~'))
+                    {
+                        // Old format: path~checked
+                        var parts = line.Split('~');
+                        if (parts.Length >= 2 && bool.TryParse(parts[parts.Length - 1], out bool isChecked))
+                        {
+                            string encoderPath = string.Join("~", parts.Take(parts.Length - 1));
+
                             if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
                             {
-                                // Create a ListViewItem
                                 var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
                                 if (item != null)
                                 {
-                                    item.Checked = isChecked; // Set the checkbox status
-                                    return item; // Return the created item
+                                    item.Checked = isChecked;
+                                    return item;
                                 }
                             }
                             else
                             {
-                                missingFiles.Add(encoderPath); // Add the path to the missing list
+                                missingFiles.Add(encoderPath);
                             }
                         }
-                        return null;// Return null if the item couldn't be created
-                    });
-
-                    var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
-
-                    // Add only non-null items to the ListView
-                    foreach (var item in items)
-                    {
-                        if (item != null)
-                        {
-                            listViewEncoders.Items.Add(item); // Add the item to the ListView
-                        }
                     }
+                    return null;
+                });
 
-                    // Show a warning about skipped files
-                    if (missingFiles.Count > 0)
-                    {
-                        string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
-                        string.Join("\n", missingFiles.Select(Path.GetFileName)) +
-                        "\n\nCheck if they still exist on your system.";
+                var items = await Task.WhenAll(tasks);
 
-                        MessageBox.Show(warningMessage, "Missing Encoders",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-                catch (Exception ex)
+                foreach (var item in items)
                 {
-                    MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (item != null)
+                    {
+                        listViewEncoders.Items.Add(item);
+                    }
                 }
-                UpdateGroupBoxEncodersHeader();
+
+                SaveEncoders();
+
+                if (missingFiles.Count > 0)
+                {
+                    string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
+                                          string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                                          "\n\nCheck if they still exist on your system.";
+
+                    MessageBox.Show(warningMessage, "Missing Encoders",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading encoders: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            UpdateGroupBoxEncodersHeader();
         }
         private async void LoadAudioFiles()
         {
-            if (File.Exists(SettingsAudioFilesFilePath))
-            {
-                try
-                {
-                    // Read all lines from the file
-                    string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
-                    listViewAudioFiles.Items.Clear(); // Clear the ListView
+            if (!File.Exists(SettingsAudioFilesFilePath))
+                return;
 
-                    var missingFiles = new List<string>(); // List of missing files
-                    var tasks = lines.Select(async line =>
+            try
+            {
+                string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
+                listViewAudioFiles.Items.Clear();
+
+                var missingFiles = new List<string>();
+                var tasks = lines.Select(async line =>
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                        return null;
+
+                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
+                    {
+                        int separatorIndex = line.IndexOf('|');
+                        if (separatorIndex == -1 || separatorIndex == line.Length - 1)
+                            return null;
+
+                        bool isChecked = line.StartsWith("Checked");
+                        string audioFilePath = line.Substring(separatorIndex + 1);
+
+                        if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
+                        {
+                            var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
+                            if (item != null)
+                            {
+                                item.Checked = isChecked;
+                                return item;
+                            }
+                        }
+                        else
+                        {
+                            missingFiles.Add(audioFilePath);
+                        }
+                    }
+                    else if (line.Contains('~'))
                     {
                         var parts = line.Split('~');
-                        if (parts.Length == 2)
+                        if (parts.Length >= 2 && bool.TryParse(parts[parts.Length - 1], out bool isChecked))
                         {
-                            string audioFilePath = parts[0];
-                            bool isChecked = bool.Parse(parts[1]); // Read the "checked" status
+                            string audioFilePath = string.Join("~", parts.Take(parts.Length - 1));
 
-                            // Check if the file exists
                             if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                             {
-                                // Create a ListViewItem
                                 var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
                                 if (item != null)
                                 {
-                                    item.Checked = isChecked; // Set the checkbox status
-                                    return item; // Return the created item
+                                    item.Checked = isChecked;
+                                    return item;
                                 }
                             }
                             else
                             {
-                                missingFiles.Add(audioFilePath); // Add the path to the missing list
+                                missingFiles.Add(audioFilePath);
                             }
                         }
-                        return null; // Return null if the item couldn't be created
-                    });
-
-                    var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
-
-                    // Add only non-null items to the ListView
-                    foreach (var item in items)
-                    {
-                        if (item != null)
-                        {
-                            listViewAudioFiles.Items.Add(item);
-                        }
                     }
+                    return null;
+                });
 
-                    // Show a warning about skipped files
-                    if (missingFiles.Count > 0)
-                    {
-                        string warningMessage = $"The following audio files were missing and not loaded:\n\n" +
-                                              string.Join("\n", missingFiles.Select(Path.GetFileName)) +
-                                              "\n\nCheck if they still exist on your system.";
+                var items = await Task.WhenAll(tasks);
 
-                        MessageBox.Show(warningMessage, "Missing Audio Files",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-                }
-                catch (Exception ex)
+                foreach (var item in items)
                 {
-                    MessageBox.Show($"Error loading audio files: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (item != null)
+                    {
+                        listViewAudioFiles.Items.Add(item);
+                    }
                 }
-                UpdateGroupBoxAudioFilesHeader();
+
+                SaveAudioFiles();
+
+                if (missingFiles.Count > 0)
+                {
+                    string warningMessage = $"The following audio files were missing and not loaded:\n\n" +
+                                          string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                                          "\n\nCheck if they still exist on your system.";
+
+                    MessageBox.Show(warningMessage, "Missing Audio Files",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading audio files: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private void LoadJobs()
         {
             BackupJobsFile();
-            if (File.Exists(SettingsJobsFilePath))
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(SettingsJobsFilePath);
-                    listViewJobs.Items.Clear(); // Clear the list before loading
+            if (!File.Exists(SettingsJobsFilePath))
+                return;
 
-                    foreach (var line in lines)
+            try
+            {
+                string[] lines = File.ReadAllLines(SettingsJobsFilePath);
+                listViewJobs.Items.Clear();
+
+                foreach (string line in lines)
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
+                        // New format: Checked|Type|Passes|Parameters
+                        int firstBar = line.IndexOf('|');
+                        int secondBar = line.IndexOf('|', firstBar + 1);
+                        int thirdBar = line.IndexOf('|', secondBar + 1);
+
+                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                        {
+                            bool isChecked = line.StartsWith("Checked");
+                            string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+                            string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+                            string parameters = line.Substring(thirdBar + 1);
+
+                            var item = new ListViewItem(type) { Checked = isChecked };
+                            item.SubItems.Add(passes);
+                            item.SubItems.Add(parameters);
+                            listViewJobs.Invoke(new Action(() => listViewJobs.Items.Add(item)));
+                            continue;
+                        }
+                    }
+                    else if (line.Contains('~'))
+                    {
+                        // Old format: Text~Checked~Passes~Parameters
                         var parts = line.Split('~');
                         if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
@@ -541,17 +646,18 @@ namespace FLAC_Benchmark_H
                             item.SubItems.Add(NormalizeSpaces(parts[2]));
                             item.SubItems.Add(NormalizeSpaces(parts[3]));
                             listViewJobs.Invoke(new Action(() => listViewJobs.Items.Add(item)));
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            continue;
                         }
                     }
+
+                    MessageBox.Show($"Invalid line format: {line}", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading jobs from file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void BackupJobsFile()
@@ -3289,34 +3395,47 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewJobs_DrawSubItem(object? sender, DrawListViewSubItemEventArgs e)
         {
-            if (e.ColumnIndex == 0) // Column with job type (Encode/Decode)
+            if (e.ColumnIndex == 0 && e.Item != null)
             {
                 e.DrawBackground();
-                // Draw checkbox
+
+                // Draw checkbox if enabled
                 if (listViewJobs.CheckBoxes)
                 {
                     CheckBoxRenderer.DrawCheckBox(e.Graphics,
-                    new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
-            e.Item?.Checked == true ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
-                    : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
+                        new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
+                        e.Item.Checked
+                            ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
+                            : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
                 }
-                Color textColor = e.SubItem?.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase) == true
-                ? Color.Green
-                : e.SubItem?.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase) == true
-                ? Color.Red
-                : e.Item?.ForeColor ?? Color.Black;
-                using (var brush = new SolidBrush(textColor))
+
+                // Determine text color based on job type
+                Color textColor = e.Item.ForeColor;
+
+                if (e.SubItem?.Text != null)
                 {
-                    // Shift text right to avoid overlapping checkbox
-                    Rectangle textBounds = new Rectangle(
+                    if (e.SubItem.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase))
+                        textColor = Color.Green;
+                    else if (e.SubItem.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase))
+                        textColor = Color.Red;
+                }
+
+                using var brush = new SolidBrush(textColor);
+
+                // Shift text to the right to avoid overlapping with checkbox
+                Rectangle textBounds = new Rectangle(
                     e.Bounds.Left + (listViewJobs.CheckBoxes ? 20 : 0),
                     e.Bounds.Top,
                     e.Bounds.Width - (listViewJobs.CheckBoxes ? 20 : 0),
                     e.Bounds.Height);
-                    e.Graphics.DrawString(e.SubItem?.Text ?? string.Empty,
-                    e.SubItem?.Font ?? e.Item?.Font ?? this.Font,
-                    brush, textBounds, StringFormat.GenericDefault);
-                }
+
+                e.Graphics.DrawString(
+                    e.SubItem?.Text ?? string.Empty,
+                    e.SubItem?.Font ?? e.Item.Font ?? this.Font,
+                    brush,
+                    textBounds,
+                    StringFormat.GenericDefault);
+
                 e.DrawFocusRectangle(e.Bounds);
             }
             else
@@ -3381,7 +3500,8 @@ namespace FLAC_Benchmark_H
         {
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("The specified file does not exist.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -3390,23 +3510,47 @@ namespace FLAC_Benchmark_H
                 string[] lines = await Task.Run(() => File.ReadAllLines(filePath));
                 foreach (var line in lines)
                 {
-                    var parts = line.Split('~');
-                    if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
-                        string jobName = NormalizeSpaces(parts[0]);
-                        string passes = NormalizeSpaces(parts[2]);
-                        string parameters = NormalizeSpaces(parts[3]);
-                        AddJobsToListView(jobName, isChecked, passes, parameters);
+                        int firstBar = line.IndexOf('|');
+                        int secondBar = line.IndexOf('|', firstBar + 1);
+                        int thirdBar = line.IndexOf('|', secondBar + 1);
+
+                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                        {
+                            bool isChecked = line.StartsWith("Checked");
+                            string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+                            string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+                            string parameters = line.Substring(thirdBar + 1);
+
+                            AddJobsToListView(type, isChecked, passes, parameters);
+                            continue;
+                        }
                     }
-                    else
+                    else if (line.Contains('~'))
                     {
-                        MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        var parts = line.Split('~');
+                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                        {
+                            string jobName = NormalizeSpaces(parts[0]);
+                            string passes = NormalizeSpaces(parts[2]);
+                            string parameters = NormalizeSpaces(parts[3]);
+                            AddJobsToListView(jobName, isChecked, passes, parameters);
+                            continue;
+                        }
                     }
+
+                    MessageBox.Show($"Invalid line format: {line}", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error reading file: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void AddJobsToListView(string job, bool isChecked = true, string passes = "", string parameters = "")
@@ -3428,32 +3572,53 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        foreach (string fileName in openFileDialog.FileNames) // Process each selected file
+                        foreach (string fileName in openFileDialog.FileNames)
                         {
                             string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
                             foreach (var line in lines)
                             {
-                                // Normalize string
-                                string normalizedLine = NormalizeSpaces(line);
+                                if (string.IsNullOrWhiteSpace(line))
+                                    continue;
 
-                                var parts = normalizedLine.Split('~');
-                                if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                                if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                                 {
-                                    string jobName = parts[0];
-                                    string passes = parts[2];
-                                    string parameters = parts[3];
-                                    AddJobsToListView(jobName, isChecked, passes, parameters);
+                                    int firstBar = line.IndexOf('|');
+                                    int secondBar = line.IndexOf('|', firstBar + 1);
+                                    int thirdBar = line.IndexOf('|', secondBar + 1);
+
+                                    if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                                    {
+                                        bool isChecked = line.StartsWith("Checked");
+                                        string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+                                        string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+                                        string parameters = line.Substring(thirdBar + 1);
+
+                                        AddJobsToListView(type, isChecked, passes, parameters);
+                                        continue;
+                                    }
                                 }
-                                else
+                                else if (line.Contains('~'))
                                 {
-                                    MessageBox.Show($"Invalid line format: {normalizedLine}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    var parts = line.Split('~');
+                                    if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                                    {
+                                        string jobName = NormalizeSpaces(parts[0]);
+                                        string passes = NormalizeSpaces(parts[2]);
+                                        string parameters = NormalizeSpaces(parts[3]);
+                                        AddJobsToListView(jobName, isChecked, passes, parameters);
+                                        continue;
+                                    }
                                 }
+
+                                MessageBox.Show($"Invalid line format: {line}", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -3471,13 +3636,22 @@ namespace FLAC_Benchmark_H
                     try
                     {
                         var jobList = listViewJobs.Items.Cast<ListViewItem>()
-                            .Select(item => $"{item.Text}~{item.Checked}~{item.SubItems[1].Text}~{item.SubItems[2].Text}")
+                            .Select(item =>
+                            {
+                                string status = item.Checked ? "Checked" : "Unchecked";
+                                string type = item.Text;
+                                string passes = item.SubItems[1].Text;
+                                string parameters = item.SubItems[2].Text;
+                                return $"{status}|{type}|{passes}|{parameters}";
+                            })
                             .ToArray();
-                        File.WriteAllLines(saveFileDialog.FileName, jobList);
+
+                        File.WriteAllLines(saveFileDialog.FileName, jobList, Encoding.UTF8);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -3627,60 +3801,87 @@ namespace FLAC_Benchmark_H
         {
             StringBuilder jobsText = new StringBuilder();
 
-            // Check if there are selected items
             var itemsToCopy = listViewJobs.SelectedItems.Count > 0
                 ? listViewJobs.SelectedItems.Cast<ListViewItem>()
                 : listViewJobs.Items.Cast<ListViewItem>();
 
             foreach (var item in itemsToCopy)
             {
-                jobsText.AppendLine($"{NormalizeSpaces(item.Text)}~{item.Checked}~{NormalizeSpaces(item.SubItems[1].Text)}~{NormalizeSpaces(item.SubItems[2].Text)}");
+                string status = item.Checked ? "Checked" : "Unchecked";
+                string type = item.Text;
+                string passes = item.SubItems[1].Text;
+                string parameters = item.SubItems[2].Text;
+
+                jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
             }
 
-            // Copy text to clipboard
             if (jobsText.Length > 0)
             {
                 Clipboard.SetText(jobsText.ToString());
             }
             else
             {
-                MessageBox.Show("No jobs to copy.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("No jobs to copy.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void buttonPasteJobs_Click(object? sender, EventArgs e)
         {
             try
             {
-                // Get text from clipboard
                 string clipboardText = Clipboard.GetText();
-
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var line in lines)
                     {
-                        var parts = line.Split('~');
-                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                        if (string.IsNullOrWhiteSpace(line))
+                            continue;
+
+                        if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                         {
-                            string jobName = parts[0];
-                            string passes = parts[2];
-                            string parameters = parts[3];
-                            AddJobsToListView(jobName, isChecked, passes, parameters);
+                            int firstBar = line.IndexOf('|');
+                            int secondBar = line.IndexOf('|', firstBar + 1);
+                            int thirdBar = line.IndexOf('|', secondBar + 1);
+
+                            if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                            {
+                                bool isChecked = line.StartsWith("Checked");
+                                string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+                                string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+                                string parameters = line.Substring(thirdBar + 1);
+
+                                AddJobsToListView(type, isChecked, passes, parameters);
+                                continue;
+                            }
                         }
-                        else
+                        else if (line.Contains('~'))
                         {
-                            MessageBox.Show($"Invalid line format: {line}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            var parts = line.Split('~');
+                            if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                            {
+                                string jobName = parts[0];
+                                string passes = parts[2];
+                                string parameters = parts[3];
+                                AddJobsToListView(jobName, isChecked, passes, parameters);
+                                continue;
+                            }
                         }
+
+                        MessageBox.Show($"Invalid line format: {line}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Clipboard is empty.", "Information",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -4434,7 +4635,7 @@ namespace FLAC_Benchmark_H
                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
 
                         // Check if parameters contain script patterns (like {0..8} or {1,2,3})
-                        if (parameters.Contains('{') && parameters.Contains('}'))
+                        if (parameters.Contains('[') && parameters.Contains(']'))
                         {
                             // Expand script using ScriptParser
                             var expandedParameters = ScriptParser.ExpandScriptLine(parameters);
