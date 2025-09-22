@@ -71,7 +71,7 @@ namespace FLAC_Benchmark_H
         /// </summary>
         private void ListViewPreview_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            if (e.ColumnIndex == 0 && e.Item != null) // Job Type column
+            if (e.ColumnIndex == 0 && e.Item != null)
             {
                 e.DrawBackground();
 
@@ -85,34 +85,40 @@ namespace FLAC_Benchmark_H
                             : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
                 }
 
-                // Set text color based on job type
-                Color textColor = e.SubItem?.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase) == true
-                    ? Color.Green
-                    : e.SubItem?.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase) == true
-                    ? Color.Red
-                    : e.Item.ForeColor;
+                // Determine text color based on job type
+                Color textColor = e.Item.ForeColor;
 
-                using (var brush = new SolidBrush(textColor))
+                if (e.SubItem?.Text != null)
                 {
-                    Rectangle textBounds = new Rectangle(
-                        e.Bounds.Left + (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
-                        e.Bounds.Top,
-                        e.Bounds.Width - (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
-                        e.Bounds.Height);
-
-                    e.Graphics.DrawString(e.SubItem?.Text ?? string.Empty,
-                        e.SubItem?.Font ?? e.Item.Font ?? Font,
-                        brush, textBounds);
+                    if (e.SubItem.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase))
+                        textColor = Color.Green;
+                    else if (e.SubItem.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase))
+                        textColor = Color.Red;
                 }
+
+                using var brush = new SolidBrush(textColor);
+
+                // Shift text to the right to avoid overlapping with checkbox
+                Rectangle textBounds = new Rectangle(
+                    e.Bounds.Left + (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
+                    e.Bounds.Top,
+                    e.Bounds.Width - (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
+                    e.Bounds.Height);
+
+                e.Graphics.DrawString(
+                    e.SubItem?.Text ?? string.Empty,
+                    e.SubItem?.Font ?? e.Item.Font ?? this.Font,
+                    brush,
+                    textBounds,
+                    StringFormat.GenericDefault);
 
                 e.DrawFocusRectangle(e.Bounds);
             }
             else
             {
-                e.DrawDefault = true; // Default drawing for other columns
+                e.DrawDefault = true;
             }
         }
-
         /// <summary>
         /// Loads formatted help text explaining script syntax and rules.
         /// Includes examples and warnings about invalid formats.
@@ -132,7 +138,7 @@ namespace FLAC_Benchmark_H
 
                 // Warnings
                 richTextBoxScriptHelp.SelectionColor = Color.OrangeRed;
-                richTextBoxScriptHelp.AppendText("⚠️ Only NUMERIC values inside {} are iterated.\n\n");
+                richTextBoxScriptHelp.AppendText("⚠️ Only NUMERIC values inside [] are iterated (integers or decimals).\n\n");
 
                 // Syntax Guide
                 richTextBoxScriptHelp.SelectionColor = Color.Black;
@@ -143,9 +149,9 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Bold);
                 richTextBoxScriptHelp.AppendText("1. Basic Range\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Regular);
-                richTextBoxScriptHelp.AppendText("   {min..max} generates consecutive values.\n");
+                richTextBoxScriptHelp.AppendText("   [min..max] generates consecutive values (step = 1 by default).\n");
                 richTextBoxScriptHelp.AppendText("   Example:\n");
-                richTextBoxScriptHelp.AppendText("     -j{4..8}\n");
+                richTextBoxScriptHelp.AppendText("     -j[4..8]\n");
                 richTextBoxScriptHelp.AppendText("   Expands to:\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Italic);
                 richTextBoxScriptHelp.AppendText("     -j4\n");
@@ -159,9 +165,9 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Bold);
                 richTextBoxScriptHelp.AppendText("2. Range with Step\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Regular);
-                richTextBoxScriptHelp.AppendText("   {min..max..step} defines an increment.\n");
+                richTextBoxScriptHelp.AppendText("   [min..max..step] defines custom increment (positive or negative).\n");
                 richTextBoxScriptHelp.AppendText("   Example:\n");
-                richTextBoxScriptHelp.AppendText("     -j{2..8..2}\n");
+                richTextBoxScriptHelp.AppendText("     -j[2..8..2]\n");
                 richTextBoxScriptHelp.AppendText("   Expands to:\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Italic);
                 richTextBoxScriptHelp.AppendText("     -j2\n");
@@ -174,9 +180,9 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Bold);
                 richTextBoxScriptHelp.AppendText("3. Explicit Values\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Regular);
-                richTextBoxScriptHelp.AppendText("   {value1, value2, value3} lists individual values.\n");
+                richTextBoxScriptHelp.AppendText("   [value1, value2, value3] lists individual values.\n");
                 richTextBoxScriptHelp.AppendText("   Example:\n");
-                richTextBoxScriptHelp.AppendText("     -j{2, 4, 10, 16}\n");
+                richTextBoxScriptHelp.AppendText("     -j[2, 4, 10, 16]\n");
                 richTextBoxScriptHelp.AppendText("   Expands to:\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Italic);
                 richTextBoxScriptHelp.AppendText("     -j2\n");
@@ -191,7 +197,7 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Regular);
                 richTextBoxScriptHelp.AppendText("   Combine ranges, steps and values in any order.\n");
                 richTextBoxScriptHelp.AppendText("   Example:\n");
-                richTextBoxScriptHelp.AppendText("     -j{2..4, 8..12..2, 16}\n");
+                richTextBoxScriptHelp.AppendText("     -j[2..4, 8..12..2, 16]\n");
                 richTextBoxScriptHelp.AppendText("   Expands to:\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Italic);
                 richTextBoxScriptHelp.AppendText("     -j2\n");
@@ -209,16 +215,17 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.AppendText("Notes:\n");
                 richTextBoxScriptHelp.SelectionFont = new Font(richTextBoxScriptHelp.Font, FontStyle.Regular);
                 richTextBoxScriptHelp.SelectionColor = Color.Black;
-                richTextBoxScriptHelp.AppendText("• The resulting script will appear in the main window's \"Job List\" panel.\n");
+                richTextBoxScriptHelp.AppendText("• The resulting Script will appear as a Job in the main window's \"Job List\" panel.\n");
                 richTextBoxScriptHelp.AppendText("• Use cautiously: large ranges may generate many jobs.\n");
-                richTextBoxScriptHelp.AppendText("• You may preview how many Jobs are generated by your script.\n");
+                richTextBoxScriptHelp.AppendText("• You can preview how many Jobs are generated by your Script.\n");
+                richTextBoxScriptHelp.AppendText("• Decimal separator is period '.' (e.g., 0.5, not 0,5).\n");
+                richTextBoxScriptHelp.AppendText("• Negative numbers are supported: [-2..2], [-1.0..1.0..0.5]\n");
             }
             finally
             {
                 richTextBoxScriptHelp.ResumeLayout(); // Resume layout updates
             }
         }
-
         /// <summary>
         /// Updates the preview list with expanded jobs from the current script.
         /// Called automatically on every text change or form load.
@@ -274,7 +281,7 @@ namespace FLAC_Benchmark_H
             if (expanded.Count == 0)
             {
                 MessageBox.Show(
-                    "Script produced no valid jobs. Check syntax (e.g. {min..max}).",
+                    "Script produced no valid jobs. Check syntax (e.g. [min..max]).",
                     "Invalid Script",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
