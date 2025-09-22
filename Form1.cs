@@ -1691,251 +1691,206 @@ namespace FLAC_Benchmark_H
         }
         private async void buttonTestForErrors_Click(object? sender, EventArgs e)
         {
-            // --- STAGE 0: PREPARE USER INTERFACE ---
             var button = (Button)sender;
             var originalText = button.Text;
+            var cts = new CancellationTokenSource();
 
             try
             {
-                // Disable the button and show a progress indicator.
                 button.Text = "In progress...";
                 button.Enabled = false;
 
-                // --- STAGE 0.1: COLLECT DATA FROM UI ---
-                // Run this part in the UI thread as it reads/modifies UI elements.
-                List<string> flacFilePaths = new List<string>();
-                string? encoderPath = null;
-                bool useWarningsAsErrors = false;
-
-                this.Invoke((MethodInvoker)delegate
+                // --- STAGE 1: COLLECT DATA FROM UI ---
+                var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
                 {
-                    // --- Clear previous integrity error results from the log ---
-                    for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
-                    {
-                        DataGridViewRow row = dataGridViewLog.Rows[i];
-                        if (row.Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
-                        {
-                            dataGridViewLog.Rows.RemoveAt(i);
-                        }
-                    }
+                    List<string> flacFilePaths = new List<string>();
+                    string encoderPath = null;
+                    bool useWarningsAsErrors = false;
 
-                    // --- Check if files physically exist on disk ---
-                    var itemsToRemove = new List<ListViewItem>();
-                    foreach (ListViewItem item in listViewAudioFiles.Items)
+                    this.Invoke((MethodInvoker)delegate
                     {
-                        string filePath = item.Tag.ToString();
-                        if (!File.Exists(filePath))
+                        // Clear previous results
+                        for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
                         {
-                            itemsToRemove.Add(item);
+                            if (dataGridViewLog.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
+                                dataGridViewLog.Rows.RemoveAt(i);
                         }
-                    }
-                    foreach (var itemToRemove in itemsToRemove)
-                    {
-                        listViewAudioFiles.Items.Remove(itemToRemove);
-                    }
-                    if (itemsToRemove.Count > 0)
-                    {
-                        UpdateGroupBoxAudioFilesHeader();
-                        // Show message on UI thread
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
-                        });
-                    }
 
-                    // Collect paths of all .flac files currently in the list.
-                    flacFilePaths.AddRange(
-                        listViewAudioFiles.Items.Cast<ListViewItem>()
+                        // Remove missing files
+                        var itemsToRemove = listViewAudioFiles.Items.Cast<ListViewItem>()
+                            .Where(item => !File.Exists(item.Tag.ToString())).ToList();
+
+                        foreach (var item in itemsToRemove)
+                            listViewAudioFiles.Items.Remove(item);
+
+                        if (itemsToRemove.Count > 0)
+                        {
+                            UpdateGroupBoxAudioFilesHeader();
+                            ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) removed");
+                        }
+
+                        // Collect FLAC files and settings
+                        flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
                             .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                            .Select(item => item.Tag.ToString())
-                    );
+                            .Select(item => item.Tag.ToString()));
 
-                    // Get the path of the first .exe file found in the encoders list.
-                    var encoderItem = listViewEncoders.Items
-                        .Cast<ListViewItem>()
-                        .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
-                    encoderPath = encoderItem?.Tag?.ToString();
+                        encoderPath = listViewEncoders.Items
+                            .Cast<ListViewItem>()
+                            .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                            ?.Tag?.ToString();
 
-                    // Get the state of the 'Warnings as Errors' checkbox.
-                    useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
+                        useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
+                    });
+
+                    return (flacFilePaths, encoderPath, useWarningsAsErrors);
                 });
 
-                // Validate collected data before proceeding.
+                // Validation
                 if (flacFilePaths.Count == 0)
                 {
                     MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                if (string.IsNullOrEmpty(encoderPath))
+                if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
                 {
-                    MessageBox.Show("No .exe encoder found in the encoders list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No valid .exe encoder found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // --- STAGE 1: PERFORM INTEGRITY TESTS IN BACKGROUND THREAD ---
-                List<(string FileName, string FilePath, string Message)> errorResults = new List<(string, string, string)>();
-                bool allPassed = true; // Flag to track if all files passed the test.
+                // --- STAGE 2: PARALLEL INTEGRITY TEST ---
+                var errorResults = new ConcurrentBag<(string FileName, string FilePath, string Message)>();
+                var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
 
-                await Task.Run(async () =>
+                await Task.WhenAll(flacFilePaths.Select(async filePath =>
                 {
-                    var localErrorResults = new List<(string FileName, string FilePath, string Message)>();
+                    if (cts.Token.IsCancellationRequested) return;
 
-                    // Test each FLAC file sequentially.
-                    foreach (string filePath in flacFilePaths)
+                    await semaphore.WaitAsync(cts.Token);
+                    try
                     {
-                        // Get the file name, preferably from the cache.
                         string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
 
-                        try
+                        using var process = new Process();
+                        process.StartInfo = new ProcessStartInfo
                         {
-                            using (var process = new Process())
-                            {
-                                process.StartInfo.FileName = encoderPath;
-                                // Build the command line arguments for the flac test.
-                                string arguments = " --test --silent";
-                                if (useWarningsAsErrors)
-                                {
-                                    arguments += " --warnings-as-errors";
-                                }
-                                arguments += $" \"{filePath}\"";
+                            FileName = encoderPath,
+                            Arguments = $" --test --silent{(useWarningsAsErrors ? " --warnings-as-errors" : "")} \"{filePath}\"",
+                            UseShellExecute = false,
+                            RedirectStandardError = true,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true,
+                            StandardErrorEncoding = Encoding.UTF8,
+                            StandardOutputEncoding = Encoding.UTF8
+                        };
 
-                                process.StartInfo.Arguments = arguments;
-                                process.StartInfo.UseShellExecute = false;
-                                process.StartInfo.RedirectStandardError = true;
-                                process.StartInfo.RedirectStandardOutput = true;
-                                process.StartInfo.CreateNoWindow = true;
+                        process.Start();
 
-                                process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
-                                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+                        var errorTask = process.StandardError.ReadToEndAsync();
+                        var outputTask = process.StandardOutput.ReadToEndAsync();
 
-                                process.Start();
+                        await process.WaitForExitAsync(cts.Token);
 
-                                // Asynchronously read output and error streams to prevent deadlocks.
-                                var errorTask = process.StandardError.ReadToEndAsync();
-                                var outputTask = process.StandardOutput.ReadToEndAsync();
+                        string errorOutput = await errorTask;
+                        string output = await outputTask;
 
-                                await process.WaitForExitAsync();
+                        string combinedMessage = "";
 
-                                string errorOutput = await errorTask;
-                                string output = await outputTask;
-
-                                // If the process exited with a non-zero code, it indicates an error or failure.
-                                if (process.ExitCode != 0)
-                                {
-                                    string message = string.IsNullOrEmpty(errorOutput.Trim()) ? "Unknown error" : errorOutput.Trim();
-                                    localErrorResults.Add((fileName, filePath, message));
-                                    allPassed = false; // Mark that at least one file failed.
-                                }
-                            }
+                        if (!string.IsNullOrWhiteSpace(output.Trim()))
+                        {
+                            combinedMessage += output.Trim();
                         }
-                        catch (Exception ex)
+
+                        if (!string.IsNullOrWhiteSpace(errorOutput.Trim()))
                         {
-                            // Catch any exceptions during the process execution (e.g., file access issues).
-                            localErrorResults.Add((fileName, filePath, $"Exception: {ex.Message}"));
-                            allPassed = false; // Mark that at least one file failed.
+                            if (combinedMessage.Length > 0) combinedMessage += " | ";
+                            combinedMessage += errorOutput.Trim();
+                        }
+
+                        if (process.ExitCode != 0 || !string.IsNullOrWhiteSpace(combinedMessage))
+                        {
+                            string message = string.IsNullOrWhiteSpace(combinedMessage)
+                                ? "Unknown error (non-zero exit code)"
+                                : combinedMessage;
+
+                            errorResults.Add((fileName, filePath, message));
                         }
                     }
-                    // Transfer results from the local list (used inside Task.Run) to the outer list.
-                    errorResults = localErrorResults;
-                });
+                    catch (Exception ex) when (!(ex is OperationCanceledException))
+                    {
+                        errorResults.Add((Path.GetFileName(filePath), filePath, $"Process failed: {ex.Message}"));
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
 
-                // --- STAGE 2: UPDATE USER INTERFACE ---
-                // All UI modifications must happen on the UI thread.
-                this.Invoke((MethodInvoker)delegate
+                if (cts.Token.IsCancellationRequested) return;
+
+                // --- STAGE 3: UPDATE UI ---
+                await this.InvokeAsync(() =>
                 {
-                    // --- STAGE 2.1: UPDATE LOG GRID ---
-                    // Ensure the 'Errors' column exists in the DataGridView.
-                    if (!dataGridViewLog.Columns.Contains("Errors"))
+                    dataGridViewLog.SuspendLayout();
+                    try
                     {
-                        var errorColumn = new DataGridViewTextBoxColumn();
-                        errorColumn.Name = "Errors";
-                        errorColumn.HeaderText = "Errors";
-                        errorColumn.Visible = false; // Will be made visible if needed.
-                        errorColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                        dataGridViewLog.Columns.Add(errorColumn);
-                    }
+                        var rowsToAdd = errorResults.Select(result =>
+                        {
+                            string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
+                                ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
 
-                    // --- STAGE 2.2: LOG INTEGRITY CHECK ERROR RESULTS ---
-                    // Add entries for files that failed the flac --test to the log grid.
-                    foreach (var result in errorResults)
-                    {
-                        // Retrieve file metadata from the cache. Fallback to Path.* methods if not found (unlikely).
-                        string fileName = result.FileName; // Name is already in the result.
-                        string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info) ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
-                        string errorMessage = result.Message; // Error message is already in the result.
+                            var row = new DataGridViewRow();
+                            row.CreateCells(dataGridViewLog);
+                            row.SetValues(
+                                result.FileName, "", "", "", "", "", "", "", "", "", "",
+                                "", "", "", "", "", "", "", "", "", "", "", directoryPath,
+                                "Integrity Check Failed", "", result.Message
+                            );
+                            row.DefaultCellStyle.ForeColor = Color.Red;
+                            return row;
+                        }).ToList();
 
-                        int rowIndex = dataGridViewLog.Rows.Add(
-                            fileName,                    //  0: Name
-                            string.Empty,                //  1: BitDepth
-                            string.Empty,                //  2: SamplingRate
-                            string.Empty,                //  3: InputFileSize
-                            string.Empty,                //  4: OutputFileSize
-                            string.Empty,                //  5: Compression
-                            string.Empty,                //  6: Time
-                            string.Empty,                //  7: Speed
-                            string.Empty,                //  8: SpeedMin
-                            string.Empty,                //  9: SpeedMax
-                            string.Empty,                // 10: SpeedRange
-                            string.Empty,                // 11: SpeedConsistency
-                            string.Empty,                // 12: CPULoadEncoder
-                            string.Empty,                // 13: CPUClock
-                            string.Empty,                // 14: Passes
-                            string.Empty,                // 15: Parameters
-                            string.Empty,                // 16: Encoder
-                            string.Empty,                // 17: Version
-                            string.Empty,                // 18: Encoder directory path
-                            string.Empty,                // 19: FastestEncoder
-                            string.Empty,                // 20: BestSize
-                            string.Empty,                // 21: SameSize
-                            directoryPath,               // 22: AudioFileDirectory
-                            "Integrity Check Failed",    // 23: MD5 (repurposed for this check)
-                            string.Empty,                // 24: Duplicates
-                            errorMessage                 // 25: Errors
+                        if (rowsToAdd.Count > 0)
+                            dataGridViewLog.Rows.AddRange(rowsToAdd.ToArray());
+
+                        dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
+                            .Cast<DataGridViewRow>()
+                            .Any(row => !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()));
+
+                        MessageBox.Show(
+                            errorResults.Count == 0
+                                ? "All FLAC files passed the integrity test."
+                                : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
+                            "Test Complete",
+                            MessageBoxButtons.OK,
+                            errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
                         );
-
-                        // Highlight integrity check error rows in red for visibility.
-                        dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Red;
-                        // Note: The error message is added to the row itself, not specifically to the 'Errors' cell,
-                        // which is consistent with how other logs are added in this application.
                     }
-
-                    // Show the "Errors" column only if there are any errors present in it.
-                    // This ensures the column remains visible if other operations also added errors.
-                    dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
-                        .Cast<DataGridViewRow>()
-                        .Any(row => row.Cells["Errors"].Value != null && !string.IsNullOrEmpty(row.Cells["Errors"].Value.ToString()));
-
-                    // Inform the user about the overall result of the test.
-                    if (allPassed)
+                    finally
                     {
-                        MessageBox.Show("All FLAC files passed the integrity test.", "Test Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        dataGridViewLog.ResumeLayout();
                     }
                 });
-
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation
             }
             catch (Exception ex)
             {
-                // Handle any unexpected errors that occurred outside the main processing loop.
-                this.Invoke((MethodInvoker)delegate
-                {
-                    MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                });
+                MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                // Restore the button's original state regardless of outcome.
-                if (button != null && !button.IsDisposed)
+                if (!button.IsDisposed)
                 {
-                    button.Invoke((MethodInvoker)(() =>
-                    {
-                        button.Text = originalText;
-                        button.Enabled = true;
-                    }));
+                    button.Text = originalText;
+                    button.Enabled = true;
                 }
+                cts.Dispose();
             }
         }
-
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
