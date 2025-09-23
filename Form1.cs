@@ -247,6 +247,16 @@ namespace FLAC_Benchmark_H
         {
             try
             {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                string tempPathToSave = tempFolderPath;
+
+                if (!string.IsNullOrEmpty(tempFolderPath) &&
+                    tempFolderPath.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
+                {
+                    string relativePart = tempFolderPath.Substring(baseDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    tempPathToSave = $".\\{relativePart}";
+                }
+                
                 var settings = new[]
                 {
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
@@ -254,7 +264,7 @@ namespace FLAC_Benchmark_H
                     $"CommandLineOptionsEncoder={textBoxCommandLineOptionsEncoder.Text}",
                     $"CommandLineOptionsDecoder={textBoxCommandLineOptionsDecoder.Text}",
                     $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
-                    $"TempFolderPath={tempFolderPath}",
+                    $"TempFolderPath={tempPathToSave}",
                     $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
@@ -340,75 +350,119 @@ namespace FLAC_Benchmark_H
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         // Method to load settings from .txt files
         private void LoadSettings()
         {
-            // Load the path to the temporary folder
+            // Set default value - relative path
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+
             try
             {
+                if (!File.Exists(SettingsGeneralFilePath))
+                    return;
+
                 string[] lines = File.ReadAllLines(SettingsGeneralFilePath);
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
                 foreach (var line in lines)
                 {
-                    var parts = line.Split(new[] { '=' }, 2); // Split the line into key and value, limit separation to the first '=' sign
-                    if (parts.Length == 2)
+                    var parts = line.Split(new[] { '=' }, 2);
+                    if (parts.Length != 2) continue;
+
+                    var key = parts[0].Trim();
+                    var value = parts[1].Trim();
+
+                    switch (key)
                     {
-                        var key = parts[0].Trim();
-                        var value = parts[1].Trim();
-                        // Load values into corresponding fields
-                        switch (key)
-                        {
-                            case "CompressionLevel":
-                                textBoxCompressionLevel.Text = value;
-                                break;
-                            case "Threads":
-                                textBoxThreads.Text = value;
-                                break;
-                            case "CommandLineOptionsEncoder":
-                                textBoxCommandLineOptionsEncoder.Text = value;
-                                break;
-                            case "CommandLineOptionsDecoder":
-                                textBoxCommandLineOptionsDecoder.Text = value;
-                                break;
-                            case "CPUPriority":
-                                comboBoxCPUPriority.SelectedItem = value;
-                                break;
-                            case "TempFolderPath":
+                        case "CompressionLevel":
+                            textBoxCompressionLevel.Text = value;
+                            break;
+                        case "Threads":
+                            textBoxThreads.Text = value;
+                            break;
+                        case "CommandLineOptionsEncoder":
+                            textBoxCommandLineOptionsEncoder.Text = value;
+                            break;
+                        case "CommandLineOptionsDecoder":
+                            textBoxCommandLineOptionsDecoder.Text = value;
+                            break;
+                        case "CPUPriority":
+                            comboBoxCPUPriority.SelectedItem = value;
+                            break;
+                        case "TempFolderPath":
+                            // If path is relative - resolve it relative to application directory
+                            if (value.StartsWith(".\\") || value.StartsWith("./"))
+                            {
+                                string relativePart = value.Substring(2); // Remove ".\"
+                                tempFolderPath = Path.Combine(baseDir, relativePart);
+                            }
+                            else
+                            {
+                                // Otherwise - use as absolute path
                                 tempFolderPath = value;
-                                break;
-                            case "ClearTempFolderOnExit":
-                                checkBoxClearTempFolder.Checked = bool.Parse(value);
-                                break;
-                            case "RemoveMetadata":
-                                checkBoxRemoveMetadata.Checked = bool.Parse(value);
-                                break;
-                            case "AddMD5OnLoadWav":
-                                checkBoxAddMD5OnLoadWav.Checked = bool.Parse(value);
-                                break;
-                            case "AddWarmupPass":
-                                checkBoxWarmupPass.Checked = bool.Parse(value);
-                                break;
-                            case "WarningsAsErrors":
-                                checkBoxWarningsAsErrors.Checked = bool.Parse(value);
-                                break;
-                            case "AutoAnalyzeLog":
-                                checkBoxAutoAnalyzeLog.Checked = bool.Parse(value);
-                                break;
-                            case "PreventSleep":
-                                checkBoxPreventSleep.Checked = bool.Parse(value);
-                                break;
-                            case "CheckForUpdatesOnStartup":
-                                checkBoxCheckForUpdatesOnStartup.Checked = bool.Parse(value);
-                                break;
-                            case "IgnoredVersion":
-                                programVersionIgnored = value;
-                                break;
+                            }
+                            break;
+                        case "ClearTempFolderOnExit":
+                            checkBoxClearTempFolder.Checked = bool.TryParse(value, out bool clear) ? clear : false;
+                            break;
+                        case "RemoveMetadata":
+                            checkBoxRemoveMetadata.Checked = bool.TryParse(value, out bool remove) ? remove : false;
+                            break;
+                        case "AddMD5OnLoadWav":
+                            checkBoxAddMD5OnLoadWav.Checked = bool.TryParse(value, out bool addMd5) ? addMd5 : false;
+                            break;
+                        case "AddWarmupPass":
+                            checkBoxWarmupPass.Checked = bool.TryParse(value, out bool warmup) ? warmup : false;
+                            break;
+                        case "WarningsAsErrors":
+                            checkBoxWarningsAsErrors.Checked = bool.TryParse(value, out bool warnings) ? warnings : false;
+                            break;
+                        case "AutoAnalyzeLog":
+                            checkBoxAutoAnalyzeLog.Checked = bool.TryParse(value, out bool analyze) ? analyze : false;
+                            break;
+                        case "PreventSleep":
+                            checkBoxPreventSleep.Checked = bool.TryParse(value, out bool prevent) ? prevent : false;
+                            break;
+                        case "CheckForUpdatesOnStartup":
+                            checkBoxCheckForUpdatesOnStartup.Checked = bool.TryParse(value, out bool check) ? check : false;
+                            break;
+                        case "IgnoredVersion":
+                            programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
+                            break;
+                    }
+                }
+
+                // Validate and ensure temp folder is accessible
+                // If folder can't be created - reset to default and notify user
+
+                if (!Directory.Exists(tempFolderPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(tempFolderPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        string failedPath = tempFolderPath;
+                        tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+
+                        if (!Directory.Exists(tempFolderPath))
+                        {
+                            Directory.CreateDirectory(tempFolderPath);
                         }
+
+                        MessageBox.Show(
+                            $"Cannot use specified temp folder:\n\n{failedPath}\n\nUsing default location:\n\n{tempFolderPath}",
+                            "Info",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private async void LoadEncoders()
@@ -1547,7 +1601,7 @@ namespace FLAC_Benchmark_H
             }
             catch (OperationCanceledException)
             {
-                // Operation was cancelled — exit silently
+                // Operation was cancelled - exit silently
             }
             catch (Exception ex)
             {
@@ -1568,10 +1622,7 @@ namespace FLAC_Benchmark_H
         /// Updates the UI after duplicate detection: log grid, checkboxes, sorting.
         /// Must be called on the UI thread.
         /// </summary>
-        private void UpdateDuplicateDetectionUI(Dictionary<string, List<string>> hashDict,
-            List<string> filesWithMD5Errors,
-            List<string> itemsToCheck,
-            List<string> itemsToUncheck)
+        private void UpdateDuplicateDetectionUI(Dictionary<string, List<string>> hashDict, List<string> filesWithMD5Errors, List<string> itemsToCheck, List<string> itemsToUncheck)
         {
             dataGridViewLog.SuspendLayout();
             listViewAudioFiles.BeginUpdate();
@@ -2087,7 +2138,7 @@ namespace FLAC_Benchmark_H
 
             string columnName = dataGridViewLog.Columns[e.ColumnIndex].Name;
 
-            // 1. Handle click on "AudioFileDirectory" column — path to the audio file directory
+            // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
             if (columnName == "AudioFileDirectory")
             {
                 string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
@@ -2110,7 +2161,7 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // 2. Handle click on "EncoderDirectory" column — path to the encoder's folder
+            // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
             else if (columnName == "EncoderDirectory")
             {
                 string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
@@ -4473,7 +4524,7 @@ namespace FLAC_Benchmark_H
                     {
                         string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
 
-                        // Check if parameters contain script patterns (like {0..8} or {1,2,3})
+                        // Check if parameters contain script patterns (like [0..8] or [1,2,3])
                         if (parameters.Contains('[') && parameters.Contains(']'))
                         {
                             // Expand script using ScriptParser
@@ -5129,7 +5180,7 @@ namespace FLAC_Benchmark_H
             {
                 e.SuppressKeyPress = true;
 
-                buttonAddJobToJobListEncoder_Click(sender, e);
+                buttonAddJobToJobListDecoder_Click(sender, e);
             }
         }
 
@@ -5465,12 +5516,24 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        private void EnableListViewDoubleBuffering()
+        {
+            var listViewType = typeof(ListView);
+            var doubleBufferedProperty = listViewType.GetProperty("DoubleBuffered",System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            // Apply to all ListViews including OwnerDraw ones
+            doubleBufferedProperty?.SetValue(listViewEncoders, true, null);
+            doubleBufferedProperty?.SetValue(listViewAudioFiles, true, null);
+            doubleBufferedProperty?.SetValue(listViewJobs, true, null);
+        }
+
         // FORM LOAD
         private async void Form1_Load(object? sender, EventArgs e)
         {
             this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
             progressBarEncoder.ManualText = string.Empty;
             progressBarDecoder.ManualText = string.Empty;
+            EnableListViewDoubleBuffering();
 
             LoadSettings();
             LoadEncoders();
@@ -5498,29 +5561,18 @@ namespace FLAC_Benchmark_H
             // Optionally clean up temporary folder
             if (checkBoxClearTempFolder.Checked)
             {
-                // Check if temp folder exists
-                if (Directory.Exists(tempFolderPath))
+                try
                 {
-                    var tempEncodedFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac");
-                    var tempDecodedFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav");
-
-                    // Delete temp files if they exist
-                    if (File.Exists(tempEncodedFilePath))
+                    if (Directory.Exists(tempFolderPath))
                     {
-                        File.Delete(tempEncodedFilePath);
+                        // Delete entire folder with all contents
+                        Directory.Delete(tempFolderPath, true);
                     }
-
-                    if (File.Exists(tempDecodedFilePath))
-                    {
-                        File.Delete(tempDecodedFilePath);
-                    }
-
-                    // Check if folder is empty after file deletion
-                    if (Directory.GetFiles(tempFolderPath).Length == 0)
-                    {
-                        // Delete folder if empty
-                        Directory.Delete(tempFolderPath);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log or silently ignore - app is closing anyway
+                    Debug.WriteLine($"Failed to delete temp folder: {ex.Message}");
                 }
             }
         }
