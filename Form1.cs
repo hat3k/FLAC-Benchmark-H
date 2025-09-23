@@ -3875,7 +3875,7 @@ namespace FLAC_Benchmark_H
 
                     if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
                     {
-                        // Use current UI settings to form parameters
+                        // Form parameters using current UI settings
                         string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
                         string threads = NormalizeSpaces(textBoxThreads.Text);
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
@@ -3887,65 +3887,85 @@ namespace FLAC_Benchmark_H
                         }
 
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
-                        DeleteFileIfExists(outputFilePath);
-
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText = (comboBoxCPUPriority.InvokeRequired)
-                            ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                            : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+                        string priorityText = comboBoxCPUPriority.InvokeRequired
+                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                        : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
 
-                        try
+                        this.Invoke((MethodInvoker)(() =>
                         {
-                            using (var warmupProcess = new Process())
+                            progressBarEncoder.ManualText = "Warming up...";
+                        }));
+
+                        // Run warm-up asynchronously
+                        await Task.Run(() =>
+                        {
+                            var warmupStopwatch = Stopwatch.StartNew();
+                            int iteration = 0;
+
+                            try
                             {
-                                warmupProcess.StartInfo = new ProcessStartInfo
+                                while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                                 {
-                                    FileName = firstEncoder,
-                                    Arguments = arguments,
-                                    UseShellExecute = false,
-                                    CreateNoWindow = true,
-                                };
+                                    iteration++;
+                                    DeleteFileIfExists(outputFilePath);
 
-                                var stopwatch = Stopwatch.StartNew();
-                                warmupProcess.Start();
+                                    using var warmupProcess = new Process();
+                                    warmupProcess.StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = firstEncoder,
+                                        Arguments = arguments,
+                                        UseShellExecute = false,
+                                        CreateNoWindow = true,
+                                    };
 
-                                try
-                                {
-                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
-                                }
-                                catch (InvalidOperationException) { }
+                                    warmupProcess.Start();
 
-                                // Wait up to 5 seconds
-                                bool exited = warmupProcess.WaitForExit(5_000);
-
-                                stopwatch.Stop();
-
-                                if (!exited)
-                                {
                                     try
                                     {
-                                        warmupProcess.Kill();
-                                        Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
+                                        warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
                                     }
-                                    catch (Exception killEx)
+                                    catch (InvalidOperationException) { }
+
+                                    // Wait for process to exit OR until 5 seconds total elapsed
+                                    bool exited = warmupProcess.WaitForExit(5000);
+
+                                    if (!exited)
                                     {
-                                        Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                        try
+                                        {
+                                            warmupProcess.Kill();
+                                            Debug.WriteLine($"Warm-up iteration {iteration}: terminated by timeout.");
+                                        }
+                                        catch (Exception killEx)
+                                        {
+                                            Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                                    else
+                                    {
+                                        Debug.WriteLine($"Warm-up iteration {iteration}: completed in {warmupProcess.ExitTime - warmupProcess.StartTime}.");
+                                    }
                                 }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
-                        }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                            }
+                            finally
+                            {
+                                warmupStopwatch.Stop();
+                                DeleteFileIfExists(outputFilePath);
 
-                        // Clean up temp file
-                        DeleteFileIfExists(outputFilePath);
+                                this.Invoke((MethodInvoker)(() =>
+                                {
+                                    progressBarEncoder.ManualText = "";
+                                }));
+
+                                Debug.WriteLine($"Warm-up completed in {warmupStopwatch.Elapsed.TotalSeconds:F2}s after {iteration} iterations.");
+                            }
+                        });
                     }
                 }
                 // === END OF WARM-UP PASS ===
@@ -4232,65 +4252,85 @@ namespace FLAC_Benchmark_H
                         string parameters = $"-d {commandLine}".Trim();
 
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
-                        DeleteFileIfExists(outputFilePath);
-
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText = (comboBoxCPUPriority.InvokeRequired)
-                            ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                            : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+                        string priorityText = comboBoxCPUPriority.InvokeRequired
+                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                        : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
 
-                        try
+                        this.Invoke((MethodInvoker)(() =>
                         {
-                            using (var warmupProcess = new Process())
+                            progressBarDecoder.ManualText = "Warming up...";
+                        }));
+
+                        // Run warm-up asynchronously
+                        await Task.Run(() =>
+                        {
+                            var warmupStopwatch = Stopwatch.StartNew();
+                            int iteration = 0;
+
+                            try
                             {
-                                warmupProcess.StartInfo = new ProcessStartInfo
+                                while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                                 {
-                                    FileName = firstEncoder,
-                                    Arguments = arguments,
-                                    UseShellExecute = false,
-                                    CreateNoWindow = true,
-                                };
+                                    iteration++;
+                                    DeleteFileIfExists(outputFilePath);
 
-                                var stopwatch = Stopwatch.StartNew();
-                                warmupProcess.Start();
+                                    using var warmupProcess = new Process();
+                                    warmupProcess.StartInfo = new ProcessStartInfo
+                                    {
+                                        FileName = firstEncoder,
+                                        Arguments = arguments,
+                                        UseShellExecute = false,
+                                        CreateNoWindow = true,
+                                    };
 
-                                try
-                                {
-                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
-                                }
-                                catch (InvalidOperationException) { }
+                                    warmupProcess.Start();
 
-                                // Wait up to 5 seconds
-                                bool exited = warmupProcess.WaitForExit(5_000);
-
-                                stopwatch.Stop();
-
-                                if (!exited)
-                                {
                                     try
                                     {
-                                        warmupProcess.Kill();
-                                        Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
+                                        warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
                                     }
-                                    catch (Exception killEx)
+                                    catch (InvalidOperationException) { }
+
+                                    // Wait for process to exit OR until 5 seconds total elapsed
+                                    bool exited = warmupProcess.WaitForExit(5000);
+
+                                    if (!exited)
                                     {
-                                        Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                        try
+                                        {
+                                            warmupProcess.Kill();
+                                            Debug.WriteLine($"Warm-up iteration {iteration}: terminated by timeout.");
+                                        }
+                                        catch (Exception killEx)
+                                        {
+                                            Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                                    else
+                                    {
+                                        Debug.WriteLine($"Warm-up iteration {iteration}: completed in {warmupProcess.ExitTime - warmupProcess.StartTime}.");
+                                    }
                                 }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
-                        }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                            }
+                            finally
+                            {
+                                warmupStopwatch.Stop();
+                                DeleteFileIfExists(outputFilePath);
+                                
+                                this.Invoke((MethodInvoker)(() =>
+                                {
+                                    progressBarDecoder.ManualText = "";
+                                }));
 
-                        // Clean up temp file
-                        DeleteFileIfExists(outputFilePath);
+                                Debug.WriteLine($"Warm-up completed in {warmupStopwatch.Elapsed.TotalSeconds:F2}s after {iteration} iterations.");
+                            }
+                        });
                     }
                 }
                 // === END OF WARM-UP PASS ===
@@ -4599,8 +4639,8 @@ namespace FLAC_Benchmark_H
                 // === WARM-UP PASS (before main loop) ===
                 if (checkBoxWarmupPass.Checked)
                 {
-                    // Find first checked job in listViewJobs
-                    var firstJobItem = listViewJobs.Items.Cast<ListViewItem>().FirstOrDefault(item => item.Checked);
+                    // Find first checked job in listViewJobsExpanded
+                    var firstJobItem = listViewJobsExpanded.FirstOrDefault();
                     if (firstJobItem == null) return;
 
                     string jobType = NormalizeSpaces(firstJobItem.Text);
@@ -4608,26 +4648,19 @@ namespace FLAC_Benchmark_H
 
                     // Choose first available file and encoder
                     string audioFilePath = null;
-                    string arguments = null;
                     string outputFilePath = null;
 
                     if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
                     {
                         audioFilePath = selectedAudioFiles.FirstOrDefault();
                         if (string.IsNullOrEmpty(audioFilePath)) return;
-
                         outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
-                        DeleteFileIfExists(outputFilePath);
-                        arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
                     }
                     else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
                     {
                         audioFilePath = selectedFlacAudioFiles.FirstOrDefault();
                         if (string.IsNullOrEmpty(audioFilePath)) return;
-
                         outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
-                        DeleteFileIfExists(outputFilePath);
-                        arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
                     }
                     else
                     {
@@ -4637,61 +4670,86 @@ namespace FLAC_Benchmark_H
                     var firstEncoder = selectedEncoders.FirstOrDefault();
                     if (string.IsNullOrEmpty(firstEncoder)) return;
 
-                    string priorityText = (comboBoxCPUPriority.InvokeRequired)
-                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                        : (comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
+                    string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                    try
+                    string priorityText = comboBoxCPUPriority.InvokeRequired
+                    ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
+                    : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
+                    
+                    this.Invoke((MethodInvoker)(() =>
                     {
-                        using (var warmupProcess = new Process())
+                        progressBarEncoder.ManualText = "Warming up...";
+                        progressBarDecoder.ManualText = "Warming up...";
+                    }));
+                    
+                    await Task.Run(() =>
+                    {
+                        var warmupStopwatch = Stopwatch.StartNew();
+                        int iteration = 0;
+
+                        try
                         {
-                            warmupProcess.StartInfo = new ProcessStartInfo
+                            while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                             {
-                                FileName = firstEncoder,
-                                Arguments = arguments,
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                            };
+                                iteration++;
+                                DeleteFileIfExists(outputFilePath);
 
-                            var stopwatch = Stopwatch.StartNew();
-                            warmupProcess.Start();
+                                using var warmupProcess = new Process();
+                                warmupProcess.StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = firstEncoder,
+                                    Arguments = arguments,
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                };
 
-                            try
-                            {
-                                warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
-                            }
-                            catch (InvalidOperationException) { }
+                                warmupProcess.Start();
 
-                            // Wait up to 5 seconds
-                            bool exited = warmupProcess.WaitForExit(5_000);
-
-                            stopwatch.Stop();
-
-                            if (!exited)
-                            {
                                 try
                                 {
-                                    warmupProcess.Kill();
-                                    Debug.WriteLine("Warm-up pass terminated: exceeded 5 seconds.");
+                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
                                 }
-                                catch (Exception killEx)
+                                catch (InvalidOperationException) { }
+
+                                // Wait for process to exit OR until 5 seconds total elapsed
+                                bool exited = warmupProcess.WaitForExit(5000);
+
+                                if (!exited)
                                 {
-                                    Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                    try
+                                    {
+                                        warmupProcess.Kill();
+                                        Debug.WriteLine($"Warm-up iteration {iteration}: terminated by timeout.");
+                                    }
+                                    catch (Exception killEx)
+                                    {
+                                        Debug.WriteLine($"Failed to kill warm-up process: {killEx.Message}");
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                Debug.WriteLine($"Warm-up pass completed in {stopwatch.Elapsed.TotalSeconds:F2}s");
+                                else
+                                {
+                                    Debug.WriteLine($"Warm-up iteration {iteration}: completed in {warmupProcess.ExitTime - warmupProcess.StartTime}.");
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
-                    }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Warm-up pass failed: {ex.Message}");
+                        }
+                        finally
+                        {
+                            warmupStopwatch.Stop();
+                            DeleteFileIfExists(outputFilePath);
 
-                    // Clean up temp file
-                    DeleteFileIfExists(outputFilePath);
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                progressBarEncoder.ManualText = "";
+                                progressBarDecoder.ManualText = "";
+                            }));
+
+                            Debug.WriteLine($"Warm-up completed in {warmupStopwatch.Elapsed.TotalSeconds:F2}s after {iteration} iterations.");
+                        }
+                    });
                 }
                 // === END OF WARM-UP PASS ===
 
@@ -5198,23 +5256,23 @@ namespace FLAC_Benchmark_H
                     if (!_process.HasExited)
                     {
                         _process.Kill(); // Terminate the process
-                        ShowTemporaryStoppedMessage("Process has been stopped.");
+                        ShowTemporaryStoppedMessage("Stopped");
                     }
                     else
                     {
-                        ShowTemporaryStoppedMessage("Process has already exited.");
+                        ShowTemporaryStoppedMessage("Stopped");
                     }
                 }
                 catch (Exception ex)
                 {
-                    ShowTemporaryStoppedMessage($"Process is not running.");
+                    ShowTemporaryStoppedMessage("Stopped");
                 }
                 finally
                 {
                     progressBarEncoder.Value = 0;
                     progressBarDecoder.Value = 0;
-                    progressBarEncoder.ManualText = $"";
-                    progressBarDecoder.ManualText = $"";
+                    progressBarEncoder.ManualText = "";
+                    progressBarDecoder.ManualText = "";
                 }
             }
         }
