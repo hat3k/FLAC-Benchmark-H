@@ -641,10 +641,11 @@
             // 
             labelAudioFileRemoved.AutoSize = true;
             labelAudioFileRemoved.BackColor = SystemColors.ActiveCaption;
-            labelAudioFileRemoved.Location = new Point(122, 213);
+            labelAudioFileRemoved.Location = new Point(483, 0);
             labelAudioFileRemoved.Name = "labelAudioFileRemoved";
-            labelAudioFileRemoved.Size = new Size(0, 15);
+            labelAudioFileRemoved.Size = new Size(28, 15);
             labelAudioFileRemoved.TabIndex = 10;
+            labelAudioFileRemoved.Text = "Text";
             // 
             // buttonClearUnchecked
             // 
@@ -1075,10 +1076,11 @@
             labelStopped.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelStopped.AutoSize = true;
             labelStopped.ForeColor = Color.Red;
-            labelStopped.Location = new Point(213, 368);
+            labelStopped.Location = new Point(212, 368);
             labelStopped.Name = "labelStopped";
-            labelStopped.Size = new Size(0, 15);
+            labelStopped.Size = new Size(51, 15);
             labelStopped.TabIndex = 26;
+            labelStopped.Text = "Stopped";
             // 
             // dataGridViewLog
             // 

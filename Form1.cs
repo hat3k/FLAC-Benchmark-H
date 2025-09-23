@@ -212,7 +212,6 @@ namespace FLAC_Benchmark_H
                 isCpuInfoLoaded = true;
             }
         }
-
         private async Task UpdateCpuUsageAsync()
         {
             float cpuLoad = 0f;
@@ -257,6 +256,31 @@ namespace FLAC_Benchmark_H
             {
                 labelCpuUsageTitle.Text = "CPU Load:\nCPU Clock:";
                 labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
+            }
+        }
+
+        // Method to get process priority
+        private ProcessPriorityClass GetSelectedProcessPriority()
+        {
+            string priorityText;
+            if (comboBoxCPUPriority.InvokeRequired)
+            {
+                priorityText = (string)comboBoxCPUPriority.Invoke(new Func<string>(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal"));
+            }
+            else
+            {
+                priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
+            }
+
+            switch (priorityText)
+            {
+                case "Idle":        return ProcessPriorityClass.Idle;
+                case "BelowNormal": return ProcessPriorityClass.BelowNormal;
+                case "Normal":      return ProcessPriorityClass.Normal;
+                case "AboveNormal": return ProcessPriorityClass.AboveNormal;
+                case "High":        return ProcessPriorityClass.High;
+                case "RealTime":    return ProcessPriorityClass.RealTime;
+                default:            return ProcessPriorityClass.Normal;
             }
         }
 
@@ -3907,10 +3931,6 @@ namespace FLAC_Benchmark_H
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText = comboBoxCPUPriority.InvokeRequired
-                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                        : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-
                         this.Invoke((MethodInvoker)(() =>
                         {
                             progressBarEncoder.ManualText = "Warming up...";
@@ -3942,7 +3962,7 @@ namespace FLAC_Benchmark_H
 
                                     try
                                     {
-                                        warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                                        warmupProcess.PriorityClass = GetSelectedProcessPriority();
                                     }
                                     catch (InvalidOperationException) { }
 
@@ -4019,16 +4039,6 @@ namespace FLAC_Benchmark_H
                         DeleteFileIfExists(outputFilePath); // Delete the old file
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText;
-                        if (comboBoxCPUPriority.InvokeRequired)
-                        {
-                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                        }
-                        else
-                        {
-                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                        }
-
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
                         var clockTimer = new System.Timers.Timer(20); // Read every 20ms
@@ -4090,7 +4100,7 @@ namespace FLAC_Benchmark_H
                                             // Set process priority
                                             try
                                             {
-                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                _process.PriorityClass = GetSelectedProcessPriority();
                                             }
                                             catch (InvalidOperationException)
                                             {
@@ -4272,10 +4282,6 @@ namespace FLAC_Benchmark_H
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText = comboBoxCPUPriority.InvokeRequired
-                        ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                        : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-
                         this.Invoke((MethodInvoker)(() =>
                         {
                             progressBarDecoder.ManualText = "Warming up...";
@@ -4307,7 +4313,7 @@ namespace FLAC_Benchmark_H
 
                                     try
                                     {
-                                        warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                                        warmupProcess.PriorityClass = GetSelectedProcessPriority();
                                     }
                                     catch (InvalidOperationException) { }
 
@@ -4376,16 +4382,6 @@ namespace FLAC_Benchmark_H
                         DeleteFileIfExists(outputFilePath); // Delete the old file
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        string priorityText;
-                        if (comboBoxCPUPriority.InvokeRequired)
-                        {
-                            priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                        }
-                        else
-                        {
-                            priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                        }
-
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = new List<double>();
                         var clockTimer = new System.Timers.Timer(20); // Read every 20ms
@@ -4447,7 +4443,7 @@ namespace FLAC_Benchmark_H
                                             // Set process priority
                                             try
                                             {
-                                                _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                _process.PriorityClass = GetSelectedProcessPriority();
                                             }
                                             catch (InvalidOperationException)
                                             {
@@ -4691,10 +4687,6 @@ namespace FLAC_Benchmark_H
 
                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                    string priorityText = comboBoxCPUPriority.InvokeRequired
-                    ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
-                    : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-
                     this.Invoke((MethodInvoker)(() =>
                     {
                         progressBarEncoder.ManualText = "Warming up...";
@@ -4726,7 +4718,7 @@ namespace FLAC_Benchmark_H
 
                                 try
                                 {
-                                    warmupProcess.PriorityClass = GetProcessPriorityClass(priorityText);
+                                    warmupProcess.PriorityClass = GetSelectedProcessPriority();
                                 }
                                 catch (InvalidOperationException) { }
 
@@ -4811,16 +4803,6 @@ namespace FLAC_Benchmark_H
                                     DeleteFileIfExists(outputFilePath); // Delete the old file
                                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                                    string priorityText;
-                                    if (comboBoxCPUPriority.InvokeRequired)
-                                    {
-                                        priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                                    }
-                                    else
-                                    {
-                                        priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                                    }
-
                                     // Prepare for CPU clock monitoring
                                     _cpuClockReadings = new List<double>();
                                     var clockTimer = new System.Timers.Timer(20); // Read every 20ms
@@ -4882,7 +4864,7 @@ namespace FLAC_Benchmark_H
                                                         // Set process priority
                                                         try
                                                         {
-                                                            _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                            _process.PriorityClass = GetSelectedProcessPriority();
                                                         }
                                                         catch (InvalidOperationException)
                                                         {
@@ -4995,16 +4977,6 @@ namespace FLAC_Benchmark_H
                                     DeleteFileIfExists(outputFilePath); // Delete the old file
                                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                                    string priorityText;
-                                    if (comboBoxCPUPriority.InvokeRequired)
-                                    {
-                                        priorityText = (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal");
-                                    }
-                                    else
-                                    {
-                                        priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                                    }
-
                                     // Prepare for CPU clock monitoring
                                     _cpuClockReadings = new List<double>();
                                     var clockTimer = new System.Timers.Timer(20); // Read every 20ms
@@ -5066,7 +5038,7 @@ namespace FLAC_Benchmark_H
                                                         // Set process priority
                                                         try
                                                         {
-                                                            _process.PriorityClass = GetProcessPriorityClass(priorityText);
+                                                            _process.PriorityClass = GetSelectedProcessPriority();
                                                         }
                                                         catch (InvalidOperationException)
                                                         {
@@ -5367,28 +5339,6 @@ namespace FLAC_Benchmark_H
             listView.Focus(); // Set focus on the list
         }
 
-        // Method to get process priority
-        private ProcessPriorityClass GetProcessPriorityClass(string priority)
-        {
-            switch (priority)
-            {
-                case "Idle":
-                    return ProcessPriorityClass.Idle;
-                case "BelowNormal":
-                    return ProcessPriorityClass.BelowNormal;
-                case "Normal":
-                    return ProcessPriorityClass.Normal;
-                case "AboveNormal":
-                    return ProcessPriorityClass.AboveNormal;
-                case "High":
-                    return ProcessPriorityClass.High;
-                case "RealTime":
-                    return ProcessPriorityClass.RealTime;
-                default:
-                    return ProcessPriorityClass.Normal; // Default value
-            }
-        }
-
         // Temporary labels
         private void ShowTemporaryStoppedMessage(string message)
         {
@@ -5600,6 +5550,8 @@ namespace FLAC_Benchmark_H
             this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
             progressBarEncoder.ManualText = string.Empty;
             progressBarDecoder.ManualText = string.Empty;
+            labelStopped.Text = string.Empty;
+            labelAudioFileRemoved.Text = string.Empty;
             EnableListViewDoubleBuffering();
 
             LoadSettings();
