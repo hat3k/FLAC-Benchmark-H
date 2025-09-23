@@ -4657,34 +4657,35 @@ namespace FLAC_Benchmark_H
                 // === WARM-UP PASS (before main loop) ===
                 if (checkBoxWarmupPass.Checked)
                 {
-                    // Find first checked job in listViewJobsExpanded
-                    var firstJobItem = listViewJobsExpanded.FirstOrDefault();
-                    if (firstJobItem == null) return;
-
-                    string jobType = NormalizeSpaces(firstJobItem.Text);
-                    string parameters = NormalizeSpaces(firstJobItem.SubItems[2].Text.Trim());
-
-                    // Choose first available file and encoder
+                    // Find the first job in listViewJobsExpanded that will actually be executed
+                    ListViewItem firstExecutableJobItem = null;
+                    string jobType = null;
                     string audioFilePath = null;
                     string outputFilePath = null;
 
-                    if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
+                    foreach (var jobItem in listViewJobsExpanded)
                     {
-                        audioFilePath = selectedAudioFiles.FirstOrDefault();
-                        if (string.IsNullOrEmpty(audioFilePath)) return;
-                        outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
-                    }
-                    else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        audioFilePath = selectedFlacAudioFiles.FirstOrDefault();
-                        if (string.IsNullOrEmpty(audioFilePath)) return;
-                        outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
-                    }
-                    else
-                    {
-                        return; // Unknown job type
+                        string type = NormalizeSpaces(jobItem.Text);
+                        if (string.Equals(type, "Encode", StringComparison.OrdinalIgnoreCase) && selectedAudioFiles.Any())
+                        {
+                            firstExecutableJobItem = jobItem;
+                            jobType = type;
+                            audioFilePath = selectedAudioFiles.First();
+                            outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
+                            break;
+                        }
+                        else if (string.Equals(type, "Decode", StringComparison.OrdinalIgnoreCase) && selectedFlacAudioFiles.Any())
+                        {
+                            firstExecutableJobItem = jobItem;
+                            jobType = type;
+                            audioFilePath = selectedFlacAudioFiles.First();
+                            outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
+                            break;
+                        }
                     }
 
+
+                    string parameters = NormalizeSpaces(firstExecutableJobItem.SubItems[2].Text.Trim());
                     var firstEncoder = selectedEncoders.FirstOrDefault();
                     if (string.IsNullOrEmpty(firstEncoder)) return;
 
@@ -4693,13 +4694,13 @@ namespace FLAC_Benchmark_H
                     string priorityText = comboBoxCPUPriority.InvokeRequired
                     ? (string)comboBoxCPUPriority.Invoke(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")
                     : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-                    
+
                     this.Invoke((MethodInvoker)(() =>
                     {
                         progressBarEncoder.ManualText = "Warming up...";
                         progressBarDecoder.ManualText = "Warming up...";
                     }));
-                    
+
                     await Task.Run(() =>
                     {
                         var warmupStopwatch = Stopwatch.StartNew();
