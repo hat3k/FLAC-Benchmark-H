@@ -32,9 +32,10 @@ namespace FLAC_Benchmark_H
         private int threadCount;   // Total logical threads
 
         // CPU monitoring
-        private PerformanceCounter cpuLoadCounter = null;       // CPU Load counter (whole system)
-        private bool performanceCountersAvailable = false;      // True if counters initialized
-        private System.Windows.Forms.Timer cpuUsageTimer;       // Updates CPU usage label
+        private PerformanceCounter cpuLoadCounter = null;           // CPU Load counter (whole system)
+        private bool performanceCountersAvailable = false;          // True if counters initialized
+        private System.Windows.Forms.Timer cpuUsageTimer;           // Updates CPU usage label
+        private System.Windows.Forms.Timer temporaryMessageTimer;   // Updates temporary messages
 
         private PerformanceCounter _cpuClockCounter;            // CPU clock counter (as % of base freq)
         private List<double> _cpuClockReadings;
@@ -109,6 +110,23 @@ namespace FLAC_Benchmark_H
             cpuUsageTimer.Interval = 250; // Every 250 ms
             cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
             cpuUsageTimer.Start();
+
+            temporaryMessageTimer = new System.Windows.Forms.Timer();
+            temporaryMessageTimer.Tick += (s, e) =>
+            {
+                try
+                {
+                    if (!this.IsDisposed && !this.Disposing)
+                    {
+                        if (labelStopped != null)
+                            labelStopped.Visible = false;
+                        if (labelAudioFileRemoved != null)
+                            labelAudioFileRemoved.Visible = false;
+                    }
+                    temporaryMessageTimer.Stop();
+                }
+                catch (ObjectDisposedException) { }
+            };
 
             // Initialize CPU Clock counter (% of base frequency)
             try
@@ -5370,36 +5388,26 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        // Temporary labels
         private void ShowTemporaryStoppedMessage(string message)
         {
-            labelStopped.Text = message; // Set message text
-            labelStopped.Visible = true; // Make label visible
+            labelStopped.Text = message;
+            labelStopped.Visible = true;
 
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer(); // Explicitly use namespace
-            timer.Interval = 5000; // Set interval to 5 seconds
-            timer.Tick += (s, e) =>
-            {
-                labelStopped.Visible = false; // Hide label
-                timer.Stop(); // Stop timer
-                timer.Dispose(); // Release resources
-            };
-            timer.Start(); // Start timer
+            temporaryMessageTimer.Stop();
+            temporaryMessageTimer.Interval = 3000;
+            temporaryMessageTimer.Start();
         }
         private void ShowTemporaryAudioFileRemovedMessage(string message)
         {
-            labelAudioFileRemoved.Text = message; // Set message text
-            labelAudioFileRemoved.Visible = true; // Make label visible
+            labelAudioFileRemoved.Text = message;
+            labelAudioFileRemoved.Visible = true;
 
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer(); // Explicitly use namespace
-            timer.Interval = 6000; // Set interval to 6 seconds
-            timer.Tick += (s, e) =>
-            {
-                labelAudioFileRemoved.Visible = false; // Hide label
-                timer.Stop(); // Stop timer
-                timer.Dispose(); // Release resources
-            };
-            timer.Start(); // Start timer
+            temporaryMessageTimer.Stop();
+            temporaryMessageTimer.Interval = 6000;
+            temporaryMessageTimer.Start();
         }
+ 
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -5611,6 +5619,8 @@ namespace FLAC_Benchmark_H
             // Stop and dispose UI timers and performance counters
             cpuUsageTimer?.Stop();
             cpuUsageTimer?.Dispose();
+            temporaryMessageTimer?.Stop();
+            temporaryMessageTimer?.Dispose();
             cpuLoadCounter?.Dispose();
 
             // Dispose pause/resume synchronization object
