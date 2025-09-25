@@ -1919,26 +1919,12 @@ namespace FLAC_Benchmark_H
                         await process.WaitForExitAsync(cts.Token);
 
                         string errorOutput = await errorTask;
-                        string output = await outputTask;
-
-                        string combinedMessage = "";
-
-                        if (!string.IsNullOrWhiteSpace(output.Trim()))
+                        string output = await outputTask; // Not used: flac --test --silent never writes to stdout (only stderr), per official docs and source code.
+                        if (process.ExitCode != 0)
                         {
-                            combinedMessage += output.Trim();
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(errorOutput.Trim()))
-                        {
-                            if (combinedMessage.Length > 0) combinedMessage += " | ";
-                            combinedMessage += errorOutput.Trim();
-                        }
-
-                        if (process.ExitCode != 0 || !string.IsNullOrWhiteSpace(combinedMessage))
-                        {
-                            string message = string.IsNullOrWhiteSpace(combinedMessage)
+                            string message = string.IsNullOrWhiteSpace(errorOutput)
                                 ? "Unknown error (non-zero exit code)"
-                                : combinedMessage;
+                                : errorOutput.Trim();
 
                             errorResults.Add((fileName, filePath, message));
                         }
