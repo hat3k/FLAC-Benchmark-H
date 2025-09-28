@@ -517,6 +517,8 @@ namespace FLAC_Benchmark_H
                 string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
                 listViewEncoders.Items.Clear();
 
+                groupBoxEncoders.Text = "Loading...";
+
                 var missingFiles = new List<string>();
                 var tasks = lines.Select(async line =>
                 {
@@ -611,6 +613,8 @@ namespace FLAC_Benchmark_H
             {
                 string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
                 listViewAudioFiles.Items.Clear();
+
+                groupBoxAudioFiles.Text = "Loading...";
 
                 var missingFiles = new List<string>();
                 var tasks = lines.Select(async line =>
@@ -811,6 +815,8 @@ namespace FLAC_Benchmark_H
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             if (files.Length > 0)
             {
+                groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
+
                 var tasks = files.Select(async file =>
                 {
                     if (Directory.Exists(file))
@@ -854,6 +860,8 @@ namespace FLAC_Benchmark_H
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
+
                     var tasks = openFileDialog.FileNames
                         // Filter out metaflac.exe to prevent adding it to the encoders list
                         .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
@@ -1067,6 +1075,8 @@ namespace FLAC_Benchmark_H
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
             if (files.Length > 0)
             {
+                groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
+
                 var tasks = files.Select(async file =>
                 {
                     if (Directory.Exists(file))
@@ -1111,6 +1121,8 @@ namespace FLAC_Benchmark_H
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
+
                     var tasks = openFileDialog.FileNames.Select(async file =>
                     {
                         var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Create a list item
