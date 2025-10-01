@@ -3745,17 +3745,46 @@ namespace FLAC_Benchmark_H
         {
             if (e.KeyCode == Keys.Delete)
             {
-                // Collect objects associated with selected rows via Tag
                 var passesToDelete = new List<BenchmarkPass>();
 
                 foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
                 {
                     if (row.IsNewRow) continue;
 
-                    // Get benchmark pass object from row Tag
-                    if (row.Tag is BenchmarkPass pass)
+                    // Case 1: Raw log row (before AnalyzeLogAsync)
+                    // In this case, row.Tag holds a direct reference to a BenchmarkPass object.
+                    if (row.Tag is BenchmarkPass singlePass)
                     {
-                        passesToDelete.Add(pass);
+                        passesToDelete.Add(singlePass);
+                    }
+                    // Case 2: Analyzed log row (after AnalyzeLogAsync)
+                    // These rows have no Tag, but contain aggregated data including "Passes" count.
+                    // We reconstruct the test configuration and remove exactly N oldest matching BenchmarkPass objects,
+                    // where N = the "Passes" value shown in the row.
+                    else if (int.TryParse(row.Cells["Passes"]?.Value?.ToString(), out int passesCount))
+                    {
+                        string audioFileName = row.Cells["Name"]?.Value?.ToString() ?? string.Empty;
+                        string audioDir = row.Cells["AudioFileDirectory"]?.Value?.ToString() ?? string.Empty;
+                        string encoderFileName = row.Cells["Encoder"]?.Value?.ToString() ?? string.Empty;
+                        string encoderDir = row.Cells["EncoderDirectory"]?.Value?.ToString() ?? string.Empty;
+                        string parameters = row.Cells["Parameters"]?.Value?.ToString() ?? string.Empty;
+
+                        string audioFilePath = Path.Combine(audioDir, audioFileName);
+                        string encoderPath = Path.Combine(encoderDir, encoderFileName);
+
+                        // Find all BenchmarkPass entries matching the test configuration (AudioFilePath, EncoderPath, Parameters)
+                        // Sort them by Timestamp (oldest first) to match the order in which they were originally added
+                        // Then take only the first 'passesCount' entries - this corresponds to the group that was analyzed
+                        var matchingPasses = _benchmarkPasses
+                            .Where(p =>
+                                p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
+                                p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
+                                p.Parameters == parameters)
+                            .OrderBy(p => p.Timestamp) // Oldest first
+                            .Take(passesCount)         // Take exactly N = Passes
+                            .ToList();
+
+                        passesToDelete.AddRange(matchingPasses);
                     }
                 }
 
@@ -3771,10 +3800,11 @@ namespace FLAC_Benchmark_H
                     dataGridViewLog.Rows.RemoveAt(index);
                 }
 
-                // Remove corresponding benchmark passes from internal cache
+                // Remove the identified BenchmarkPass objects from the internal cache
+                // This ensures they won't reappear after a subsequent AnalyzeLogAsync call
                 foreach (var pass in passesToDelete)
                 {
-                    _benchmarkPasses.Remove(pass); // Remove specific object, not all matching parameters
+                    _benchmarkPasses.Remove(pass);
                 }
 
                 // Suppress default key press behavior (e.g., error beep)
