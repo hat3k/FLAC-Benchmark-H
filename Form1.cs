@@ -76,6 +76,8 @@ namespace FLAC_Benchmark_H
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
             this.dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
+            this.dataGridViewLogDetectDupes.KeyDown += DataGridViewLogDetectDupes_KeyDown;
+            this.dataGridViewLogTestForErrors.KeyDown += DataGridViewLogTestForErrors_KeyDown;
             this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.textBoxCompressionLevel_KeyDown);
             this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
@@ -150,12 +152,21 @@ namespace FLAC_Benchmark_H
             }
 
             InitializedataGridViewLog();
+            InitializedataGridViewLogDetectDupes();
+            InitializedataGridViewLogTestForErrors();
 
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Initialize the path to the temporary folder
             _process = new Process(); // Initialize _process to avoid nullability warning
 
             dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
             dataGridViewLog.MouseDown += dataGridViewLog_MouseDown;
+
+            dataGridViewLogDetectDupes.CellContentClick += dataGridViewLogDetectDupes_CellContentClick;
+            dataGridViewLogDetectDupes.MouseDown += dataGridViewLogDetectDupes_MouseDown;
+
+            dataGridViewLogTestForErrors.CellContentClick += dataGridViewLogTestForErrors_CellContentClick;
+            dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
+ 
             buttonPauseResume.Click += buttonPauseResume_Click;
 
             // Enable custom drawing for listViewJobs
@@ -1667,13 +1678,13 @@ namespace FLAC_Benchmark_H
                     this.Invoke((MethodInvoker)delegate
                     {
                         // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
-                        for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
+                        for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
                         {
-                            DataGridViewRow row = dataGridViewLog.Rows[i];
+                            DataGridViewRow row = dataGridViewLogDetectDupes.Rows[i];
                             if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed" ||
                                 !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()))
                             {
-                                dataGridViewLog.Rows.RemoveAt(i);
+                                dataGridViewLogDetectDupes.Rows.RemoveAt(i);
                             }
                         }
 
@@ -1702,12 +1713,12 @@ namespace FLAC_Benchmark_H
                         {
                             if (audioInfoCache.TryGetValue(filePath, out var info))
                             {
-                                int rowIndex = dataGridViewLog.Rows.Add(
+                                int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                     info.FileName, "", "", "", "", "", "", "", "", "", "",
                                     "", "", "", "", "", "", "", "", "", "", "", info.DirectoryPath,
                                     "MD5 calculation failed", "", info.ErrorDetails ?? string.Empty
                                 );
-                                dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
+                                dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
                             }
                         }
 
@@ -1721,24 +1732,22 @@ namespace FLAC_Benchmark_H
                             {
                                 if (audioInfoCache.TryGetValue(path, out var info))
                                 {
-                                    int rowIndex = dataGridViewLog.Rows.Add(
+                                    int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                         info.FileName, "", "", "", "", "", "", "", "", "", "",
                                         "", "", "", "", "", "", "", "", "", "", "", info.DirectoryPath,
                                         kvp.Key, duplicatesList, ""
                                     );
-                                    dataGridViewLog.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
+                                    dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                                 }
                             }
                         }
 
-                        // --- STAGE 2.6: MANAGE LOG COLUMN VISIBILITY ---
-                        dataGridViewLog.Columns["Duplicates"].Visible = dataGridViewLog.Rows
-                            .Cast<DataGridViewRow>()
-                            .Any(row => !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()));
+                        // --- STAGE 2.6: MANAGE LOG TAB VISIBILITY ---
 
-                        dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
-                            .Cast<DataGridViewRow>()
-                            .Any(row => !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()));
+                        if (dataGridViewLogDetectDupes.Rows.Count > 0)
+                        {
+                            tabControlLog.SelectedTab = DetectDupes;
+                        }
 
                         // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
                         var allItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
@@ -1849,10 +1858,10 @@ namespace FLAC_Benchmark_H
                     this.Invoke((MethodInvoker)delegate
                     {
                         // Clear previous results
-                        for (int i = dataGridViewLog.Rows.Count - 1; i >= 0; i--)
+                        for (int i = dataGridViewLogTestForErrors.Rows.Count - 1; i >= 0; i--)
                         {
-                            if (dataGridViewLog.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
-                                dataGridViewLog.Rows.RemoveAt(i);
+                            if (dataGridViewLogTestForErrors.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
+                                dataGridViewLogTestForErrors.Rows.RemoveAt(i);
                         }
 
                         // Remove missing files
@@ -1956,7 +1965,7 @@ namespace FLAC_Benchmark_H
                 // --- STAGE 3: UPDATE UI ---
                 await this.InvokeAsync(() =>
                 {
-                    dataGridViewLog.SuspendLayout();
+                    dataGridViewLogTestForErrors.SuspendLayout();
                     try
                     {
                         var rowsToAdd = errorResults.Select(result =>
@@ -1965,7 +1974,7 @@ namespace FLAC_Benchmark_H
                                 ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
 
                             var row = new DataGridViewRow();
-                            row.CreateCells(dataGridViewLog);
+                            row.CreateCells(dataGridViewLogTestForErrors);
                             row.SetValues(
                                 result.FileName, "", "", "", "", "", "", "", "", "", "",
                                 "", "", "", "", "", "", "", "", "", "", "", directoryPath,
@@ -1976,25 +1985,27 @@ namespace FLAC_Benchmark_H
                         }).ToList();
 
                         if (rowsToAdd.Count > 0)
-                            dataGridViewLog.Rows.AddRange(rowsToAdd.ToArray());
+                            dataGridViewLogTestForErrors.Rows.AddRange(rowsToAdd.ToArray());
 
-                        dataGridViewLog.Columns["Errors"].Visible = dataGridViewLog.Rows
-                            .Cast<DataGridViewRow>()
-                            .Any(row => !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()));
-
-                        MessageBox.Show(
-                            errorResults.Count == 0
-                                ? "All FLAC files passed the integrity test."
-                                : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
-                            "Test Complete",
-                            MessageBoxButtons.OK,
-                            errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-                        );
+                        if (dataGridViewLogTestForErrors.Rows.Count > 0)
+                        {
+                            tabControlLog.SelectedTab = TestForErrors;
+                        }
                     }
                     finally
                     {
-                        dataGridViewLog.ResumeLayout();
+                        dataGridViewLogTestForErrors.ResumeLayout();
                     }
+
+                    MessageBox.Show(
+                        errorResults.Count == 0
+                            ? "All FLAC files passed the integrity test."
+                            : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
+                        "Test Complete",
+                        MessageBoxButtons.OK,
+                        errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+                    );
+
                 });
             }
             catch (OperationCanceledException)
@@ -2016,6 +2027,7 @@ namespace FLAC_Benchmark_H
                 cts.Dispose();
             }
         }
+
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
@@ -2130,7 +2142,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log
+        // Log Benchmark
         private void InitializedataGridViewLog()
         {
             // Configure DataGridView
@@ -2261,6 +2273,322 @@ namespace FLAC_Benchmark_H
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewLog.ClearSelection();
+            }
+        }
+
+        // Log Detect Dupes
+        private void InitializedataGridViewLogDetectDupes()
+        {
+            // Configure DataGridView
+            dataGridViewLogDetectDupes.Columns.Add("Name", "Name");
+            dataGridViewLogDetectDupes.Columns.Add("BitDepth", "Bit Depth");
+            dataGridViewLogDetectDupes.Columns.Add("SamplingRate", "Samp. Rate");
+            dataGridViewLogDetectDupes.Columns.Add("InputFileSize", "In. Size");
+            dataGridViewLogDetectDupes.Columns.Add("OutputFileSize", "Out. Size");
+            dataGridViewLogDetectDupes.Columns.Add("Compression", "Compr.");
+            dataGridViewLogDetectDupes.Columns.Add("Time", "Time");
+            dataGridViewLogDetectDupes.Columns.Add("Speed", "Speed");
+            dataGridViewLogDetectDupes.Columns.Add("SpeedMin", "Speed Min.");
+            dataGridViewLogDetectDupes.Columns.Add("SpeedMax", "Speed Max.");
+            dataGridViewLogDetectDupes.Columns.Add("SpeedRange", "Range");
+            dataGridViewLogDetectDupes.Columns.Add("SpeedConsistency", "Speed Consistency");
+            dataGridViewLogDetectDupes.Columns.Add("CPULoadEncoder", "CPU Load");
+            dataGridViewLogDetectDupes.Columns.Add("CPUClock", "CPU Clock");
+            dataGridViewLogDetectDupes.Columns.Add("Passes", "Passes");
+            dataGridViewLogDetectDupes.Columns.Add("Parameters", "Parameters");
+            dataGridViewLogDetectDupes.Columns.Add("Encoder", "Encoder");
+            dataGridViewLogDetectDupes.Columns.Add("Version", "Version");
+
+            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            {
+                Name = "EncoderDirectory",
+                HeaderText = "Encoder Directory",
+                DataPropertyName = "EncoderDirectory"
+            };
+            dataGridViewLogDetectDupes.Columns.Add(encoderDirectoryColumn);
+
+            dataGridViewLogDetectDupes.Columns.Add("FastestEncoder", "Fastest Encoder");
+            dataGridViewLogDetectDupes.Columns.Add("BestSize", "Best Size");
+            dataGridViewLogDetectDupes.Columns.Add("SameSize", "Same Size");
+
+            var audioFileDirectoryColumn = new DataGridViewLinkColumn
+            {
+                Name = "AudioFileDirectory",
+                HeaderText = "Audio File Directory",
+                DataPropertyName = "AudioFileDirectory"
+            };
+            dataGridViewLogDetectDupes.Columns.Add(audioFileDirectoryColumn);
+
+            dataGridViewLogDetectDupes.Columns.Add("MD5", "MD5");
+            dataGridViewLogDetectDupes.Columns.Add("Duplicates", "Duplicates");
+            dataGridViewLogDetectDupes.Columns.Add("Errors", "Errors");
+
+            // Set alignment for columns
+            dataGridViewLogDetectDupes.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            // Hide or show columns by default
+            dataGridViewLogDetectDupes.Columns["Name"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["BitDepth"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SamplingRate"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["InputFileSize"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["OutputFileSize"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Compression"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Time"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Speed"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedMin"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedMax"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedRange"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedConsistency"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["CPUClock"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Passes"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Parameters"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Encoder"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["Version"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["EncoderDirectory"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["FastestEncoder"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["BestSize"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["SameSize"].Visible = false;
+            dataGridViewLogDetectDupes.Columns["AudioFileDirectory"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["MD5"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["Duplicates"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["Errors"].Visible = true;
+
+            foreach (DataGridViewColumn column in dataGridViewLogDetectDupes.Columns)
+            {
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+        private void dataGridViewLogDetectDupes_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Prevent interaction with the new row or invalid cell
+            if (e.RowIndex < 0) return;
+
+            string columnName = dataGridViewLogDetectDupes.Columns[e.ColumnIndex].Name;
+
+            // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
+            if (columnName == "AudioFileDirectory")
+            {
+                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
+                string fileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(fileName))
+                {
+                    string fullPath = Path.Combine(directoryPath, fileName);
+                    if (File.Exists(fullPath))
+                    {
+                        // Highlight the audio file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if file not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
+                }
+            }
+
+            // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
+            else if (columnName == "EncoderDirectory")
+            {
+                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
+                string encoderFileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(encoderFileName))
+                {
+                    string encoderExePath = Path.Combine(directoryPath, encoderFileName);
+                    if (File.Exists(encoderExePath))
+                    {
+                        // Highlight the encoder .exe file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if .exe not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
+                }
+            }
+        }
+        private void dataGridViewLogDetectDupes_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = dataGridViewLogDetectDupes.HitTest(e.X, e.Y);
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
+            {
+                dataGridViewLogDetectDupes.ClearSelection();
+            }
+        }
+
+        // Log Test for Errors
+        private void InitializedataGridViewLogTestForErrors()
+        {
+            // Configure DataGridView
+            dataGridViewLogTestForErrors.Columns.Add("Name", "Name");
+            dataGridViewLogTestForErrors.Columns.Add("BitDepth", "Bit Depth");
+            dataGridViewLogTestForErrors.Columns.Add("SamplingRate", "Samp. Rate");
+            dataGridViewLogTestForErrors.Columns.Add("InputFileSize", "In. Size");
+            dataGridViewLogTestForErrors.Columns.Add("OutputFileSize", "Out. Size");
+            dataGridViewLogTestForErrors.Columns.Add("Compression", "Compr.");
+            dataGridViewLogTestForErrors.Columns.Add("Time", "Time");
+            dataGridViewLogTestForErrors.Columns.Add("Speed", "Speed");
+            dataGridViewLogTestForErrors.Columns.Add("SpeedMin", "Speed Min.");
+            dataGridViewLogTestForErrors.Columns.Add("SpeedMax", "Speed Max.");
+            dataGridViewLogTestForErrors.Columns.Add("SpeedRange", "Range");
+            dataGridViewLogTestForErrors.Columns.Add("SpeedConsistency", "Speed Consistency");
+            dataGridViewLogTestForErrors.Columns.Add("CPULoadEncoder", "CPU Load");
+            dataGridViewLogTestForErrors.Columns.Add("CPUClock", "CPU Clock");
+            dataGridViewLogTestForErrors.Columns.Add("Passes", "Passes");
+            dataGridViewLogTestForErrors.Columns.Add("Parameters", "Parameters");
+            dataGridViewLogTestForErrors.Columns.Add("Encoder", "Encoder");
+            dataGridViewLogTestForErrors.Columns.Add("Version", "Version");
+
+            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            {
+                Name = "EncoderDirectory",
+                HeaderText = "Encoder Directory",
+                DataPropertyName = "EncoderDirectory"
+            };
+            dataGridViewLogTestForErrors.Columns.Add(encoderDirectoryColumn);
+
+            dataGridViewLogTestForErrors.Columns.Add("FastestEncoder", "Fastest Encoder");
+            dataGridViewLogTestForErrors.Columns.Add("BestSize", "Best Size");
+            dataGridViewLogTestForErrors.Columns.Add("SameSize", "Same Size");
+
+            var audioFileDirectoryColumn = new DataGridViewLinkColumn
+            {
+                Name = "AudioFileDirectory",
+                HeaderText = "Audio File Directory",
+                DataPropertyName = "AudioFileDirectory"
+            };
+            dataGridViewLogTestForErrors.Columns.Add(audioFileDirectoryColumn);
+
+            dataGridViewLogTestForErrors.Columns.Add("MD5", "MD5");
+            dataGridViewLogTestForErrors.Columns.Add("Duplicates", "Duplicates");
+            dataGridViewLogTestForErrors.Columns.Add("Errors", "Errors");
+
+            // Set alignment for columns
+            dataGridViewLogTestForErrors.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            // Hide or show columns by default
+            dataGridViewLogTestForErrors.Columns["Name"].Visible = true;
+            dataGridViewLogTestForErrors.Columns["BitDepth"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SamplingRate"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["InputFileSize"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["OutputFileSize"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Compression"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Time"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Speed"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedMin"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedMax"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedRange"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedConsistency"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["CPUClock"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Passes"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Parameters"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Encoder"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Version"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["EncoderDirectory"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["FastestEncoder"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["BestSize"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["SameSize"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["AudioFileDirectory"].Visible = true;
+            dataGridViewLogTestForErrors.Columns["MD5"].Visible = true;
+            dataGridViewLogTestForErrors.Columns["Duplicates"].Visible = false;
+            dataGridViewLogTestForErrors.Columns["Errors"].Visible = true;
+
+            foreach (DataGridViewColumn column in dataGridViewLogTestForErrors.Columns)
+            {
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+        }
+        private void dataGridViewLogTestForErrors_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // Prevent interaction with the new row or invalid cell
+            if (e.RowIndex < 0) return;
+
+            string columnName = dataGridViewLogTestForErrors.Columns[e.ColumnIndex].Name;
+
+            // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
+            if (columnName == "AudioFileDirectory")
+            {
+                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
+                string fileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(fileName))
+                {
+                    string fullPath = Path.Combine(directoryPath, fileName);
+                    if (File.Exists(fullPath))
+                    {
+                        // Highlight the audio file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if file not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
+                }
+            }
+
+            // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
+            else if (columnName == "EncoderDirectory")
+            {
+                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
+                string encoderFileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(directoryPath) &&
+                    !string.IsNullOrEmpty(encoderFileName))
+                {
+                    string encoderExePath = Path.Combine(directoryPath, encoderFileName);
+                    if (File.Exists(encoderExePath))
+                    {
+                        // Highlight the encoder .exe file in Explorer
+                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                    }
+                    else if (Directory.Exists(directoryPath))
+                    {
+                        // Open directory if .exe not found
+                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                    }
+                }
+            }
+        }
+        private void dataGridViewLogTestForErrors_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = dataGridViewLogTestForErrors.HitTest(e.X, e.Y);
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
+            {
+                dataGridViewLogTestForErrors.ClearSelection();
             }
         }
 
@@ -2398,7 +2726,31 @@ namespace FLAC_Benchmark_H
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
         {
-            dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+            bool autoWidthAllTabs = ModifierKeys.HasFlag(Keys.Shift);
+
+            if (autoWidthAllTabs)
+            {
+                // Auto-resize columns in ALL three DataGridViews
+                dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                dataGridViewLogDetectDupes.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                dataGridViewLogTestForErrors.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+            }
+            else
+            {
+                // Auto-resize only the currently selected tab
+                DataGridView activeGrid = tabControlLog.SelectedTab switch
+                {
+                    _ when tabControlLog.SelectedTab == Benchmark => dataGridViewLog,
+                    _ when tabControlLog.SelectedTab == DetectDupes => dataGridViewLogDetectDupes,
+                    _ when tabControlLog.SelectedTab == TestForErrors => dataGridViewLogTestForErrors,
+                    _ => null
+                };
+
+                if (activeGrid != null)
+                {
+                    activeGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                }
+            }
         }
         private async void buttonAnalyzeLog_Click(object? sender, EventArgs e)
         {
@@ -3195,42 +3547,123 @@ namespace FLAC_Benchmark_H
         }
         private void buttonCopyLog_Click(object? sender, EventArgs e)
         {
-            // Create StringBuilder to collect log text
-            StringBuilder logText = new StringBuilder();
-            // Iterate through DataGridView rows and collect text
-            foreach (DataGridViewRow row in dataGridViewLog.Rows)
+            // Determine which DataGridView corresponds to the currently selected tab
+            DataGridView activeGrid = tabControlLog.SelectedTab switch
             {
-                // Assuming you want to collect text from all cells in the row
-                foreach (DataGridViewCell cell in row.Cells)
-                {
-                    logText.Append(cell.Value?.ToString() + "\t"); // Use tab to separate cells
-                }
-                logText.AppendLine(); // New line after each DataGridView row
+                _ when tabControlLog.SelectedTab == Benchmark => dataGridViewLog,
+                _ when tabControlLog.SelectedTab == DetectDupes => dataGridViewLogDetectDupes,
+                _ when tabControlLog.SelectedTab == TestForErrors => dataGridViewLogTestForErrors,
+                _ => null
+            };
+
+            // If no valid grid is found, show error and exit
+            if (activeGrid == null)
+            {
+                MessageBox.Show("Unable to determine active log tab.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
+
+            // Get only VISIBLE columns, sorted by their display order in the UI
+            var visibleColumns = activeGrid.Columns.Cast<DataGridViewColumn>()
+                .Where(col => col.Visible)
+                .OrderBy(col => col.DisplayIndex)
+                .ToList();
+
+            // Check if there are any visible columns to copy
+            if (visibleColumns.Count == 0)
+            {
+                MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Check if there are any data rows (excluding the new row placeholder)
+            bool hasData = activeGrid.Rows.Cast<DataGridViewRow>()
+                .Any(row => !row.IsNewRow);
+
+            if (!hasData)
+            {
+                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Build tab-separated text using only visible columns
+            var logText = new StringBuilder();
+
+            // Add header row
+            foreach (var col in visibleColumns)
+            {
+                logText.Append(col.HeaderText).Append('\t');
+            }
+            logText.AppendLine();
+            
+
+            // Iterate through data rows
+            foreach (DataGridViewRow row in activeGrid.Rows)
+            {
+                if (row.IsNewRow) continue; // Skip the empty "new row" at the bottom
+
+                foreach (var col in visibleColumns)
+                {
+                    string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? string.Empty;
+                    logText.Append(cellValue).Append('\t');
+                }
+                logText.AppendLine();
+            }
+
+            // Copy to clipboard if there's content
             if (logText.Length > 0)
             {
                 Clipboard.SetText(logText.ToString());
-                //    MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                // Optional: MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void buttonClearLog_Click(object? sender, EventArgs e)
         {
-            // Clear the DataGridView
-            dataGridViewLog.Rows.Clear();
+            // Check if Shift key is pressed
+            bool clearAllTabs = ModifierKeys.HasFlag(Keys.Shift);
 
-            // Hide optional columns
-            dataGridViewLog.Columns["Duplicates"].Visible = false;
-            dataGridViewLog.Columns["Errors"].Visible = false;
+            if (clearAllTabs)
+            {
+                // CLEAR ALL THREE TABS
+                dataGridViewLog.Rows.Clear();
+                dataGridViewLogDetectDupes.Rows.Clear();
+                dataGridViewLogTestForErrors.Rows.Clear();
 
-            // Clear the internal cache of all benchmark passes
-            _benchmarkPasses.Clear();
+                // Hide optional columns 
+                dataGridViewLog.Columns["Errors"].Visible = false;
 
-            // Optional: Clear selection and reset state
-            dataGridViewLog.ClearSelection();
+                // Clear internal benchmark cache (only relevant to Benchmark tab)
+                _benchmarkPasses.Clear();
+
+                // Clear selections
+                dataGridViewLog.ClearSelection();
+                dataGridViewLogDetectDupes.ClearSelection();
+                dataGridViewLogTestForErrors.ClearSelection();
+
+                // Switch to Benchmark tab after full clear
+                tabControlLog.SelectedTab = Benchmark;
+            }
+            else
+            {
+                // CLEAR ONLY THE CURRENTLY SELECTED TAB
+                if (tabControlLog.SelectedTab == Benchmark)
+                {
+                    dataGridViewLog.Rows.Clear();
+                    dataGridViewLog.Columns["Errors"].Visible = false;
+                    _benchmarkPasses.Clear();
+                    dataGridViewLog.ClearSelection();
+                }
+                else if (tabControlLog.SelectedTab == DetectDupes)
+                {
+                    dataGridViewLogDetectDupes.Rows.Clear();
+                    dataGridViewLogDetectDupes.ClearSelection();
+                }
+                else if (tabControlLog.SelectedTab == TestForErrors)
+                {
+                    dataGridViewLogTestForErrors.Rows.Clear();
+                    dataGridViewLogTestForErrors.ClearSelection();
+                }
+            }
         }
 
         // Key actions
@@ -3342,6 +3775,46 @@ namespace FLAC_Benchmark_H
                 foreach (var pass in passesToDelete)
                 {
                     _benchmarkPasses.Remove(pass); // Remove specific object, not all matching parameters
+                }
+
+                // Suppress default key press behavior (e.g., error beep)
+                e.SuppressKeyPress = true;
+            }
+        }
+        private void DataGridViewLogDetectDupes_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                // Remove selected rows from DataGridView (reverse order to avoid index issues)
+                var indexes = dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)
+                    .ToList();
+
+                foreach (int index in indexes)
+                {
+                    dataGridViewLogDetectDupes.Rows.RemoveAt(index);
+                }
+
+                // Suppress default key press behavior (e.g., error beep)
+                e.SuppressKeyPress = true;
+            }
+        }
+        private void DataGridViewLogTestForErrors_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                // Remove selected rows from DataGridView (reverse order to avoid index issues)
+                var indexes = dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
+                    .Where(r => !r.IsNewRow)
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)
+                    .ToList();
+
+                foreach (int index in indexes)
+                {
+                    dataGridViewLogTestForErrors.Rows.RemoveAt(index);
                 }
 
                 // Suppress default key press behavior (e.g., error beep)
@@ -5587,8 +6060,28 @@ namespace FLAC_Benchmark_H
             LoadEncoders();
             LoadAudioFiles();
             LoadJobs();
+
+            // Apply auto-width to all log tabs
+            foreach (TabPage tab in new[] { DetectDupes, TestForErrors, Benchmark })
+            {
+                tabControlLog.SelectedTab = tab;
+                Application.DoEvents(); // Ensure the tab is rendered
+
+                switch (tab)
+                {
+                    case var _ when tab == DetectDupes:
+                        dataGridViewLogDetectDupes.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                        break;
+                    case var _ when tab == TestForErrors:
+                        dataGridViewLogTestForErrors.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                        break;
+                    case var _ when tab == Benchmark:
+                        dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+                        break;
+                }
+            }
+
             this.ActiveControl = null; // Remove focus from all elements
-            dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {

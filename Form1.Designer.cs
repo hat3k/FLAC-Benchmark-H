@@ -25,6 +25,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             buttonScriptConstructor = new Button();
             progressBarEncoder = new ProgressBarEx();
@@ -106,13 +110,19 @@
             buttonImportJobList = new Button();
             buttonClearJobList = new Button();
             groupBoxLog = new GroupBox();
+            tabControlLog = new TabControl();
+            Benchmark = new TabPage();
+            dataGridViewLog = new DataGridViewEx();
+            DetectDupes = new TabPage();
+            dataGridViewLogDetectDupes = new DataGridViewEx();
+            TestForErrors = new TabPage();
+            dataGridViewLogTestForErrors = new DataGridViewEx();
             buttonCopyLogAsBBCode = new Button();
             buttonLogColumnsAutoWidth = new Button();
             buttonPauseResume = new Button();
             buttonLogToExcel = new Button();
             buttonAnalyzeLog = new Button();
             labelStopped = new Label();
-            dataGridViewLog = new DataGridViewEx();
             buttonCopyLog = new Button();
             groupBoxSettings = new GroupBox();
             checkBoxPreventSleep = new CheckBox();
@@ -139,7 +149,13 @@
             groupBoxAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
             groupBoxLog.SuspendLayout();
+            tabControlLog.SuspendLayout();
+            Benchmark.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
+            DetectDupes.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).BeginInit();
+            TestForErrors.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLogTestForErrors).BeginInit();
             groupBoxSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             groupBoxInformation.SuspendLayout();
@@ -481,7 +497,7 @@
             buttonClearLog.Size = new Size(55, 23);
             buttonClearLog.TabIndex = 8;
             buttonClearLog.Text = "Clear";
-            toolTip1.SetToolTip(buttonClearLog, "Clear log and cache.\r\nRemoves all displayed entries and reset internal benchmark history.");
+            toolTip1.SetToolTip(buttonClearLog, "Clear current log tab.\r\nHold 'Shift' to clear all tabs.\r\n\r\nIf the \"Benchmark\" tab is cleared:\r\nRemoves all displayed entries and reset internal benchmark history.");
             buttonClearLog.UseVisualStyleBackColor = true;
             buttonClearLog.Click += buttonClearLog_Click;
             // 
@@ -994,6 +1010,7 @@
             // groupBoxLog
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxLog.Controls.Add(tabControlLog);
             groupBoxLog.Controls.Add(buttonCopyLogAsBBCode);
             groupBoxLog.Controls.Add(buttonLogColumnsAutoWidth);
             groupBoxLog.Controls.Add(buttonPauseResume);
@@ -1001,7 +1018,6 @@
             groupBoxLog.Controls.Add(buttonAnalyzeLog);
             groupBoxLog.Controls.Add(labelStopped);
             groupBoxLog.Controls.Add(buttonStop);
-            groupBoxLog.Controls.Add(dataGridViewLog);
             groupBoxLog.Controls.Add(buttonClearLog);
             groupBoxLog.Controls.Add(buttonCopyLog);
             groupBoxLog.Controls.Add(buttonOpenLogtxt);
@@ -1012,6 +1028,155 @@
             groupBoxLog.TabIndex = 7;
             groupBoxLog.TabStop = false;
             groupBoxLog.Text = "Log";
+            // 
+            // tabControlLog
+            // 
+            tabControlLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tabControlLog.Controls.Add(Benchmark);
+            tabControlLog.Controls.Add(DetectDupes);
+            tabControlLog.Controls.Add(TestForErrors);
+            tabControlLog.Location = new Point(6, 19);
+            tabControlLog.Name = "tabControlLog";
+            tabControlLog.SelectedIndex = 0;
+            tabControlLog.Size = new Size(767, 340);
+            tabControlLog.TabIndex = 1;
+            // 
+            // Benchmark
+            // 
+            Benchmark.Controls.Add(dataGridViewLog);
+            Benchmark.Location = new Point(4, 24);
+            Benchmark.Name = "Benchmark";
+            Benchmark.Padding = new Padding(3);
+            Benchmark.Size = new Size(759, 312);
+            Benchmark.TabIndex = 0;
+            Benchmark.Tag = "0";
+            Benchmark.Text = "Benchmark";
+            Benchmark.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewLog
+            // 
+            dataGridViewLog.AllowUserToAddRows = false;
+            dataGridViewLog.AllowUserToOrderColumns = true;
+            dataGridViewLog.AllowUserToResizeRows = false;
+            dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewLog.BackgroundColor = SystemColors.Control;
+            dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewLog.GridColor = SystemColors.Control;
+            dataGridViewLog.Location = new Point(2, 4);
+            dataGridViewLog.Name = "dataGridViewLog";
+            dataGridViewLog.ReadOnly = true;
+            dataGridViewLog.RowHeadersVisible = false;
+            dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewLog.Size = new Size(753, 305);
+            dataGridViewLog.TabIndex = 1;
+            // 
+            // DetectDupes
+            // 
+            DetectDupes.Controls.Add(dataGridViewLogDetectDupes);
+            DetectDupes.Location = new Point(4, 24);
+            DetectDupes.Name = "DetectDupes";
+            DetectDupes.Padding = new Padding(3);
+            DetectDupes.Size = new Size(759, 312);
+            DetectDupes.TabIndex = 1;
+            DetectDupes.Tag = "1";
+            DetectDupes.Text = "Detect Dupes";
+            DetectDupes.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewLogDetectDupes
+            // 
+            dataGridViewLogDetectDupes.AllowUserToAddRows = false;
+            dataGridViewLogDetectDupes.AllowUserToOrderColumns = true;
+            dataGridViewLogDetectDupes.AllowUserToResizeRows = false;
+            dataGridViewLogDetectDupes.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewLogDetectDupes.BackgroundColor = SystemColors.Control;
+            dataGridViewLogDetectDupes.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewLogDetectDupes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewLogDetectDupes.GridColor = SystemColors.Control;
+            dataGridViewLogDetectDupes.Location = new Point(2, 4);
+            dataGridViewLogDetectDupes.Name = "dataGridViewLogDetectDupes";
+            dataGridViewLogDetectDupes.ReadOnly = true;
+            dataGridViewLogDetectDupes.RowHeadersVisible = false;
+            dataGridViewLogDetectDupes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewLogDetectDupes.Size = new Size(753, 305);
+            dataGridViewLogDetectDupes.TabIndex = 1;
+            // 
+            // TestForErrors
+            // 
+            TestForErrors.Controls.Add(dataGridViewLogTestForErrors);
+            TestForErrors.Location = new Point(4, 24);
+            TestForErrors.Name = "TestForErrors";
+            TestForErrors.Size = new Size(759, 312);
+            TestForErrors.TabIndex = 2;
+            TestForErrors.Tag = "2";
+            TestForErrors.Text = "Test for Errors";
+            TestForErrors.UseVisualStyleBackColor = true;
+            // 
+            // dataGridViewLogTestForErrors
+            // 
+            dataGridViewLogTestForErrors.AllowUserToAddRows = false;
+            dataGridViewLogTestForErrors.AllowUserToOrderColumns = true;
+            dataGridViewLogTestForErrors.AllowUserToResizeRows = false;
+            dataGridViewLogTestForErrors.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewLogTestForErrors.BackgroundColor = SystemColors.Control;
+            dataGridViewLogTestForErrors.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = SystemColors.Control;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewLogTestForErrors.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = SystemColors.Control;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewLogTestForErrors.GridColor = SystemColors.Control;
+            dataGridViewLogTestForErrors.Location = new Point(2, 4);
+            dataGridViewLogTestForErrors.Name = "dataGridViewLogTestForErrors";
+            dataGridViewLogTestForErrors.ReadOnly = true;
+            dataGridViewLogTestForErrors.RowHeadersVisible = false;
+            dataGridViewLogTestForErrors.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewLogTestForErrors.Size = new Size(753, 305);
+            dataGridViewLogTestForErrors.TabIndex = 1;
             // 
             // buttonCopyLogAsBBCode
             // 
@@ -1032,7 +1197,7 @@
             buttonLogColumnsAutoWidth.Size = new Size(42, 18);
             buttonLogColumnsAutoWidth.TabIndex = 9;
             buttonLogColumnsAutoWidth.Text = "⟷";
-            toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width");
+            toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width.\r\nHold 'Shift' to apply to all tabs.");
             buttonLogColumnsAutoWidth.UseVisualStyleBackColor = true;
             buttonLogColumnsAutoWidth.Click += buttonLogColumnsAutoWidth_Click;
             // 
@@ -1081,40 +1246,6 @@
             labelStopped.Size = new Size(51, 15);
             labelStopped.TabIndex = 26;
             labelStopped.Text = "Stopped";
-            // 
-            // dataGridViewLog
-            // 
-            dataGridViewLog.AllowUserToAddRows = false;
-            dataGridViewLog.AllowUserToOrderColumns = true;
-            dataGridViewLog.AllowUserToResizeRows = false;
-            dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridViewLog.BackgroundColor = SystemColors.Control;
-            dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
-            dataGridViewLog.GridColor = SystemColors.Control;
-            dataGridViewLog.Location = new Point(6, 22);
-            dataGridViewLog.Name = "dataGridViewLog";
-            dataGridViewLog.ReadOnly = true;
-            dataGridViewLog.RowHeadersVisible = false;
-            dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewLog.Size = new Size(765, 336);
-            dataGridViewLog.TabIndex = 0;
             // 
             // buttonCopyLog
             // 
@@ -1383,7 +1514,13 @@
             groupBoxJobsList.PerformLayout();
             groupBoxLog.ResumeLayout(false);
             groupBoxLog.PerformLayout();
+            tabControlLog.ResumeLayout(false);
+            Benchmark.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
+            DetectDupes.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).EndInit();
+            TestForErrors.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridViewLogTestForErrors).EndInit();
             groupBoxSettings.ResumeLayout(false);
             groupBoxSettings.PerformLayout();
             groupBoxDecoderSettings.ResumeLayout(false);
@@ -1505,5 +1642,11 @@
         private DataGridViewEx dataGridViewLog;
         private CheckBox checkBoxPreventSleep;
         private Button buttonScriptConstructor;
+        private TabControl tabControlLog;
+        private TabPage Benchmark;
+        private TabPage DetectDupes;
+        private TabPage TestForErrors;
+        private DataGridViewEx dataGridViewLogDetectDupes;
+        private DataGridViewEx dataGridViewLogTestForErrors;
     }
 }
