@@ -1255,6 +1255,7 @@
             buttonCopyLog.Size = new Size(55, 23);
             buttonCopyLog.TabIndex = 7;
             buttonCopyLog.Text = "Copy";
+            toolTip1.SetToolTip(buttonCopyLog, "Copy current log.");
             buttonCopyLog.UseVisualStyleBackColor = true;
             buttonCopyLog.Click += buttonCopyLog_Click;
             // 

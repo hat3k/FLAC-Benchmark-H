@@ -128,31 +128,36 @@ When enabled: All encoders start under identical thermal and CPU frequency condi
 When disabled: The first test pass may show slower performance due to CPU frequency ramp-up (turbo boost not yet active).</value>
   </data>
   <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
-    <value>Tests all FLAC files in the list (checked and unchecked) for errors.
+    <value>Tests all FLAC files in the list (both checked and unchecked) for integrity errors.
+If errors are found, they are displayed in the "Test for Errors" tab of the Log.
+
+Consider enabling the "Warnings as Errors" option to see additional diagnostic messages.
 
 Warnings:
-
-This is a BETA feature. Report any issues you encounter.
-No progress indicator. Checking many files may take a long time.
-Resource-intensive for large file counts.</value>
+• There is no progress indicator - checking many files may take a long time.
+• The operation can be resource-intensive when processing a large number of files.</value>
   </data>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
-    <value>Identifies duplicate audio files by comparing their MD5 hashes to find identical data.
-Compares all the files in the list (checked and unchecked).
+    <value>Identifies duplicate audio files by comparing MD5 hashes of their raw PCM data.
+Scans all files in the list (both checked and unchecked).
 
-1. When duplicates are detected, their groups are moved to the top of the list;
-2. One file of the group stays checked, the others - unchecked;
-3. You may then clear uncheсked files from list;
+When duplicates are found:
+• Duplicate groups are moved to the top of the list;
+• The primary file in each group remains checked (FLAC &gt; WAV, newer &gt; older, shorter path &gt; longer);
+• All other duplicates are automatically unchecked;
+• You can then use "Clear unchecked" to remove them from list (or 'Shift' + click to move them to the Recycle Bin).
+
+Results are displayed in the "Detect Dupes" tab of the Log.
 
 Note:
-This method may also discover corrupted files in some cases.
-Errors will be shown in the log.
+In some cases, this process may also reveal corrupted files (e.g., if MD5 calculation fails). 
 
-WARNING!
-This function is resource-expensive when you have a large number of files!</value>
+Warnings:
+• There is no progress indicator - processing many files may take a long time.
+• The operation can be resource-intensive when handling a large number of files.</value>
   </data>
   <data name="buttonCopyLogAsBBCode.ToolTip" xml:space="preserve">
-    <value>Copy log as a BBCode to paste it in forums as a table.
+    <value>Copy 'Benchmark' log as a BBCode to paste it in forums as a table.
 
 Columns to copy:
 "Bit Depth",
