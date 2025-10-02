@@ -3181,234 +3181,185 @@ namespace FLAC_Benchmark_H
         }
         private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
-            // Create a new Excel file
             using (var workbook = new XLWorkbook())
             {
-                // Add a new worksheet
-                var worksheet = workbook.Worksheets.Add("Log Data");
+                // Export each tab as a separate worksheet
+                ExportDataGridViewToWorksheet(workbook, dataGridViewLog, "Benchmark");
+                ExportDataGridViewToWorksheet(workbook, dataGridViewLogDetectDupes, "Detect Dupes");
+                ExportDataGridViewToWorksheet(workbook, dataGridViewLogTestForErrors, "Test for Errors");
 
-                // Add column headers
-                int columnCount = dataGridViewLog.Columns.Count;
-                for (int i = 0; i < columnCount; i++)
+                // Create filename
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+                string fileName = $"Log {timestamp}.xlsx";
+                string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+
+                // Save
+                workbook.SaveAs(fullPath);
+
+                // Ask to open
+                if (MessageBox.Show(
+                    $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
+                    "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                 {
-                    worksheet.Cell(1, i + 1).Value = dataGridViewLog.Columns[i].HeaderText;
-                    worksheet.Cell(1, i + 1).Style.Font.Bold = true; // Set bold font for headers
+                    Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
                 }
+            }
+        }
 
-                // Add data rows
-                for (int i = 0; i < dataGridViewLog.Rows.Count; i++)
+        /// <summary>
+        /// Exports a DataGridView to an Excel worksheet, respecting visible columns and formatting.
+        /// </summary>
+        private void ExportDataGridViewToWorksheet(XLWorkbook workbook, DataGridView dgv, string sheetName)
+        {
+            if (dgv.Rows.Count == 0) return;
+
+            var worksheet = workbook.Worksheets.Add(sheetName);
+
+            // Get only VISIBLE columns in display order
+            var visibleColumns = dgv.Columns.Cast<DataGridViewColumn>()
+                .Where(col => col.Visible)
+                .OrderBy(col => col.DisplayIndex)
+                .ToList();
+
+            if (visibleColumns.Count == 0) return;
+
+            int colCount = visibleColumns.Count;
+
+            // --- Write headers ---
+            for (int j = 0; j < colCount; j++)
+            {
+                var col = visibleColumns[j];
+                var cell = worksheet.Cell(1, j + 1);
+                cell.Value = col.HeaderText;
+                cell.Style.Font.Bold = true;
+            }
+
+            // --- Write data rows ---
+            int rowIndexInSheet = 2;
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                for (int j = 0; j < colCount; j++)
                 {
-                    for (int j = 0; j < columnCount; j++)
+                    var col = visibleColumns[j];
+                    var cellValue = row.Cells[col.Index].Value;
+                    var sheetCell = worksheet.Cell(rowIndexInSheet, j + 1);
+
+                    // Handle special formatting by column name
+                    string colName = col.Name;
+                    if (colName == "InputFileSize" || colName == "OutputFileSize")
                     {
-                        var cellValue = dataGridViewLog.Rows[i].Cells[j].Value;
-
-                        // Write values for file sizes
-                        if (j == dataGridViewLog.Columns["InputFileSize"].Index || j == dataGridViewLog.Columns["OutputFileSize"].Index)
+                        if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long val))
+                            sheetCell.Value = val;
+                        else
+                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
+                    else if (colName == "BitDepth" || colName == "SamplingRate")
+                    {
+                        if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long val))
+                            sheetCell.Value = val;
+                        else
+                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
+                    else if (colName == "Compression" || colName == "CPULoadEncoder" || colName == "SpeedConsistency")
+                    {
+                        if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double val))
+                            sheetCell.Value = val / 100.0;
+                        else
+                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
+                    else if (colName == "Time" || colName == "Speed" || colName == "SpeedMin" ||
+                             colName == "SpeedMax" || colName == "SpeedRange" || colName == "CPUClock")
+                    {
+                        if (cellValue != null)
                         {
-                            if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long inputFileSizeValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = inputFileSizeValue; // Write as number
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["BitDepth"].Index)
-                        {
-                            if (cellValue != null && long.TryParse(cellValue.ToString(), out long bitDepthValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = bitDepthValue; // Write as number
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["SamplingRate"].Index)
-                        {
-                            if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long samplingRateValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = samplingRateValue; // Write as number
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Compression"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double compressionValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = compressionValue / 100; // Write value in range 0-1
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Time"].Index) // Time column processing
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString(), out double timeSpanValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = timeSpanValue; // Write total seconds
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Speed"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = speedValue; // Write speed value
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["SpeedMin"].Index || j == dataGridViewLog.Columns["SpeedMax"].Index || j == dataGridViewLog.Columns["SpeedRange"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("x", "").Trim(), out double speedValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = speedValue;
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["SpeedConsistency"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double value))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = value / 100;
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Passes"].Index)
-                        {
-                            if (cellValue != null && int.TryParse(cellValue.ToString(), out int passesValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = passesValue;
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["CPULoadEncoder"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double cpuLoadValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = cpuLoadValue / 100; // Write as percentage (0-1)
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["CPUClock"].Index)
-                        {
-                            if (cellValue != null && double.TryParse(cellValue.ToString().Replace("MHz", "").Trim(), out double clockValue))
-                            {
-                                worksheet.Cell(i + 2, j + 1).Value = clockValue; // Write as number (MHz)
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["EncoderDirectory"].Index)
-                        {
-                            string path = cellValue?.ToString() ?? string.Empty;
-                            var cell = worksheet.Cell(i + 2, j + 1);
-                            cell.Value = path;
-
-                            if (Directory.Exists(path))
-                            {
-                                cell.SetHyperlink(new XLHyperlink(path));
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["AudioFileDirectory"].Index)
-                        {
-                            string path = cellValue?.ToString() ?? string.Empty;
-                            var cell = worksheet.Cell(i + 2, j + 1);
-                            cell.Value = path;
-
-                            if (Directory.Exists(path))
-                            {
-                                cell.SetHyperlink(new XLHyperlink(path));
-                            }
-                        }
-                        else if (j == dataGridViewLog.Columns["Parameters"].Index) // Parameters column processing
-                        {
-                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Write value as text
+                            string cleanValue = cellValue.ToString()
+                                .Replace("x", "").Replace("MHz", "").Trim();
+                            if (double.TryParse(cleanValue, out double val))
+                                sheetCell.Value = val;
+                            else
+                                sheetCell.Value = cellValue.ToString();
                         }
                         else
                         {
-                            worksheet.Cell(i + 2, j + 1).Value = cellValue?.ToString() ?? string.Empty; // Write value as string
+                            sheetCell.Value = string.Empty;
                         }
+                    }
+                    else if (colName == "Passes")
+                    {
+                        if (cellValue != null && int.TryParse(cellValue.ToString(), out int val))
+                            sheetCell.Value = val;
+                        else
+                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
+                    else if (colName == "EncoderDirectory" || colName == "AudioFileDirectory")
+                    {
+                        string path = cellValue?.ToString() ?? string.Empty;
+                        sheetCell.Value = path;
+                        if (Directory.Exists(path))
+                            sheetCell.SetHyperlink(new XLHyperlink(path));
+                    }
+                    else
+                    {
+                        sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
 
-                        // Copy text color if set
-                        if (dataGridViewLog.Rows[i].Cells[j].Style.ForeColor != Color.Empty)
-                        {
-                            var color = dataGridViewLog.Rows[i].Cells[j].Style.ForeColor;
-                            worksheet.Cell(i + 2, j + 1).Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
-                        }
+                    // Copy text color
+                    if (row.Cells[col.Index].Style.ForeColor != Color.Empty)
+                    {
+                        var color = row.Cells[col.Index].Style.ForeColor;
+                        sheetCell.Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
                     }
                 }
 
-                // Set format for BitDepth column
-                int bitDepthIndex = dataGridViewLog.Columns["BitDepth"].Index + 1;
-                worksheet.Column(bitDepthIndex).Style.NumberFormat.Format = "0"; // Integer, no decimals
+                rowIndexInSheet++;
+            }
 
-                // Set format for Sampling Rate column
-                int samplingRateIndex = dataGridViewLog.Columns["SamplingRate"].Index + 1;
-                worksheet.Column(samplingRateIndex).Style.NumberFormat.Format = "#,##0"; // Integer format with separators;
+            // --- Apply number formats ---
+            for (int j = 0; j < colCount; j++)
+            {
+                var col = visibleColumns[j];
+                var excelCol = worksheet.Column(j + 1);
 
-                // Set number format with thousands separator for file size columns
-                int inputFileSizeIndex = dataGridViewLog.Columns["InputFileSize"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(inputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Integer format with separators
-
-                int outputFileSizeIndex = dataGridViewLog.Columns["OutputFileSize"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(outputFileSizeIndex).Style.NumberFormat.Format = "#,##0"; // Integer format with separators
-
-                // Set format for Compression column as percentage
-                int compressionIndex = dataGridViewLog.Columns["Compression"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(compressionIndex).Style.NumberFormat.Format = "0.000%"; // Number format with 3 decimal places
-
-                // Set format for Time column
-                int timeIndex = dataGridViewLog.Columns["Time"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(timeIndex).Style.NumberFormat.Format = "0.000"; // Format for displaying time
-
-                // Set format for Speed column
-                int speedIndex = dataGridViewLog.Columns["Speed"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(speedIndex).Style.NumberFormat.Format = "0.000"; // Format for displaying speed
-
-                int speedMinIndex = dataGridViewLog.Columns["SpeedMin"].Index + 1;
-                worksheet.Column(speedMinIndex).Style.NumberFormat.Format = "0.000";
-
-                int speedMaxIndex = dataGridViewLog.Columns["SpeedMax"].Index + 1;
-                worksheet.Column(speedMaxIndex).Style.NumberFormat.Format = "0.000";
-
-                int speedRangeIndex = dataGridViewLog.Columns["SpeedRange"].Index + 1;
-                worksheet.Column(speedRangeIndex).Style.NumberFormat.Format = "0.000";
-
-                int speedConsistencyIndex = dataGridViewLog.Columns["SpeedConsistency"].Index + 1;
-                worksheet.Column(speedConsistencyIndex).Style.NumberFormat.Format = "0.000%";
-
-                // Set format for CPULoadEncoder column
-                int cpuLoadEncoderIndex = dataGridViewLog.Columns["CPULoadEncoder"].Index + 1;
-                worksheet.Column(cpuLoadEncoderIndex).Style.NumberFormat.Format = "0.000%";
-
-                // Set format for CPUClock column
-                int cpuClockIndex = dataGridViewLog.Columns["CPUClock"].Index + 1;
-                worksheet.Column(cpuClockIndex).Style.NumberFormat.Format = "0"; // Integer MHz
-
-                // Set format for Passes column
-                int passesIndex = dataGridViewLog.Columns["Passes"].Index + 1;
-                worksheet.Column(passesIndex).Style.NumberFormat.Format = "0"; // Integer, no decimals
-
-                // Set format for Parameters column
-                int ParametersIndex = dataGridViewLog.Columns["Parameters"].Index + 1; // +1 for 1-based indexes
-                worksheet.Column(ParametersIndex).Style.NumberFormat.Format = "@"; // Format for displaying parameters
-
-                // Set filter on headers
-                worksheet.RangeUsed().SetAutoFilter();
-
-                // Freeze the first row (headers)
-                worksheet.SheetView.FreezeRows(1);
-
-                // Auto-adjust column widths
-                worksheet.Columns().AdjustToContents();
-
-                // Set background color for the first row
-                worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
-                worksheet.Row(1).Style.Font.FontColor = XLColor.White; // Set font color to white for contrast
-
-                // Create filename based on current date and time
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
-                string fileName = $"Log {timestamp}.xlsx";
-
-                // Get path to the folder containing the executable
-                string folderPath = AppDomain.CurrentDomain.BaseDirectory;
-                string fullPath = Path.Combine(folderPath, fileName);
-
-                // Save the file
-                workbook.SaveAs(fullPath);
-
-                // Open the file by default
-                if (MessageBox.Show($"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?", "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                switch (col.Name)
                 {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = fullPath,
-                        UseShellExecute = true
-                    });
+                    case "BitDepth":
+                    case "Passes":
+                    case "CPUClock":
+                        excelCol.Style.NumberFormat.Format = "0";
+                        break;
+                    case "SamplingRate":
+                    case "InputFileSize":
+                    case "OutputFileSize":
+                        excelCol.Style.NumberFormat.Format = "#,##0";
+                        break;
+                    case "Compression":
+                    case "CPULoadEncoder":
+                    case "SpeedConsistency":
+                        excelCol.Style.NumberFormat.Format = "0.000%";
+                        break;
+                    case "Time":
+                    case "Speed":
+                    case "SpeedMin":
+                    case "SpeedMax":
+                    case "SpeedRange":
+                        excelCol.Style.NumberFormat.Format = "0.000";
+                        break;
+                    case "Parameters":
+                        excelCol.Style.NumberFormat.Format = "@";
+                        break;
                 }
             }
+
+            // Final touches
+            worksheet.RangeUsed().SetAutoFilter();
+            worksheet.SheetView.FreezeRows(1);
+            worksheet.Columns().AdjustToContents();
+
+            // Header style
+            worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
+            worksheet.Row(1).Style.Font.FontColor = XLColor.White;
         }
         private void buttonCopyLogAsBBCode_Click(object? sender, EventArgs e)
         {
