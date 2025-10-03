@@ -2206,6 +2206,30 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide optional columns by default
+            dataGridViewLog.Columns["Name"].Visible = true;
+            dataGridViewLog.Columns["BitDepth"].Visible = true;
+            dataGridViewLog.Columns["SamplingRate"].Visible = true;
+            dataGridViewLog.Columns["InputFileSize"].Visible = true;
+            dataGridViewLog.Columns["OutputFileSize"].Visible = true;
+            dataGridViewLog.Columns["Compression"].Visible = true;
+            dataGridViewLog.Columns["Time"].Visible = true;
+            dataGridViewLog.Columns["Speed"].Visible = true;
+            dataGridViewLog.Columns["SpeedMin"].Visible = true;
+            dataGridViewLog.Columns["SpeedMax"].Visible = true;
+            dataGridViewLog.Columns["SpeedRange"].Visible = true;
+            dataGridViewLog.Columns["SpeedConsistency"].Visible = true;
+            dataGridViewLog.Columns["CPULoadEncoder"].Visible = true;
+            dataGridViewLog.Columns["CPUClock"].Visible = true;
+            dataGridViewLog.Columns["Passes"].Visible = true;
+            dataGridViewLog.Columns["Parameters"].Visible = true;
+            dataGridViewLog.Columns["Encoder"].Visible = true;
+            dataGridViewLog.Columns["Version"].Visible = true;
+            dataGridViewLog.Columns["EncoderDirectory"].Visible = true;
+            dataGridViewLog.Columns["FastestEncoder"].Visible = true;
+            dataGridViewLog.Columns["BestSize"].Visible = true;
+            dataGridViewLog.Columns["SameSize"].Visible = true;
+            dataGridViewLog.Columns["AudioFileDirectory"].Visible = true;
+            dataGridViewLog.Columns["MD5"].Visible = true;
             dataGridViewLog.Columns["Duplicates"].Visible = false;
             dataGridViewLog.Columns["Errors"].Visible = false;
 
@@ -2993,6 +3017,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 SortDataGridView(); // Resort after analysis
+                tabControlLog.SelectedTab = Benchmark; // Ensure Benchmark tab is active after analysis
             });
         }
         private class LogEntry
@@ -3179,6 +3204,8 @@ namespace FLAC_Benchmark_H
                 return strA.Length.CompareTo(strB.Length);
             }
         }
+
+        // Log to Excel, copy, clear
         private void buttonLogToExcel_Click(object? sender, EventArgs e)
         {
             using (var workbook = new XLWorkbook())
@@ -3205,10 +3232,6 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-        /// <summary>
-        /// Exports a DataGridView to an Excel worksheet, respecting visible columns and formatting.
-        /// </summary>
         private void ExportDataGridViewToWorksheet(XLWorkbook workbook, DataGridView dgv, string sheetName)
         {
             if (dgv.Rows.Count == 0) return;
