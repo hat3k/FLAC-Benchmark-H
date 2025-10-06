@@ -99,7 +99,7 @@
             comboBoxScript.Name = "comboBoxScript";
             comboBoxScript.Size = new Size(699, 23);
             comboBoxScript.TabIndex = 2;
-            comboBoxScript.Text = "-{0..8}";
+            comboBoxScript.Text = "-[0..8]";
             // 
             // labelPreviewJobsListMadeByScript
             // 
