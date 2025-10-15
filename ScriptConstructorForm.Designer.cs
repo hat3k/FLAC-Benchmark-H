@@ -156,7 +156,7 @@
             Controls.Add(buttonClearScript);
             Controls.Add(richTextBoxScriptHelp);
             DoubleBuffered = true;
-            MinimumSize = new Size(300, 388);
+            MinimumSize = new Size(300, 432);
             Name = "ScriptConstructorForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Script Constructor";

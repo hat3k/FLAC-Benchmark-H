@@ -166,7 +166,7 @@ namespace FLAC_Benchmark_H
 
             dataGridViewLogTestForErrors.CellContentClick += dataGridViewLogTestForErrors_CellContentClick;
             dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
- 
+
             buttonPauseResume.Click += buttonPauseResume_Click;
 
             // Enable custom drawing for listViewJobs
@@ -285,13 +285,13 @@ namespace FLAC_Benchmark_H
 
             switch (priorityText)
             {
-                case "Idle":        return ProcessPriorityClass.Idle;
+                case "Idle": return ProcessPriorityClass.Idle;
                 case "BelowNormal": return ProcessPriorityClass.BelowNormal;
-                case "Normal":      return ProcessPriorityClass.Normal;
+                case "Normal": return ProcessPriorityClass.Normal;
                 case "AboveNormal": return ProcessPriorityClass.AboveNormal;
-                case "High":        return ProcessPriorityClass.High;
-                case "RealTime":    return ProcessPriorityClass.RealTime;
-                default:            return ProcessPriorityClass.Normal;
+                case "High": return ProcessPriorityClass.High;
+                case "RealTime": return ProcessPriorityClass.RealTime;
+                default: return ProcessPriorityClass.Normal;
             }
         }
 
@@ -309,8 +309,16 @@ namespace FLAC_Benchmark_H
                     string relativePart = tempFolderPath.Substring(baseDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     tempPathToSave = $".\\{relativePart}";
                 }
-                
-                var settings = new[]
+
+                var columnVisibility = string.Join(",",
+                    dataGridViewLog.Columns.Cast<DataGridViewColumn>()
+                        .Select(col => $"{col.Name}:{col.Visible}"));
+
+                var columnHeaders = string.Join(",",
+                    dataGridViewLog.Columns.Cast<DataGridViewColumn>()
+                        .Select(col => $"{col.Name}:{col.HeaderText.Replace(":", "\\:")}"));
+
+                var settings = new List<string>
                 {
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
                     $"Threads={textBoxThreads.Text}",
@@ -326,8 +334,11 @@ namespace FLAC_Benchmark_H
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
-                    $"IgnoredVersion={programVersionIgnored ?? ""}"
+                    $"IgnoredVersion={programVersionIgnored ?? ""}",
+                    $"LogColumnVisibility={columnVisibility}",
+                    $"LogColumnHeaders={columnHeaders}"
                 };
+
                 File.WriteAllLines(SettingsGeneralFilePath, settings);
             }
             catch (Exception ex)
@@ -482,6 +493,12 @@ namespace FLAC_Benchmark_H
                             break;
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
+                            break;
+                        case "LogColumnVisibility":
+                            LoadDataGridViewLogColumnVisibility(value);
+                            break;
+                        case "LogColumnHeaders":
+                            LoadDataGridViewLogColumnHeaders(value);
                             break;
                     }
                 }
@@ -709,6 +726,40 @@ namespace FLAC_Benchmark_H
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             UpdateGroupBoxAudioFilesHeader();
+        }
+        private void LoadDataGridViewLogColumnVisibility(string visibilityString)
+        {
+            var pairs = visibilityString.Split(',');
+            foreach (var pair in pairs)
+            {
+                var parts = pair.Split(':');
+                if (parts.Length == 2 && bool.TryParse(parts[1], out bool visible))
+                {
+                    string columnName = parts[0];
+                    if (dataGridViewLog.Columns[columnName] is DataGridViewColumn col)
+                    {
+                        col.Visible = visible;
+                    }
+                }
+            }
+        }
+        private void LoadDataGridViewLogColumnHeaders(string headersString)
+        {
+            var pairs = headersString.Split(',');
+            foreach (var pair in pairs)
+            {
+                int lastColonIndex = pair.LastIndexOf(':');
+                if (lastColonIndex > 0 && lastColonIndex < pair.Length - 1)
+                {
+                    string columnName = pair.Substring(0, lastColonIndex);
+                    string headerText = pair.Substring(lastColonIndex + 1).Replace("\\:", ":");
+
+                    if (dataGridViewLog.Columns[columnName] is DataGridViewColumn col)
+                    {
+                        col.HeaderText = headerText;
+                    }
+                }
+            }
         }
         private void LoadJobs()
         {
@@ -2142,6 +2193,23 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        // Log Stettings
+        private DataGridViewLogSettingsForm? _logSettingsForm = null;
+        private void buttonDataGridViewLogSettings_Click(object sender, EventArgs e)
+        {
+            if (_logSettingsForm == null || _logSettingsForm.IsDisposed)
+            {
+                _logSettingsForm = new DataGridViewLogSettingsForm(dataGridViewLog);
+                _logSettingsForm.FormClosed += (s, args) => _logSettingsForm = null;
+                _logSettingsForm.Show(this);
+            }
+            else
+            {
+                _logSettingsForm.BringToFront();
+                _logSettingsForm.Focus();
+            }
+        }
+
         // Log Benchmark
         private void InitializedataGridViewLog()
         {
@@ -3569,7 +3637,7 @@ namespace FLAC_Benchmark_H
                 logText.Append(col.HeaderText).Append('\t');
             }
             logText.AppendLine();
-            
+
 
             // Iterate through data rows
             foreach (DataGridViewRow row in activeGrid.Rows)
@@ -4324,26 +4392,26 @@ namespace FLAC_Benchmark_H
         }
 
         // Script Constructor
+        private ScriptConstructorForm? _scriptForm = null;
         private void buttonScriptConstructor_Click(object sender, EventArgs e)
         {
+            // Build initial script parameters from UI controls
             string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
             string threads = NormalizeSpaces(textBoxThreads.Text);
             string commandLine = NormalizeSpaces(textBoxCommandLineOptionsEncoder.Text);
-
             string parameters = $"-{compressionLevel} {commandLine}".Trim();
-
             if (int.TryParse(threads, out int threadCount) && threadCount > 1)
             {
                 parameters += $" -j{threads}";
             }
-
             parameters = Regex.Replace(parameters, @"\s+", " ").Trim();
 
-            if (scriptForm == null || scriptForm.IsDisposed)
+            if (_scriptForm == null || _scriptForm.IsDisposed)
             {
-                scriptForm = new ScriptConstructorForm();
+                _scriptForm = new ScriptConstructorForm();
+                _scriptForm.InitialScriptText = parameters;
 
-                scriptForm.OnJobsAdded += (jobs) =>
+                _scriptForm.OnJobsAdded += (jobs) =>
                 {
                     foreach (var job in jobs)
                     {
@@ -4351,14 +4419,15 @@ namespace FLAC_Benchmark_H
                     }
                 };
 
-                scriptForm.FormClosed += (s, e) => scriptForm = null;
+                _scriptForm.FormClosed += (s, args) => _scriptForm = null;
+                _scriptForm.Show(this);
             }
-
-            scriptForm.InitialScriptText = parameters;
-
-            scriptForm.Show(this);
-            scriptForm.BringToFront();
-            scriptForm.Focus();
+            else
+            {
+                _scriptForm.InitialScriptText = parameters;
+                _scriptForm.BringToFront();
+                _scriptForm.Focus();
+            }
         }
 
         // Actions (Buttons)
@@ -4852,7 +4921,7 @@ namespace FLAC_Benchmark_H
                             {
                                 warmupStopwatch.Stop();
                                 DeleteFileIfExists(outputFilePath);
-                                
+
                                 this.Invoke((MethodInvoker)(() =>
                                 {
                                     progressBarDecoder.ManualText = "";
@@ -5864,7 +5933,7 @@ namespace FLAC_Benchmark_H
             temporaryMessageTimer.Interval = 6000;
             temporaryMessageTimer.Start();
         }
- 
+
         private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
@@ -6042,7 +6111,7 @@ namespace FLAC_Benchmark_H
         private void EnableListViewDoubleBuffering()
         {
             var listViewType = typeof(ListView);
-            var doubleBufferedProperty = listViewType.GetProperty("DoubleBuffered",System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var doubleBufferedProperty = listViewType.GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
             // Apply to all ListViews including OwnerDraw ones
             doubleBufferedProperty?.SetValue(listViewEncoders, true, null);
