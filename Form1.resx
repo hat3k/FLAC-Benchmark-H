@@ -156,33 +156,6 @@ Warnings:
 • There is no progress indicator - processing many files may take a long time.
 • The operation can be resource-intensive when handling a large number of files.</value>
   </data>
-  <data name="buttonCopyLogAsBBCode.ToolTip" xml:space="preserve">
-    <value>Copy 'Benchmark' log as a BBCode to paste it in forums as a table.
-
-Columns to copy:
-"Bit Depth",
-"Sampling Rate",
-"Input File Size",
-"Output File Size",
-"Compression",
-"Time",
-"Speed",
-"Speed Min",
-"Speed Max",
-"Speed Range",
-"Speed Consistency",
-"CPU Load Encoder",
-"CPU Clock",
-"Passes",
-"Parameters",
-"Encoder",
-"Version"
-
-Hold 'Shift" to include column:
-"Name"
-
-This feature is in BETA. Feel free to report issues.</value>
-  </data>
   <data name="buttonAnalyzeLog.ToolTip" xml:space="preserve">
     <value>Analyzes and consolidates encoding results by file, encoder, and parameters.
 

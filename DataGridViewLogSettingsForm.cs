@@ -183,23 +183,11 @@ namespace FLAC_Benchmark_H
 
                 if (_dataGridView.Columns[colName] is DataGridViewColumn col)
                 {
-                    if (colName == "Name")
-                        col.Visible = true;
-                    else if (colName == "Errors")
-                        col.Visible = false;
-                    else
-                        col.Visible = visible;
-
+                    col.Visible = visible;
                     col.HeaderText = header;
                 }
 
-                if (colName == "Name")
-                    cb.Checked = true;
-                else if (colName == "Errors")
-                    cb.Checked = false;
-                else
-                    cb.Checked = visible;
-
+                cb.Checked = visible;
                 tb.Text = header;
             }
         }

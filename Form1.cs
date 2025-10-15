@@ -3430,91 +3430,48 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                int rowCount = dataGridViewLog.Rows.Count;
+                // Get only VISIBLE columns, sorted by their display order in the UI
+                var visibleColumns = dataGridViewLog.Columns.Cast<DataGridViewColumn>()
+                    .Where(col => col.Visible)
+                    .OrderBy(col => col.DisplayIndex)
+                    .ToList();
 
-                // Check if there are any non-new rows
-                bool hasRows = false;
-                for (int i = 0; i < rowCount; i++)
+                // Check if there are any visible columns to copy
+                if (visibleColumns.Count == 0)
                 {
-                    if (!dataGridViewLog.Rows[i].IsNewRow)
-                    {
-                        hasRows = true;
-                        break;
-                    }
+                    MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
 
-                if (!hasRows)
+                // Check if there are any data rows (excluding the new row placeholder)
+                bool hasData = dataGridViewLog.Rows.Cast<DataGridViewRow>()
+                    .Any(row => !row.IsNewRow);
+
+                if (!hasData)
                 {
                     MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Define base columns to include
-                var baseColumnsToInclude = new HashSet<string>
-                {
-                    "BitDepth",
-                    "SamplingRate",
-                    "InputFileSize",
-                    "OutputFileSize",
-                    "Compression",
-                    "Time",
-                    "Speed",
-                    "SpeedMin",
-                    "SpeedMax",
-                    "SpeedRange",
-                    "SpeedConsistency",
-                    "CPULoadEncoder",
-                    "CPUClock",
-                    "Passes",
-                    "Parameters",
-                    "Encoder",
-                    "Version"
-                };
-
-                // Check if Shift is pressed
-                bool includeNameColumn = ModifierKeys.HasFlag(Keys.Shift);
-
-                if (includeNameColumn)
-                {
-                    baseColumnsToInclude.Add("Name");
-                }
-
-                // Pre-cache included columns in display order
-                var includedColumns = dataGridViewLog.Columns
-                    .Cast<DataGridViewColumn>()
-                    .Where(col => baseColumnsToInclude.Contains(col.Name))
-                    .OrderBy(col => col.DisplayIndex)
-                    .Select(col => new { col.Index, col.HeaderText })
-                    .ToArray();
-
-                if (includedColumns.Length == 0)
-                {
-                    MessageBox.Show("No valid columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // Estimate capacity and build BBCode
-                int estimatedCapacity = rowCount * includedColumns.Length * 20;
-                StringBuilder bbCodeText = new StringBuilder(estimatedCapacity);
-
+                // Build BBCode using only visible columns
+                var bbCodeText = new StringBuilder();
                 bbCodeText.AppendLine("[table]");
 
-                // Headers
+                // Add header row
                 bbCodeText.Append("[tr]");
-                foreach (var col in includedColumns)
+                foreach (var col in visibleColumns)
                 {
                     bbCodeText.Append($"[td][b]{col.HeaderText}[/b][/td]");
                 }
                 bbCodeText.AppendLine("[/tr]");
 
-                // Rows
-                for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+                // Iterate through data rows
+                foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    DataGridViewRow row = dataGridViewLog.Rows[rowIndex];
-                    if (row.IsNewRow) continue;
+                    if (row.IsNewRow) continue; // Skip the empty "new row" at the bottom
 
                     bbCodeText.Append("[tr]");
-                    foreach (var col in includedColumns)
+                    foreach (var col in visibleColumns)
                     {
                         string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? "";
                         bbCodeText.Append($"[td]{cellValue}[/td]");
@@ -3524,6 +3481,7 @@ namespace FLAC_Benchmark_H
 
                 bbCodeText.Append("[/table]");
 
+                // Copy to clipboard if there's content
                 if (bbCodeText.Length > 0)
                 {
                     Clipboard.SetText(bbCodeText.ToString());
@@ -3532,7 +3490,7 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)

@@ -1187,7 +1187,7 @@
             buttonCopyLogAsBBCode.Size = new Size(110, 23);
             buttonCopyLogAsBBCode.TabIndex = 5;
             buttonCopyLogAsBBCode.Text = "Copy as BBCode";
-            toolTip1.SetToolTip(buttonCopyLogAsBBCode, resources.GetString("buttonCopyLogAsBBCode.ToolTip"));
+            toolTip1.SetToolTip(buttonCopyLogAsBBCode, "Copy current log as a BBCode to paste it in forums as a table.");
             buttonCopyLogAsBBCode.UseVisualStyleBackColor = true;
             buttonCopyLogAsBBCode.Click += buttonCopyLogAsBBCode_Click;
             // 
