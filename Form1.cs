@@ -310,14 +310,6 @@ namespace FLAC_Benchmark_H
                     tempPathToSave = $".\\{relativePart}";
                 }
 
-                var columnVisibility = string.Join(",",
-                    dataGridViewLog.Columns.Cast<DataGridViewColumn>()
-                        .Select(col => $"{col.Name}:{col.Visible}"));
-
-                var columnHeaders = string.Join(",",
-                    dataGridViewLog.Columns.Cast<DataGridViewColumn>()
-                        .Select(col => $"{col.Name}:{col.HeaderText.Replace(":", "\\:")}"));
-
                 var settings = new List<string>
                 {
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
@@ -334,10 +326,18 @@ namespace FLAC_Benchmark_H
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
-                    $"IgnoredVersion={programVersionIgnored ?? ""}",
-                    $"LogColumnVisibility={columnVisibility}",
-                    $"LogColumnHeaders={columnHeaders}"
+                    $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
+
+                foreach (DataGridViewColumn col in dataGridViewLog.Columns)
+                {
+                    settings.Add($"LogColumnVisibility_{col.Name}={col.Visible}");
+                }
+
+                foreach (DataGridViewColumn col in dataGridViewLog.Columns)
+                {
+                    settings.Add($"LogColumnHeaders_{col.Name}={col.HeaderText}");
+                }
 
                 File.WriteAllLines(SettingsGeneralFilePath, settings);
             }
@@ -494,11 +494,19 @@ namespace FLAC_Benchmark_H
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
                             break;
-                        case "LogColumnVisibility":
-                            LoadDataGridViewLogColumnVisibility(value);
+                        case string s when s.StartsWith("LogColumnVisibility_"):
+                            string columnNameVis = s.Substring("LogColumnVisibility_".Length);
+                            if (bool.TryParse(value, out bool visible) && dataGridViewLog.Columns[columnNameVis] is DataGridViewColumn colVis)
+                            {
+                                colVis.Visible = visible;
+                            }
                             break;
-                        case "LogColumnHeaders":
-                            LoadDataGridViewLogColumnHeaders(value);
+                        case string s when s.StartsWith("LogColumnHeaders_"):
+                            string columnNameHdr = s.Substring("LogColumnHeaders_".Length);
+                            if (dataGridViewLog.Columns[columnNameHdr] is DataGridViewColumn colHdr)
+                            {
+                                colHdr.HeaderText = value;
+                            }
                             break;
                     }
                 }
@@ -726,40 +734,6 @@ namespace FLAC_Benchmark_H
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             UpdateGroupBoxAudioFilesHeader();
-        }
-        private void LoadDataGridViewLogColumnVisibility(string visibilityString)
-        {
-            var pairs = visibilityString.Split(',');
-            foreach (var pair in pairs)
-            {
-                var parts = pair.Split(':');
-                if (parts.Length == 2 && bool.TryParse(parts[1], out bool visible))
-                {
-                    string columnName = parts[0];
-                    if (dataGridViewLog.Columns[columnName] is DataGridViewColumn col)
-                    {
-                        col.Visible = visible;
-                    }
-                }
-            }
-        }
-        private void LoadDataGridViewLogColumnHeaders(string headersString)
-        {
-            var pairs = headersString.Split(',');
-            foreach (var pair in pairs)
-            {
-                int lastColonIndex = pair.LastIndexOf(':');
-                if (lastColonIndex > 0 && lastColonIndex < pair.Length - 1)
-                {
-                    string columnName = pair.Substring(0, lastColonIndex);
-                    string headerText = pair.Substring(lastColonIndex + 1).Replace("\\:", ":");
-
-                    if (dataGridViewLog.Columns[columnName] is DataGridViewColumn col)
-                    {
-                        col.HeaderText = headerText;
-                    }
-                }
-            }
         }
         private void LoadJobs()
         {
