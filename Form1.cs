@@ -1993,7 +1993,9 @@ namespace FLAC_Benchmark_H
                     dataGridViewLogTestForErrors.SuspendLayout();
                     try
                     {
-                        var rowsToAdd = errorResults.Select(result =>
+                        var sortedResults = errorResults.OrderBy(r => r.FilePath).ToList();
+
+                        var rowsToAdd = sortedResults.Select(result =>
                         {
                             string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
                                 ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
@@ -2030,7 +2032,6 @@ namespace FLAC_Benchmark_H
                         MessageBoxButtons.OK,
                         errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
                     );
-
                 });
             }
             catch (OperationCanceledException)
