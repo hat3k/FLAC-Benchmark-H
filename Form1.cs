@@ -1730,9 +1730,9 @@ namespace FLAC_Benchmark_H
                             string path = item.Tag.ToString();
                             if (audioInfoCache.TryGetValue(path, out var info))
                             {
-                                if (item.SubItems.Count > 5 && item.SubItems[5].Text != info.Md5Hash)
+                                if (item.SubItems.Count > 6 && item.SubItems[6].Text != info.Md5Hash)
                                 {
-                                    item.SubItems[5].Text = info.Md5Hash;
+                                    item.SubItems[6].Text = info.Md5Hash;
                                 }
                             }
                         }
