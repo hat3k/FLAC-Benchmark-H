@@ -1266,7 +1266,7 @@
             buttonDataGridViewLogSettings.Location = new Point(183, 141);
             buttonDataGridViewLogSettings.Name = "buttonDataGridViewLogSettings";
             buttonDataGridViewLogSettings.Size = new Size(165, 23);
-            buttonDataGridViewLogSettings.TabIndex = 27;
+            buttonDataGridViewLogSettings.TabIndex = 10;
             buttonDataGridViewLogSettings.Text = "Log Settings";
             buttonDataGridViewLogSettings.UseVisualStyleBackColor = true;
             buttonDataGridViewLogSettings.Click += buttonDataGridViewLogSettings_Click;
@@ -1371,7 +1371,7 @@
             comboBoxCPUPriority.MaxDropDownItems = 5;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
             comboBoxCPUPriority.Size = new Size(110, 23);
-            comboBoxCPUPriority.TabIndex = 3;
+            comboBoxCPUPriority.TabIndex = 5;
             toolTip1.SetToolTip(comboBoxCPUPriority, "Encoding/Decoding process priority");
             // 
             // buttonSelectTempFolder
