@@ -83,6 +83,7 @@
             buttonUpAudioFile = new Button();
             listViewAudioFiles = new ListView();
             FileName = new ColumnHeader();
+            Channels = new ColumnHeader();
             BitDepth = new ColumnHeader();
             SamplingRate = new ColumnHeader();
             Duration = new ColumnHeader();
@@ -726,7 +727,7 @@
             // 
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, BitDepth, SamplingRate, Duration, Size, MD5Hash, FilePath });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, Size, MD5Hash, FilePath });
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
@@ -740,6 +741,13 @@
             FileName.Tag = "FileName";
             FileName.Text = "File Name";
             FileName.Width = 387;
+            // 
+            // Channels
+            // 
+            Channels.Tag = "Channels";
+            Channels.Text = "Channels";
+            Channels.TextAlign = HorizontalAlignment.Right;
+            Channels.Width = 40;
             // 
             // BitDepth
             // 
@@ -777,6 +785,7 @@
             // 
             // FilePath
             // 
+            FilePath.Tag = "FilePath";
             FilePath.Text = "File Path";
             FilePath.Width = 250;
             // 
@@ -1663,5 +1672,6 @@
         private DataGridViewEx dataGridViewLogDetectDupes;
         private DataGridViewEx dataGridViewLogTestForErrors;
         private Button buttonDataGridViewLogSettings;
+        private ColumnHeader Channels;
     }
 }

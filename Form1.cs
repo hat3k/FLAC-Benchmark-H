@@ -1203,12 +1203,13 @@ namespace FLAC_Benchmark_H
             };
 
             // Fill subitems
-            item.SubItems.Add(audioFileInfo.BitDepthString);
-            item.SubItems.Add(audioFileInfo.SamplingRateString);
-            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");
-            item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes");
-            item.SubItems.Add(audioFileInfo.Md5Hash);
-            item.SubItems.Add(audioFileInfo.DirectoryPath);
+            item.SubItems.Add(audioFileInfo.Channels);               // item.SubItems[1] -> Channels
+            item.SubItems.Add(audioFileInfo.BitDepthString);         // item.SubItems[2] -> BitDepth
+            item.SubItems.Add(audioFileInfo.SamplingRateString);     // item.SubItems[3] -> SamplingRate
+            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");    // item.SubItems[4] -> Duration
+            item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes"); // item.SubItems[5] -> Size
+            item.SubItems.Add(audioFileInfo.Md5Hash);                // item.SubItems[6] -> MD5Hash
+            item.SubItems.Add(audioFileInfo.DirectoryPath);          // item.SubItems[7] -> FilePath
             return item;
         }
         private async Task<AudioFileInfo> GetAudioInfo(string audioFilePath)
@@ -1222,6 +1223,7 @@ namespace FLAC_Benchmark_H
             var mediaInfo = new MediaInfoLib.MediaInfo();
             mediaInfo.Open(audioFilePath);
 
+            string channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
             string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
             string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";                      // Number only
             string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
@@ -1252,6 +1254,7 @@ namespace FLAC_Benchmark_H
                 DirectoryPath = Path.GetDirectoryName(audioFilePath),
                 FileName = Path.GetFileName(audioFilePath),
                 Extension = extension,
+                Channels = channels,
                 BitDepth = bitDepth,
                 BitDepthString = bitDepthString,
                 SamplingRate = samplingRate,
@@ -1273,6 +1276,7 @@ namespace FLAC_Benchmark_H
             public string DirectoryPath { get; set; }
             public string FileName { get; set; }
             public string Extension { get; set; }
+            public string Channels { get; set; }
             public string BitDepth { get; set; }
             public string BitDepthString { get; set; }
             public string SamplingRate { get; set; }
