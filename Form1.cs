@@ -1743,9 +1743,33 @@ namespace FLAC_Benchmark_H
                             if (audioInfoCache.TryGetValue(filePath, out var info))
                             {
                                 int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
-                                    info.FileName, "", "", "", "", "", "", "", "", "", "",
-                                    "", "", "", "", "", "", "", "", "", "", "", info.DirectoryPath,
-                                    "MD5 calculation failed", "", info.ErrorDetails ?? string.Empty
+                                    info.FileName, // 0 Name
+                                    "", // 1 Channels
+                                    "", // 2 BitDepth
+                                    "", // 3 SamplingRate
+                                    "", // 4 InputFileSize
+                                    "", // 5 OutputFileSize
+                                    "", // 6 Compression
+                                    "", // 7 Time
+                                    "", // 8 Speed
+                                    "", // 9 SpeedMin
+                                    "", // 10 SpeedMax
+                                    "", // 11 SpeedRange
+                                    "", // 12 SpeedConsistency
+                                    "", // 13 CPULoadEncoder
+                                    "", // 14 CPUClock
+                                    "", // 15 Passes
+                                    "", // 16 Parameters
+                                    "", // 17 Encoder
+                                    "", // 18 Version
+                                    "", // 19 EncoderDirectory
+                                    "", // 20 FastestEncoder
+                                    "", // 21 BestSize
+                                    "", // 22 SameSize
+                                    info.DirectoryPath, // 23 AudioFileDirectory
+                                    "MD5 calculation failed", // 24 MD5
+                                    "", // 25 Duplicates
+                                    info.ErrorDetails ?? string.Empty // 26 Errors
                                 );
                                 dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
                             }
@@ -1762,9 +1786,33 @@ namespace FLAC_Benchmark_H
                                 if (audioInfoCache.TryGetValue(path, out var info))
                                 {
                                     int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
-                                        info.FileName, "", "", "", "", "", "", "", "", "", "",
-                                        "", "", "", "", "", "", "", "", "", "", "", info.DirectoryPath,
-                                        kvp.Key, duplicatesList, ""
+                                        info.FileName, // 0 Name
+                                        "", // 1 Channels
+                                        "", // 2 BitDepth
+                                        "", // 3 SamplingRate
+                                        "", // 4 InputFileSize
+                                        "", // 5 OutputFileSize
+                                        "", // 6 Compression
+                                        "", // 7 Time
+                                        "", // 8 Speed
+                                        "", // 9 SpeedMin
+                                        "", // 10 SpeedMax
+                                        "", // 11 SpeedRange
+                                        "", // 12 SpeedConsistency
+                                        "", // 13 CPULoadEncoder
+                                        "", // 14 CPUClock
+                                        "", // 15 Passes
+                                        "", // 16 Parameters
+                                        "", // 17 Encoder
+                                        "", // 18 Version
+                                        "", // 19 EncoderDirectory
+                                        "", // 20 FastestEncoder
+                                        "", // 21 BestSize
+                                        "", // 22 SameSize
+                                        info.DirectoryPath, // 23 AudioFileDirectory
+                                        kvp.Key, // 24 MD5
+                                        duplicatesList, // 25 Duplicates
+                                        "" // 26 Errors
                                     );
                                     dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                                 }
@@ -2007,9 +2055,33 @@ namespace FLAC_Benchmark_H
                             var row = new DataGridViewRow();
                             row.CreateCells(dataGridViewLogTestForErrors);
                             row.SetValues(
-                                result.FileName, "", "", "", "", "", "", "", "", "", "",
-                                "", "", "", "", "", "", "", "", "", "", "", directoryPath,
-                                "Integrity Check Failed", "", result.Message
+                                result.FileName, // 0 Name
+                                "", // 1 Channels
+                                "", // 2 BitDepth
+                                "", // 3 SamplingRate
+                                "", // 4 InputFileSize
+                                "", // 5 OutputFileSize
+                                "", // 6 Compression
+                                "", // 7 Time
+                                "", // 8 Speed
+                                "", // 9 SpeedMin
+                                "", // 10 SpeedMax
+                                "", // 11 SpeedRange
+                                "", // 12 SpeedConsistency
+                                "", // 13 CPULoadEncoder
+                                "", // 14 CPUClock
+                                "", // 15 Passes
+                                "", // 16 Parameters
+                                "", // 17 Encoder
+                                "", // 18 Version
+                                "", // 19 EncoderDirectory
+                                "", // 20 FastestEncoder
+                                "", // 21 BestSize
+                                "", // 22 SameSize
+                                directoryPath, // 23 AudioFileDirectory
+                                "Integrity Check Failed", // 24 MD5
+                                "", // 25 Duplicates
+                                result.Message // 26 Errors
                             );
                             row.DefaultCellStyle.ForeColor = Color.Red;
                             return row;
@@ -2194,6 +2266,7 @@ namespace FLAC_Benchmark_H
         {
             // Configure DataGridView
             dataGridViewLog.Columns.Add("Name", "Name");
+            dataGridViewLog.Columns.Add("Channels", "Ch.");
             dataGridViewLog.Columns.Add("BitDepth", "Bit Depth");
             dataGridViewLog.Columns.Add("SamplingRate", "Samp. Rate");
             dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
@@ -2237,6 +2310,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
+            dataGridViewLog.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -2254,6 +2328,7 @@ namespace FLAC_Benchmark_H
 
             // Hide optional columns by default
             dataGridViewLog.Columns["Name"].Visible = true;
+            dataGridViewLog.Columns["Channels"].Visible = true;
             dataGridViewLog.Columns["BitDepth"].Visible = true;
             dataGridViewLog.Columns["SamplingRate"].Visible = true;
             dataGridViewLog.Columns["InputFileSize"].Visible = true;
@@ -2352,6 +2427,7 @@ namespace FLAC_Benchmark_H
         {
             // Configure DataGridView
             dataGridViewLogDetectDupes.Columns.Add("Name", "Name");
+            dataGridViewLogDetectDupes.Columns.Add("Channels", "Ch.");
             dataGridViewLogDetectDupes.Columns.Add("BitDepth", "Bit Depth");
             dataGridViewLogDetectDupes.Columns.Add("SamplingRate", "Samp. Rate");
             dataGridViewLogDetectDupes.Columns.Add("InputFileSize", "In. Size");
@@ -2395,6 +2471,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLogDetectDupes.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
+            dataGridViewLogDetectDupes.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogDetectDupes.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogDetectDupes.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogDetectDupes.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -2412,6 +2489,7 @@ namespace FLAC_Benchmark_H
 
             // Hide or show columns by default
             dataGridViewLogDetectDupes.Columns["Name"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["Channels"].Visible = false;
             dataGridViewLogDetectDupes.Columns["BitDepth"].Visible = false;
             dataGridViewLogDetectDupes.Columns["SamplingRate"].Visible = false;
             dataGridViewLogDetectDupes.Columns["InputFileSize"].Visible = false;
@@ -2510,6 +2588,7 @@ namespace FLAC_Benchmark_H
         {
             // Configure DataGridView
             dataGridViewLogTestForErrors.Columns.Add("Name", "Name");
+            dataGridViewLogTestForErrors.Columns.Add("Channels", "Ch.");
             dataGridViewLogTestForErrors.Columns.Add("BitDepth", "Bit Depth");
             dataGridViewLogTestForErrors.Columns.Add("SamplingRate", "Samp. Rate");
             dataGridViewLogTestForErrors.Columns.Add("InputFileSize", "In. Size");
@@ -2553,6 +2632,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLogTestForErrors.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
+            dataGridViewLogTestForErrors.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogTestForErrors.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogTestForErrors.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLogTestForErrors.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -2570,6 +2650,7 @@ namespace FLAC_Benchmark_H
 
             // Hide or show columns by default
             dataGridViewLogTestForErrors.Columns["Name"].Visible = true;
+            dataGridViewLogTestForErrors.Columns["Channels"].Visible = false;
             dataGridViewLogTestForErrors.Columns["BitDepth"].Visible = false;
             dataGridViewLogTestForErrors.Columns["SamplingRate"].Visible = false;
             dataGridViewLogTestForErrors.Columns["InputFileSize"].Visible = false;
@@ -2717,6 +2798,7 @@ namespace FLAC_Benchmark_H
                 Speed = encodingSpeed,
                 CPULoadEncoder = cpuLoadEncoder,
                 CPUClock = avgClock,
+                Channels = audioFileInfo.Channels,
                 BitDepth = audioFileInfo.BitDepth,
                 SamplingRate = audioFileInfo.SamplingRate,
                 Timestamp = DateTime.Now
@@ -2728,32 +2810,33 @@ namespace FLAC_Benchmark_H
             // Add record to DataGridView log
             int rowIndex = dataGridViewLog.Rows.Add(
                 audioFileName,                          //  0 "Name"
-                audioFileInfo.BitDepth,                 //  1 "BitDepth"
-                samplingRateFormatted,                  //  2 "SamplingRate"
-                inputSizeFormatted,                     //  3 "InputFileSize"
-                outputSizeFormatted,                    //  4 "OutputFileSize"
-                $"{compressionPercentage:F3}%",         //  5 "Compression"
-                $"{elapsedTime.TotalMilliseconds:F3}",  //  6 "Time"
-                $"{encodingSpeed:F3}x",                 //  7 "Speed"
-                string.Empty,                           //  8 "SpeedMin"
-                string.Empty,                           //  9 "SpeedMax"
-                string.Empty,                           // 10 "SpeedRange"
-                string.Empty,                           // 11 "SpeedConsistency"
-                $"{cpuLoadEncoder:F3}%",                // 12 "CPULoadEncoder"
-                $"{avgClock:F0} MHz",                   // 13 "CPUClock"
-                "1",                                    // 14 "Passes"
-                parameters,                             // 15 "Parameters"
-                encoderInfo.FileName,                   // 16 "Encoder"
-                encoderInfo.Version,                    // 17 "Version"
-                encoderInfo.DirectoryPath,              // 18 "EncoderDirectory"
-                string.Empty,                           // 19 "FastestEncoder"
-                string.Empty,                           // 20 "BestSize"
-                string.Empty,                           // 21 "SameSize"
-                audioFileDirectory,                     // 22 "AudioFileDirectory"
-                Md5Hash,                                // 23 "MD5"
-                string.Empty,                           // 24 "Duplicates"
-                string.Empty                            // 25 "Errors"
-            );
+                audioFileInfo.Channels,                 //  1 "Channels"
+                audioFileInfo.BitDepth,                 //  2 "BitDepth"
+                samplingRateFormatted,                  //  3 "SamplingRate"
+                inputSizeFormatted,                     //  4 "InputFileSize"
+                outputSizeFormatted,                    //  5 "OutputFileSize"
+                $"{compressionPercentage:F3}%",         //  6 "Compression"
+                $"{elapsedTime.TotalMilliseconds:F3}",  //  7 "Time"
+                $"{encodingSpeed:F3}x",                 //  8 "Speed"
+                string.Empty,                           //  9 "SpeedMin"
+                string.Empty,                           // 10 "SpeedMax"
+                string.Empty,                           // 11 "SpeedRange"
+                string.Empty,                           // 12 "SpeedConsistency"
+                $"{cpuLoadEncoder:F3}%",                // 13 "CPULoadEncoder"
+                $"{avgClock:F0} MHz",                   // 14 "CPUClock"
+                "1",                                    // 15 "Passes"
+                parameters,                             // 16 "Parameters"
+                encoderInfo.FileName,                   // 17 "Encoder"
+                encoderInfo.Version,                    // 18 "Version"
+                encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
+                string.Empty,                           // 20 "FastestEncoder"
+                string.Empty,                           // 21 "BestSize"
+                string.Empty,                           // 22 "SameSize"
+                audioFileDirectory,                     // 23 "AudioFileDirectory"
+                Md5Hash,                                // 24 "MD5"
+                string.Empty,                           // 25 "Duplicates"
+                string.Empty                            // 26 "Errors"
+             );
 
             // Add a tag to Log raw
             dataGridViewLog.Rows[rowIndex].Tag = benchmarkPass;
@@ -2852,6 +2935,7 @@ namespace FLAC_Benchmark_H
                     MinOutputSize = g.Min(p => p.OutputSize),
                     MaxOutputSize = g.Max(p => p.OutputSize),
                     InputSize = g.First().InputSize,
+                    Channels = g.First().Channels,
                     BitDepth = g.First().BitDepth,
                     SamplingRate = g.First().SamplingRate,
                     Speeds = g.Where(p => p.Speed > 0).Select(p => p.Speed).OrderBy(s => s).ToList(), // Extract sorted speeds once
@@ -2923,6 +3007,7 @@ namespace FLAC_Benchmark_H
                 var logEntry = new LogEntry
                 {
                     Name = audioFileInfo?.FileName ?? Path.GetFileName(group.AudioFilePath),
+                    Channels = group.Channels,
                     BitDepth = group.BitDepth,
                     SamplingRate = samplingRateFormatted,
                     InputFileSize = inputSizeFormatted,
@@ -3030,6 +3115,7 @@ namespace FLAC_Benchmark_H
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
                         entry.Name,
+                        entry.Channels,
                         entry.BitDepth,
                         entry.SamplingRate,
                         entry.InputFileSize,
@@ -3070,6 +3156,7 @@ namespace FLAC_Benchmark_H
         private class LogEntry
         {
             public string Name { get; set; }
+            public string Channels { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public string InputFileSize { get; set; }
@@ -3113,6 +3200,7 @@ namespace FLAC_Benchmark_H
             public double Speed { get; set; }
             public double CPULoadEncoder { get; set; }
             public double CPUClock { get; set; }
+            public string Channels { get; set; }
             public string BitDepth { get; set; }
             public string SamplingRate { get; set; }
             public DateTime Timestamp { get; set; }
@@ -3129,6 +3217,7 @@ namespace FLAC_Benchmark_H
                 var logEntry = new LogEntry
                 {
                     Name = row.Cells["Name"].Value?.ToString(),
+                    Channels = row.Cells["Channels"].Value?.ToString(),
                     BitDepth = row.Cells["BitDepth"].Value?.ToString(),
                     SamplingRate = row.Cells["SamplingRate"].Value?.ToString(),
                     InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
@@ -3178,6 +3267,7 @@ namespace FLAC_Benchmark_H
             {
                 int rowIndex = dataGridViewLog.Rows.Add(
                     data.Name,
+                    data.Channels,
                     data.BitDepth,
                     data.SamplingRate,
                     data.InputFileSize,
@@ -3325,6 +3415,13 @@ namespace FLAC_Benchmark_H
                         else
                             sheetCell.Value = cellValue?.ToString() ?? string.Empty;
                     }
+                    else if (colName == "Channels")
+                    {
+                        if (cellValue != null && long.TryParse(cellValue.ToString(), out long val))
+                            sheetCell.Value = val;
+                        else
+                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                    }
                     else if (colName == "BitDepth" || colName == "SamplingRate")
                     {
                         if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long val))
@@ -3394,6 +3491,7 @@ namespace FLAC_Benchmark_H
 
                 switch (col.Name)
                 {
+                    case "Channels":
                     case "BitDepth":
                     case "Passes":
                     case "CPUClock":

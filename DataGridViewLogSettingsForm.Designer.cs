@@ -81,6 +81,8 @@
             checkBoxLogSettingsErrors = new CheckBox();
             checkBoxLogSettingsAudioFileDirectory = new CheckBox();
             checkBoxLogSettingsMD5 = new CheckBox();
+            checkBoxLogSettingsChannels = new CheckBox();
+            textBoxLogSettingsChannels = new TextBox();
             groupBoxBenchmarkLogColumnVisibilityAndName.SuspendLayout();
             SuspendLayout();
             // 
@@ -113,6 +115,7 @@
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsTime);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(textBoxLogSettingsBitDepth);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsSpeedConsistency);
+            groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(textBoxLogSettingsChannels);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(textBoxLogSettingsErrors);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsBitDepth);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(textBoxLogSettingsInputSize);
@@ -136,6 +139,7 @@
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(textBoxLogSettingsSpeedConsistency);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsFastestEncoder);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsSameSize);
+            groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsChannels);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsErrors);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsAudioFileDirectory);
             groupBoxBenchmarkLogColumnVisibilityAndName.Controls.Add(checkBoxLogSettingsMD5);
@@ -150,11 +154,11 @@
             // textBoxLogSettingsBestSize
             // 
             textBoxLogSettingsBestSize.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsBestSize.Location = new Point(154, 521);
+            textBoxLogSettingsBestSize.Location = new Point(154, 546);
             textBoxLogSettingsBestSize.MinimumSize = new Size(130, 0);
             textBoxLogSettingsBestSize.Name = "textBoxLogSettingsBestSize";
             textBoxLogSettingsBestSize.Size = new Size(130, 23);
-            textBoxLogSettingsBestSize.TabIndex = 42;
+            textBoxLogSettingsBestSize.TabIndex = 44;
             textBoxLogSettingsBestSize.Text = "Best Size";
             // 
             // buttonOkLogSettings
@@ -163,18 +167,18 @@
             buttonOkLogSettings.Location = new Point(6, 679);
             buttonOkLogSettings.Name = "buttonOkLogSettings";
             buttonOkLogSettings.Size = new Size(130, 23);
-            buttonOkLogSettings.TabIndex = 52;
+            buttonOkLogSettings.TabIndex = 53;
             buttonOkLogSettings.Text = "OK";
             buttonOkLogSettings.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsTime
             // 
             textBoxLogSettingsTime.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsTime.Location = new Point(154, 171);
+            textBoxLogSettingsTime.Location = new Point(154, 196);
             textBoxLogSettingsTime.MinimumSize = new Size(130, 0);
             textBoxLogSettingsTime.Name = "textBoxLogSettingsTime";
             textBoxLogSettingsTime.Size = new Size(130, 23);
-            textBoxLogSettingsTime.TabIndex = 14;
+            textBoxLogSettingsTime.TabIndex = 16;
             textBoxLogSettingsTime.Text = "Time";
             // 
             // buttonResetLogSettingsToDefault
@@ -183,28 +187,28 @@
             buttonResetLogSettingsToDefault.Location = new Point(154, 679);
             buttonResetLogSettingsToDefault.Name = "buttonResetLogSettingsToDefault";
             buttonResetLogSettingsToDefault.Size = new Size(130, 23);
-            buttonResetLogSettingsToDefault.TabIndex = 53;
+            buttonResetLogSettingsToDefault.TabIndex = 0;
             buttonResetLogSettingsToDefault.Text = "Reset to Default";
             buttonResetLogSettingsToDefault.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsCPULoad
             // 
             textBoxLogSettingsCPULoad.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsCPULoad.Location = new Point(154, 321);
+            textBoxLogSettingsCPULoad.Location = new Point(154, 346);
             textBoxLogSettingsCPULoad.MinimumSize = new Size(130, 0);
             textBoxLogSettingsCPULoad.Name = "textBoxLogSettingsCPULoad";
             textBoxLogSettingsCPULoad.Size = new Size(130, 23);
-            textBoxLogSettingsCPULoad.TabIndex = 26;
+            textBoxLogSettingsCPULoad.TabIndex = 28;
             textBoxLogSettingsCPULoad.Text = "CPU Load";
             // 
             // textBoxLogSettingsSameSize
             // 
             textBoxLogSettingsSameSize.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSameSize.Location = new Point(154, 546);
+            textBoxLogSettingsSameSize.Location = new Point(154, 571);
             textBoxLogSettingsSameSize.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSameSize.Name = "textBoxLogSettingsSameSize";
             textBoxLogSettingsSameSize.Size = new Size(130, 23);
-            textBoxLogSettingsSameSize.TabIndex = 44;
+            textBoxLogSettingsSameSize.TabIndex = 46;
             textBoxLogSettingsSameSize.Text = "Same Size";
             // 
             // checkBoxLogSettingsName
@@ -215,18 +219,18 @@
             checkBoxLogSettingsName.Location = new Point(6, 23);
             checkBoxLogSettingsName.Name = "checkBoxLogSettingsName";
             checkBoxLogSettingsName.Size = new Size(58, 19);
-            checkBoxLogSettingsName.TabIndex = 0;
+            checkBoxLogSettingsName.TabIndex = 1;
             checkBoxLogSettingsName.Text = "Name";
             checkBoxLogSettingsName.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeed
             // 
             textBoxLogSettingsSpeed.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSpeed.Location = new Point(154, 196);
+            textBoxLogSettingsSpeed.Location = new Point(154, 221);
             textBoxLogSettingsSpeed.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSpeed.Name = "textBoxLogSettingsSpeed";
             textBoxLogSettingsSpeed.Size = new Size(130, 23);
-            textBoxLogSettingsSpeed.TabIndex = 16;
+            textBoxLogSettingsSpeed.TabIndex = 18;
             textBoxLogSettingsSpeed.Text = "Speed";
             // 
             // checkBoxLogSettingsSpeedMinimum
@@ -234,21 +238,21 @@
             checkBoxLogSettingsSpeedMinimum.AutoSize = true;
             checkBoxLogSettingsSpeedMinimum.Checked = true;
             checkBoxLogSettingsSpeedMinimum.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSpeedMinimum.Location = new Point(6, 223);
+            checkBoxLogSettingsSpeedMinimum.Location = new Point(6, 248);
             checkBoxLogSettingsSpeedMinimum.Name = "checkBoxLogSettingsSpeedMinimum";
             checkBoxLogSettingsSpeedMinimum.Size = new Size(114, 19);
-            checkBoxLogSettingsSpeedMinimum.TabIndex = 17;
+            checkBoxLogSettingsSpeedMinimum.TabIndex = 19;
             checkBoxLogSettingsSpeedMinimum.Text = "Speed Minimum";
             checkBoxLogSettingsSpeedMinimum.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsCPUClock
             // 
             textBoxLogSettingsCPUClock.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsCPUClock.Location = new Point(154, 346);
+            textBoxLogSettingsCPUClock.Location = new Point(154, 371);
             textBoxLogSettingsCPUClock.MinimumSize = new Size(130, 0);
             textBoxLogSettingsCPUClock.Name = "textBoxLogSettingsCPUClock";
             textBoxLogSettingsCPUClock.Size = new Size(130, 23);
-            textBoxLogSettingsCPUClock.TabIndex = 28;
+            textBoxLogSettingsCPUClock.TabIndex = 30;
             textBoxLogSettingsCPUClock.Text = "CPU Clock";
             // 
             // checkBoxLogSettingsOutputSize
@@ -256,21 +260,21 @@
             checkBoxLogSettingsOutputSize.AutoSize = true;
             checkBoxLogSettingsOutputSize.Checked = true;
             checkBoxLogSettingsOutputSize.CheckState = CheckState.Checked;
-            checkBoxLogSettingsOutputSize.Location = new Point(6, 123);
+            checkBoxLogSettingsOutputSize.Location = new Point(6, 148);
             checkBoxLogSettingsOutputSize.Name = "checkBoxLogSettingsOutputSize";
             checkBoxLogSettingsOutputSize.Size = new Size(87, 19);
-            checkBoxLogSettingsOutputSize.TabIndex = 9;
+            checkBoxLogSettingsOutputSize.TabIndex = 11;
             checkBoxLogSettingsOutputSize.Text = "Output Size";
             checkBoxLogSettingsOutputSize.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsEncoder
             // 
             textBoxLogSettingsEncoder.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsEncoder.Location = new Point(154, 421);
+            textBoxLogSettingsEncoder.Location = new Point(154, 446);
             textBoxLogSettingsEncoder.MinimumSize = new Size(130, 0);
             textBoxLogSettingsEncoder.Name = "textBoxLogSettingsEncoder";
             textBoxLogSettingsEncoder.Size = new Size(130, 23);
-            textBoxLogSettingsEncoder.TabIndex = 34;
+            textBoxLogSettingsEncoder.TabIndex = 36;
             textBoxLogSettingsEncoder.Text = "Encoder";
             // 
             // checkBoxLogSettingsInputSize
@@ -278,21 +282,21 @@
             checkBoxLogSettingsInputSize.AutoSize = true;
             checkBoxLogSettingsInputSize.Checked = true;
             checkBoxLogSettingsInputSize.CheckState = CheckState.Checked;
-            checkBoxLogSettingsInputSize.Location = new Point(6, 98);
+            checkBoxLogSettingsInputSize.Location = new Point(6, 123);
             checkBoxLogSettingsInputSize.Name = "checkBoxLogSettingsInputSize";
             checkBoxLogSettingsInputSize.Size = new Size(77, 19);
-            checkBoxLogSettingsInputSize.TabIndex = 7;
+            checkBoxLogSettingsInputSize.TabIndex = 9;
             checkBoxLogSettingsInputSize.Text = "Input Size";
             checkBoxLogSettingsInputSize.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsAudioFileDirectory
             // 
             textBoxLogSettingsAudioFileDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsAudioFileDirectory.Location = new Point(154, 571);
+            textBoxLogSettingsAudioFileDirectory.Location = new Point(154, 596);
             textBoxLogSettingsAudioFileDirectory.MinimumSize = new Size(130, 0);
             textBoxLogSettingsAudioFileDirectory.Name = "textBoxLogSettingsAudioFileDirectory";
             textBoxLogSettingsAudioFileDirectory.Size = new Size(130, 23);
-            textBoxLogSettingsAudioFileDirectory.TabIndex = 46;
+            textBoxLogSettingsAudioFileDirectory.TabIndex = 48;
             textBoxLogSettingsAudioFileDirectory.Text = "Audio File Directory";
             // 
             // checkBoxLogSettingsSpeedMaximum
@@ -300,10 +304,10 @@
             checkBoxLogSettingsSpeedMaximum.AutoSize = true;
             checkBoxLogSettingsSpeedMaximum.Checked = true;
             checkBoxLogSettingsSpeedMaximum.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSpeedMaximum.Location = new Point(6, 248);
+            checkBoxLogSettingsSpeedMaximum.Location = new Point(6, 273);
             checkBoxLogSettingsSpeedMaximum.Name = "checkBoxLogSettingsSpeedMaximum";
             checkBoxLogSettingsSpeedMaximum.Size = new Size(116, 19);
-            checkBoxLogSettingsSpeedMaximum.TabIndex = 19;
+            checkBoxLogSettingsSpeedMaximum.TabIndex = 21;
             checkBoxLogSettingsSpeedMaximum.Text = "Speed Maximum";
             checkBoxLogSettingsSpeedMaximum.UseVisualStyleBackColor = true;
             // 
@@ -320,11 +324,11 @@
             // textBoxLogSettingsSamplingRate
             // 
             textBoxLogSettingsSamplingRate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSamplingRate.Location = new Point(154, 71);
+            textBoxLogSettingsSamplingRate.Location = new Point(154, 96);
             textBoxLogSettingsSamplingRate.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSamplingRate.Name = "textBoxLogSettingsSamplingRate";
             textBoxLogSettingsSamplingRate.Size = new Size(130, 23);
-            textBoxLogSettingsSamplingRate.TabIndex = 6;
+            textBoxLogSettingsSamplingRate.TabIndex = 8;
             textBoxLogSettingsSamplingRate.Text = "Samp. Rate";
             // 
             // checkBoxLogSettingsSpeed
@@ -332,21 +336,21 @@
             checkBoxLogSettingsSpeed.AutoSize = true;
             checkBoxLogSettingsSpeed.Checked = true;
             checkBoxLogSettingsSpeed.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSpeed.Location = new Point(6, 198);
+            checkBoxLogSettingsSpeed.Location = new Point(6, 223);
             checkBoxLogSettingsSpeed.Name = "checkBoxLogSettingsSpeed";
             checkBoxLogSettingsSpeed.Size = new Size(58, 19);
-            checkBoxLogSettingsSpeed.TabIndex = 15;
+            checkBoxLogSettingsSpeed.TabIndex = 17;
             checkBoxLogSettingsSpeed.Text = "Speed";
             checkBoxLogSettingsSpeed.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedMinimum
             // 
             textBoxLogSettingsSpeedMinimum.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSpeedMinimum.Location = new Point(154, 221);
+            textBoxLogSettingsSpeedMinimum.Location = new Point(154, 246);
             textBoxLogSettingsSpeedMinimum.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSpeedMinimum.Name = "textBoxLogSettingsSpeedMinimum";
             textBoxLogSettingsSpeedMinimum.Size = new Size(130, 23);
-            textBoxLogSettingsSpeedMinimum.TabIndex = 18;
+            textBoxLogSettingsSpeedMinimum.TabIndex = 20;
             textBoxLogSettingsSpeedMinimum.Text = "Speed Min.";
             // 
             // checkBoxLogSettingsSamplingRate
@@ -354,21 +358,21 @@
             checkBoxLogSettingsSamplingRate.AutoSize = true;
             checkBoxLogSettingsSamplingRate.Checked = true;
             checkBoxLogSettingsSamplingRate.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSamplingRate.Location = new Point(6, 73);
+            checkBoxLogSettingsSamplingRate.Location = new Point(6, 98);
             checkBoxLogSettingsSamplingRate.Name = "checkBoxLogSettingsSamplingRate";
             checkBoxLogSettingsSamplingRate.Size = new Size(102, 19);
-            checkBoxLogSettingsSamplingRate.TabIndex = 5;
+            checkBoxLogSettingsSamplingRate.TabIndex = 7;
             checkBoxLogSettingsSamplingRate.Text = "Sampling Rate";
             checkBoxLogSettingsSamplingRate.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsVersion
             // 
             textBoxLogSettingsVersion.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsVersion.Location = new Point(154, 446);
+            textBoxLogSettingsVersion.Location = new Point(154, 471);
             textBoxLogSettingsVersion.MinimumSize = new Size(130, 0);
             textBoxLogSettingsVersion.Name = "textBoxLogSettingsVersion";
             textBoxLogSettingsVersion.Size = new Size(130, 23);
-            textBoxLogSettingsVersion.TabIndex = 36;
+            textBoxLogSettingsVersion.TabIndex = 38;
             textBoxLogSettingsVersion.Text = "Version";
             // 
             // checkBoxLogSettingsSpeedRange
@@ -376,21 +380,21 @@
             checkBoxLogSettingsSpeedRange.AutoSize = true;
             checkBoxLogSettingsSpeedRange.Checked = true;
             checkBoxLogSettingsSpeedRange.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSpeedRange.Location = new Point(6, 273);
+            checkBoxLogSettingsSpeedRange.Location = new Point(6, 298);
             checkBoxLogSettingsSpeedRange.Name = "checkBoxLogSettingsSpeedRange";
             checkBoxLogSettingsSpeedRange.Size = new Size(94, 19);
-            checkBoxLogSettingsSpeedRange.TabIndex = 21;
+            checkBoxLogSettingsSpeedRange.TabIndex = 23;
             checkBoxLogSettingsSpeedRange.Text = "Speed Range";
             checkBoxLogSettingsSpeedRange.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsPasses
             // 
             textBoxLogSettingsPasses.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsPasses.Location = new Point(154, 371);
+            textBoxLogSettingsPasses.Location = new Point(154, 396);
             textBoxLogSettingsPasses.MinimumSize = new Size(130, 0);
             textBoxLogSettingsPasses.Name = "textBoxLogSettingsPasses";
             textBoxLogSettingsPasses.Size = new Size(130, 23);
-            textBoxLogSettingsPasses.TabIndex = 30;
+            textBoxLogSettingsPasses.TabIndex = 32;
             textBoxLogSettingsPasses.Text = "Passes";
             // 
             // checkBoxLogSettingsTime
@@ -398,21 +402,21 @@
             checkBoxLogSettingsTime.AutoSize = true;
             checkBoxLogSettingsTime.Checked = true;
             checkBoxLogSettingsTime.CheckState = CheckState.Checked;
-            checkBoxLogSettingsTime.Location = new Point(6, 173);
+            checkBoxLogSettingsTime.Location = new Point(6, 198);
             checkBoxLogSettingsTime.Name = "checkBoxLogSettingsTime";
             checkBoxLogSettingsTime.Size = new Size(52, 19);
-            checkBoxLogSettingsTime.TabIndex = 13;
+            checkBoxLogSettingsTime.TabIndex = 15;
             checkBoxLogSettingsTime.Text = "Time";
             checkBoxLogSettingsTime.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsBitDepth
             // 
             textBoxLogSettingsBitDepth.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsBitDepth.Location = new Point(154, 46);
+            textBoxLogSettingsBitDepth.Location = new Point(154, 71);
             textBoxLogSettingsBitDepth.MinimumSize = new Size(130, 0);
             textBoxLogSettingsBitDepth.Name = "textBoxLogSettingsBitDepth";
             textBoxLogSettingsBitDepth.Size = new Size(130, 23);
-            textBoxLogSettingsBitDepth.TabIndex = 4;
+            textBoxLogSettingsBitDepth.TabIndex = 6;
             textBoxLogSettingsBitDepth.Text = "Bit Depth";
             // 
             // checkBoxLogSettingsSpeedConsistency
@@ -420,21 +424,21 @@
             checkBoxLogSettingsSpeedConsistency.AutoSize = true;
             checkBoxLogSettingsSpeedConsistency.Checked = true;
             checkBoxLogSettingsSpeedConsistency.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSpeedConsistency.Location = new Point(6, 298);
+            checkBoxLogSettingsSpeedConsistency.Location = new Point(6, 323);
             checkBoxLogSettingsSpeedConsistency.Name = "checkBoxLogSettingsSpeedConsistency";
             checkBoxLogSettingsSpeedConsistency.Size = new Size(125, 19);
-            checkBoxLogSettingsSpeedConsistency.TabIndex = 23;
+            checkBoxLogSettingsSpeedConsistency.TabIndex = 25;
             checkBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
             checkBoxLogSettingsSpeedConsistency.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsErrors
             // 
             textBoxLogSettingsErrors.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsErrors.Location = new Point(154, 621);
+            textBoxLogSettingsErrors.Location = new Point(154, 646);
             textBoxLogSettingsErrors.MinimumSize = new Size(130, 0);
             textBoxLogSettingsErrors.Name = "textBoxLogSettingsErrors";
             textBoxLogSettingsErrors.Size = new Size(130, 23);
-            textBoxLogSettingsErrors.TabIndex = 50;
+            textBoxLogSettingsErrors.TabIndex = 52;
             textBoxLogSettingsErrors.Text = "Errors";
             // 
             // checkBoxLogSettingsBitDepth
@@ -442,21 +446,21 @@
             checkBoxLogSettingsBitDepth.AutoSize = true;
             checkBoxLogSettingsBitDepth.Checked = true;
             checkBoxLogSettingsBitDepth.CheckState = CheckState.Checked;
-            checkBoxLogSettingsBitDepth.Location = new Point(6, 48);
+            checkBoxLogSettingsBitDepth.Location = new Point(6, 73);
             checkBoxLogSettingsBitDepth.Name = "checkBoxLogSettingsBitDepth";
             checkBoxLogSettingsBitDepth.Size = new Size(75, 19);
-            checkBoxLogSettingsBitDepth.TabIndex = 3;
+            checkBoxLogSettingsBitDepth.TabIndex = 5;
             checkBoxLogSettingsBitDepth.Text = "Bit Depth";
             checkBoxLogSettingsBitDepth.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsInputSize
             // 
             textBoxLogSettingsInputSize.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsInputSize.Location = new Point(154, 96);
+            textBoxLogSettingsInputSize.Location = new Point(154, 121);
             textBoxLogSettingsInputSize.MinimumSize = new Size(130, 0);
             textBoxLogSettingsInputSize.Name = "textBoxLogSettingsInputSize";
             textBoxLogSettingsInputSize.Size = new Size(130, 23);
-            textBoxLogSettingsInputSize.TabIndex = 8;
+            textBoxLogSettingsInputSize.TabIndex = 10;
             textBoxLogSettingsInputSize.Text = "In. Size";
             // 
             // checkBoxLogSettingsCPULoad
@@ -464,21 +468,21 @@
             checkBoxLogSettingsCPULoad.AutoSize = true;
             checkBoxLogSettingsCPULoad.Checked = true;
             checkBoxLogSettingsCPULoad.CheckState = CheckState.Checked;
-            checkBoxLogSettingsCPULoad.Location = new Point(6, 323);
+            checkBoxLogSettingsCPULoad.Location = new Point(6, 348);
             checkBoxLogSettingsCPULoad.Name = "checkBoxLogSettingsCPULoad";
             checkBoxLogSettingsCPULoad.Size = new Size(78, 19);
-            checkBoxLogSettingsCPULoad.TabIndex = 25;
+            checkBoxLogSettingsCPULoad.TabIndex = 27;
             checkBoxLogSettingsCPULoad.Text = "CPU Load";
             checkBoxLogSettingsCPULoad.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsMD5
             // 
             textBoxLogSettingsMD5.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsMD5.Location = new Point(154, 596);
+            textBoxLogSettingsMD5.Location = new Point(154, 621);
             textBoxLogSettingsMD5.MinimumSize = new Size(130, 0);
             textBoxLogSettingsMD5.Name = "textBoxLogSettingsMD5";
             textBoxLogSettingsMD5.Size = new Size(130, 23);
-            textBoxLogSettingsMD5.TabIndex = 48;
+            textBoxLogSettingsMD5.TabIndex = 50;
             textBoxLogSettingsMD5.Text = "MD5";
             // 
             // checkBoxLogSettingsCompression
@@ -486,21 +490,21 @@
             checkBoxLogSettingsCompression.AutoSize = true;
             checkBoxLogSettingsCompression.Checked = true;
             checkBoxLogSettingsCompression.CheckState = CheckState.Checked;
-            checkBoxLogSettingsCompression.Location = new Point(6, 148);
+            checkBoxLogSettingsCompression.Location = new Point(6, 173);
             checkBoxLogSettingsCompression.Name = "checkBoxLogSettingsCompression";
             checkBoxLogSettingsCompression.Size = new Size(96, 19);
-            checkBoxLogSettingsCompression.TabIndex = 11;
+            checkBoxLogSettingsCompression.TabIndex = 13;
             checkBoxLogSettingsCompression.Text = "Compression";
             checkBoxLogSettingsCompression.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedMaximum
             // 
             textBoxLogSettingsSpeedMaximum.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSpeedMaximum.Location = new Point(154, 246);
+            textBoxLogSettingsSpeedMaximum.Location = new Point(154, 271);
             textBoxLogSettingsSpeedMaximum.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSpeedMaximum.Name = "textBoxLogSettingsSpeedMaximum";
             textBoxLogSettingsSpeedMaximum.Size = new Size(130, 23);
-            textBoxLogSettingsSpeedMaximum.TabIndex = 20;
+            textBoxLogSettingsSpeedMaximum.TabIndex = 22;
             textBoxLogSettingsSpeedMaximum.Text = "Speed Max.";
             // 
             // checkBoxLogSettingsCPUClock
@@ -508,21 +512,21 @@
             checkBoxLogSettingsCPUClock.AutoSize = true;
             checkBoxLogSettingsCPUClock.Checked = true;
             checkBoxLogSettingsCPUClock.CheckState = CheckState.Checked;
-            checkBoxLogSettingsCPUClock.Location = new Point(6, 348);
+            checkBoxLogSettingsCPUClock.Location = new Point(6, 373);
             checkBoxLogSettingsCPUClock.Name = "checkBoxLogSettingsCPUClock";
             checkBoxLogSettingsCPUClock.Size = new Size(82, 19);
-            checkBoxLogSettingsCPUClock.TabIndex = 27;
+            checkBoxLogSettingsCPUClock.TabIndex = 29;
             checkBoxLogSettingsCPUClock.Text = "CPU Clock";
             checkBoxLogSettingsCPUClock.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsEncoderDirectory
             // 
             textBoxLogSettingsEncoderDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsEncoderDirectory.Location = new Point(154, 471);
+            textBoxLogSettingsEncoderDirectory.Location = new Point(154, 496);
             textBoxLogSettingsEncoderDirectory.MinimumSize = new Size(130, 0);
             textBoxLogSettingsEncoderDirectory.Name = "textBoxLogSettingsEncoderDirectory";
             textBoxLogSettingsEncoderDirectory.Size = new Size(130, 23);
-            textBoxLogSettingsEncoderDirectory.TabIndex = 38;
+            textBoxLogSettingsEncoderDirectory.TabIndex = 40;
             textBoxLogSettingsEncoderDirectory.Text = "Encoder Directory";
             // 
             // checkBoxLogSettingsPasses
@@ -530,21 +534,21 @@
             checkBoxLogSettingsPasses.AutoSize = true;
             checkBoxLogSettingsPasses.Checked = true;
             checkBoxLogSettingsPasses.CheckState = CheckState.Checked;
-            checkBoxLogSettingsPasses.Location = new Point(6, 373);
+            checkBoxLogSettingsPasses.Location = new Point(6, 398);
             checkBoxLogSettingsPasses.Name = "checkBoxLogSettingsPasses";
             checkBoxLogSettingsPasses.Size = new Size(60, 19);
-            checkBoxLogSettingsPasses.TabIndex = 29;
+            checkBoxLogSettingsPasses.TabIndex = 31;
             checkBoxLogSettingsPasses.Text = "Passes";
             checkBoxLogSettingsPasses.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsParameters
             // 
             textBoxLogSettingsParameters.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsParameters.Location = new Point(154, 396);
+            textBoxLogSettingsParameters.Location = new Point(154, 421);
             textBoxLogSettingsParameters.MinimumSize = new Size(130, 0);
             textBoxLogSettingsParameters.Name = "textBoxLogSettingsParameters";
             textBoxLogSettingsParameters.Size = new Size(130, 23);
-            textBoxLogSettingsParameters.TabIndex = 32;
+            textBoxLogSettingsParameters.TabIndex = 34;
             textBoxLogSettingsParameters.Text = "Parameters";
             // 
             // checkBoxLogSettingsParameters
@@ -552,21 +556,21 @@
             checkBoxLogSettingsParameters.AutoSize = true;
             checkBoxLogSettingsParameters.Checked = true;
             checkBoxLogSettingsParameters.CheckState = CheckState.Checked;
-            checkBoxLogSettingsParameters.Location = new Point(6, 398);
+            checkBoxLogSettingsParameters.Location = new Point(6, 423);
             checkBoxLogSettingsParameters.Name = "checkBoxLogSettingsParameters";
             checkBoxLogSettingsParameters.Size = new Size(85, 19);
-            checkBoxLogSettingsParameters.TabIndex = 31;
+            checkBoxLogSettingsParameters.TabIndex = 33;
             checkBoxLogSettingsParameters.Text = "Parameters";
             checkBoxLogSettingsParameters.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsOutputSize
             // 
             textBoxLogSettingsOutputSize.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsOutputSize.Location = new Point(154, 121);
+            textBoxLogSettingsOutputSize.Location = new Point(154, 146);
             textBoxLogSettingsOutputSize.MinimumSize = new Size(130, 0);
             textBoxLogSettingsOutputSize.Name = "textBoxLogSettingsOutputSize";
             textBoxLogSettingsOutputSize.Size = new Size(130, 23);
-            textBoxLogSettingsOutputSize.TabIndex = 10;
+            textBoxLogSettingsOutputSize.TabIndex = 12;
             textBoxLogSettingsOutputSize.Text = "Out. Size";
             // 
             // checkBoxLogSettingsEncoder
@@ -574,21 +578,21 @@
             checkBoxLogSettingsEncoder.AutoSize = true;
             checkBoxLogSettingsEncoder.Checked = true;
             checkBoxLogSettingsEncoder.CheckState = CheckState.Checked;
-            checkBoxLogSettingsEncoder.Location = new Point(6, 423);
+            checkBoxLogSettingsEncoder.Location = new Point(6, 448);
             checkBoxLogSettingsEncoder.Name = "checkBoxLogSettingsEncoder";
             checkBoxLogSettingsEncoder.Size = new Size(69, 19);
-            checkBoxLogSettingsEncoder.TabIndex = 33;
+            checkBoxLogSettingsEncoder.TabIndex = 35;
             checkBoxLogSettingsEncoder.Text = "Encoder";
             checkBoxLogSettingsEncoder.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsFastestEncoder
             // 
             textBoxLogSettingsFastestEncoder.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsFastestEncoder.Location = new Point(154, 496);
+            textBoxLogSettingsFastestEncoder.Location = new Point(154, 521);
             textBoxLogSettingsFastestEncoder.MinimumSize = new Size(130, 0);
             textBoxLogSettingsFastestEncoder.Name = "textBoxLogSettingsFastestEncoder";
             textBoxLogSettingsFastestEncoder.Size = new Size(130, 23);
-            textBoxLogSettingsFastestEncoder.TabIndex = 40;
+            textBoxLogSettingsFastestEncoder.TabIndex = 42;
             textBoxLogSettingsFastestEncoder.Text = "Fastest Encoder";
             // 
             // checkBoxLogSettingsEncoderDirectory
@@ -596,21 +600,21 @@
             checkBoxLogSettingsEncoderDirectory.AutoSize = true;
             checkBoxLogSettingsEncoderDirectory.Checked = true;
             checkBoxLogSettingsEncoderDirectory.CheckState = CheckState.Checked;
-            checkBoxLogSettingsEncoderDirectory.Location = new Point(6, 473);
+            checkBoxLogSettingsEncoderDirectory.Location = new Point(6, 498);
             checkBoxLogSettingsEncoderDirectory.Name = "checkBoxLogSettingsEncoderDirectory";
             checkBoxLogSettingsEncoderDirectory.Size = new Size(120, 19);
-            checkBoxLogSettingsEncoderDirectory.TabIndex = 37;
+            checkBoxLogSettingsEncoderDirectory.TabIndex = 39;
             checkBoxLogSettingsEncoderDirectory.Text = "Encoder Directory";
             checkBoxLogSettingsEncoderDirectory.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsCompression
             // 
             textBoxLogSettingsCompression.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsCompression.Location = new Point(154, 146);
+            textBoxLogSettingsCompression.Location = new Point(154, 171);
             textBoxLogSettingsCompression.MinimumSize = new Size(130, 0);
             textBoxLogSettingsCompression.Name = "textBoxLogSettingsCompression";
             textBoxLogSettingsCompression.Size = new Size(130, 23);
-            textBoxLogSettingsCompression.TabIndex = 12;
+            textBoxLogSettingsCompression.TabIndex = 14;
             textBoxLogSettingsCompression.Text = "Compr.";
             // 
             // checkBoxLogSettingsBestSize
@@ -618,21 +622,21 @@
             checkBoxLogSettingsBestSize.AutoSize = true;
             checkBoxLogSettingsBestSize.Checked = true;
             checkBoxLogSettingsBestSize.CheckState = CheckState.Checked;
-            checkBoxLogSettingsBestSize.Location = new Point(6, 523);
+            checkBoxLogSettingsBestSize.Location = new Point(6, 548);
             checkBoxLogSettingsBestSize.Name = "checkBoxLogSettingsBestSize";
             checkBoxLogSettingsBestSize.Size = new Size(71, 19);
-            checkBoxLogSettingsBestSize.TabIndex = 41;
+            checkBoxLogSettingsBestSize.TabIndex = 43;
             checkBoxLogSettingsBestSize.Text = "Best Size";
             checkBoxLogSettingsBestSize.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedRange
             // 
             textBoxLogSettingsSpeedRange.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSpeedRange.Location = new Point(154, 271);
+            textBoxLogSettingsSpeedRange.Location = new Point(154, 296);
             textBoxLogSettingsSpeedRange.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSpeedRange.Name = "textBoxLogSettingsSpeedRange";
             textBoxLogSettingsSpeedRange.Size = new Size(130, 23);
-            textBoxLogSettingsSpeedRange.TabIndex = 22;
+            textBoxLogSettingsSpeedRange.TabIndex = 24;
             textBoxLogSettingsSpeedRange.Text = "Range";
             // 
             // checkBoxLogSettingsVersion
@@ -640,21 +644,21 @@
             checkBoxLogSettingsVersion.AutoSize = true;
             checkBoxLogSettingsVersion.Checked = true;
             checkBoxLogSettingsVersion.CheckState = CheckState.Checked;
-            checkBoxLogSettingsVersion.Location = new Point(6, 448);
+            checkBoxLogSettingsVersion.Location = new Point(6, 473);
             checkBoxLogSettingsVersion.Name = "checkBoxLogSettingsVersion";
             checkBoxLogSettingsVersion.Size = new Size(64, 19);
-            checkBoxLogSettingsVersion.TabIndex = 35;
+            checkBoxLogSettingsVersion.TabIndex = 37;
             checkBoxLogSettingsVersion.Text = "Version";
             checkBoxLogSettingsVersion.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedConsistency
             // 
             textBoxLogSettingsSpeedConsistency.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxLogSettingsSpeedConsistency.Location = new Point(154, 296);
+            textBoxLogSettingsSpeedConsistency.Location = new Point(154, 321);
             textBoxLogSettingsSpeedConsistency.MinimumSize = new Size(130, 0);
             textBoxLogSettingsSpeedConsistency.Name = "textBoxLogSettingsSpeedConsistency";
             textBoxLogSettingsSpeedConsistency.Size = new Size(130, 23);
-            textBoxLogSettingsSpeedConsistency.TabIndex = 24;
+            textBoxLogSettingsSpeedConsistency.TabIndex = 26;
             textBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
             // 
             // checkBoxLogSettingsFastestEncoder
@@ -662,10 +666,10 @@
             checkBoxLogSettingsFastestEncoder.AutoSize = true;
             checkBoxLogSettingsFastestEncoder.Checked = true;
             checkBoxLogSettingsFastestEncoder.CheckState = CheckState.Checked;
-            checkBoxLogSettingsFastestEncoder.Location = new Point(6, 498);
+            checkBoxLogSettingsFastestEncoder.Location = new Point(6, 523);
             checkBoxLogSettingsFastestEncoder.Name = "checkBoxLogSettingsFastestEncoder";
             checkBoxLogSettingsFastestEncoder.Size = new Size(108, 19);
-            checkBoxLogSettingsFastestEncoder.TabIndex = 39;
+            checkBoxLogSettingsFastestEncoder.TabIndex = 41;
             checkBoxLogSettingsFastestEncoder.Text = "Fastest Encoder";
             checkBoxLogSettingsFastestEncoder.UseVisualStyleBackColor = true;
             // 
@@ -674,10 +678,10 @@
             checkBoxLogSettingsSameSize.AutoSize = true;
             checkBoxLogSettingsSameSize.Checked = true;
             checkBoxLogSettingsSameSize.CheckState = CheckState.Checked;
-            checkBoxLogSettingsSameSize.Location = new Point(6, 548);
+            checkBoxLogSettingsSameSize.Location = new Point(6, 573);
             checkBoxLogSettingsSameSize.Name = "checkBoxLogSettingsSameSize";
             checkBoxLogSettingsSameSize.Size = new Size(78, 19);
-            checkBoxLogSettingsSameSize.TabIndex = 43;
+            checkBoxLogSettingsSameSize.TabIndex = 45;
             checkBoxLogSettingsSameSize.Text = "Same Size";
             checkBoxLogSettingsSameSize.UseVisualStyleBackColor = true;
             // 
@@ -686,10 +690,10 @@
             checkBoxLogSettingsErrors.AutoSize = true;
             checkBoxLogSettingsErrors.Checked = true;
             checkBoxLogSettingsErrors.CheckState = CheckState.Checked;
-            checkBoxLogSettingsErrors.Location = new Point(6, 623);
+            checkBoxLogSettingsErrors.Location = new Point(6, 648);
             checkBoxLogSettingsErrors.Name = "checkBoxLogSettingsErrors";
             checkBoxLogSettingsErrors.Size = new Size(56, 19);
-            checkBoxLogSettingsErrors.TabIndex = 49;
+            checkBoxLogSettingsErrors.TabIndex = 51;
             checkBoxLogSettingsErrors.Text = "Errors";
             checkBoxLogSettingsErrors.UseVisualStyleBackColor = true;
             // 
@@ -698,10 +702,10 @@
             checkBoxLogSettingsAudioFileDirectory.AutoSize = true;
             checkBoxLogSettingsAudioFileDirectory.Checked = true;
             checkBoxLogSettingsAudioFileDirectory.CheckState = CheckState.Checked;
-            checkBoxLogSettingsAudioFileDirectory.Location = new Point(6, 573);
+            checkBoxLogSettingsAudioFileDirectory.Location = new Point(6, 598);
             checkBoxLogSettingsAudioFileDirectory.Name = "checkBoxLogSettingsAudioFileDirectory";
             checkBoxLogSettingsAudioFileDirectory.Size = new Size(130, 19);
-            checkBoxLogSettingsAudioFileDirectory.TabIndex = 45;
+            checkBoxLogSettingsAudioFileDirectory.TabIndex = 47;
             checkBoxLogSettingsAudioFileDirectory.Text = "Audio File Directory";
             checkBoxLogSettingsAudioFileDirectory.UseVisualStyleBackColor = true;
             // 
@@ -710,12 +714,34 @@
             checkBoxLogSettingsMD5.AutoSize = true;
             checkBoxLogSettingsMD5.Checked = true;
             checkBoxLogSettingsMD5.CheckState = CheckState.Checked;
-            checkBoxLogSettingsMD5.Location = new Point(6, 598);
+            checkBoxLogSettingsMD5.Location = new Point(6, 623);
             checkBoxLogSettingsMD5.Name = "checkBoxLogSettingsMD5";
             checkBoxLogSettingsMD5.Size = new Size(51, 19);
-            checkBoxLogSettingsMD5.TabIndex = 47;
+            checkBoxLogSettingsMD5.TabIndex = 49;
             checkBoxLogSettingsMD5.Text = "MD5";
             checkBoxLogSettingsMD5.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxLogSettingsChannels
+            // 
+            checkBoxLogSettingsChannels.AutoSize = true;
+            checkBoxLogSettingsChannels.Checked = true;
+            checkBoxLogSettingsChannels.CheckState = CheckState.Checked;
+            checkBoxLogSettingsChannels.Location = new Point(6, 48);
+            checkBoxLogSettingsChannels.Name = "checkBoxLogSettingsChannels";
+            checkBoxLogSettingsChannels.Size = new Size(75, 19);
+            checkBoxLogSettingsChannels.TabIndex = 3;
+            checkBoxLogSettingsChannels.Text = "Channels";
+            checkBoxLogSettingsChannels.UseVisualStyleBackColor = true;
+            // 
+            // textBoxLogSettingsChannels
+            // 
+            textBoxLogSettingsChannels.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            textBoxLogSettingsChannels.Location = new Point(154, 46);
+            textBoxLogSettingsChannels.MinimumSize = new Size(130, 0);
+            textBoxLogSettingsChannels.Name = "textBoxLogSettingsChannels";
+            textBoxLogSettingsChannels.Size = new Size(130, 23);
+            textBoxLogSettingsChannels.TabIndex = 4;
+            textBoxLogSettingsChannels.Text = "Ch.";
             // 
             // DataGridViewLogSettingsForm
             // 
@@ -789,5 +815,7 @@
         private TextBox textBoxLogSettingsSpeedConsistency;
         private Button buttonOkLogSettings;
         private Button buttonResetLogSettingsToDefault;
+        private TextBox textBoxLogSettingsChannels;
+        private CheckBox checkBoxLogSettingsChannels;
     }
 }

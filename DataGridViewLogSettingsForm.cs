@@ -18,6 +18,7 @@ namespace FLAC_Benchmark_H
             _controls = new Dictionary<string, (CheckBox, TextBox)>
             {
                 { "Name", (checkBoxLogSettingsName, textBoxLogSettingsName) },
+                { "Channels", (checkBoxLogSettingsChannels, textBoxLogSettingsChannels) },
                 { "BitDepth", (checkBoxLogSettingsBitDepth, textBoxLogSettingsBitDepth) },
                 { "SamplingRate", (checkBoxLogSettingsSamplingRate, textBoxLogSettingsSamplingRate) },
                 { "InputFileSize", (checkBoxLogSettingsInputSize, textBoxLogSettingsInputSize) },
@@ -118,6 +119,7 @@ namespace FLAC_Benchmark_H
             var defaultVisibility = new Dictionary<string, bool>
             {
                 { "Name", true },
+                { "Channels", true },
                 { "BitDepth", true },
                 { "SamplingRate", true },
                 { "InputFileSize", true },
@@ -147,6 +149,7 @@ namespace FLAC_Benchmark_H
             var defaultHeaders = new Dictionary<string, string>
             {
                 { "Name", "Name" },
+                { "Channels", "Ch." },
                 { "BitDepth", "Bit Depth" },
                 { "SamplingRate", "Samp. Rate" },
                 { "InputFileSize", "In. Size" },
