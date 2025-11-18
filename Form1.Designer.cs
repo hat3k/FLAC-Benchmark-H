@@ -695,7 +695,7 @@
             buttonTestForErrors.Name = "buttonTestForErrors";
             buttonTestForErrors.Size = new Size(110, 23);
             buttonTestForErrors.TabIndex = 6;
-            buttonTestForErrors.Text = "Test for errors";
+            buttonTestForErrors.Text = "Test for Errors";
             toolTip1.SetToolTip(buttonTestForErrors, resources.GetString("buttonTestForErrors.ToolTip"));
             buttonTestForErrors.UseVisualStyleBackColor = true;
             buttonTestForErrors.Click += buttonTestForErrors_Click;
@@ -707,7 +707,7 @@
             buttonDetectDupesAudioFiles.Name = "buttonDetectDupesAudioFiles";
             buttonDetectDupesAudioFiles.Size = new Size(110, 23);
             buttonDetectDupesAudioFiles.TabIndex = 5;
-            buttonDetectDupesAudioFiles.Text = "Detect dupes";
+            buttonDetectDupesAudioFiles.Text = "Detect Dupes";
             toolTip1.SetToolTip(buttonDetectDupesAudioFiles, resources.GetString("buttonDetectDupesAudioFiles.ToolTip"));
             buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
             buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
@@ -1390,7 +1390,7 @@
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
             buttonSelectTempFolder.Size = new Size(165, 23);
             buttonSelectTempFolder.TabIndex = 6;
-            buttonSelectTempFolder.Text = "Select temp folder";
+            buttonSelectTempFolder.Text = "Select Temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
             buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
             // 

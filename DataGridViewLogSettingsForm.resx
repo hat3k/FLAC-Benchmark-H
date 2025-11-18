@@ -120,4 +120,66 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="textBoxLogSettingsBestSize.ToolTip" xml:space="preserve">
+    <value>Indicates which encoder achieved the highest *average* speed for this test configuration (same file + same parameters).
+Used only when 2 or more encoders are tested for encoding or decoding, calculated after 'Analyze Log'.</value>
+  </data>
+  <data name="textBoxLogSettingsTime.ToolTip" xml:space="preserve">
+    <value>Total encoding/decoding time in milliseconds.
+For a single pass, this is the time for that specific pass.
+After 'Analyze Log', this shows the *average* time across all passes for this test configuration.</value>
+  </data>
+  <data name="textBoxLogSettingsCPULoad.ToolTip" xml:space="preserve">
+    <value>Average CPU load during encoding/decoding. For a single pass, this is the average load during that specific pass.
+After 'Analyze Log', this shows the *average* CPU load across all passes for this test configuration.</value>
+  </data>
+  <data name="textBoxLogSettingsSameSize.ToolTip" xml:space="preserve">
+    <value>Indicates if multiple encoders produced output files of the same size for this test configuration (same file + same parameters).
+Used only when 2 or more encoders are tested, calculated after 'Analyze Log'.</value>
+  </data>
+  <data name="textBoxLogSettingsSpeed.ToolTip" xml:space="preserve">
+    <value>Processing speed relative to real-time (e.g., 2x).
+For a single pass, this is the speed for that specific pass.
+After 'Analyze Log', this shows the *average* speed across all passes for this test configuration.</value>
+  </data>
+  <data name="textBoxLogSettingsCPUClock.ToolTip" xml:space="preserve">
+    <value>Average CPU clock speed during encoding/decoding. For a single pass, this is the average clock during that specific pass.
+After 'Analyze Log', this shows the *average* CPU clock across all passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsSpeed.ToolTip" xml:space="preserve">
+    <value>Processing speed relative to real-time (e.g., 2x).
+For a single pass, this is the speed for that specific pass.
+After 'Analyze Log', this shows the *average* speed across all passes for this test configuration.</value>
+  </data>
+  <data name="textBoxLogSettingsPasses.ToolTip" xml:space="preserve">
+    <value>Number of encoding/decoding passes performed for this test configuration.
+For a single pass row, this value is 1.
+After 'Analyze Log', this shows the *total number* of passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsTime.ToolTip" xml:space="preserve">
+    <value>Total encoding/decoding time in milliseconds.
+For a single pass, this is the time for that specific pass.
+After 'Analyze Log', this shows the *average* time across all passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsCPULoad.ToolTip" xml:space="preserve">
+    <value>Average CPU load during encoding/decoding. For a single pass, this is the average load during that specific pass.
+After 'Analyze Log', this shows the *average* CPU load across all passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsCPUClock.ToolTip" xml:space="preserve">
+    <value>Average CPU clock speed during encoding/decoding. For a single pass, this is the average clock during that specific pass.
+After 'Analyze Log', this shows the *average* CPU clock across all passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsPasses.ToolTip" xml:space="preserve">
+    <value>Number of encoding/decoding passes performed for this test configuration.
+For a single pass row, this value is 1.
+After 'Analyze Log', this shows the *total number* of passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsBestSize.ToolTip" xml:space="preserve">
+    <value>Indicates which encoder achieved the highest *average* speed for this test configuration (same file + same parameters).
+Used only when 2 or more encoders are tested for encoding or decoding, calculated after 'Analyze Log'.</value>
+  </data>
+  <data name="checkBoxLogSettingsSameSize.ToolTip" xml:space="preserve">
+    <value>Indicates if multiple encoders produced output files of the same size for this test configuration (same file + same parameters).
+Used only when 2 or more encoders are tested, calculated after 'Analyze Log'.</value>
+  </data>
 </root>

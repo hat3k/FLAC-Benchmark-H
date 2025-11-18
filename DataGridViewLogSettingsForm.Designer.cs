@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataGridViewLogSettingsForm));
             groupBoxBenchmarkLogColumnVisibilityAndName = new GroupBox();
             textBoxLogSettingsBestSize = new TextBox();
             buttonOkLogSettings = new Button();
@@ -162,7 +163,7 @@
             textBoxLogSettingsBestSize.Size = new Size(130, 23);
             textBoxLogSettingsBestSize.TabIndex = 44;
             textBoxLogSettingsBestSize.Text = "Best Size";
-            toolTip1.SetToolTip(textBoxLogSettingsBestSize, "Indicates which encoder achieved the best compression\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested\r\nfor encoding.\r\n");
+            toolTip1.SetToolTip(textBoxLogSettingsBestSize, resources.GetString("textBoxLogSettingsBestSize.ToolTip"));
             // 
             // buttonOkLogSettings
             // 
@@ -183,7 +184,7 @@
             textBoxLogSettingsTime.Size = new Size(130, 23);
             textBoxLogSettingsTime.TabIndex = 16;
             textBoxLogSettingsTime.Text = "Time";
-            toolTip1.SetToolTip(textBoxLogSettingsTime, "Total encoding/decoding time in milliseconds");
+            toolTip1.SetToolTip(textBoxLogSettingsTime, resources.GetString("textBoxLogSettingsTime.ToolTip"));
             // 
             // buttonResetLogSettingsToDefault
             // 
@@ -204,7 +205,7 @@
             textBoxLogSettingsCPULoad.Size = new Size(130, 23);
             textBoxLogSettingsCPULoad.TabIndex = 28;
             textBoxLogSettingsCPULoad.Text = "CPU Load";
-            toolTip1.SetToolTip(textBoxLogSettingsCPULoad, "Average CPU load during encoding/decoding");
+            toolTip1.SetToolTip(textBoxLogSettingsCPULoad, resources.GetString("textBoxLogSettingsCPULoad.ToolTip"));
             // 
             // textBoxLogSettingsSameSize
             // 
@@ -215,7 +216,7 @@
             textBoxLogSettingsSameSize.Size = new Size(130, 23);
             textBoxLogSettingsSameSize.TabIndex = 46;
             textBoxLogSettingsSameSize.Text = "Same Size";
-            toolTip1.SetToolTip(textBoxLogSettingsSameSize, "Indicates if multiple encoders produced output files of the same size\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested.");
+            toolTip1.SetToolTip(textBoxLogSettingsSameSize, resources.GetString("textBoxLogSettingsSameSize.ToolTip"));
             // 
             // checkBoxLogSettingsName
             // 
@@ -239,7 +240,7 @@
             textBoxLogSettingsSpeed.Size = new Size(130, 23);
             textBoxLogSettingsSpeed.TabIndex = 18;
             textBoxLogSettingsSpeed.Text = "Speed";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeed, "Processing speed relative to real-time (e.g., 2x)");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeed, resources.GetString("textBoxLogSettingsSpeed.ToolTip"));
             // 
             // checkBoxLogSettingsSpeedMinimum
             // 
@@ -251,7 +252,7 @@
             checkBoxLogSettingsSpeedMinimum.Size = new Size(114, 19);
             checkBoxLogSettingsSpeedMinimum.TabIndex = 19;
             checkBoxLogSettingsSpeedMinimum.Text = "Speed Minimum";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMinimum, "Minimum speed recorded between passes (e.g., 1.8x)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMinimum, "Minimum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedMinimum.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsCPUClock
@@ -263,7 +264,7 @@
             textBoxLogSettingsCPUClock.Size = new Size(130, 23);
             textBoxLogSettingsCPUClock.TabIndex = 30;
             textBoxLogSettingsCPUClock.Text = "CPU Clock";
-            toolTip1.SetToolTip(textBoxLogSettingsCPUClock, "Average CPU clock speed during encoding/decoding");
+            toolTip1.SetToolTip(textBoxLogSettingsCPUClock, resources.GetString("textBoxLogSettingsCPUClock.ToolTip"));
             // 
             // checkBoxLogSettingsOutputSize
             // 
@@ -287,7 +288,7 @@
             textBoxLogSettingsEncoder.Size = new Size(130, 23);
             textBoxLogSettingsEncoder.TabIndex = 36;
             textBoxLogSettingsEncoder.Text = "Encoder";
-            toolTip1.SetToolTip(textBoxLogSettingsEncoder, "Name of the encoder");
+            toolTip1.SetToolTip(textBoxLogSettingsEncoder, "Name of the encoder file");
             // 
             // checkBoxLogSettingsInputSize
             // 
@@ -311,6 +312,7 @@
             textBoxLogSettingsAudioFileDirectory.Size = new Size(130, 23);
             textBoxLogSettingsAudioFileDirectory.TabIndex = 48;
             textBoxLogSettingsAudioFileDirectory.Text = "Audio File Directory";
+            toolTip1.SetToolTip(textBoxLogSettingsAudioFileDirectory, "Directory path of the input audio file.");
             // 
             // checkBoxLogSettingsSpeedMaximum
             // 
@@ -322,7 +324,7 @@
             checkBoxLogSettingsSpeedMaximum.Size = new Size(116, 19);
             checkBoxLogSettingsSpeedMaximum.TabIndex = 21;
             checkBoxLogSettingsSpeedMaximum.Text = "Speed Maximum";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMaximum, "Maximum speed recorded between passes (e.g., 2.2x)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMaximum, "Maximum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedMaximum.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsName
@@ -357,7 +359,7 @@
             checkBoxLogSettingsSpeed.Size = new Size(58, 19);
             checkBoxLogSettingsSpeed.TabIndex = 17;
             checkBoxLogSettingsSpeed.Text = "Speed";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeed, "Processing speed relative to real-time (e.g., 2x)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeed, resources.GetString("checkBoxLogSettingsSpeed.ToolTip"));
             checkBoxLogSettingsSpeed.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedMinimum
@@ -369,7 +371,7 @@
             textBoxLogSettingsSpeedMinimum.Size = new Size(130, 23);
             textBoxLogSettingsSpeedMinimum.TabIndex = 20;
             textBoxLogSettingsSpeedMinimum.Text = "Speed Min.";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedMinimum, "Minimum speed recorded between passes (e.g., 1.8x)");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedMinimum, "Minimum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsSamplingRate
             // 
@@ -405,7 +407,7 @@
             checkBoxLogSettingsSpeedRange.Size = new Size(94, 19);
             checkBoxLogSettingsSpeedRange.TabIndex = 23;
             checkBoxLogSettingsSpeedRange.Text = "Speed Range";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed (Max - Min)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across *all* passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedRange.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsPasses
@@ -417,7 +419,7 @@
             textBoxLogSettingsPasses.Size = new Size(130, 23);
             textBoxLogSettingsPasses.TabIndex = 32;
             textBoxLogSettingsPasses.Text = "Passes";
-            toolTip1.SetToolTip(textBoxLogSettingsPasses, "Number of encoding/decoding passes used");
+            toolTip1.SetToolTip(textBoxLogSettingsPasses, resources.GetString("textBoxLogSettingsPasses.ToolTip"));
             // 
             // checkBoxLogSettingsTime
             // 
@@ -429,7 +431,7 @@
             checkBoxLogSettingsTime.Size = new Size(52, 19);
             checkBoxLogSettingsTime.TabIndex = 15;
             checkBoxLogSettingsTime.Text = "Time";
-            toolTip1.SetToolTip(checkBoxLogSettingsTime, "Total encoding/decoding time in milliseconds");
+            toolTip1.SetToolTip(checkBoxLogSettingsTime, resources.GetString("checkBoxLogSettingsTime.ToolTip"));
             checkBoxLogSettingsTime.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsBitDepth
@@ -453,7 +455,7 @@
             checkBoxLogSettingsSpeedConsistency.Size = new Size(125, 19);
             checkBoxLogSettingsSpeedConsistency.TabIndex = 25;
             checkBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedConsistency, "Consistency of processing speed (ratio of median to 90th percentile)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedConsistency, "Consistency of processing speed across *all* passes for this test configuration (ratio of median to 90th percentile of speeds).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedConsistency.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsChannels
@@ -476,6 +478,7 @@
             textBoxLogSettingsErrors.Size = new Size(130, 23);
             textBoxLogSettingsErrors.TabIndex = 52;
             textBoxLogSettingsErrors.Text = "Errors";
+            toolTip1.SetToolTip(textBoxLogSettingsErrors, "Any errors reported during processing");
             // 
             // checkBoxLogSettingsBitDepth
             // 
@@ -511,7 +514,7 @@
             checkBoxLogSettingsCPULoad.Size = new Size(78, 19);
             checkBoxLogSettingsCPULoad.TabIndex = 27;
             checkBoxLogSettingsCPULoad.Text = "CPU Load";
-            toolTip1.SetToolTip(checkBoxLogSettingsCPULoad, "Average CPU load during encoding/decoding");
+            toolTip1.SetToolTip(checkBoxLogSettingsCPULoad, resources.GetString("checkBoxLogSettingsCPULoad.ToolTip"));
             checkBoxLogSettingsCPULoad.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsMD5
@@ -523,6 +526,7 @@
             textBoxLogSettingsMD5.Size = new Size(130, 23);
             textBoxLogSettingsMD5.TabIndex = 50;
             textBoxLogSettingsMD5.Text = "MD5";
+            toolTip1.SetToolTip(textBoxLogSettingsMD5, "MD5 hash of the audio data");
             // 
             // checkBoxLogSettingsCompression
             // 
@@ -546,7 +550,7 @@
             textBoxLogSettingsSpeedMaximum.Size = new Size(130, 23);
             textBoxLogSettingsSpeedMaximum.TabIndex = 22;
             textBoxLogSettingsSpeedMaximum.Text = "Speed Max.";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedMaximum, "Maximum speed recorded between passes (e.g., 2.2x)");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedMaximum, "Maximum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsCPUClock
             // 
@@ -558,7 +562,7 @@
             checkBoxLogSettingsCPUClock.Size = new Size(82, 19);
             checkBoxLogSettingsCPUClock.TabIndex = 29;
             checkBoxLogSettingsCPUClock.Text = "CPU Clock";
-            toolTip1.SetToolTip(checkBoxLogSettingsCPUClock, "Average CPU clock speed during encoding/decoding");
+            toolTip1.SetToolTip(checkBoxLogSettingsCPUClock, resources.GetString("checkBoxLogSettingsCPUClock.ToolTip"));
             checkBoxLogSettingsCPUClock.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsEncoderDirectory
@@ -582,7 +586,7 @@
             checkBoxLogSettingsPasses.Size = new Size(60, 19);
             checkBoxLogSettingsPasses.TabIndex = 31;
             checkBoxLogSettingsPasses.Text = "Passes";
-            toolTip1.SetToolTip(checkBoxLogSettingsPasses, "Number of encoding/decoding passes used");
+            toolTip1.SetToolTip(checkBoxLogSettingsPasses, resources.GetString("checkBoxLogSettingsPasses.ToolTip"));
             checkBoxLogSettingsPasses.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsParameters
@@ -630,7 +634,7 @@
             checkBoxLogSettingsEncoder.Size = new Size(69, 19);
             checkBoxLogSettingsEncoder.TabIndex = 35;
             checkBoxLogSettingsEncoder.Text = "Encoder";
-            toolTip1.SetToolTip(checkBoxLogSettingsEncoder, "Name of the encoder");
+            toolTip1.SetToolTip(checkBoxLogSettingsEncoder, "Name of the encoder file");
             checkBoxLogSettingsEncoder.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsFastestEncoder
@@ -678,7 +682,7 @@
             checkBoxLogSettingsBestSize.Size = new Size(71, 19);
             checkBoxLogSettingsBestSize.TabIndex = 43;
             checkBoxLogSettingsBestSize.Text = "Best Size";
-            toolTip1.SetToolTip(checkBoxLogSettingsBestSize, "Indicates which encoder achieved the best compression\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested\r\nfor encoding.\r\n");
+            toolTip1.SetToolTip(checkBoxLogSettingsBestSize, resources.GetString("checkBoxLogSettingsBestSize.ToolTip"));
             checkBoxLogSettingsBestSize.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSpeedRange
@@ -690,7 +694,7 @@
             textBoxLogSettingsSpeedRange.Size = new Size(130, 23);
             textBoxLogSettingsSpeedRange.TabIndex = 24;
             textBoxLogSettingsSpeedRange.Text = "Range";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed (Max - Min)");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across *all* passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsVersion
             // 
@@ -714,7 +718,7 @@
             textBoxLogSettingsSpeedConsistency.Size = new Size(130, 23);
             textBoxLogSettingsSpeedConsistency.TabIndex = 26;
             textBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedConsistency, "Consistency of processing speed (ratio of median to 90th percentile)");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedConsistency, "Consistency of processing speed across *all* passes for this test configuration (ratio of median to 90th percentile of speeds).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsFastestEncoder
             // 
@@ -739,7 +743,7 @@
             checkBoxLogSettingsSameSize.Size = new Size(78, 19);
             checkBoxLogSettingsSameSize.TabIndex = 45;
             checkBoxLogSettingsSameSize.Text = "Same Size";
-            toolTip1.SetToolTip(checkBoxLogSettingsSameSize, "Indicates if multiple encoders produced output files of the same size\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSameSize, resources.GetString("checkBoxLogSettingsSameSize.ToolTip"));
             checkBoxLogSettingsSameSize.UseVisualStyleBackColor = true;
             // 
             // checkBoxLogSettingsChannels
@@ -765,6 +769,7 @@
             checkBoxLogSettingsErrors.Size = new Size(56, 19);
             checkBoxLogSettingsErrors.TabIndex = 51;
             checkBoxLogSettingsErrors.Text = "Errors";
+            toolTip1.SetToolTip(checkBoxLogSettingsErrors, "Any errors reported during processing");
             checkBoxLogSettingsErrors.UseVisualStyleBackColor = true;
             // 
             // checkBoxLogSettingsAudioFileDirectory
@@ -777,6 +782,7 @@
             checkBoxLogSettingsAudioFileDirectory.Size = new Size(130, 19);
             checkBoxLogSettingsAudioFileDirectory.TabIndex = 47;
             checkBoxLogSettingsAudioFileDirectory.Text = "Audio File Directory";
+            toolTip1.SetToolTip(checkBoxLogSettingsAudioFileDirectory, "Directory path of the input audio file.");
             checkBoxLogSettingsAudioFileDirectory.UseVisualStyleBackColor = true;
             // 
             // checkBoxLogSettingsMD5
@@ -789,6 +795,7 @@
             checkBoxLogSettingsMD5.Size = new Size(51, 19);
             checkBoxLogSettingsMD5.TabIndex = 49;
             checkBoxLogSettingsMD5.Text = "MD5";
+            toolTip1.SetToolTip(checkBoxLogSettingsMD5, "MD5 hash of the audio data");
             checkBoxLogSettingsMD5.UseVisualStyleBackColor = true;
             // 
             // toolTip1
