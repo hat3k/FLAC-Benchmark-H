@@ -94,6 +94,11 @@
             buttonAddAudioFiles = new Button();
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
+            dataGridViewJobs = new DataGridViewEx();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
             labelPasses = new Label();
             buttonMinusPass = new Button();
             buttonPlusPass = new Button();
@@ -150,6 +155,7 @@
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).BeginInit();
             groupBoxLog.SuspendLayout();
             tabControlLog.SuspendLayout();
             Benchmark.SuspendLayout();
@@ -555,6 +561,7 @@
             // 
             // listViewEncoders
             // 
+            listViewEncoders.Activation = ItemActivation.OneClick;
             listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
             listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeEexe, DateExe });
@@ -825,6 +832,7 @@
             // groupBoxJobsList
             // 
             groupBoxJobsList.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBoxJobsList.Controls.Add(dataGridViewJobs);
             groupBoxJobsList.Controls.Add(labelPasses);
             groupBoxJobsList.Controls.Add(buttonMinusPass);
             groupBoxJobsList.Controls.Add(buttonPlusPass);
@@ -845,6 +853,54 @@
             groupBoxJobsList.TabIndex = 6;
             groupBoxJobsList.TabStop = false;
             groupBoxJobsList.Text = "Job List (Drag'n'Drop is available)";
+            // 
+            // dataGridViewJobs
+            // 
+            dataGridViewJobs.AllowDrop = true;
+            dataGridViewJobs.AllowUserToAddRows = false;
+            dataGridViewJobs.AllowUserToResizeRows = false;
+            dataGridViewJobs.BackgroundColor = SystemColors.Window;
+            dataGridViewJobs.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewJobs.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+            dataGridViewJobs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewJobs.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
+            dataGridViewJobs.GridColor = SystemColors.Control;
+            dataGridViewJobs.Location = new Point(253, 22);
+            dataGridViewJobs.Name = "dataGridViewJobs";
+            dataGridViewJobs.RowHeadersVisible = false;
+            dataGridViewJobs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewJobs.Size = new Size(457, 330);
+            dataGridViewJobs.TabIndex = 0;
+            // 
+            // Column1CheckBox
+            // 
+            Column1CheckBox.FillWeight = 20F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.Width = 20;
+            // 
+            // Column2JobType
+            // 
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
+            // 
+            // Column3Passes
+            // 
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.Width = 631;
             // 
             // labelPasses
             // 
@@ -1535,6 +1591,7 @@
             groupBoxAudioFiles.PerformLayout();
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).EndInit();
             groupBoxLog.ResumeLayout(false);
             groupBoxLog.PerformLayout();
             tabControlLog.ResumeLayout(false);
@@ -1673,5 +1730,10 @@
         private DataGridViewEx dataGridViewLogTestForErrors;
         private Button buttonDataGridViewLogSettings;
         private ColumnHeader Channels;
+        private DataGridViewEx dataGridViewJobs;
+        private DataGridViewCheckBoxColumn Column1CheckBox;
+        private DataGridViewTextBoxColumn Column2JobType;
+        private DataGridViewTextBoxColumn Column3Passes;
+        private DataGridViewTextBoxColumn Column4Parameters;
     }
 }

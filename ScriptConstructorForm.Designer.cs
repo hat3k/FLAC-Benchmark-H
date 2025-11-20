@@ -35,10 +35,12 @@
             buttonAddJobToJobListScript = new Button();
             comboBoxScript = new ComboBox();
             labelPreviewJobsListMadeByScript = new Label();
-            listViewPreviewJobsListMadeByScript = new ListView();
-            JobType = new ColumnHeader();
-            Passes = new ColumnHeader();
-            Parameters = new ColumnHeader();
+            dataGridViewPreviewJobsListMadeByScript = new DataGridViewEx();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewPreviewJobsListMadeByScript).BeginInit();
             SuspendLayout();
             // 
             // richTextBoxScriptHelp
@@ -110,44 +112,65 @@
             labelPreviewJobsListMadeByScript.TabIndex = 4;
             labelPreviewJobsListMadeByScript.Text = "Preview Job List:";
             // 
-            // listViewPreviewJobsListMadeByScript
+            // dataGridViewPreviewJobsListMadeByScript
             // 
-            listViewPreviewJobsListMadeByScript.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            listViewPreviewJobsListMadeByScript.Columns.AddRange(new ColumnHeader[] { JobType, Passes, Parameters });
-            listViewPreviewJobsListMadeByScript.FullRowSelect = true;
-            listViewPreviewJobsListMadeByScript.Location = new Point(12, 284);
-            listViewPreviewJobsListMadeByScript.Name = "listViewPreviewJobsListMadeByScript";
-            listViewPreviewJobsListMadeByScript.OwnerDraw = true;
-            listViewPreviewJobsListMadeByScript.Size = new Size(760, 236);
-            listViewPreviewJobsListMadeByScript.TabIndex = 5;
-            listViewPreviewJobsListMadeByScript.UseCompatibleStateImageBehavior = false;
-            listViewPreviewJobsListMadeByScript.View = View.Details;
+            dataGridViewPreviewJobsListMadeByScript.AllowUserToAddRows = false;
+            dataGridViewPreviewJobsListMadeByScript.AllowUserToDeleteRows = false;
+            dataGridViewPreviewJobsListMadeByScript.AllowUserToResizeRows = false;
+            dataGridViewPreviewJobsListMadeByScript.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridViewPreviewJobsListMadeByScript.BackgroundColor = SystemColors.Window;
+            dataGridViewPreviewJobsListMadeByScript.BorderStyle = BorderStyle.Fixed3D;
+            dataGridViewPreviewJobsListMadeByScript.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+            dataGridViewPreviewJobsListMadeByScript.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewPreviewJobsListMadeByScript.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
+            dataGridViewPreviewJobsListMadeByScript.GridColor = SystemColors.Control;
+            dataGridViewPreviewJobsListMadeByScript.Location = new Point(12, 284);
+            dataGridViewPreviewJobsListMadeByScript.Name = "dataGridViewPreviewJobsListMadeByScript";
+            dataGridViewPreviewJobsListMadeByScript.ReadOnly = true;
+            dataGridViewPreviewJobsListMadeByScript.RowHeadersVisible = false;
+            dataGridViewPreviewJobsListMadeByScript.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewPreviewJobsListMadeByScript.Size = new Size(760, 236);
+            dataGridViewPreviewJobsListMadeByScript.TabIndex = 8;
             // 
-            // JobType
+            // Column1CheckBox
             // 
-            JobType.Tag = "JobType";
-            JobType.Text = "Job Type";
-            JobType.Width = 66;
+            Column1CheckBox.FillWeight = 20F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.ReadOnly = true;
+            Column1CheckBox.Width = 20;
             // 
-            // Passes
+            // Column2JobType
             // 
-            Passes.Tag = "Passes";
-            Passes.Text = "Passes";
-            Passes.TextAlign = HorizontalAlignment.Center;
-            Passes.Width = 46;
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
             // 
-            // Parameters
+            // Column3Passes
             // 
-            Parameters.Tag = "Parameters";
-            Parameters.Text = "Parameters";
-            Parameters.Width = 632;
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.ReadOnly = true;
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.ReadOnly = true;
+            Column4Parameters.Width = 629;
             // 
             // ScriptConstructorForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 561);
-            Controls.Add(listViewPreviewJobsListMadeByScript);
+            Controls.Add(dataGridViewPreviewJobsListMadeByScript);
             Controls.Add(labelPreviewJobsListMadeByScript);
             Controls.Add(comboBoxScript);
             Controls.Add(buttonAddJobToJobListScript);
@@ -160,6 +183,7 @@
             Name = "ScriptConstructorForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Script Constructor";
+            ((System.ComponentModel.ISupportInitialize)dataGridViewPreviewJobsListMadeByScript).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -173,9 +197,10 @@
         private Button buttonAddJobToJobListScript;
         private ComboBox comboBoxScript;
         private Label labelPreviewJobsListMadeByScript;
-        private ListView listViewPreviewJobsListMadeByScript;
-        private ColumnHeader JobType;
-        private ColumnHeader Passes;
-        private ColumnHeader Parameters;
+        private DataGridViewEx dataGridViewPreviewJobsListMadeByScript;
+        private DataGridViewCheckBoxColumn Column1CheckBox;
+        private DataGridViewTextBoxColumn Column2JobType;
+        private DataGridViewTextBoxColumn Column3Passes;
+        private DataGridViewTextBoxColumn Column4Parameters;
     }
 }

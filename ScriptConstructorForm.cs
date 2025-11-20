@@ -8,6 +8,25 @@ using System.Windows.Forms;
 namespace FLAC_Benchmark_H
 {
     /// <summary>
+    /// Represents the data for a single script job to be added to the main job list.
+    /// </summary>
+    public struct ScriptJobData
+    {
+        public bool IsChecked { get; }
+        public string JobType { get; }
+        public string Passes { get; }
+        public string Parameters { get; }
+
+        public ScriptJobData(bool isChecked, string jobType, string passes, string parameters)
+        {
+            IsChecked = isChecked;
+            JobType = jobType;
+            Passes = passes;
+            Parameters = parameters;
+        }
+    }
+
+    /// <summary>
     /// Form for creating parameter scripts like "-j[1..4]" that expand into multiple jobs.
     /// Automatically previews expanded jobs in real time.
     /// </summary>
@@ -55,69 +74,6 @@ namespace FLAC_Benchmark_H
             comboBoxScript.SelectionLength = 0;
         }
 
-        /// <summary>
-        /// Draws column headers using default system style.
-        /// Required when OwnerDraw is enabled.
-        /// </summary>
-        private void ListViewPreview_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
-        {
-            e.DrawDefault = true;
-        }
-
-        /// <summary>
-        /// Custom drawing for subitems: draws checkboxes and color-coded job types.
-        /// Colors: Green = Encode, Red = Decode.
-        /// </summary>
-        private void ListViewPreview_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
-        {
-            if (e.ColumnIndex == 0 && e.Item != null)
-            {
-                e.DrawBackground();
-
-                // Draw checkbox if enabled
-                if (listViewPreviewJobsListMadeByScript.CheckBoxes)
-                {
-                    CheckBoxRenderer.DrawCheckBox(e.Graphics,
-                        new Point(e.Bounds.Left + 4, e.Bounds.Top + 2),
-                        e.Item.Checked
-                            ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal
-                            : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal);
-                }
-
-                // Determine text color based on job type
-                Color textColor = e.Item.ForeColor;
-
-                if (e.SubItem?.Text != null)
-                {
-                    if (e.SubItem.Text.Contains("Encode", StringComparison.OrdinalIgnoreCase))
-                        textColor = Color.Green;
-                    else if (e.SubItem.Text.Contains("Decode", StringComparison.OrdinalIgnoreCase))
-                        textColor = Color.Red;
-                }
-
-                using var brush = new SolidBrush(textColor);
-
-                // Shift text to the right to avoid overlapping with checkbox
-                Rectangle textBounds = new Rectangle(
-                    e.Bounds.Left + (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
-                    e.Bounds.Top,
-                    e.Bounds.Width - (listViewPreviewJobsListMadeByScript.CheckBoxes ? 20 : 0),
-                    e.Bounds.Height);
-
-                e.Graphics.DrawString(
-                    e.SubItem?.Text ?? string.Empty,
-                    e.SubItem?.Font ?? e.Item.Font ?? this.Font,
-                    brush,
-                    textBounds,
-                    StringFormat.GenericDefault);
-
-                e.DrawFocusRectangle(e.Bounds);
-            }
-            else
-            {
-                e.DrawDefault = true;
-            }
-        }
         /// <summary>
         /// Loads formatted help text explaining script syntax and rules.
         /// Includes examples and warnings about invalid formats.
@@ -226,13 +182,10 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        /// <summary>
-        /// Updates the preview list with expanded jobs from the current script.
-        /// Called automatically on every text change or form load.
-        /// </summary>
         private void PreviewJobs()
         {
-            listViewPreviewJobsListMadeByScript.Items.Clear();
+            // Clear DataGridView rows for preview
+            dataGridViewPreviewJobsListMadeByScript.Rows.Clear();
 
             string scriptLine = comboBoxScript.Text?.Trim();
             if (string.IsNullOrWhiteSpace(scriptLine))
@@ -246,28 +199,17 @@ namespace FLAC_Benchmark_H
 
             foreach (string param in expanded)
             {
-                var item = new ListViewItem("Encode");
-                item.SubItems.Add("1");
-                item.SubItems.Add(param);
-                listViewPreviewJobsListMadeByScript.Items.Add(item);
+                // Add row to DataGridView for preview
+                dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
             }
 
             labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
             buttonAddJobToJobListScript.Enabled = expanded.Count > 0;
         }
-
-        /// <summary>
-        /// Triggered when script text changes — updates preview instantly.
-        /// </summary>
         private void ComboBoxScript_TextChanged(object sender, EventArgs e)
         {
             PreviewJobs();
         }
-
-        /// <summary>
-        /// Adds the current script to the main form's job list.
-        /// Only allowed if the script produces valid jobs.
-        /// </summary>
         private void ButtonAddJobToJobListScript_Click(object sender, EventArgs e)
         {
             string scriptText = comboBoxScript.Text?.Trim();
@@ -288,22 +230,16 @@ namespace FLAC_Benchmark_H
                 return;
             }
 
-            OnJobsAdded?.Invoke(new List<ListViewItem>
+            var jobsToAdd = new List<ScriptJobData>
             {
-                new ListViewItem("Encode") { Checked = true }
-                    .AddSubItems("1", scriptText)
-            });
+                new ScriptJobData(true, "Encode", "1", scriptText) // Pass the script text as the 'parameter'
+            };
+
+            OnJobsAdded?.Invoke(jobsToAdd);
         }
 
-        /// <summary>
-        /// Event raised when user wants to add the script to the main job list.
-        /// </summary>
-        public event Action<List<ListViewItem>> OnJobsAdded;
+        public event Action<List<ScriptJobData>> OnJobsAdded;
 
-        /// <summary>
-        /// Initializes UI components and event handlers once, when control is created.
-        /// Prevents duplicate subscriptions.
-        /// </summary>
         protected override void OnCreateControl()
         {
             base.OnCreateControl();
@@ -314,30 +250,34 @@ namespace FLAC_Benchmark_H
                 comboBoxScript.TextChanged += ComboBoxScript_TextChanged;
                 buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
 
-                listViewPreviewJobsListMadeByScript.OwnerDraw = true;
-                listViewPreviewJobsListMadeByScript.DrawColumnHeader += ListViewPreview_DrawColumnHeader;
-                listViewPreviewJobsListMadeByScript.DrawSubItem += ListViewPreview_DrawSubItem;
+                // Subscribe to CellFormatting event for the new DataGridView to handle colors
+                dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreview_CellFormatting;
+            }
+        }
+        private void DataGridViewPreview_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            // Check if it's the 'Job Type' column (assuming it's the second column, index 1)
+            if (e.ColumnIndex == 1 && e.Value != null)
+            {
+                string cellValue = e.Value.ToString();
+                if (cellValue != null)
+                {
+                    if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.CellStyle.ForeColor = Color.Green;
+                    }
+                    else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.CellStyle.ForeColor = Color.Red;
+                    }
+                    e.FormattingApplied = true; // Indicate that formatting was applied
+                }
             }
         }
 
         private void buttonCloseScriptConstructorForm_Click(object sender, EventArgs e)
         {
             Close();
-        }
-    }
-
-    /// <summary>
-    /// Helper extension to simplify adding subitems to a ListViewItem.
-    /// </summary>
-    internal static class ListViewItemExtensions
-    {
-        public static ListViewItem AddSubItems(this ListViewItem item, params string[] subItems)
-        {
-            foreach (string subItem in subItems)
-            {
-                item.SubItems.Add(subItem);
-            }
-            return item;
         }
     }
 }
