@@ -861,7 +861,7 @@
             dataGridViewJobs.AllowUserToResizeRows = false;
             dataGridViewJobs.BackgroundColor = SystemColors.Window;
             dataGridViewJobs.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewJobs.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+            dataGridViewJobs.ClipboardCopyMode = DataGridViewClipboardCopyMode.Disable;
             dataGridViewJobs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dataGridViewJobs.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
             dataGridViewJobs.GridColor = SystemColors.Control;
@@ -1674,9 +1674,6 @@
         private ColumnHeader SizeEexe;
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;
-        private ListView listViewJobs;
-        private ColumnHeader JobType;
-        private ColumnHeader Parameters;
         private Button buttonCopyJobs;
         private Button buttonPasteJobs;
         private Button buttonRemoveJob;
@@ -1687,7 +1684,6 @@
         private Button buttonDownJob;
         private Button buttonUpJob;
         private Label labelStopped;
-        private ColumnHeader Passes;
         private Button buttonMinusPass;
         private Button buttonPlusPass;
         private Label labelPasses;
@@ -1735,5 +1731,9 @@
         private DataGridViewTextBoxColumn Column2JobType;
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
+        private ListView listViewJobs;
+        private ColumnHeader JobType;
+        private ColumnHeader Passes;
+        private ColumnHeader Parameters;
     }
 }

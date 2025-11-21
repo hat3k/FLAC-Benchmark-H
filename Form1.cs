@@ -74,7 +74,6 @@ namespace FLAC_Benchmark_H
             this.FormClosing += Form1_FormClosing; // Register the form closing event handler
             this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
-            this.listViewJobs.KeyDown += ListViewJobs_KeyDown;
             this.dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
             this.dataGridViewLogDetectDupes.KeyDown += DataGridViewLogDetectDupes_KeyDown;
             this.dataGridViewLogTestForErrors.KeyDown += DataGridViewLogTestForErrors_KeyDown;
@@ -168,15 +167,12 @@ namespace FLAC_Benchmark_H
             dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
 
             dataGridViewJobs.MouseDown += dataGridViewJobs_MouseDown;
+            dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
             dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
             dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
 
             buttonPauseResume.Click += buttonPauseResume_Click;
 
-            // Enable custom drawing for listViewJobs
-            //listViewJobs.OwnerDraw = true;
-            //listViewJobs.DrawColumnHeader += ListViewJobs_DrawColumnHeader;
-            //listViewJobs.DrawSubItem += ListViewJobs_DrawSubItem;
             comboBoxCPUPriority.SelectedIndex = 3;
         }
 
@@ -831,10 +827,6 @@ namespace FLAC_Benchmark_H
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
-            // Enable file drag-and-drop for the jobs ListView
-            listViewJobs.AllowDrop = true;
-            //listViewJobs.DragEnter += ListViewJobs_DragEnter;
-            //listViewJobs.DragDrop += ListViewJobs_DragDrop;
         }
 
         // Encoders
@@ -3793,38 +3785,38 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ListViewJobs_KeyDown(object? sender, KeyEventArgs e)
+        private void DataGridViewJobs_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveJob.PerformClick();
+                buttonRemoveJob.PerformClick(); // Reuse the existing remove logic
             }
 
             // Check if Ctrl and A are pressed simultaneously
             if (e.Control && e.KeyCode == Keys.A)
             {
                 e.Handled = true; // Cancel default behavior
+                e.SuppressKeyPress = true; // Also suppress the key press to prevent beep
 
-                // Select all items
-                foreach (ListViewItem item in listViewJobs.Items)
-                {
-                    item.Selected = true; // Set selection for each item
-                }
+                // Select all rows in dataGridViewJobs
+                dataGridViewJobs.SelectAll(); // This is the standard way to select all rows
             }
 
-            // Handle Ctrl+C (Copy)
+            // Handle Ctrl+C (Copy in custom format)
             if (e.Control && e.KeyCode == Keys.C)
             {
-                buttonCopyJobs.PerformClick();
+                buttonCopyJobs_Click(sender, EventArgs.Empty);
                 e.Handled = true; // Cancel default behavior
+                e.SuppressKeyPress = true; // Suppress beep
             }
 
             // Handle Ctrl+V (Paste)
             if (e.Control && e.KeyCode == Keys.V)
             {
-                buttonPasteJobs.PerformClick();
+                buttonPasteJobs.PerformClick(); // Reuse the existing paste logic
                 e.Handled = true; // Cancel default behavior
+                e.SuppressKeyPress = true; // Suppress beep
             }
         }
         private void DataGridViewLog_KeyDown(object? sender, KeyEventArgs e)
@@ -4163,25 +4155,14 @@ namespace FLAC_Benchmark_H
         }
         private void buttonUpJob_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewJobs, -1); // Pass -1 to move up
-            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, -1); // Apply same logic to DataGridViewEx
+            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, -1); // Pass -1 to move up
         }
         private void buttonDownJob_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewJobs, 1); // Pass 1 to move down
-            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, 1); // Apply same logic to DataGridViewEx
+            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, 1); // Pass 1 to move down
         }
         private void buttonRemoveJob_Click(object? sender, EventArgs e)
         {
-            // Remove selected items from listViewJobs
-            for (int i = listViewJobs.Items.Count - 1; i >= 0; i--)
-            {
-                if (listViewJobs.Items[i].Selected) // Check if item is selected
-                {
-                    listViewJobs.Items.RemoveAt(i); // Remove item
-                }
-            }
-
             // Remove selected rows from dataGridViewJobs
             // Get selected row indices in descending order to avoid index shifting issues during removal
             var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
@@ -4202,16 +4183,7 @@ namespace FLAC_Benchmark_H
         }
         private void buttonClearJobList_Click(object? sender, EventArgs e)
         {
-            listViewJobs.Items.Clear(); // Clear listViewJobs
             dataGridViewJobs.Rows.Clear();
-        }
-        private void dataGridViewJobs_MouseDown(object sender, MouseEventArgs e)
-        {
-            var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
-            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
-            {
-                dataGridViewJobs.ClearSelection();
-            }
         }
         private void buttonAddJobToJobListEncoder_Click(object? sender, EventArgs e)
         {
@@ -4229,48 +4201,32 @@ namespace FLAC_Benchmark_H
                 parameters += $" -j{threads}"; // add -j{threads} flag
             }
 
-            // Check if job already exists in last item for listViewJobs
+            // Job type for this button
             string jobName = "Encode";
-            ListViewItem existingItem = null;
-            if (listViewJobs.Items.Count > 0)
-            {
-                ListViewItem lastItem = listViewJobs.Items[listViewJobs.Items.Count - 1];
-                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == parameters)
-                {
-                    existingItem = lastItem;
-                }
-            }
-
-            // Update listViewJobs
-            if (existingItem != null)
-            {
-                int currentPasses = int.Parse(existingItem.SubItems[1].Text);
-                existingItem.SubItems[1].Text = (currentPasses + 1).ToString();
-            }
-            else
-            {
-                var newItem = new ListViewItem(jobName) { Checked = true };
-                newItem.SubItems.Add("1"); // Set default pass count
-                newItem.SubItems.Add(parameters);
-                listViewJobs.Items.Add(newItem);
-            }
 
             // Check if job already exists in last row for dataGridViewJobs
             bool existingRowFoundForDGV = false;
-            if (dataGridViewJobs.Rows.Count > 0 && dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column2JobType"].Value?.ToString() == jobName &&
-                dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column4Parameters"].Value?.ToString() == parameters)
+            if (dataGridViewJobs.Rows.Count > 0)
             {
-                // Update the last row's pass count in dataGridViewJobs
-                int currentPasses = int.Parse(dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column3Passes"].Value?.ToString() ?? "1");
-                dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column3Passes"].Value = (currentPasses + 1).ToString();
-                existingRowFoundForDGV = true;
+                var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
+                // Compare Job Type and Parameters columns
+                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName &&
+                    lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
+                {
+                    // Update the last row's pass count in dataGridViewJobs
+                    int currentPasses = int.Parse(lastRow.Cells["Column3Passes"].Value?.ToString() ?? "1");
+                    lastRow.Cells["Column3Passes"].Value = (currentPasses + 1).ToString();
+                    existingRowFoundForDGV = true;
+                }
             }
 
             // Add new row to dataGridViewJobs if no existing match was found
             if (!existingRowFoundForDGV)
             {
+                // Add new row with checkbox checked, job type, default pass count, and parameters
                 dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
             }
+
             // Clear selection and current cell after modification to prevent default highlighting
             dataGridViewJobs.ClearSelection();
             dataGridViewJobs.CurrentCell = null;
@@ -4282,48 +4238,32 @@ namespace FLAC_Benchmark_H
             // Form parameter string
             string parameters = $"-d {commandLine}".Trim();
 
-            // Check if job already exists in last item for listViewJobs
+            // Job type for this button
             string jobName = "Decode";
-            ListViewItem existingItem = null;
-            if (listViewJobs.Items.Count > 0)
-            {
-                ListViewItem lastItem = listViewJobs.Items[listViewJobs.Items.Count - 1];
-                if (lastItem.Text == jobName && lastItem.SubItems[2].Text == parameters)
-                {
-                    existingItem = lastItem;
-                }
-            }
-
-            // Update listViewJobs
-            if (existingItem != null)
-            {
-                int currentPasses = int.Parse(existingItem.SubItems[1].Text);
-                existingItem.SubItems[1].Text = (currentPasses + 1).ToString();
-            }
-            else
-            {
-                var newItem = new ListViewItem(jobName) { Checked = true };
-                newItem.SubItems.Add("1"); // Set default pass count
-                newItem.SubItems.Add(parameters);
-                listViewJobs.Items.Add(newItem);
-            }
 
             // Check if job already exists in last row for dataGridViewJobs
             bool existingRowFoundForDGV = false;
-            if (dataGridViewJobs.Rows.Count > 0 && dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column2JobType"].Value?.ToString() == jobName &&
-                dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column4Parameters"].Value?.ToString() == parameters)
+            if (dataGridViewJobs.Rows.Count > 0)
             {
-                // Update the last row's pass count in dataGridViewJobs
-                int currentPasses = int.Parse(dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column3Passes"].Value?.ToString() ?? "1");
-                dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1].Cells["Column3Passes"].Value = (currentPasses + 1).ToString();
-                existingRowFoundForDGV = true;
+                var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
+                // Compare Job Type and Parameters columns
+                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName &&
+                    lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
+                {
+                    // Update the last row's pass count in dataGridViewJobs
+                    int currentPasses = int.Parse(lastRow.Cells["Column3Passes"].Value?.ToString() ?? "1");
+                    lastRow.Cells["Column3Passes"].Value = (currentPasses + 1).ToString();
+                    existingRowFoundForDGV = true;
+                }
             }
 
             // Add new row to dataGridViewJobs if no existing match was found
             if (!existingRowFoundForDGV)
             {
+                // Add new row with checkbox checked, job type, default pass count, and parameters
                 dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
             }
+
             // Clear selection and current cell after modification to prevent default highlighting
             dataGridViewJobs.ClearSelection();
             dataGridViewJobs.CurrentCell = null;
@@ -4347,9 +4287,6 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-            // Optionally clear selection after modification to match listViewJobs behavior
-            // dataGridViewJobs.ClearSelection();
-            // dataGridViewJobs.CurrentCell = null;
         }
         private void buttonMinusPass_Click(object? sender, EventArgs e)
         {
@@ -4374,31 +4311,58 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
-            // Optionally clear selection after modification to match listViewJobs behavior
-            // dataGridViewJobs.ClearSelection();
-            // dataGridViewJobs.CurrentCell = null;
         }
         private void buttonCopyJobs_Click(object? sender, EventArgs e)
         {
             StringBuilder jobsText = new StringBuilder();
 
-            // Determine which rows to copy: selected or all
-            var rowsToCopy = dataGridViewJobs.SelectedRows.Count > 0
-                ? dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
-                : dataGridViewJobs.Rows.Cast<DataGridViewRow>().Where(r => !r.IsNewRow); // Exclude the new row if it exists (though we disabled it)
-
-            foreach (var row in rowsToCopy)
+            if (dataGridViewJobs.SelectedRows.Count > 0)
             {
-                // Assuming columns are: Column1CheckBox (0), Column2JobType (1), Column3Passes (2), Column4Parameters (3)
-                // Get values from the respective cells
-                bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
-                string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
-                string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
-                string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+                // --- LOGIC FOR SELECTED ROWS ---
+                // Get the indices of the selected rows
+                var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
+                                                                 .Select(row => row.Index)
+                                                                 .OrderBy(index => index) // Sort indices in ascending order (top -> down)
+                                                                 .ToList();
 
-                // Format the row data as a single line
-                string status = isChecked ? "Checked" : "Unchecked";
-                jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                // Iterate through rows in the order of their ascending index
+                foreach (int index in selectedIndices)
+                {
+                    // Verify the index is valid (just in case)
+                    if (index >= 0 && index < dataGridViewJobs.Rows.Count)
+                    {
+                        var row = dataGridViewJobs.Rows[index];
+
+                        // Get values from the respective cells
+                        bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                        string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                        string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                        string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+
+                        // Format the row data as a single line
+                        string status = isChecked ? "Checked" : "Unchecked";
+                        jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                    }
+                }
+            }
+            else
+            {
+                // --- LOGIC FOR ALL ROWS (when nothing is selected) ---
+                // Iterate through all rows (excluding the potential new row)
+                foreach (DataGridViewRow row in dataGridViewJobs.Rows)
+                {
+                    if (row.IsNewRow) continue; // Skip the new row
+
+                    // Get values from the respective cells
+                    bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                    string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                    string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                    string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+
+                    // Format the row data as a single line
+                    string status = isChecked ? "Checked" : "Unchecked";
+                    jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                }
             }
 
             if (jobsText.Length > 0)
@@ -4480,6 +4444,14 @@ namespace FLAC_Benchmark_H
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void dataGridViewJobs_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
+            {
+                dataGridViewJobs.ClearSelection();
+            }
+        }
 
         // Script Constructor
         private ScriptConstructorForm? _scriptForm = null;
@@ -4531,6 +4503,7 @@ namespace FLAC_Benchmark_H
                 _scriptForm.Focus();
             }
         }
+        
         // Actions (Buttons)
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
@@ -6279,7 +6252,6 @@ namespace FLAC_Benchmark_H
             // Apply to all ListViews including OwnerDraw ones
             doubleBufferedProperty?.SetValue(listViewEncoders, true, null);
             doubleBufferedProperty?.SetValue(listViewAudioFiles, true, null);
-            doubleBufferedProperty?.SetValue(listViewJobs, true, null);
         }
 
         // FORM LOAD
