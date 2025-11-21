@@ -81,6 +81,24 @@ namespace FLAC_Benchmark_H
             this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
             this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
             this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
+
+            dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
+            dataGridViewLog.MouseDown += dataGridViewLog_MouseDown;
+
+            dataGridViewLogDetectDupes.CellContentClick += dataGridViewLogDetectDupes_CellContentClick;
+            dataGridViewLogDetectDupes.MouseDown += dataGridViewLogDetectDupes_MouseDown;
+
+            dataGridViewLogTestForErrors.CellContentClick += dataGridViewLogTestForErrors_CellContentClick;
+            dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
+
+            dataGridViewJobs.CellFormatting += DataGridViewJobs_CellFormatting;
+            dataGridViewJobs.MouseDown += dataGridViewJobs_MouseDown;
+            dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
+            dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
+            dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
+
+            buttonPauseResume.Click += buttonPauseResume_Click;
+
             LoadCPUInfoAsync();
 
             // Initialize CPU Usage counter (Current CPU Load in %)
@@ -156,22 +174,6 @@ namespace FLAC_Benchmark_H
 
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Initialize the path to the temporary folder
             _process = new Process(); // Initialize _process to avoid nullability warning
-
-            dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
-            dataGridViewLog.MouseDown += dataGridViewLog_MouseDown;
-
-            dataGridViewLogDetectDupes.CellContentClick += dataGridViewLogDetectDupes_CellContentClick;
-            dataGridViewLogDetectDupes.MouseDown += dataGridViewLogDetectDupes_MouseDown;
-
-            dataGridViewLogTestForErrors.CellContentClick += dataGridViewLogTestForErrors_CellContentClick;
-            dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
-
-            dataGridViewJobs.MouseDown += dataGridViewJobs_MouseDown;
-            dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
-            dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
-            dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
-
-            buttonPauseResume.Click += buttonPauseResume_Click;
 
             comboBoxCPUPriority.SelectedIndex = 3;
         }
@@ -4444,6 +4446,26 @@ namespace FLAC_Benchmark_H
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void DataGridViewJobs_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            // Check if it's the 'Job Type' column (assuming it's the second column, index 1 or name "Column2JobType")
+            if (e.ColumnIndex == 1 && e.Value != null)
+            {
+                string cellValue = e.Value.ToString();
+                if (cellValue != null)
+                {
+                    if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.CellStyle.ForeColor = Color.Green;
+                    }
+                    else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.CellStyle.ForeColor = Color.Red;
+                    }
+                    e.FormattingApplied = true; // Indicate that formatting was applied
+                }
+            }
+        }
         private void dataGridViewJobs_MouseDown(object sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
@@ -5219,13 +5241,18 @@ namespace FLAC_Benchmark_H
                 .ToList();
 
                 // Create expanded Job List (Virtual Job List)
-                var listViewJobsExpanded = new List<ListViewItem>();
+                var dataGridViewJobsExpanded = new List<DataGridViewRow>();
 
-                foreach (ListViewItem item in listViewJobs.Items)
+                foreach (DataGridViewRow row in dataGridViewJobs.Rows)
                 {
-                    if (item.Checked)
+                    if (row.IsNewRow) continue;
+
+                    var checkBoxCell = row.Cells[0] as DataGridViewCheckBoxCell;
+                    if (checkBoxCell?.Value is bool isChecked && isChecked)
                     {
-                        string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+                        string jobType = row.Cells[1].Value?.ToString() ?? "";
+                        string passes = row.Cells[2].Value?.ToString() ?? "";
+                        string parameters = NormalizeSpaces((row.Cells[3].Value?.ToString() ?? "").Trim());
 
                         // Check if parameters contain script patterns (like [0..8] or [1,2,3])
                         if (parameters.Contains('[') && parameters.Contains(']'))
@@ -5235,31 +5262,32 @@ namespace FLAC_Benchmark_H
 
                             foreach (string expandedParam in expandedParameters)
                             {
-                                // Create new job item for each expanded parameter set
-                                ListViewItem newItem = new ListViewItem(item.Text);
-                                newItem.SubItems.Add(item.SubItems[1].Text);
-                                newItem.SubItems.Add(expandedParam);
-                                newItem.Checked = true;
-                                listViewJobsExpanded.Add(newItem);
+                                // Create new job row for each expanded parameter set
+                                DataGridViewRow newRow = (DataGridViewRow)row.Clone();
+                                newRow.Cells[0].Value = true;
+                                newRow.Cells[1].Value = jobType;
+                                newRow.Cells[2].Value = passes;
+                                newRow.Cells[3].Value = expandedParam;
+                                dataGridViewJobsExpanded.Add(newRow);
                             }
                         }
                         else
                         {
                             // Regular job without script expansion
-                            listViewJobsExpanded.Add(item);
+                            dataGridViewJobsExpanded.Add(row);
                         }
                     }
                 }
 
                 // Count the number of tasks and passes for Encode
-                int totalEncodeTasks = listViewJobsExpanded
-                .Where(item => string.Equals(NormalizeSpaces(item.Text), "Encode", StringComparison.OrdinalIgnoreCase))
-                .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+                int totalEncodeTasks = dataGridViewJobsExpanded
+                .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Encode", StringComparison.OrdinalIgnoreCase))
+                .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
 
                 // Count the number of tasks and passes for Decode
-                int totalDecodeTasks = listViewJobsExpanded
-                .Where(item => string.Equals(NormalizeSpaces(item.Text), "Decode", StringComparison.OrdinalIgnoreCase))
-                .Sum(item => int.Parse(item.SubItems[1].Text.Trim()));
+                int totalDecodeTasks = dataGridViewJobsExpanded
+                .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Decode", StringComparison.OrdinalIgnoreCase))
+                .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
 
                 // 1. Check if there is at least one job
                 if (totalEncodeTasks == 0 && totalDecodeTasks == 0)
@@ -5302,18 +5330,18 @@ namespace FLAC_Benchmark_H
                 // === WARM-UP PASS (before main loop) ===
                 if (checkBoxWarmupPass.Checked)
                 {
-                    // Find the first job in listViewJobsExpanded that will actually be executed
-                    ListViewItem firstExecutableJobItem = null;
+                    // Find the first job in dataGridViewJobsExpanded that will actually be executed
+                    DataGridViewRow firstExecutableJobRow = null;
                     string jobType = null;
                     string audioFilePath = null;
                     string outputFilePath = null;
 
-                    foreach (var jobItem in listViewJobsExpanded)
+                    foreach (var jobRow in dataGridViewJobsExpanded)
                     {
-                        string type = NormalizeSpaces(jobItem.Text);
+                        string type = NormalizeSpaces(jobRow.Cells[1].Value?.ToString() ?? "");
                         if (string.Equals(type, "Encode", StringComparison.OrdinalIgnoreCase) && selectedAudioFiles.Any())
                         {
-                            firstExecutableJobItem = jobItem;
+                            firstExecutableJobRow = jobRow;
                             jobType = type;
                             audioFilePath = selectedAudioFiles.First();
                             outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
@@ -5321,7 +5349,7 @@ namespace FLAC_Benchmark_H
                         }
                         else if (string.Equals(type, "Decode", StringComparison.OrdinalIgnoreCase) && selectedFlacAudioFiles.Any())
                         {
-                            firstExecutableJobItem = jobItem;
+                            firstExecutableJobRow = jobRow;
                             jobType = type;
                             audioFilePath = selectedFlacAudioFiles.First();
                             outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
@@ -5330,7 +5358,7 @@ namespace FLAC_Benchmark_H
                     }
 
 
-                    string parameters = NormalizeSpaces(firstExecutableJobItem.SubItems[2].Text.Trim());
+                    string parameters = NormalizeSpaces((firstExecutableJobRow.Cells[3].Value?.ToString() ?? "").Trim());
                     var firstEncoder = selectedEncoders.FirstOrDefault();
                     if (string.IsNullOrEmpty(firstEncoder)) return;
 
@@ -5419,10 +5447,10 @@ namespace FLAC_Benchmark_H
                 progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
                 progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
-                foreach (ListViewItem item in listViewJobsExpanded)
+                foreach (DataGridViewRow row in dataGridViewJobsExpanded)
                 {
-                    string jobType = NormalizeSpaces(item.Text);
-                    int passes = int.Parse(item.SubItems[1].Text.Trim());
+                    string jobType = NormalizeSpaces(row.Cells[1].Value?.ToString() ?? "");
+                    int passes = int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim());
 
                     for (int i = 0; i < passes; i++) // Loop for the number of passes
                     {
@@ -5445,7 +5473,7 @@ namespace FLAC_Benchmark_H
                                     }
 
                                     // Form the parameter string
-                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+                                    string parameters = NormalizeSpaces((row.Cells[3].Value?.ToString() ?? "").Trim());
 
                                     // Form the arguments for execution
                                     string outputFilePath = Path.Combine(tempFolderPath, "temp_encoded.flac"); // Output file name
@@ -5619,7 +5647,7 @@ namespace FLAC_Benchmark_H
                                     }
 
                                     // Form the parameter string
-                                    string parameters = NormalizeSpaces(item.SubItems[2].Text.Trim());
+                                    string parameters = NormalizeSpaces((row.Cells[3].Value?.ToString() ?? "").Trim());
 
                                     // Form the arguments for execution
                                     string outputFilePath = Path.Combine(tempFolderPath, "temp_decoded.wav"); // Output file name
@@ -5774,7 +5802,7 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
-
+        
         // Encoder and Decoder options
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {

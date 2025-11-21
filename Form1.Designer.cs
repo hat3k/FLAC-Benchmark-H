@@ -95,10 +95,6 @@
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
             dataGridViewJobs = new DataGridViewEx();
-            Column1CheckBox = new DataGridViewCheckBoxColumn();
-            Column2JobType = new DataGridViewTextBoxColumn();
-            Column3Passes = new DataGridViewTextBoxColumn();
-            Column4Parameters = new DataGridViewTextBoxColumn();
             labelPasses = new Label();
             buttonMinusPass = new Button();
             buttonPlusPass = new Button();
@@ -107,10 +103,6 @@
             buttonRemoveJob = new Button();
             buttonCopyJobs = new Button();
             buttonPasteJobs = new Button();
-            listViewJobs = new ListView();
-            JobType = new ColumnHeader();
-            Passes = new ColumnHeader();
-            Parameters = new ColumnHeader();
             buttonStartJobList = new Button();
             buttonExportJobList = new Button();
             buttonImportJobList = new Button();
@@ -151,6 +143,10 @@
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
             labelCpuUsageValue = new Label();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -841,7 +837,6 @@
             groupBoxJobsList.Controls.Add(buttonRemoveJob);
             groupBoxJobsList.Controls.Add(buttonCopyJobs);
             groupBoxJobsList.Controls.Add(buttonPasteJobs);
-            groupBoxJobsList.Controls.Add(listViewJobs);
             groupBoxJobsList.Controls.Add(buttonStartJobList);
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
@@ -859,48 +854,19 @@
             dataGridViewJobs.AllowDrop = true;
             dataGridViewJobs.AllowUserToAddRows = false;
             dataGridViewJobs.AllowUserToResizeRows = false;
+            dataGridViewJobs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewJobs.BackgroundColor = SystemColors.Window;
             dataGridViewJobs.BorderStyle = BorderStyle.Fixed3D;
             dataGridViewJobs.ClipboardCopyMode = DataGridViewClipboardCopyMode.Disable;
             dataGridViewJobs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dataGridViewJobs.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
             dataGridViewJobs.GridColor = SystemColors.Control;
-            dataGridViewJobs.Location = new Point(253, 22);
+            dataGridViewJobs.Location = new Point(6, 22);
             dataGridViewJobs.Name = "dataGridViewJobs";
             dataGridViewJobs.RowHeadersVisible = false;
             dataGridViewJobs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewJobs.Size = new Size(457, 330);
+            dataGridViewJobs.Size = new Size(765, 336);
             dataGridViewJobs.TabIndex = 0;
-            // 
-            // Column1CheckBox
-            // 
-            Column1CheckBox.FillWeight = 20F;
-            Column1CheckBox.Frozen = true;
-            Column1CheckBox.HeaderText = "";
-            Column1CheckBox.Name = "Column1CheckBox";
-            Column1CheckBox.Width = 20;
-            // 
-            // Column2JobType
-            // 
-            Column2JobType.FillWeight = 60F;
-            Column2JobType.HeaderText = "Job Type";
-            Column2JobType.Name = "Column2JobType";
-            Column2JobType.ReadOnly = true;
-            Column2JobType.Resizable = DataGridViewTriState.True;
-            Column2JobType.Width = 60;
-            // 
-            // Column3Passes
-            // 
-            Column3Passes.FillWeight = 48F;
-            Column3Passes.HeaderText = "Passes";
-            Column3Passes.Name = "Column3Passes";
-            Column3Passes.Width = 48;
-            // 
-            // Column4Parameters
-            // 
-            Column4Parameters.HeaderText = "Parameters";
-            Column4Parameters.Name = "Column4Parameters";
-            Column4Parameters.Width = 631;
             // 
             // labelPasses
             // 
@@ -993,40 +959,6 @@
             toolTip1.SetToolTip(buttonPasteJobs, "You may copy joblist to notepad to edit and to paste it back.");
             buttonPasteJobs.UseVisualStyleBackColor = true;
             buttonPasteJobs.Click += buttonPasteJobs_Click;
-            // 
-            // listViewJobs
-            // 
-            listViewJobs.AllowDrop = true;
-            listViewJobs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            listViewJobs.CheckBoxes = true;
-            listViewJobs.Columns.AddRange(new ColumnHeader[] { JobType, Passes, Parameters });
-            listViewJobs.FullRowSelect = true;
-            listViewJobs.Location = new Point(6, 22);
-            listViewJobs.Name = "listViewJobs";
-            listViewJobs.OwnerDraw = true;
-            listViewJobs.Size = new Size(765, 336);
-            listViewJobs.TabIndex = 0;
-            listViewJobs.UseCompatibleStateImageBehavior = false;
-            listViewJobs.View = View.Details;
-            // 
-            // JobType
-            // 
-            JobType.Tag = "JobType";
-            JobType.Text = "Job Type";
-            JobType.Width = 66;
-            // 
-            // Passes
-            // 
-            Passes.Tag = "Passes";
-            Passes.Text = "Passes";
-            Passes.TextAlign = HorizontalAlignment.Center;
-            Passes.Width = 46;
-            // 
-            // Parameters
-            // 
-            Parameters.Tag = "Parameters";
-            Parameters.Text = "Parameters";
-            Parameters.Width = 632;
             // 
             // buttonStartJobList
             // 
@@ -1562,6 +1494,36 @@
             labelCpuUsageValue.TabIndex = 2;
             labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
             // 
+            // Column1CheckBox
+            // 
+            Column1CheckBox.FillWeight = 20F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.Width = 20;
+            // 
+            // Column2JobType
+            // 
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
+            // 
+            // Column3Passes
+            // 
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.Width = 634;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1731,9 +1693,5 @@
         private DataGridViewTextBoxColumn Column2JobType;
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
-        private ListView listViewJobs;
-        private ColumnHeader JobType;
-        private ColumnHeader Passes;
-        private ColumnHeader Parameters;
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Text;
 
 namespace FLAC_Benchmark_H
 {
@@ -37,6 +38,8 @@ namespace FLAC_Benchmark_H
             InitializeComponent();
             // Use Shown event for reliable focus and layout setup
             this.Shown += ScriptConstructorForm_Shown;
+            this.MouseDown += ScriptConstructorForm_MouseDown;
+
         }
 
         /// <summary>
@@ -205,6 +208,8 @@ namespace FLAC_Benchmark_H
 
             labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
             buttonAddJobToJobListScript.Enabled = expanded.Count > 0;
+            dataGridViewPreviewJobsListMadeByScript.ClearSelection();
+            dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
         }
         private void ComboBoxScript_TextChanged(object sender, EventArgs e)
         {
@@ -251,10 +256,12 @@ namespace FLAC_Benchmark_H
                 buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
 
                 // Subscribe to CellFormatting event for the new DataGridView to handle colors
-                dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreview_CellFormatting;
+                dataGridViewPreviewJobsListMadeByScript.CellFormatting += dataGridViewPreviewJobsListMadeByScript_CellFormatting;
+                dataGridViewPreviewJobsListMadeByScript.MouseDown += dataGridViewPreviewJobsListMadeByScript_MouseDown;
+                dataGridViewPreviewJobsListMadeByScript.KeyDown += dataGridViewPreviewJobsListMadeByScript_KeyDown;
             }
         }
-        private void DataGridViewPreview_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dataGridViewPreviewJobsListMadeByScript_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1)
             if (e.ColumnIndex == 1 && e.Value != null)
@@ -272,6 +279,113 @@ namespace FLAC_Benchmark_H
                     }
                     e.FormattingApplied = true; // Indicate that formatting was applied
                 }
+            }
+        }
+        private void ScriptConstructorForm_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Get the location of the mouse click relative to the DataGridView
+            Point clickPoint = dataGridViewPreviewJobsListMadeByScript.PointToClient(this.PointToScreen(e.Location));
+
+            // Check if the click point is outside the bounds of the DataGridView
+            if (!dataGridViewPreviewJobsListMadeByScript.ClientRectangle.Contains(clickPoint))
+            {
+                // Clear selection if clicked outside the DataGridView
+                dataGridViewPreviewJobsListMadeByScript.ClearSelection();
+                dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
+            }
+        }
+        private void dataGridViewPreviewJobsListMadeByScript_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = dataGridViewPreviewJobsListMadeByScript.HitTest(e.X, e.Y);
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
+            {
+                dataGridViewPreviewJobsListMadeByScript.ClearSelection();
+            }
+        }
+        private void dataGridViewPreviewJobsListMadeByScript_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Check if Ctrl and A are pressed simultaneously
+            if (e.Control && e.KeyCode == Keys.A)
+            {
+                e.Handled = true; // Cancel default behavior
+                e.SuppressKeyPress = true; // Also suppress the key press to prevent beep
+
+                // Select all rows in dataGridViewPreviewJobsListMadeByScript
+                dataGridViewPreviewJobsListMadeByScript.SelectAll(); // This is the standard way to select all rows
+            }
+
+            // Handle Ctrl+C (Copy in custom format)
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                CopyJobsFromPreviewDataGridView();
+                e.Handled = true; // Cancel default behavior
+                e.SuppressKeyPress = true; // Suppress beep
+            }
+        }
+        private void CopyJobsFromPreviewDataGridView()
+        {
+            StringBuilder jobsText = new StringBuilder();
+
+            if (dataGridViewPreviewJobsListMadeByScript.SelectedRows.Count > 0)
+            {
+                // --- LOGIC FOR SELECTED ROWS ---
+                // Get the indices of the selected rows
+                var selectedIndices = dataGridViewPreviewJobsListMadeByScript.SelectedRows.Cast<DataGridViewRow>()
+                                                                 .Select(row => row.Index)
+                                                                 .OrderBy(index => index) // Sort indices in ascending order (top -> down)
+                                                                 .ToList();
+
+                // Iterate through rows in the order of their ascending index
+                foreach (int index in selectedIndices)
+                {
+                    // Verify the index is valid (just in case)
+                    if (index >= 0 && index < dataGridViewPreviewJobsListMadeByScript.Rows.Count)
+                    {
+                        var row = dataGridViewPreviewJobsListMadeByScript.Rows[index];
+
+                        // Get values from the respective cells
+                        // Assuming columns are: Column1CheckBox (0), Column2JobType (1), Column3Passes (2), Column4Parameters (3)
+                        bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                        string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                        string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                        string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+
+                        // Format the row data as a single line
+                        string status = isChecked ? "Checked" : "Unchecked";
+                        jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                    }
+                }
+            }
+            else
+            {
+                // --- LOGIC FOR ALL ROWS (when nothing is selected) ---
+                // Iterate through all rows (excluding the potential new row)
+                foreach (DataGridViewRow row in dataGridViewPreviewJobsListMadeByScript.Rows)
+                {
+                    if (row.IsNewRow) continue; // Skip the new row
+
+                    // Get values from the respective cells
+                    bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                    string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                    string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                    string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+
+                    // Format the row data as a single line
+                    string status = isChecked ? "Checked" : "Unchecked";
+                    jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                }
+            }
+
+            if (jobsText.Length > 0)
+            {
+                // Set the formatted text to the clipboard
+                Clipboard.SetText(jobsText.ToString());
+            }
+            else
+            {
+                // Show a message if no rows were found to copy
+                MessageBox.Show("No jobs to copy.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
