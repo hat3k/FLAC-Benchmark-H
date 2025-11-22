@@ -6159,6 +6159,10 @@ namespace FLAC_Benchmark_H
             {
                 _ = CheckForUpdatesAsync();
             }
+            else
+            { programVersionIgnored = null;
+                SaveSettings();
+            }
         }
         private async Task CheckForUpdatesAsync()
         {
@@ -6179,24 +6183,10 @@ namespace FLAC_Benchmark_H
                     if (programVersionIgnored == programVersionLatestOnline)
                         return;
 
-                    var result = MessageBox.Show(
-                    $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionLatestOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
-                    "Update Available",
-                    MessageBoxButtons.YesNoCancel,
-                    MessageBoxIcon.Information);
-
-                    if (result == DialogResult.Yes)
+                    this.Invoke((MethodInvoker)delegate
                     {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
-                            UseShellExecute = true
-                        });
-                    }
-                    else if (result == DialogResult.Cancel)
-                    {
-                        programVersionIgnored = programVersionLatestOnline;
-                    }
+                        ShowUpdateDialog(current, latest, programVersionLatestOnline);
+                    });
                 }
             }
             catch (TaskCanceledException)
@@ -6209,8 +6199,42 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error checking for updates:\n{ex.Message}",
-                "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (this.InvokeRequired)
+                {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        MessageBox.Show(this, $"Error checking for updates:\n{ex.Message}",
+                        "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
+                }
+                else
+                {
+                    MessageBox.Show(this, $"Error checking for updates:\n{ex.Message}",
+                    "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void ShowUpdateDialog(Version current, Version latest, string latestVersionStr)
+        {
+            var result = MessageBox.Show(
+                this,
+                $"A new version is available!\n\nCurrent version:\t{current}\nLatest version:\t{latestVersionStr}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
+                "Update Available",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Information);
+
+            if (result == DialogResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
+                    UseShellExecute = true
+                });
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                programVersionIgnored = latestVersionStr;
+                SaveSettings();
             }
         }
         private Version ParseVersion(string versionStr)
