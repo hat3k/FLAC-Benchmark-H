@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -90,25 +91,127 @@ namespace FLAC_Benchmark_H
 
             try
             {
-                AppendTextWithStyle(richTextBoxScriptHelp, GetIntroductionText(), FontStyle.Regular, Color.Black);
-                AppendTextWithStyle(richTextBoxScriptHelp, GetWarningsText(), FontStyle.Regular, Color.OrangeRed);
-                AppendTextWithStyle(richTextBoxScriptHelp, GetSyntaxGuideTitle(), FontStyle.Bold, Color.Black);
+                // Introduction
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "This tool lets you add a single script to the Job List that will automatically expand into many individual jobs when executed.\n" +
+                    "Instead of adding each configuration manually, define a compact template and let the system generate all combinations for you.\n\n" +
+                    "The constructor supports both numeric ranges and explicit text values.\n\n",
+                    FontStyle.Regular, Color.Black);
 
-                // Add each syntax section
-                AppendSyntaxSection(richTextBoxScriptHelp, "1. Basic Range", GetBasicRangeExplanation(), GetBasicRangeExample());
-                AppendSyntaxSection(richTextBoxScriptHelp, "2. Range with Step", GetRangeWithStepExplanation(), GetRangeWithStepExample());
-                AppendSyntaxSection(richTextBoxScriptHelp, "3. Explicit Values", GetExplicitValuesExplanation(), GetExplicitValuesExample());
-                AppendSyntaxSection(richTextBoxScriptHelp, "4. Complex Expression", GetComplexExpressionExplanation(), GetComplexExpressionExample());
+                // Warnings
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "⚠️ Use square brackets [ ] for scripts. FLAC command line does not use them.\n" +
+                    "⚠️ Only NUMERIC values inside [] are iterated for ranges (e.g., [1..4]).\n" +
+                    "⚠️ Text values are processed as-is (e.g., [fast, best]).\n\n",
+                    FontStyle.Regular, Color.OrangeRed);
 
-                AppendTextWithStyle(richTextBoxScriptHelp, GetNotesTitle(), FontStyle.Bold, Color.Gray);
-                AppendTextWithStyle(richTextBoxScriptHelp, GetNotesText(), FontStyle.Regular, Color.Black);
+                // Syntax Guide Title
+                AppendTextWithStyle(richTextBoxScriptHelp, "Syntax Guide:\n\n", FontStyle.Bold, Color.Black);
+
+                // Syntax Section 1: Basic Range
+                AppendTextWithStyle(richTextBoxScriptHelp, "1. Basic Range\n", FontStyle.Bold, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   [min..max] generates consecutive numeric values (step = 1 by default).\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "     -j[4..8]\n" +
+                    "   Expands to:\n" +
+                    "     -j4\n" +
+                    "     -j5\n" +
+                    "     -j6\n" +
+                    "     -j7\n" +
+                    "     -j8\n\n",
+                    FontStyle.Regular, Color.Black);
+
+                // Syntax Section 2: Range with Step
+                AppendTextWithStyle(richTextBoxScriptHelp, "2. Range with Step\n", FontStyle.Bold, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   [min..max..step] defines a custom numeric increment (positive or negative).\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "     -j[2..8..2]\n" +
+                    "   Expands to:\n" +
+                    "     -j2\n" +
+                    "     -j4\n" +
+                    "     -j6\n" +
+                    "     -j8\n\n",
+                    FontStyle.Regular, Color.Black);
+
+                // Syntax Section 3: Explicit Values
+                AppendTextWithStyle(richTextBoxScriptHelp, "3. Explicit Values\n", FontStyle.Bold, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   [value1, value2, value3] lists individual values (numbers or text).\n" +
+                    "   An empty value (e.g., [value,]) creates a version with and without 'value'.\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example #1:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "     -j[2, 4, 10, 16]\n" +
+                    "   Expands to:\n" +
+                    "     -j2\n" +
+                    "     -j4\n" +
+                    "     -j10\n" +
+                    "     -j16\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example #2:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   Text values:\n" +
+                    "     --[fast, best]\n" +
+                    "   Expands to:\n" +
+                    "     --fast\n" +
+                    "     --best\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example #3:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   Make a flag optional:\n" +
+                    "     -8 [-e,]\n" +
+                    "   Expands to:\n" +
+                    "     -8 -e\n" +
+                    "     -8\n\n",
+                    FontStyle.Regular, Color.Black);
+
+                // Syntax Section 4: Complex Expression
+                AppendTextWithStyle(richTextBoxScriptHelp, "4. Complex Expression\n", FontStyle.Bold, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "   Combine ranges, steps, and explicit values in any order.\n" +
+                    "   Each [...] block is expanded independently.\n\n",
+                    FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp, "   Example:\n", FontStyle.Regular, Color.Black);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "     --[fast, best] -j[2..4, 8..12..2, 16]\n" +
+                    "   Expands to:\n" +
+                    "     --fast -j2\n" +
+                    "     --fast -j3\n" +
+                    "     --fast -j4\n" +
+                    "     --fast -j8\n" +
+                    "     --fast -j10\n" +
+                    "     --fast -j12\n" +
+                    "     --fast -j16\n" +
+                    "     --best -j2\n" +
+                    "     --best -j3\n" +
+                    "     --best -j4\n" +
+                    "     --best -j8\n" +
+                    "     --best -j10\n" +
+                    "     --best -j12\n" +
+                    "     --best -j16\n\n",
+                    FontStyle.Regular, Color.Black);
+
+                // Notes
+                AppendTextWithStyle(richTextBoxScriptHelp, "Notes:\n", FontStyle.Bold, Color.Gray);
+                AppendTextWithStyle(richTextBoxScriptHelp,
+                    "• The resulting Script will appear as a single Job in the main window's \"Job List\" panel.\n" +
+                    "• Use cautiously: large ranges or many combined options may generate many jobs.\n" +
+                    "• You can preview how many Jobs are generated by your Script before adding it.\n" +
+                    "• Decimal separator is period '.' (e.g., 0.5, not 0,5).\n" +
+                    "• Negative integers are supported in ranges: [-2..2], [-1.0..1.0..0.5].\n",
+                    FontStyle.Regular, Color.Black);
             }
             finally
             {
                 richTextBoxScriptHelp.ResumeLayout(); // Resume layout updates
             }
         }
-
         /// <summary>
         /// Appends text to the RichTextBox with specified font style and color.
         /// </summary>
@@ -123,117 +226,6 @@ namespace FLAC_Benchmark_H
             rtb.AppendText(text);
         }
 
-        /// <summary>
-        /// Appends a complete syntax section (title, explanation, example) with appropriate styling.
-        /// </summary>
-        /// <param name="rtb">The RichTextBox to append to.</param>
-        /// <param name="title">The title of the section.</param>
-        /// <param name="explanation">The explanation text.</param>
-        /// <param name="example">The example text.</param>
-        private static void AppendSyntaxSection(RichTextBox rtb, string title, string explanation, string example)
-        {
-            AppendTextWithStyle(rtb, $"{title}\n", FontStyle.Bold, Color.Black);
-            AppendTextWithStyle(rtb, explanation, FontStyle.Regular, Color.Black);
-            AppendTextWithStyle(rtb, "   Example:\n", FontStyle.Regular, Color.Black);
-            AppendTextWithStyle(rtb, example, FontStyle.Italic, Color.Black);
-            rtb.AppendText("\n"); // Add extra newline after each section
-        }
-
-        // --- Helper Methods for Text Content ---
-
-        private static string GetIntroductionText()
-        {
-            return "This tool allows you to define a complete job list using a compact script format.\n" +
-                   "Instead of adding jobs one by one, you can write parameter templates that will be expanded into multiple test configurations when executed.\n\n";
-        }
-
-        private static string GetWarningsText()
-        {
-            return "⚠️ Only NUMERIC values inside [] are iterated (integers or decimals).\n\n";
-        }
-
-        private static string GetSyntaxGuideTitle()
-        {
-            return "Syntax Guide:\n\n";
-        }
-
-        private static string GetBasicRangeExplanation()
-        {
-            return "   [min..max] generates consecutive values (step = 1 by default).\n";
-        }
-
-        private static string GetBasicRangeExample()
-        {
-            return "     -j[4..8]\n" +
-                   "   Expands to:\n" +
-                   "     -j4\n" +
-                   "     -j5\n" +
-                   "     -j6\n" +
-                   "     -j7\n" +
-                   "     -j8\n\n";
-        }
-
-        private static string GetRangeWithStepExplanation()
-        {
-            return "   [min..max..step] defines custom increment (positive or negative).\n";
-        }
-
-        private static string GetRangeWithStepExample()
-        {
-            return "     -j[2..8..2]\n" +
-                   "   Expands to:\n" +
-                   "     -j2\n" +
-                   "     -j4\n" +
-                   "     -j6\n" +
-                   "     -j8\n\n";
-        }
-
-        private static string GetExplicitValuesExplanation()
-        {
-            return "   [value1, value2, value3] lists individual values.\n";
-        }
-
-        private static string GetExplicitValuesExample()
-        {
-            return "     -j[2, 4, 10, 16]\n" +
-                   "   Expands to:\n" +
-                   "     -j2\n" +
-                   "     -j4\n" +
-                   "     -j10\n" +
-                   "     -j16\n\n";
-        }
-
-        private static string GetComplexExpressionExplanation()
-        {
-            return "   Combine ranges, steps and values in any order.\n";
-        }
-
-        private static string GetComplexExpressionExample()
-        {
-            return "     -j[2..4, 8..12..2, 16]\n" +
-                   "   Expands to:\n" +
-                   "     -j2\n" +
-                   "     -j3\n" +
-                   "     -j4\n" +
-                   "     -j8\n" +
-                   "     -j10\n" +
-                   "     -j12\n" +
-                   "     -j16\n\n";
-        }
-
-        private static string GetNotesTitle()
-        {
-            return "Notes:\n";
-        }
-
-        private static string GetNotesText()
-        {
-            return "• The resulting Script will appear as a Job in the main window's \"Job List\" panel.\n" +
-                   "• Use cautiously: large ranges may generate many jobs.\n" +
-                   "• You can preview how many Jobs are generated by your Script.\n" +
-                   "• Decimal separator is period '.' (e.g., 0.5, not 0,5).\n" +
-                   "• Negative integers are supported: [-2..2], [-1.0..1.0..0.5]\n";
-        }
         private void PreviewJobs()
         {
             // Clear DataGridView rows for preview

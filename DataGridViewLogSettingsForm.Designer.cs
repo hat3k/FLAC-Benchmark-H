@@ -252,7 +252,7 @@
             checkBoxLogSettingsSpeedMinimum.Size = new Size(114, 19);
             checkBoxLogSettingsSpeedMinimum.TabIndex = 19;
             checkBoxLogSettingsSpeedMinimum.Text = "Speed Minimum";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMinimum, "Minimum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMinimum, "Minimum speed recorded across all passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedMinimum.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsCPUClock
@@ -324,7 +324,7 @@
             checkBoxLogSettingsSpeedMaximum.Size = new Size(116, 19);
             checkBoxLogSettingsSpeedMaximum.TabIndex = 21;
             checkBoxLogSettingsSpeedMaximum.Text = "Speed Maximum";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMaximum, "Maximum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedMaximum, "Maximum speed recorded across all passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedMaximum.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsName
@@ -371,7 +371,7 @@
             textBoxLogSettingsSpeedMinimum.Size = new Size(130, 23);
             textBoxLogSettingsSpeedMinimum.TabIndex = 20;
             textBoxLogSettingsSpeedMinimum.Text = "Speed Min.";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedMinimum, "Minimum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedMinimum, "Minimum speed recorded across all passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsSamplingRate
             // 
@@ -407,7 +407,7 @@
             checkBoxLogSettingsSpeedRange.Size = new Size(94, 19);
             checkBoxLogSettingsSpeedRange.TabIndex = 23;
             checkBoxLogSettingsSpeedRange.Text = "Speed Range";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across *all* passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedRange.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsPasses
@@ -455,7 +455,7 @@
             checkBoxLogSettingsSpeedConsistency.Size = new Size(125, 19);
             checkBoxLogSettingsSpeedConsistency.TabIndex = 25;
             checkBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedConsistency, "Consistency of processing speed across *all* passes for this test configuration (ratio of median to 90th percentile of speeds).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedConsistency, resources.GetString("checkBoxLogSettingsSpeedConsistency.ToolTip"));
             checkBoxLogSettingsSpeedConsistency.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsChannels
@@ -550,7 +550,7 @@
             textBoxLogSettingsSpeedMaximum.Size = new Size(130, 23);
             textBoxLogSettingsSpeedMaximum.TabIndex = 22;
             textBoxLogSettingsSpeedMaximum.Text = "Speed Max.";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedMaximum, "Maximum speed recorded across *all* passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedMaximum, "Maximum speed recorded across all passes for this test configuration (same file + same parameters).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsCPUClock
             // 
@@ -646,7 +646,7 @@
             textBoxLogSettingsFastestEncoder.Size = new Size(130, 23);
             textBoxLogSettingsFastestEncoder.TabIndex = 42;
             textBoxLogSettingsFastestEncoder.Text = "Fastest Encoder";
-            toolTip1.SetToolTip(textBoxLogSettingsFastestEncoder, "Indicates which encoder achieved the highest speed\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested\r\nfor encoding and decoding.\r\n");
+            toolTip1.SetToolTip(textBoxLogSettingsFastestEncoder, resources.GetString("textBoxLogSettingsFastestEncoder.ToolTip"));
             // 
             // checkBoxLogSettingsEncoderDirectory
             // 
@@ -694,7 +694,7 @@
             textBoxLogSettingsSpeedRange.Size = new Size(130, 23);
             textBoxLogSettingsSpeedRange.TabIndex = 24;
             textBoxLogSettingsSpeedRange.Text = "Range";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across *all* passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsVersion
             // 
@@ -718,7 +718,7 @@
             textBoxLogSettingsSpeedConsistency.Size = new Size(130, 23);
             textBoxLogSettingsSpeedConsistency.TabIndex = 26;
             textBoxLogSettingsSpeedConsistency.Text = "Speed Consistency";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedConsistency, "Consistency of processing speed across *all* passes for this test configuration (ratio of median to 90th percentile of speeds).\r\nCalculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedConsistency, resources.GetString("textBoxLogSettingsSpeedConsistency.ToolTip"));
             // 
             // checkBoxLogSettingsFastestEncoder
             // 
@@ -730,7 +730,7 @@
             checkBoxLogSettingsFastestEncoder.Size = new Size(108, 19);
             checkBoxLogSettingsFastestEncoder.TabIndex = 41;
             checkBoxLogSettingsFastestEncoder.Text = "Fastest Encoder";
-            toolTip1.SetToolTip(checkBoxLogSettingsFastestEncoder, "Indicates which encoder achieved the highest speed\r\nfor this test configuration (same file + same parameters).\r\n\r\nUsed only when 2 or more encoders are tested\r\nfor encoding and decoding.\r\n");
+            toolTip1.SetToolTip(checkBoxLogSettingsFastestEncoder, resources.GetString("checkBoxLogSettingsFastestEncoder.ToolTip"));
             checkBoxLogSettingsFastestEncoder.UseVisualStyleBackColor = true;
             // 
             // checkBoxLogSettingsSameSize

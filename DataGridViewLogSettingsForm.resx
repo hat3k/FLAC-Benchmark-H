@@ -121,35 +121,69 @@
     <value>17, 17</value>
   </metadata>
   <data name="textBoxLogSettingsBestSize.ToolTip" xml:space="preserve">
-    <value>Indicates which encoder achieved the highest *average* speed for this test configuration (same file + same parameters).
-Used only when 2 or more encoders are tested for encoding or decoding, calculated after 'Analyze Log'.</value>
+    <value>Shows which encoder achieved the best compression efficiency for this specific test configuration.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Based on the smallest output file size;
+• Calculated after 'Analyze Log' processing;
+
+Not all encoder builds yield the same output size even with:
+• Same source file;
+• Identical parameters;
+• Same encoder version.
+
+This helps identify:
+• Different compiler optimizations;
+• Platform-specific code variations;
+• Undocumented algorithm differences;
+• Build configuration inconsistencies.
+
+This allows direct compression ratio comparison between different encoders under identical conditions.
+</value>
   </data>
   <data name="textBoxLogSettingsTime.ToolTip" xml:space="preserve">
     <value>Total encoding/decoding time in milliseconds.
 For a single pass, this is the time for that specific pass.
-After 'Analyze Log', this shows the *average* time across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average time across all passes for this test configuration.</value>
   </data>
   <data name="textBoxLogSettingsCPULoad.ToolTip" xml:space="preserve">
     <value>Average CPU load during encoding/decoding. For a single pass, this is the average load during that specific pass.
-After 'Analyze Log', this shows the *average* CPU load across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average CPU load across all passes for this test configuration.
+
+For multi-threaded workloads, the value represents total CPU capacity used:
+• 100% = 1 core fully utilized;
+• 800% = 8 cores fully utilized;
+• 3200% = 32 cores fully utilized;
+
+This format better reflects multi-core scaling efficiency in parallel workloads.</value>
   </data>
   <data name="textBoxLogSettingsSameSize.ToolTip" xml:space="preserve">
-    <value>Indicates if multiple encoders produced output files of the same size for this test configuration (same file + same parameters).
-Used only when 2 or more encoders are tested, calculated after 'Analyze Log'.</value>
+    <value>Detects whether different encoders produce bit-identical file sizes under identical conditions.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Calculated after 'Analyze Log' processing;
+</value>
   </data>
   <data name="textBoxLogSettingsSpeed.ToolTip" xml:space="preserve">
-    <value>Processing speed relative to real-time (e.g., 2x).
+    <value>Processing speed relative to real-time playback (e.g., 2x).
 For a single pass, this is the speed for that specific pass.
-After 'Analyze Log', this shows the *average* speed across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average speed across all passes for this test configuration.</value>
   </data>
   <data name="textBoxLogSettingsCPUClock.ToolTip" xml:space="preserve">
     <value>Average CPU clock speed during encoding/decoding. For a single pass, this is the average clock during that specific pass.
-After 'Analyze Log', this shows the *average* CPU clock across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average CPU clock across all passes for this test configuration.
+
+Indicates actual processor performance under sustained encoding/decoding load.
+Useful for detecting thermal throttling and power management effects.</value>
   </data>
   <data name="checkBoxLogSettingsSpeed.ToolTip" xml:space="preserve">
-    <value>Processing speed relative to real-time (e.g., 2x).
+    <value>Processing speed relative to real-time playback (e.g., 2x).
 For a single pass, this is the speed for that specific pass.
-After 'Analyze Log', this shows the *average* speed across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average speed across all passes for this test configuration.</value>
   </data>
   <data name="textBoxLogSettingsPasses.ToolTip" xml:space="preserve">
     <value>Number of encoding/decoding passes performed for this test configuration.
@@ -159,27 +193,133 @@ After 'Analyze Log', this shows the *total number* of passes for this test confi
   <data name="checkBoxLogSettingsTime.ToolTip" xml:space="preserve">
     <value>Total encoding/decoding time in milliseconds.
 For a single pass, this is the time for that specific pass.
-After 'Analyze Log', this shows the *average* time across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average time across all passes for this test configuration.</value>
+  </data>
+  <data name="checkBoxLogSettingsSpeedConsistency.ToolTip" xml:space="preserve">
+    <value>Consistency of processing speed across all passes for this test configuration (ratio of median to 90th percentile of speeds).
+Calculated after 'Analyze Log'.
+
+Measures how consistent the processing speed is across all test passes.
+Interpretation:
+• 100% = Perfect consistency (no speed variation);
+• 90% = High consistency (minimal variation);
+• 70% = Moderate consistency;
+• &lt;50% = High variation in processing speeds;
+
+Higher values indicate more stable and predictable performance across multiple runs.</value>
   </data>
   <data name="checkBoxLogSettingsCPULoad.ToolTip" xml:space="preserve">
     <value>Average CPU load during encoding/decoding. For a single pass, this is the average load during that specific pass.
-After 'Analyze Log', this shows the *average* CPU load across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average CPU load across all passes for this test configuration.
+
+For multi-threaded workloads, the value represents total CPU capacity used:
+• 100% = 1 core fully utilized;
+• 800% = 8 cores fully utilized;
+• 3200% = 32 cores fully utilized;
+
+This format better reflects multi-core scaling efficiency in parallel workloads.</value>
   </data>
   <data name="checkBoxLogSettingsCPUClock.ToolTip" xml:space="preserve">
     <value>Average CPU clock speed during encoding/decoding. For a single pass, this is the average clock during that specific pass.
-After 'Analyze Log', this shows the *average* CPU clock across all passes for this test configuration.</value>
+After 'Analyze Log', this shows the average CPU clock across all passes for this test configuration.
+
+Indicates actual processor performance under sustained encoding/decoding load.
+Useful for detecting thermal throttling and power management effects.</value>
   </data>
   <data name="checkBoxLogSettingsPasses.ToolTip" xml:space="preserve">
     <value>Number of encoding/decoding passes performed for this test configuration.
 For a single pass row, this value is 1.
 After 'Analyze Log', this shows the *total number* of passes for this test configuration.</value>
   </data>
+  <data name="textBoxLogSettingsFastestEncoder.ToolTip" xml:space="preserve">
+    <value>Shows which encoder achieved the highest processing speed for this specific test configuration.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Based on the fastest average processing speed;
+• Calculated after 'Analyze Log' processing;
+
+Not all encoder builds yield the same performance even with:
+• Same source file;
+• Identical parameters;
+• Same encoder version.
+
+This helps identify:
+• Different compiler optimizations;
+• CPU-specific instruction sets (SSE, AVX, AVX2);
+• Memory access pattern variations;
+• Multithreading implementation differences;
+• Build configuration performance impact.
+
+This allows direct performance comparison between different encoders under identical conditions.</value>
+  </data>
   <data name="checkBoxLogSettingsBestSize.ToolTip" xml:space="preserve">
-    <value>Indicates which encoder achieved the highest *average* speed for this test configuration (same file + same parameters).
-Used only when 2 or more encoders are tested for encoding or decoding, calculated after 'Analyze Log'.</value>
+    <value>Shows which encoder achieved the best compression efficiency for this specific test configuration.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Based on the smallest output file size;
+• Calculated after 'Analyze Log' processing;
+
+Not all encoder builds yield the same output size even with:
+• Same source file;
+• Identical parameters;
+• Same encoder version.
+
+This helps identify:
+• Different compiler optimizations;
+• Platform-specific code variations;
+• Undocumented algorithm differences;
+• Build configuration inconsistencies.
+
+This allows direct compression ratio comparison between different encoders under identical conditions.
+</value>
+  </data>
+  <data name="textBoxLogSettingsSpeedConsistency.ToolTip" xml:space="preserve">
+    <value>Consistency of processing speed across all passes for this test configuration (ratio of median to 90th percentile of speeds).
+Calculated after 'Analyze Log'.
+
+Measures how consistent the processing speed is across all test passes.
+Interpretation:
+• 100% = Perfect consistency (no speed variation);
+• 90% = High consistency (minimal variation);
+• 70% = Moderate consistency;
+• &lt;50% = High variation in processing speeds;
+
+Higher values indicate more stable and predictable performance across multiple runs.</value>
+  </data>
+  <data name="checkBoxLogSettingsFastestEncoder.ToolTip" xml:space="preserve">
+    <value>Shows which encoder achieved the highest processing speed for this specific test configuration.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Based on the fastest average processing speed;
+• Calculated after 'Analyze Log' processing;
+
+Not all encoder builds yield the same performance even with:
+• Same source file;
+• Identical parameters;
+• Same encoder version.
+
+This helps identify:
+• Different compiler optimizations;
+• CPU-specific instruction sets (SSE, AVX, AVX2);
+• Memory access pattern variations;
+• Multithreading implementation differences;
+• Build configuration performance impact.
+
+This allows direct performance comparison between different encoders under identical conditions.</value>
   </data>
   <data name="checkBoxLogSettingsSameSize.ToolTip" xml:space="preserve">
-    <value>Indicates if multiple encoders produced output files of the same size for this test configuration (same file + same parameters).
-Used only when 2 or more encoders are tested, calculated after 'Analyze Log'.</value>
+    <value>Detects whether different encoders produce bit-identical file sizes under identical conditions.
+
+Conditions:
+• Only appears when 2 or more encoders are tested;
+• Same input file and parameters for all encoders;
+• Calculated after 'Analyze Log' processing;
+</value>
   </data>
 </root>
