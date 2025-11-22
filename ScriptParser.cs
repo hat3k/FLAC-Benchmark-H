@@ -82,6 +82,7 @@ namespace FLAC_Benchmark_H
         /// Parses a range string like "fast, medium..slow, 4.5" into a list of strings.
         /// Handles explicit values and numeric ranges.
         /// Text values are processed as-is. Numeric ranges are expanded.
+        /// Empty values (e.g. from "[m,]") are treated as empty strings.
         /// </summary>
         /// <param name="content">Comma-separated values and ranges</param>
         /// <returns>List of strings from parsed values/ranges</returns>
@@ -89,82 +90,76 @@ namespace FLAC_Benchmark_H
         {
             var values = new List<string>();
 
+            // Split by comma and process each part
             foreach (var part in content.Split(','))
             {
-                string trimmed = part.Trim();
-                if (string.IsNullOrWhiteSpace(trimmed))
-                    continue; // Skip empty
+                string trimmed = part.Trim(); // Remove leading/trailing whitespace
 
                 if (trimmed.Contains(".."))
                 {
-                    // Split by ".." and trim spaces
-                    var segments = trimmed.Split(new[] { ".." }, StringSplitOptions.RemoveEmptyEntries)
+                    // --- Handle numeric ranges ---
+                    var segments = trimmed.Split(new[] { ".." }, StringSplitOptions.None)
                         .Select(s => s.Trim())
                         .ToArray();
 
-                    if (segments.Length >= 2)
+                    // Check for empty segments (e.g., from "1...2")
+                    bool hasEmptySegment = segments.Take(segments.Length - 1).Any(s => string.IsNullOrEmpty(s));
+                    if (hasEmptySegment)
                     {
-                        // Try to parse as numeric range
+                        // If there's an invalid ellipsis, treat the whole part as a single text value
+                        values.Add(trimmed);
+                    }
+                    else if (segments.Length >= 2)
+                    {
+                        // Try to parse as a numeric range
                         if (double.TryParse(segments[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double start) &&
                             double.TryParse(segments[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double end))
                         {
-                            // It's a numeric range, expand it
+                            // It's a valid numeric range, expand it
                             double step = 1.0;
-
-                            // Optional step: [start..end..step]
                             if (segments.Length > 2 &&
                                 double.TryParse(segments[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedStep))
                             {
                                 step = Math.Abs(parsedStep);
-                                if (step == 0)
-                                {
-                                    Debug.WriteLine($"Step cannot be zero: {trimmed}, using 1.0");
-                                    step = 1.0;
-                                }
+                                if (step == 0) step = 1.0;
                             }
 
-                            // Forward or reverse range
                             if (start <= end)
                             {
                                 for (double i = start; Math.Round(i, 6) <= end; i += step)
-                                {
                                     values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
-                                }
                             }
                             else
                             {
                                 for (double i = start; Math.Round(i, 6) >= end; i -= step)
-                                {
                                     values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
-                                }
                             }
                         }
                         else
                         {
-                            // It's not a numeric range, treat each segment as a separate text value
+                            // Not a numeric range, treat each non-empty segment as a text value
                             foreach (var segment in segments)
                             {
-                                if (!string.IsNullOrWhiteSpace(segment))
-                                {
+                                if (!string.IsNullOrEmpty(segment))
                                     values.Add(segment);
-                                }
                             }
                         }
                     }
                     else
                     {
-                        // Edge case: only one segment after splitting by "..", treat as text
+                        // Edge case, add the whole trimmed string
                         values.Add(trimmed);
                     }
                 }
                 else
                 {
-                    // Explicit text or number value, add as-is
+                    // --- Handle explicit text values, INCLUDING empty ones ---
+                    // Add the trimmed string, even if it's empty
                     values.Add(trimmed);
                 }
             }
 
-            // Remove duplicates
+            // Remove duplicates (empty strings are also considered)
             return values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
