@@ -37,7 +37,16 @@ namespace FLAC_Benchmark_H
             this.Shown += ScriptConstructorForm_Shown;
             this.MouseDown += ScriptConstructorForm_MouseDown;
 
+            _debounceTimer = new System.Windows.Forms.Timer();
+            _debounceTimer.Interval = 300; // 300 milliseconds delay
+            _debounceTimer.Tick += (s, e) =>
+            {
+                _debounceTimer.Stop(); // Stop the timer
+                PreviewJobs(); // Perform the actual parsing
+            };
+
         }
+        private System.Windows.Forms.Timer _debounceTimer;
 
         /// <summary>
         /// Called when the form is fully displayed.
@@ -234,26 +243,76 @@ namespace FLAC_Benchmark_H
             if (string.IsNullOrWhiteSpace(scriptLine))
             {
                 labelPreviewJobsListMadeByScript.Text = "Preview Job List (0 items)";
+                labelPreviewJobsListMadeByScript.ForeColor = SystemColors.ControlText; // Default color
                 buttonAddJobToJobListScript.Enabled = false;
                 return;
             }
 
-            var expanded = ScriptParser.ExpandScriptLine(scriptLine);
+            // --- NEW: Basic syntax checks for common errors ---
 
-            foreach (string param in expanded)
+            // 1. Check for balanced brackets
+            if (scriptLine.Count(c => c == '[') != scriptLine.Count(c => c == ']'))
             {
-                // Add row to DataGridView for preview
-                dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
+                labelPreviewJobsListMadeByScript.Text = "Error: Unbalanced brackets";
+                labelPreviewJobsListMadeByScript.ForeColor = Color.Red;
+                buttonAddJobToJobListScript.Enabled = false;
+                return;
             }
 
-            labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
-            buttonAddJobToJobListScript.Enabled = expanded.Count > 0;
+            // 2. Check for invalid ellipsis (three dots)
+            if (scriptLine.Contains("..."))
+            {
+                labelPreviewJobsListMadeByScript.Text = "Error: Invalid syntax. Use '..' for ranges.";
+                labelPreviewJobsListMadeByScript.ForeColor = Color.Red;
+                buttonAddJobToJobListScript.Enabled = false;
+                return;
+            }
+
+            // 3. Check for incomplete range (e.g., [1.. or ..5])
+            if (scriptLine.Contains("..") && (scriptLine.EndsWith("..") || scriptLine.Contains("[..")))
+            {
+                labelPreviewJobsListMadeByScript.Text = "Error: Incomplete range";
+                labelPreviewJobsListMadeByScript.ForeColor = Color.Red;
+                buttonAddJobToJobListScript.Enabled = false;
+                return;
+            }
+
+            // --- NEW: Notify user that parsing has started ---
+            labelPreviewJobsListMadeByScript.Text = "Parsing script...                             ";
+            labelPreviewJobsListMadeByScript.ForeColor = Color.Blue;
+            labelPreviewJobsListMadeByScript.Refresh(); // Force UI update before heavy operation
+
+            // --- Attempt to expand the script ---
+            var expanded = ScriptParser.ExpandScriptLine(scriptLine);
+
+            if (expanded.Count == 0)
+            {
+                // Parser returned empty list, likely due to an error not caught by basic checks
+                labelPreviewJobsListMadeByScript.Text = "Error: Invalid script syntax";
+                labelPreviewJobsListMadeByScript.ForeColor = Color.Red;
+                buttonAddJobToJobListScript.Enabled = false;
+            }
+            else
+            {
+                // Success: display the preview
+                foreach (string param in expanded)
+                {
+                    // Add row to DataGridView for preview
+                    dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
+                }
+                labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
+                labelPreviewJobsListMadeByScript.ForeColor = SystemColors.ControlText; // Default color
+                buttonAddJobToJobListScript.Enabled = true; // Enable the button only if parsing was successful
+            }
+
+            // Always clear selection after update
             dataGridViewPreviewJobsListMadeByScript.ClearSelection();
             dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
         }
         private void ComboBoxScript_TextChanged(object sender, EventArgs e)
         {
-            PreviewJobs();
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
         }
         private void ButtonAddJobToJobListScript_Click(object sender, EventArgs e)
         {
