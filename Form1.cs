@@ -45,6 +45,16 @@ namespace FLAC_Benchmark_H
         private bool isCpuInfoLoaded = false;
         private ScriptConstructorForm? scriptForm = null;
 
+        // Static NumberFormatInfo for number formatting with spaces
+        private static readonly NumberFormatInfo NumberFormatWithSpaces;
+
+        // Static constructor for initialization (executed once when application starts)
+        static Form1()
+        {
+            NumberFormatWithSpaces = (NumberFormatInfo)CultureInfo.GetCultureInfo("en-US").NumberFormat.Clone();
+            NumberFormatWithSpaces.NumberGroupSeparator = " ";
+        }
+
         // Prevents the system from entering sleep or turning off the display
         [DllImport("kernel32.dll")]
         static extern uint SetThreadExecutionState(uint esFlags);
@@ -2753,19 +2763,15 @@ namespace FLAC_Benchmark_H
             if (!outputFile.Exists)
                 return;
 
-            // Create CultureInfo for formatting with spaces as thousand separators
-            NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-            numberFormat.NumberGroupSeparator = " ";
-
             // Get input audio file information from cache
             var audioFileInfo = await GetAudioInfo(audioFilePath);
 
             // Extract data from cache
             string audioFileName = audioFileInfo.FileName; // Use file name from cache
             long samplingRate = long.TryParse(audioFileInfo.SamplingRate, out long temp) ? temp : 0;
-            string samplingRateFormatted = samplingRate.ToString("N0", numberFormat);
+            string samplingRateFormatted = samplingRate.ToString("N0", NumberFormatWithSpaces);
             long inputSize = audioFileInfo.FileSize; // Get size from file info
-            string inputSizeFormatted = inputSize.ToString("N0", numberFormat);
+            string inputSizeFormatted = inputSize.ToString("N0", NumberFormatWithSpaces);
             long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Use duration from cache
             string audioFileDirectory = audioFileInfo.DirectoryPath;
             string Md5Hash = audioFileInfo.Md5Hash;
@@ -2777,7 +2783,7 @@ namespace FLAC_Benchmark_H
 
             // Get output audio file information
             long outputSize = outputFile.Length;
-            string outputSizeFormatted = outputSize.ToString("N0", numberFormat);
+            string outputSizeFormatted = outputSize.ToString("N0", NumberFormatWithSpaces);
 
             double compressionPercentage = ((double)outputSize / inputSize) * 100;
             double encodingSpeed = (double)durationMs / elapsedTime.TotalMilliseconds;
@@ -2954,21 +2960,17 @@ namespace FLAC_Benchmark_H
                 var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
                 var encoderInfo = await GetEncoderInfo(group.EncoderPath);
 
-                // Configure number format with space as thousand separator (e.g. 1 234 567)
-                NumberFormatInfo numberFormat = new CultureInfo("en-US").NumberFormat;
-                numberFormat.NumberGroupSeparator = " ";
-
-                string inputSizeFormatted = group.InputSize.ToString("N0", numberFormat);
+                string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
 
                 // Use the final OutputSize (after metaflac used or not) for analysis
                 long outputSizeFinal = group.LatestPass.OutputSize;
-                string outputSizeFormatted = outputSizeFinal.ToString("N0", numberFormat);
+                string outputSizeFormatted = outputSizeFinal.ToString("N0", NumberFormatWithSpaces);
 
                 // Calculate Compression using the final output size
                 double compressionPercentage = ((double)outputSizeFinal / group.InputSize) * 100;
 
                 // Format SamplingRate for display (e.g. 44100 -> "44 100")
-                string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", numberFormat) : "N/A";
+                string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", NumberFormatWithSpaces) : "N/A";
 
                 // Determine output file directory
                 string audioFileDirectory = audioFileInfo?.DirectoryPath ?? Path.GetDirectoryName(group.AudioFilePath) ?? string.Empty;
