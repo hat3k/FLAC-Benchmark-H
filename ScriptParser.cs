@@ -11,83 +11,83 @@ namespace FLAC_Benchmark_H
     public static class ScriptParser
     {
         /// <summary>
-        /// Expands script lines like "-[0.5..3.5..0.1] -j[1..4]" into all possible parameter combinations.
+        /// Expands script lines like "-preset[fast,medium] -j[1..4]" into all possible parameter combinations.
         /// Uses square brackets [ ] to avoid conflict with FLAC's { } syntax (e.g. --picture={...}).
-        /// Supports integers and floating-point numbers.
+        /// Supports both explicit text values (e.g. [fast, medium, slow]) and numeric ranges (e.g. [1..4]).
+        /// Handles nested brackets correctly.
         /// </summary>
         /// <param name="input">Input script string</param>
-        /// <returns>List of expanded strings, naturally sorted</returns>
+        /// <returns>List of expanded strings</returns>
         public static List<string> ExpandScriptLine(string input)
         {
-            var result = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(input))
-                return result; // Nothing to expand
+            // Base case: if there are no brackets, return the input as is
+            if (string.IsNullOrWhiteSpace(input) || !input.Contains('[') || !input.Contains(']'))
+            {
+                return new List<string> { input };
+            }
 
             // Check for balanced brackets
             if (input.Count(c => c == '[') != input.Count(c => c == ']'))
             {
                 Debug.WriteLine("Mismatched brackets in script: " + input);
-                return result; // Invalid syntax
+                return new List<string>(); // Invalid syntax
             }
 
-            // Find all [content] blocks
-            var matches = Regex.Matches(input, @"\[([^\]]*)\]");
-            if (matches.Count == 0)
+            // Find the innermost [...] block
+            int lastOpenIndex = -1;
+            int firstCloseIndex = -1;
+
+            for (int i = 0; i < input.Length; i++)
             {
-                result.Add(input); // No ranges, return original
-                return result;
-            }
-
-            // Split input around each [block]
-            var parts = new List<(string prefix, string content, int index)>();
-            int lastIndex = 0;
-
-            foreach (Match match in matches)
-            {
-                string prefix = input.Substring(lastIndex, match.Index - lastIndex);
-                string content = match.Groups[1].Value;
-                parts.Add((prefix, content, match.Index));
-                lastIndex = match.Index + match.Length;
-            }
-
-            string suffix = input.Substring(lastIndex); // After last ]
-            var valueLists = parts.Select(p => ParseRange(p.content)).ToList(); // Parse each range
-
-            if (valueLists.Any(l => l.Count == 0))
-            {
-                Debug.WriteLine("One or more ranges produced no values: " + input);
-                return result; // Skip invalid ranges
-            }
-
-            // Generate all combinations of values
-            var combinations = CartesianProduct(valueLists).ToList();
-
-            foreach (var combination in combinations)
-            {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < parts.Count; i++)
+                if (input[i] == '[')
                 {
-                    sb.Append(parts[i].prefix);
-                    sb.Append(combination[i].ToString(CultureInfo.InvariantCulture)); // Ensure consistent decimal point
+                    lastOpenIndex = i;
                 }
-                sb.Append(suffix);
-                result.Add(sb.ToString());
+                else if (input[i] == ']')
+                {
+                    firstCloseIndex = i;
+                    break; // Found the first closing bracket after the last open
+                }
             }
 
-            // Remove duplicates and sort naturally (e.g. 1.2 before 1.10)
+            // If no valid pair found, return as is
+            if (lastOpenIndex == -1 || firstCloseIndex == -1 || lastOpenIndex > firstCloseIndex)
+            {
+                return new List<string> { input };
+            }
+
+            // Extract parts: prefix, content, suffix
+            string prefix = input.Substring(0, lastOpenIndex);
+            string content = input.Substring(lastOpenIndex + 1, firstCloseIndex - lastOpenIndex - 1);
+            string suffix = input.Substring(firstCloseIndex + 1);
+
+            // Parse the innermost content
+            List<string> parsedValues = ParseRange(content);
+
+            var result = new List<string>();
+
+            // For each possible value from the innermost range, recursively expand the full string
+            foreach (string value in parsedValues)
+            {
+                string newInput = prefix + value + suffix;
+                List<string> expanded = ExpandScriptLine(newInput); // Recursive call
+                result.AddRange(expanded);
+            }
+
+            // Remove duplicates and sort naturally
             return result.Distinct().OrderBy(x => x, new NaturalStringComparer()).ToList();
         }
 
         /// <summary>
-        /// Parses a range string like "1.5, 2.0..3.0..0.1, 4.5" into a list of doubles.
-        /// Uses invariant culture for parsing (accepts "." as decimal separator).
+        /// Parses a range string like "fast, medium..slow, 4.5" into a list of strings.
+        /// Handles explicit values and numeric ranges.
+        /// Text values are processed as-is. Numeric ranges are expanded.
         /// </summary>
         /// <param name="content">Comma-separated values and ranges</param>
-        /// <returns>List of doubles from parsed values/ranges</returns>
-        private static List<double> ParseRange(string content)
+        /// <returns>List of strings from parsed values/ranges</returns>
+        private static List<string> ParseRange(string content)
         {
-            var values = new List<double>();
+            var values = new List<string>();
 
             foreach (var part in content.Split(','))
             {
@@ -102,74 +102,87 @@ namespace FLAC_Benchmark_H
                         .Select(s => s.Trim())
                         .ToArray();
 
-                    if (segments.Length >= 2 &&
-                        double.TryParse(segments[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double start) &&
-                        double.TryParse(segments[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double end))
+                    if (segments.Length >= 2)
                     {
-                        double step = 1.0;
-
-                        // Optional step: [start..end..step]
-                        if (segments.Length > 2 &&
-                            double.TryParse(segments[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedStep))
+                        // Try to parse as numeric range
+                        if (double.TryParse(segments[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double start) &&
+                            double.TryParse(segments[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double end))
                         {
-                            step = Math.Abs(parsedStep);
-                            if (step == 0)
+                            // It's a numeric range, expand it
+                            double step = 1.0;
+
+                            // Optional step: [start..end..step]
+                            if (segments.Length > 2 &&
+                                double.TryParse(segments[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedStep))
                             {
-                                Debug.WriteLine($"Step cannot be zero: {trimmed}, using 1.0");
-                                step = 1.0;
+                                step = Math.Abs(parsedStep);
+                                if (step == 0)
+                                {
+                                    Debug.WriteLine($"Step cannot be zero: {trimmed}, using 1.0");
+                                    step = 1.0;
+                                }
                             }
-                        }
 
-                        // Forward or reverse range
-                        if (start <= end)
-                        {
-                            for (double i = start; Math.Round(i, 6) <= end; i += step)
+                            // Forward or reverse range
+                            if (start <= end)
                             {
-                                values.Add(Math.Round(i, 6)); // Avoid floating-point errors
+                                for (double i = start; Math.Round(i, 6) <= end; i += step)
+                                {
+                                    values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
+                                }
+                            }
+                            else
+                            {
+                                for (double i = start; Math.Round(i, 6) >= end; i -= step)
+                                {
+                                    values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
+                                }
                             }
                         }
                         else
                         {
-                            for (double i = start; Math.Round(i, 6) >= end; i -= step)
+                            // It's not a numeric range, treat each segment as a separate text value
+                            foreach (var segment in segments)
                             {
-                                values.Add(Math.Round(i, 6));
+                                if (!string.IsNullOrWhiteSpace(segment))
+                                {
+                                    values.Add(segment);
+                                }
                             }
                         }
                     }
                     else
                     {
-                        Debug.WriteLine($"Invalid range format: {trimmed}");
+                        // Edge case: only one segment after splitting by "..", treat as text
+                        values.Add(trimmed);
                     }
-                }
-                else if (double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
-                {
-                    values.Add(Math.Round(val, 6)); // Normalize precision
                 }
                 else
                 {
-                    Debug.WriteLine($"Invalid number in range: {trimmed}");
+                    // Explicit text or number value, add as-is
+                    values.Add(trimmed);
                 }
             }
 
-            // Remove duplicates and sort
-            return values.Distinct().OrderBy(x => x).ToList();
+            // Remove duplicates
+            return values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         /// <summary>
-        /// Generates Cartesian product of multiple double lists.
+        /// Generates Cartesian product of multiple string lists.
         /// Used to combine values from multiple [ranges].
         /// </summary>
-        /// <param name="sequences">List of double lists</param>
-        /// <returns>All combinations as lists of doubles</returns>
-        private static IEnumerable<List<double>> CartesianProduct(List<List<double>> sequences)
+        /// <param name="sequences">List of string lists</param>
+        /// <returns>All combinations as lists of strings</returns>
+        private static IEnumerable<List<string>> CartesianProduct(List<List<string>> sequences)
         {
-            IEnumerable<List<double>> result = new[] { new List<double>() };
+            IEnumerable<List<string>> result = new[] { new List<string>() };
 
             foreach (var sequence in sequences)
             {
                 result = from seq in result
                          from item in sequence
-                         select new List<double>(seq) { item };
+                         select new List<string>(seq) { item };
             }
 
             return result;
