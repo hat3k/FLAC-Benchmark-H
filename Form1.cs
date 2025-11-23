@@ -55,6 +55,10 @@ namespace FLAC_Benchmark_H
             NumberFormatWithSpaces.NumberGroupSeparator = " ";
         }
 
+        // MediaInfo object pool for efficient resource reuse
+        private readonly ConcurrentQueue<MediaInfo> _mediaInfoPool = new ConcurrentQueue<MediaInfo>();
+        private const int MEDIAINFO_POOL_SIZE = 20;
+
         // Prevents the system from entering sleep or turning off the display
         [DllImport("kernel32.dll")]
         static extern uint SetThreadExecutionState(uint esFlags);
@@ -279,6 +283,41 @@ namespace FLAC_Benchmark_H
             {
                 labelCpuUsageTitle.Text = "CPU Load:\nCPU Clock:";
                 labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
+            }
+        }
+
+        // Gets a MediaInfo instance from the pool or creates a new one if pool is empty
+        private MediaInfo GetMediaInfoFromPool()
+        {
+            if (_mediaInfoPool.TryDequeue(out var mediaInfo))
+            {
+                return mediaInfo;
+            }
+
+            // Create new instance if pool is empty
+            return new MediaInfoLib.MediaInfo();
+        }
+        // Returns MediaInfo instance to the pool for reuse
+        private void ReturnMediaInfoToPool(MediaInfo mediaInfo)
+        {
+            if (mediaInfo == null) return;
+
+            if (_mediaInfoPool.Count < MEDIAINFO_POOL_SIZE)
+            {
+                _mediaInfoPool.Enqueue(mediaInfo);
+            }
+            else
+            {
+                // Dispose if pool is full
+                mediaInfo.Close();
+            }
+        }
+        // Initializes MediaInfo pool with pre-created instances
+        private void InitializeMediaInfoPool()
+        {
+            for (int i = 0; i < MEDIAINFO_POOL_SIZE; i++)
+            {
+                _mediaInfoPool.Enqueue(new MediaInfoLib.MediaInfo());
             }
         }
 
@@ -1233,55 +1272,64 @@ namespace FLAC_Benchmark_H
                 return cachedInfo; // Return cached information
             }
 
-            var mediaInfo = new MediaInfoLib.MediaInfo();
-            mediaInfo.Open(audioFilePath);
+            // Get MediaInfo instance from pool
+            var mediaInfo = GetMediaInfoFromPool();
 
-            string channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
-            string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
-            string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";                      // Number only
-            string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
-            string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";              // Number only (e.g. 44100)
-            string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A"; // Number + kHz (44.1 kHz)
-            FileInfo file = new FileInfo(audioFilePath);
-            long fileSize = file.Length;
-            DateTime lastWriteTime = file.LastWriteTime;
-            string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
-            string md5Hash = "N/A"; // Default value for MD5
-
-            // Determine the file type and get the corresponding MD5
-            if (extension == ".flac")
+            try
             {
-                md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                mediaInfo.Open(audioFilePath);
+
+                string channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
+                string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
+                string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";                      // Number only
+                string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
+                string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";              // Number only (e.g. 44100)
+                string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A"; // Number + kHz (44.1 kHz)
+                FileInfo file = new FileInfo(audioFilePath);
+                long fileSize = file.Length;
+                DateTime lastWriteTime = file.LastWriteTime;
+                string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
+                string md5Hash = "N/A"; // Default value for MD5
+
+                // Determine the file type and get the corresponding MD5
+                if (extension == ".flac")
+                {
+                    md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                }
+                else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
+                {
+                    md5Hash = await CalculateWavMD5Async(audioFilePath);
+                }
+
+                // Add new information to the cache
+                var audioFileInfo = new AudioFileInfo
+                {
+                    FilePath = audioFilePath,
+                    DirectoryPath = Path.GetDirectoryName(audioFilePath),
+                    FileName = Path.GetFileName(audioFilePath),
+                    Extension = extension,
+                    Channels = channels,
+                    BitDepth = bitDepth,
+                    BitDepthString = bitDepthString,
+                    SamplingRate = samplingRate,
+                    SamplingRateString = samplingRateString,
+                    Duration = duration,
+                    FileSize = fileSize,
+                    Md5Hash = md5Hash,
+                    LastWriteTime = lastWriteTime
+                };
+
+                audioInfoCache[audioFilePath] = audioFileInfo; // Cache the information
+                return audioFileInfo;
             }
-            else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
+            finally
             {
-                md5Hash = await CalculateWavMD5Async(audioFilePath);
+                // Ensure MediaInfo is closed and returned to pool
+                mediaInfo.Close();
+                ReturnMediaInfoToPool(mediaInfo);
             }
-
-            mediaInfo.Close();
-
-            // Add new information to the cache
-            var audioFileInfo = new AudioFileInfo
-            {
-                FilePath = audioFilePath,
-                DirectoryPath = Path.GetDirectoryName(audioFilePath),
-                FileName = Path.GetFileName(audioFilePath),
-                Extension = extension,
-                Channels = channels,
-                BitDepth = bitDepth,
-                BitDepthString = bitDepthString,
-                SamplingRate = samplingRate,
-                SamplingRateString = samplingRateString,
-                Duration = duration,
-                FileSize = fileSize,
-                Md5Hash = md5Hash,
-                LastWriteTime = lastWriteTime
-            };
-
-            audioInfoCache[audioFilePath] = audioFileInfo; // Cache the information
-            return audioFileInfo;
         }
-
+ 
         // Class to store audio file information
         private class AudioFileInfo
         {
@@ -2257,7 +2305,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log Stettings
+        // Log Settings
         private DataGridViewLogSettingsForm? _logSettingsForm = null;
         private void buttonDataGridViewLogSettings_Click(object sender, EventArgs e)
         {
@@ -6318,6 +6366,8 @@ namespace FLAC_Benchmark_H
             labelAudioFileRemoved.Text = string.Empty;
             EnableListViewDoubleBuffering();
 
+            InitializeMediaInfoPool();
+
             LoadSettings();
             LoadEncoders();
             LoadAudioFiles();
@@ -6352,6 +6402,12 @@ namespace FLAC_Benchmark_H
             SaveEncoders();        // Encoder list
             SaveAudioFiles();      // Audio files list
             SaveJobs();            // Job list
+            
+            // Clean up MediaInfo pool
+            while (_mediaInfoPool.TryDequeue(out var mediaInfo))
+            {
+                mediaInfo.Close();
+            }
 
             // Stop and dispose UI timers and performance counters
             cpuUsageTimer?.Stop();
