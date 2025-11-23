@@ -59,7 +59,7 @@ namespace FLAC_Benchmark_H
 
         // MediaInfo object pool for efficient resource reuse
         private readonly ConcurrentQueue<MediaInfo> _mediaInfoPool = new ConcurrentQueue<MediaInfo>();
-        private const int MEDIAINFO_POOL_SIZE = 20;
+        private const int MediaInfoPoolSize = 20;
 
         // Prevents the system from entering sleep or turning off the display
         [DllImport("kernel32.dll")]
@@ -304,7 +304,7 @@ namespace FLAC_Benchmark_H
         {
             if (mediaInfo == null) return;
 
-            if (_mediaInfoPool.Count < MEDIAINFO_POOL_SIZE)
+            if (_mediaInfoPool.Count < MediaInfoPoolSize)
             {
                 _mediaInfoPool.Enqueue(mediaInfo);
             }
@@ -317,7 +317,7 @@ namespace FLAC_Benchmark_H
         // Initializes MediaInfo pool with pre-created instances
         private void InitializeMediaInfoPool()
         {
-            for (int i = 0; i < MEDIAINFO_POOL_SIZE; i++)
+            for (int i = 0; i < MediaInfoPoolSize; i++)
             {
                 _mediaInfoPool.Enqueue(new MediaInfoLib.MediaInfo());
             }
