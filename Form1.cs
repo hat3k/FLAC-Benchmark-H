@@ -18,6 +18,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
+
 
 namespace FLAC_Benchmark_H
 {
@@ -851,6 +853,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            dataGridViewJobs.ClearSelection();
         }
         private void BackupJobsFile()
         {
@@ -4519,6 +4522,46 @@ namespace FLAC_Benchmark_H
         private void dataGridViewJobs_MouseDown(object sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
+
+            // Handle click on checkbox column header (column 0)
+            if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == 0)
+            {
+                // Get only data rows (exclude new row and any other special rows)
+                var dataRows = dataGridViewJobs.Rows
+                    .Cast<DataGridViewRow>()
+                    .Where(row => !row.IsNewRow && row.Index >= 0);
+
+                // Check if all data rows are selected
+                bool allChecked = true;
+                bool hasDataRows = false;
+
+                foreach (DataGridViewRow row in dataRows)
+                {
+                    hasDataRows = true;
+                    object value = row.Cells["Column1CheckBox"].Value;
+                    if (value == null || !Convert.ToBoolean(value))
+                    {
+                        allChecked = false;
+                        break;
+                    }
+                }
+
+                // If no data rows exist, default to checked state
+                bool newState = !hasDataRows ? true : !allChecked;
+
+                // Set new state for all data rows
+                foreach (DataGridViewRow row in dataRows)
+                {
+                    row.Cells["Column1CheckBox"].Value = newState;
+                }
+
+                // Force immediate refresh
+                dataGridViewJobs.EndEdit();
+                dataGridViewJobs.Refresh();
+                return;
+            }
+
+            // Clear selection on click out of cell
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewJobs.ClearSelection();
