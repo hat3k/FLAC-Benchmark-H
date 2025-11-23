@@ -706,10 +706,10 @@ namespace FLAC_Benchmark_H
 
             try
             {
+                groupBoxAudioFiles.Text = "Loading...";
+
                 string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
                 listViewAudioFiles.Items.Clear();
-
-                groupBoxAudioFiles.Text = "Loading...";
 
                 var missingFiles = new List<string>();
                 var tasks = lines.Select(async line =>
