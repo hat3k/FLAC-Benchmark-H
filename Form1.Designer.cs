@@ -69,7 +69,7 @@
             FileNameExe = new ColumnHeader();
             VersionExe = new ColumnHeader();
             EncoderDirectory = new ColumnHeader();
-            SizeEexe = new ColumnHeader();
+            SizeExe = new ColumnHeader();
             DateExe = new ColumnHeader();
             buttonAddEncoders = new Button();
             buttonClearEncoders = new Button();
@@ -560,7 +560,7 @@
             listViewEncoders.Activation = ItemActivation.OneClick;
             listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
-            listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeEexe, DateExe });
+            listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeExe, DateExe });
             listViewEncoders.FullRowSelect = true;
             listViewEncoders.Location = new Point(6, 22);
             listViewEncoders.Name = "listViewEncoders";
@@ -586,12 +586,12 @@
             EncoderDirectory.Text = "File Path";
             EncoderDirectory.Width = 130;
             // 
-            // SizeEexe
+            // SizeExe
             // 
-            SizeEexe.Tag = "SizeExe";
-            SizeEexe.Text = "Size";
-            SizeEexe.TextAlign = HorizontalAlignment.Right;
-            SizeEexe.Width = 93;
+            SizeExe.Tag = "SizeExe";
+            SizeExe.Text = "Size";
+            SizeExe.TextAlign = HorizontalAlignment.Right;
+            SizeExe.Width = 93;
             // 
             // DateExe
             // 
@@ -1602,7 +1602,6 @@
         private ListView listViewAudioFiles;
         private Button buttonStartDecode;
         private GroupBox groupBoxJobsList;
-        private GroupBox groupLog;
         private Button buttonExportJobList;
         private Button buttonImportJobList;
         private Button buttonClearJobList;
@@ -1633,7 +1632,7 @@
         private Button buttonSelectTempFolder;
         private ColumnHeader FileNameExe;
         private ColumnHeader Version;
-        private ColumnHeader SizeEexe;
+        private ColumnHeader SizeExe;
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;
         private Button buttonCopyJobs;
