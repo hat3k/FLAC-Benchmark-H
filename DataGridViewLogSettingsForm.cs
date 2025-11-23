@@ -76,7 +76,7 @@ namespace FLAC_Benchmark_H
             buttonResetLogSettingsToDefault.Click += OnResetToDefault;
         }
 
-        private void OnVisibilityChanged(object sender, EventArgs e)
+        private void OnVisibilityChanged(object? sender, EventArgs e)
         {
             if (sender is CheckBox cb)
             {
@@ -95,7 +95,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void OnHeaderTextChanged(object sender, EventArgs e)
+        private void OnHeaderTextChanged(object? sender, EventArgs e)
         {
             if (sender is TextBox tb)
             {
@@ -113,7 +113,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void OnResetToDefault(object sender, EventArgs e)
+        private void OnResetToDefault(object? sender, EventArgs e)
         {
             // Reset to defaults (as in InitializedataGridViewLog)
             var defaultVisibility = new Dictionary<string, bool>
