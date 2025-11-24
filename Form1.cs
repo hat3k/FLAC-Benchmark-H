@@ -1,24 +1,15 @@
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 
 
 namespace FLAC_Benchmark_H
@@ -34,8 +25,8 @@ namespace FLAC_Benchmark_H
         private int threadCount;   // Total logical threads
 
         // CPU monitoring
-        private PerformanceCounter cpuLoadCounter = null;           // CPU Load counter (whole system)
-        private bool performanceCountersAvailable = false;          // True if counters initialized
+        private readonly PerformanceCounter? cpuLoadCounter = null; // CPU Load counter (whole system)
+        private readonly bool performanceCountersAvailable = false; // True if counters initialized
         private System.Windows.Forms.Timer cpuUsageTimer;           // Updates CPU usage label
         private System.Windows.Forms.Timer temporaryMessageTimer;   // Updates temporary messages
 
@@ -45,7 +36,7 @@ namespace FLAC_Benchmark_H
 
         // UI state
         private bool isCpuInfoLoaded = false;
-        private ScriptConstructorForm? scriptForm = null;
+        private ScriptConstructorForm? _scriptForm = null;
 
         // Static NumberFormatInfo for number formatting with spaces
         private static readonly NumberFormatInfo NumberFormatWithSpaces;
@@ -1332,7 +1323,7 @@ namespace FLAC_Benchmark_H
                 ReturnMediaInfoToPool(mediaInfo);
             }
         }
- 
+
         // Class to store audio file information
         private class AudioFileInfo
         {
@@ -3991,7 +3982,7 @@ namespace FLAC_Benchmark_H
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
-                
+
                 // Check for .txt or .bak files or directories
                 e.Effect = files.Any(file => Directory.Exists(file) ||
                 Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
@@ -4569,7 +4560,6 @@ namespace FLAC_Benchmark_H
         }
 
         // Script Constructor
-        private ScriptConstructorForm? _scriptForm = null;
         private void buttonScriptConstructor_Click(object sender, EventArgs e)
         {
             // Build initial script parameters from UI controls
@@ -4618,7 +4608,7 @@ namespace FLAC_Benchmark_H
                 _scriptForm.Focus();
             }
         }
-        
+
         // Actions (Buttons)
         private async void buttonStartEncode_Click(object? sender, EventArgs e)
         {
@@ -5895,7 +5885,7 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
-        
+
         // Encoder and Decoder options
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
         {
@@ -6253,7 +6243,8 @@ namespace FLAC_Benchmark_H
                 _ = CheckForUpdatesAsync();
             }
             else
-            { programVersionIgnored = null;
+            {
+                programVersionIgnored = null;
                 SaveSettings();
             }
         }
@@ -6445,7 +6436,7 @@ namespace FLAC_Benchmark_H
             SaveEncoders();        // Encoder list
             SaveAudioFiles();      // Audio files list
             SaveJobs();            // Job list
-            
+
             // Clean up MediaInfo pool
             while (_mediaInfoPool.TryDequeue(out var mediaInfo))
             {

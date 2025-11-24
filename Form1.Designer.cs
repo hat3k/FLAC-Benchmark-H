@@ -1631,7 +1631,6 @@
         private ColumnHeader Size;
         private Button buttonSelectTempFolder;
         private ColumnHeader FileNameExe;
-        private ColumnHeader Version;
         private ColumnHeader SizeExe;
         private ColumnHeader DateExe;
         private ColumnHeader VersionExe;

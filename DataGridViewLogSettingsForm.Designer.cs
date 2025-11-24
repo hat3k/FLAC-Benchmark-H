@@ -407,7 +407,7 @@
             checkBoxLogSettingsSpeedRange.Size = new Size(94, 19);
             checkBoxLogSettingsSpeedRange.TabIndex = 23;
             checkBoxLogSettingsSpeedRange.Text = "Speed Range";
-            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(checkBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nCalculated after 'Analyze Log'.");
             checkBoxLogSettingsSpeedRange.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsPasses
@@ -694,7 +694,7 @@
             textBoxLogSettingsSpeedRange.Size = new Size(130, 23);
             textBoxLogSettingsSpeedRange.TabIndex = 24;
             textBoxLogSettingsSpeedRange.Text = "Range";
-            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nClculated after 'Analyze Log'.");
+            toolTip1.SetToolTip(textBoxLogSettingsSpeedRange, "Difference between maximum and minimum speed recorded across all passes for this test configuration (Max - Min).\r\nCalculated after 'Analyze Log'.");
             // 
             // checkBoxLogSettingsVersion
             // 

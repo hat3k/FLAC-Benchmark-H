@@ -9,20 +9,12 @@ using System.Windows.Forms;
 
 namespace FLAC_Benchmark_H
 {
-    public struct ScriptJobData
+    public struct ScriptJobData(bool isChecked, string jobType, string passes, string parameters)
     {
-        public bool IsChecked { get; }
-        public string JobType { get; }
-        public string Passes { get; }
-        public string Parameters { get; }
-
-        public ScriptJobData(bool isChecked, string jobType, string passes, string parameters)
-        {
-            IsChecked = isChecked;
-            JobType = jobType;
-            Passes = passes;
-            Parameters = parameters;
-        }
+        public bool IsChecked { get; } = isChecked;
+        public string JobType { get; } = jobType;
+        public string Passes { get; } = passes;
+        public string Parameters { get; } = parameters;
     }
 
     /// <summary>
@@ -56,7 +48,7 @@ namespace FLAC_Benchmark_H
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string InitialScriptText { get; set; }
 
-        private void ScriptConstructorForm_Shown(object sender, EventArgs e)
+        private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
         {
             // 1. Scroll help text to the very top
             if (richTextBoxScriptHelp.TextLength > 0)
@@ -231,7 +223,7 @@ namespace FLAC_Benchmark_H
             // Clear DataGridView rows for preview
             dataGridViewPreviewJobsListMadeByScript.Rows.Clear();
 
-            string scriptLine = comboBoxScript.Text?.Trim();
+            string? scriptLine = comboBoxScript.Text?.Trim();
             if (string.IsNullOrWhiteSpace(scriptLine))
             {
                 labelPreviewJobsListMadeByScript.Text = "Preview Job List (0 items)";
@@ -301,12 +293,12 @@ namespace FLAC_Benchmark_H
             dataGridViewPreviewJobsListMadeByScript.ClearSelection();
             dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
         }
-        private void ComboBoxScript_TextChanged(object sender, EventArgs e)
+        private void ComboBoxScript_TextChanged(object? sender, EventArgs e)
         {
             _debounceTimer.Stop();
             _debounceTimer.Start();
         }
-        private void ButtonAddJobToJobListScript_Click(object sender, EventArgs e)
+        private void ButtonAddJobToJobListScript_Click(object? sender, EventArgs e)
         {
             string scriptText = comboBoxScript.Text?.Trim();
             if (string.IsNullOrWhiteSpace(scriptText))
@@ -372,7 +364,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ScriptConstructorForm_MouseDown(object sender, MouseEventArgs e)
+        private void ScriptConstructorForm_MouseDown(object? sender, MouseEventArgs e)
         {
             // Get the location of the mouse click relative to the DataGridView
             Point clickPoint = dataGridViewPreviewJobsListMadeByScript.PointToClient(this.PointToScreen(e.Location));
@@ -385,7 +377,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
             }
         }
-        private void dataGridViewPreviewJobsListMadeByScript_MouseDown(object sender, MouseEventArgs e)
+        private void dataGridViewPreviewJobsListMadeByScript_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewPreviewJobsListMadeByScript.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
@@ -393,7 +385,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewPreviewJobsListMadeByScript.ClearSelection();
             }
         }
-        private void dataGridViewPreviewJobsListMadeByScript_KeyDown(object sender, KeyEventArgs e)
+        private void dataGridViewPreviewJobsListMadeByScript_KeyDown(object? sender, KeyEventArgs e)
         {
             // Check if Ctrl and A are pressed simultaneously
             if (e.Control && e.KeyCode == Keys.A)
@@ -480,7 +472,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonCloseScriptConstructorForm_Click(object sender, EventArgs e)
+        private void buttonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
         {
             Close();
         }
