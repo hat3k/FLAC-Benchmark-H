@@ -2076,7 +2076,7 @@ namespace FLAC_Benchmark_H
                         if (process.ExitCode != 0)
                         {
                             string message = string.IsNullOrWhiteSpace(errorOutput)
-                                ? "Unknown error (non-zero exit code)"
+                                ? "Unknown error (non-zero exit code)."
                                 : errorOutput.Trim();
 
                             errorResults.Add((fileName, filePath, message));
@@ -2965,7 +2965,9 @@ namespace FLAC_Benchmark_H
                     audioFileInfo.DirectoryPath,            // 23 "AudioFileDirectory"
                     audioFileInfo.Md5Hash,                  // 24 "MD5"
                     string.Empty,                           // 25 "Duplicates"
-                    errorOutput.Trim()                      // 26 "Errors"
+                    (!string.IsNullOrWhiteSpace(errorOutput)
+                    ? errorOutput.Trim()
+                    : "Unknown error (non-zero exit code).") // 26 "Errors"
                 );
 
                 // Highlight entire row in red
@@ -2985,7 +2987,7 @@ namespace FLAC_Benchmark_H
                     $"Encoder: {encoderInfo.FileName}\t" +
                     $"Version: {encoderInfo.Version}\t" +
                     $"Encoder Path: {encoderInfo.DirectoryPath}\t" +
-                    $"Errors: {errorOutput.Trim()}{Environment.NewLine}");
+                    $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
             }
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
