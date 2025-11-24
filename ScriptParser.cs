@@ -164,26 +164,6 @@ namespace FLAC_Benchmark_H
         }
 
         /// <summary>
-        /// Generates Cartesian product of multiple string lists.
-        /// Used to combine values from multiple [ranges].
-        /// </summary>
-        /// <param name="sequences">List of string lists</param>
-        /// <returns>All combinations as lists of strings</returns>
-        private static IEnumerable<List<string>> CartesianProduct(List<List<string>> sequences)
-        {
-            IEnumerable<List<string>> result = new[] { new List<string>() };
-
-            foreach (var sequence in sequences)
-            {
-                result = from seq in result
-                         from item in sequence
-                         select new List<string>(seq) { item };
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Compares strings using natural sorting (e.g., "file2.txt" before "file10.txt").
         /// Ensures parameters like 1.2 appear before 1.10 in output.
         /// </summary>
