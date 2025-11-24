@@ -2954,7 +2954,7 @@ namespace FLAC_Benchmark_H
                     string.Empty,                           // 12 "SpeedConsistency"
                     string.Empty,                           // 13 "CPULoadEncoder"
                     string.Empty,                           // 14 "CPUClock"
-                    string.Empty,                           // 15 "Passes"
+                    "1",                                    // 15 "Passes"
                     parameters,                             // 16 "Parameters"
                     encoderInfo.FileName,                   // 17 "Encoder"
                     encoderInfo.Version,                    // 18 "Version"
@@ -3210,10 +3210,64 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            // 5. Merge results
-            var finalEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
+            // 5. Merge successful results
+            var finalSuccessEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
 
-            // 6. Update UI
+            // Group error rows from current log
+            var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+                .GroupBy(row => new
+                {
+                    Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
+                    Encoder = (row.Cells["EncoderDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Encoder"].Value?.ToString() ?? ""),
+                    Params = row.Cells["Parameters"].Value?.ToString() ?? ""
+                })
+                .Select(g => new
+                {
+                    First = g.First(),
+                    TotalPasses = g.Sum(row => {
+                        string passesStr = row.Cells["Passes"].Value?.ToString() ?? "1";
+                        return int.TryParse(passesStr, out int p) ? p : 1;
+                    })
+                })
+                .ToList();
+
+            var errorEntries = new List<LogEntry>();
+            foreach (var eg in errorGroups)
+            {
+                var r = eg.First;
+                errorEntries.Add(new LogEntry
+                {
+                    Name = r.Cells["Name"].Value?.ToString() ?? "",
+                    Channels = "",
+                    BitDepth = "",
+                    SamplingRate = "",
+                    InputFileSize = "",
+                    OutputFileSize = "",
+                    Compression = "",
+                    Time = "",
+                    Speed = "",
+                    SpeedMin = "",
+                    SpeedMax = "",
+                    SpeedRange = "",
+                    SpeedConsistency = "",
+                    CPULoadEncoder = "",
+                    CPUClock = "",
+                    Passes = eg.TotalPasses.ToString(),
+                    Parameters = r.Cells["Parameters"].Value?.ToString() ?? "",
+                    Encoder = r.Cells["Encoder"].Value?.ToString() ?? "",
+                    Version = r.Cells["Version"].Value?.ToString() ?? "",
+                    EncoderDirectory = r.Cells["EncoderDirectory"].Value?.ToString() ?? "",
+                    AudioFileDirectory = r.Cells["AudioFileDirectory"].Value?.ToString() ?? "",
+                    MD5 = "",
+                    Errors = r.Cells["Errors"].Value?.ToString() ?? "",
+                });
+            }
+
+            // 6. Merge all results
+            var finalEntries = finalSuccessEntries.Concat(errorEntries).ToList();
+
+            // 7. Update UI
             await this.InvokeAsync(() =>
             {
                 dataGridViewLog.Rows.Clear();
@@ -3254,10 +3308,41 @@ namespace FLAC_Benchmark_H
                     dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
                     dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
                 }
+                
+                // Resort after analysis
+                SortDataGridView();
 
-                SortDataGridView(); // Resort after analysis
-                tabControlLog.SelectedTab = Benchmark; // Ensure Benchmark tab is active after analysis
+                // Apply red color to all text in error rows
+                foreach (DataGridViewRow row in dataGridViewLog.Rows)
+                {
+                    if (row.IsNewRow) continue;
+                    if (!string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+                    {
+                        foreach (DataGridViewCell cell in row.Cells)
+                        {
+                            cell.Style.ForeColor = System.Drawing.Color.Red;
+                        }
+                    }
+                }
+
+                // Ensure Benchmark tab is active after analysis
+                tabControlLog.SelectedTab = Benchmark;
             });
+
+            // Show error summary
+            if (errorEntries.Count > 0)
+            {
+                int totalRuns = errorEntries.Sum(e => int.Parse(e.Passes));
+                string taskWord = errorEntries.Count == 1 ? "task" : "tasks";
+                string runWord = totalRuns == 1 ? "run" : "runs";
+                MessageBox.Show(
+                    $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
+                    "Results are based only on successful runs.",
+                    "Analysis Summary",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
         }
         private class LogEntry
         {
