@@ -16,7 +16,7 @@ namespace FLAC_Benchmark_H
     public class ProgressBarEx : ProgressBar
     {
         public const int WM_PAINT = 0xF;
-        public const int WS_EX_COMPOSITED = 0x2000_000;
+        public const int WS_EX_COMPOSITED = 0x0200_000;
 
         private TextDisplayType _style = TextDisplayType.Percent;
         private string _manualText = "";
@@ -85,7 +85,7 @@ namespace FLAC_Benchmark_H
         public override Font Font
         {
             get => base.Font;
-            set => base.Font = value;
+            set => base.Font = value!;
         }
 
         protected override CreateParams CreateParams

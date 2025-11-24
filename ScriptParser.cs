@@ -167,9 +167,9 @@ namespace FLAC_Benchmark_H
         /// Compares strings using natural sorting (e.g., "file2.txt" before "file10.txt").
         /// Ensures parameters like 1.2 appear before 1.10 in output.
         /// </summary>
-        private class NaturalStringComparer : IComparer<string>
+        private class NaturalStringComparer : IComparer<string?>
         {
-            public int Compare(string x, string y)
+            public int Compare(string? x, string? y)
             {
                 if (x == null && y == null) return 0;
                 if (x == null) return -1;

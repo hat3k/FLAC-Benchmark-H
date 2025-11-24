@@ -300,7 +300,7 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonAddJobToJobListScript_Click(object? sender, EventArgs e)
         {
-            string scriptText = comboBoxScript.Text?.Trim();
+            string scriptText = comboBoxScript.Text.Trim();
             if (string.IsNullOrWhiteSpace(scriptText))
             {
                 MessageBox.Show("Script is empty.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
