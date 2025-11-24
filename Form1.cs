@@ -30,7 +30,7 @@ namespace FLAC_Benchmark_H
         private System.Windows.Forms.Timer cpuUsageTimer;           // Updates CPU usage label
         private System.Windows.Forms.Timer temporaryMessageTimer;   // Updates temporary messages
 
-        private PerformanceCounter _cpuClockCounter;            // CPU clock counter (as % of base freq)
+        private PerformanceCounter _cpuClockCounter;            // CPU clock counter (as % of base frequency)
         private List<double> _cpuClockReadings;
         private int _baseClockMhz = 0;                          // Base CPU frequency in MHz
 
@@ -2383,30 +2383,30 @@ namespace FLAC_Benchmark_H
 
             // Hide optional columns by default
             dataGridViewLog.Columns["Name"].Visible = true;
-            dataGridViewLog.Columns["Channels"].Visible = true;
-            dataGridViewLog.Columns["BitDepth"].Visible = true;
-            dataGridViewLog.Columns["SamplingRate"].Visible = true;
+            dataGridViewLog.Columns["Channels"].Visible = false;
+            dataGridViewLog.Columns["BitDepth"].Visible = false;
+            dataGridViewLog.Columns["SamplingRate"].Visible = false;
             dataGridViewLog.Columns["InputFileSize"].Visible = true;
             dataGridViewLog.Columns["OutputFileSize"].Visible = true;
             dataGridViewLog.Columns["Compression"].Visible = true;
-            dataGridViewLog.Columns["Time"].Visible = true;
+            dataGridViewLog.Columns["Time"].Visible = false;
             dataGridViewLog.Columns["Speed"].Visible = true;
-            dataGridViewLog.Columns["SpeedMin"].Visible = true;
-            dataGridViewLog.Columns["SpeedMax"].Visible = true;
-            dataGridViewLog.Columns["SpeedRange"].Visible = true;
-            dataGridViewLog.Columns["SpeedConsistency"].Visible = true;
+            dataGridViewLog.Columns["SpeedMin"].Visible = false;
+            dataGridViewLog.Columns["SpeedMax"].Visible = false;
+            dataGridViewLog.Columns["SpeedRange"].Visible = false;
+            dataGridViewLog.Columns["SpeedConsistency"].Visible = false;
             dataGridViewLog.Columns["CPULoadEncoder"].Visible = true;
             dataGridViewLog.Columns["CPUClock"].Visible = true;
             dataGridViewLog.Columns["Passes"].Visible = true;
             dataGridViewLog.Columns["Parameters"].Visible = true;
             dataGridViewLog.Columns["Encoder"].Visible = true;
-            dataGridViewLog.Columns["Version"].Visible = true;
-            dataGridViewLog.Columns["EncoderDirectory"].Visible = true;
+            dataGridViewLog.Columns["Version"].Visible = false;
+            dataGridViewLog.Columns["EncoderDirectory"].Visible = false;
             dataGridViewLog.Columns["FastestEncoder"].Visible = true;
             dataGridViewLog.Columns["BestSize"].Visible = true;
             dataGridViewLog.Columns["SameSize"].Visible = true;
             dataGridViewLog.Columns["AudioFileDirectory"].Visible = true;
-            dataGridViewLog.Columns["MD5"].Visible = true;
+            dataGridViewLog.Columns["MD5"].Visible = false;
             dataGridViewLog.Columns["Duplicates"].Visible = false;
             dataGridViewLog.Columns["Errors"].Visible = false;
 
