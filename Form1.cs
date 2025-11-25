@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -2799,6 +2800,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
+        //Log processing
         private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime, double avgClock, string errorOutput = "", int exitCode = 0)
         {
             if (exitCode == 0)
@@ -2938,6 +2940,17 @@ namespace FLAC_Benchmark_H
                 var audioFileInfo = await GetAudioInfo(audioFilePath);
                 var encoderInfo = await GetEncoderInfo(encoder);
 
+                // Determine error message
+                string finalError = errorOutput;
+                if (exitCode == unchecked((int)0xC000001D))
+                {
+                    finalError = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                }
+                else if (string.IsNullOrWhiteSpace(errorOutput))
+                {
+                    finalError = "Unknown error (non-zero exit code).";
+                }
+
                 int rowIndex = dataGridViewLog.Rows.Add(
                     audioFileInfo.FileName,                 //  0 "Name"
                     string.Empty,                           //  1 "Channels"
@@ -2965,9 +2978,7 @@ namespace FLAC_Benchmark_H
                     audioFileInfo.DirectoryPath,            // 23 "AudioFileDirectory"
                     audioFileInfo.Md5Hash,                  // 24 "MD5"
                     string.Empty,                           // 25 "Duplicates"
-                    (!string.IsNullOrWhiteSpace(errorOutput)
-                    ? errorOutput.Trim()
-                    : "Unknown error (non-zero exit code).") // 26 "Errors"
+                    finalError                              // 26 "Errors"
                 );
 
                 // Highlight entire row in red
@@ -3495,14 +3506,13 @@ namespace FLAC_Benchmark_H
 
             dataGridViewLog.ClearSelection();
         }
-        private class NaturalStringComparer : IComparer<string>
+        private class NaturalStringComparer : IComparer<string?>
         {
-            public int Compare(string x, string y)
+            public int Compare(string? x, string? y)
             {
                 if (x == null && y == null) return 0;
                 if (x == null) return -1;
                 if (y == null) return 1;
-
                 return CompareNatural(x, y);
             }
 
@@ -5081,10 +5091,46 @@ namespace FLAC_Benchmark_H
                                 await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                             }
                         }
+                        catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
+                        {
+                            clockTimer.Stop();
+                            string specificError = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                            if (!_isEncodingStopped)
+                            {
+                                await LogProcessResults(
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoder: encoder,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: specificError,
+                                    exitCode: -1
+                                );
+                            }
+                            isExecuting = false;
+                            return;
+                        }
                         catch (Exception ex)
                         {
                             clockTimer.Stop();
-                            MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (!_isEncodingStopped)
+                            {
+                                await LogProcessResults(
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoder: encoder,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: ex.Message,
+                                    exitCode: -1
+                                );
+                            }
                             isExecuting = false;
                             return;
                         }
@@ -5399,10 +5445,46 @@ namespace FLAC_Benchmark_H
                                 await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                             }
                         }
+                        catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
+                        {
+                            clockTimer.Stop();
+                            string specificError = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                            if (!_isEncodingStopped)
+                            {
+                                await LogProcessResults(
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoder: encoder,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: specificError,
+                                    exitCode: -1
+                                );
+                            }
+                            isExecuting = false;
+                            return;
+                        }
                         catch (Exception ex)
                         {
                             clockTimer.Stop();
-                            MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (!_isEncodingStopped)
+                            {
+                                await LogProcessResults(
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoder: encoder,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: ex.Message,
+                                    exitCode: -1
+                                );
+                            }
                             isExecuting = false;
                             return;
                         }
@@ -5597,7 +5679,6 @@ namespace FLAC_Benchmark_H
                             break;
                         }
                     }
-
 
                     string parameters = NormalizeSpaces((firstExecutableJobRow.Cells[3].Value?.ToString() ?? "").Trim());
                     var firstEncoder = selectedEncoders.FirstOrDefault();
@@ -5863,10 +5944,46 @@ namespace FLAC_Benchmark_H
                                             await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                                         }
                                     }
+                                    catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
+                                    {
+                                        clockTimer.Stop();
+                                        string specificError = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                                        if (!_isEncodingStopped)
+                                        {
+                                            await LogProcessResults(
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoder: encoder,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: specificError,
+                                                exitCode: -1
+                                            );
+                                        }
+                                        isExecuting = false;
+                                        return;
+                                    }
                                     catch (Exception ex)
                                     {
                                         clockTimer.Stop();
-                                        MessageBox.Show($"Error starting encoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        if (!_isEncodingStopped)
+                                        {
+                                            await LogProcessResults(
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoder: encoder,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: ex.Message,
+                                                exitCode: -1
+                                            );
+                                        }
                                         isExecuting = false;
                                         return;
                                     }
@@ -6012,10 +6129,46 @@ namespace FLAC_Benchmark_H
                                             await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                                         }
                                     }
+                                    catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
+                                    {
+                                        clockTimer.Stop();
+                                        string specificError = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                                        if (!_isEncodingStopped)
+                                        {
+                                            await LogProcessResults(
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoder: encoder,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: specificError,
+                                                exitCode: -1
+                                            );
+                                        }
+                                        isExecuting = false;
+                                        return;
+                                    }
                                     catch (Exception ex)
                                     {
                                         clockTimer.Stop();
-                                        MessageBox.Show($"Error starting decoding process: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        if (!_isEncodingStopped)
+                                        {
+                                            await LogProcessResults(
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoder: encoder,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: ex.Message,
+                                                exitCode: -1
+                                            );
+                                        }
                                         isExecuting = false;
                                         return;
                                     }

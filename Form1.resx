@@ -130,6 +130,8 @@ When disabled: The first test pass may show slower performance due to CPU freque
   <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
     <value>Tests all FLAC files in the list (both checked and unchecked) for integrity errors.
 If errors are found, they are displayed in the "Test for Errors" tab of the Log.
+Needs a FLAC binary loaded in the list.
+Uses first checked binary or first one if nothing is checked.
 
 Consider enabling the "Warnings as Errors" option to see additional diagnostic messages.
 

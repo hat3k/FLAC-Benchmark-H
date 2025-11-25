@@ -95,6 +95,10 @@
             buttonClearAudioFiles = new Button();
             groupBoxJobsList = new GroupBox();
             dataGridViewJobs = new DataGridViewEx();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
             labelPasses = new Label();
             buttonMinusPass = new Button();
             buttonPlusPass = new Button();
@@ -143,10 +147,6 @@
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
             labelCpuUsageValue = new Label();
-            Column1CheckBox = new DataGridViewCheckBoxColumn();
-            Column2JobType = new DataGridViewTextBoxColumn();
-            Column3Passes = new DataGridViewTextBoxColumn();
-            Column4Parameters = new DataGridViewTextBoxColumn();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -868,6 +868,36 @@
             dataGridViewJobs.Size = new Size(765, 336);
             dataGridViewJobs.TabIndex = 0;
             // 
+            // Column1CheckBox
+            // 
+            Column1CheckBox.FillWeight = 20F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.Width = 20;
+            // 
+            // Column2JobType
+            // 
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
+            // 
+            // Column3Passes
+            // 
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.Width = 634;
+            // 
             // labelPasses
             // 
             labelPasses.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
@@ -1493,36 +1523,6 @@
             labelCpuUsageValue.Size = new Size(66, 30);
             labelCpuUsageValue.TabIndex = 2;
             labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
-            // 
-            // Column1CheckBox
-            // 
-            Column1CheckBox.FillWeight = 20F;
-            Column1CheckBox.Frozen = true;
-            Column1CheckBox.HeaderText = "";
-            Column1CheckBox.Name = "Column1CheckBox";
-            Column1CheckBox.Width = 20;
-            // 
-            // Column2JobType
-            // 
-            Column2JobType.FillWeight = 60F;
-            Column2JobType.HeaderText = "Job Type";
-            Column2JobType.Name = "Column2JobType";
-            Column2JobType.ReadOnly = true;
-            Column2JobType.Resizable = DataGridViewTriState.True;
-            Column2JobType.Width = 60;
-            // 
-            // Column3Passes
-            // 
-            Column3Passes.FillWeight = 48F;
-            Column3Passes.HeaderText = "Passes";
-            Column3Passes.Name = "Column3Passes";
-            Column3Passes.Width = 48;
-            // 
-            // Column4Parameters
-            // 
-            Column4Parameters.HeaderText = "Parameters";
-            Column4Parameters.Name = "Column4Parameters";
-            Column4Parameters.Width = 634;
             // 
             // Form1
             // 
