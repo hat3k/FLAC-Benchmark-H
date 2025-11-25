@@ -1339,7 +1339,7 @@
             checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
             checkBoxCheckForUpdatesOnStartup.TabIndex = 9;
             checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
-            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup");
+            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup.\r\n\r\nCheck for updates immediately when re-enabled.");
             checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
             checkBoxCheckForUpdatesOnStartup.CheckedChanged += checkBoxCheckForUpdatesOnStartup_CheckedChanged;
             // 
