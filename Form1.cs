@@ -2076,9 +2076,21 @@ namespace FLAC_Benchmark_H
                         string output = await outputTask; // Not used: flac --test --silent never writes to stdout (only stderr), per official docs and source code.
                         if (process.ExitCode != 0)
                         {
-                            string message = string.IsNullOrWhiteSpace(errorOutput)
-                                ? "Unknown error (non-zero exit code)."
-                                : errorOutput.Trim();
+                            string message = errorOutput;
+
+                            // Check for illegal instruction (e.g. AVX-512 on older CPU)
+                            if (process.ExitCode == unchecked((int)0xC000001D))
+                            {
+                                message = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                            }
+                            else if (string.IsNullOrWhiteSpace(errorOutput))
+                            {
+                                message = "Unknown error (non-zero exit code).";
+                            }
+                            else
+                            {
+                                message = errorOutput.Trim();
+                            }
 
                             errorResults.Add((fileName, filePath, message));
                         }
