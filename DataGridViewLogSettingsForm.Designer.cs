@@ -478,7 +478,7 @@
             textBoxLogSettingsErrors.Size = new Size(130, 23);
             textBoxLogSettingsErrors.TabIndex = 52;
             textBoxLogSettingsErrors.Text = "Errors";
-            toolTip1.SetToolTip(textBoxLogSettingsErrors, "Any errors reported during processing");
+            toolTip1.SetToolTip(textBoxLogSettingsErrors, "Any errors reported during processing.\r\n\r\nAutomatically appears when errors occur.");
             // 
             // checkBoxLogSettingsBitDepth
             // 
@@ -769,7 +769,7 @@
             checkBoxLogSettingsErrors.Size = new Size(56, 19);
             checkBoxLogSettingsErrors.TabIndex = 51;
             checkBoxLogSettingsErrors.Text = "Errors";
-            toolTip1.SetToolTip(checkBoxLogSettingsErrors, "Any errors reported during processing");
+            toolTip1.SetToolTip(checkBoxLogSettingsErrors, "Any errors reported during processing.\r\n\r\nAutomatically appears when errors occur.");
             checkBoxLogSettingsErrors.UseVisualStyleBackColor = true;
             // 
             // checkBoxLogSettingsAudioFileDirectory
