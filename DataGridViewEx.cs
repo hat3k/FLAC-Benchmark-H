@@ -27,7 +27,7 @@ namespace FLAC_Benchmark_H
             get
             {
                 CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x02000000; // WS_EX_COMPOSITED — forces composited painting (Windows Vista+)
+                cp.ExStyle |= 0x02000000; // WS_EX_COMPOSITED - forces composited painting (Windows Vista+)
                 return cp;
             }
         }

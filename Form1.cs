@@ -1612,592 +1612,6 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
-        {
-            var button = (Button)sender;
-            var originalText = button.Text;
-            var cts = new CancellationTokenSource();
-
-            // Declare variables for summary message
-            Dictionary<string, List<string>> hashDict = null;
-            List<string> filesWithMD5Errors = null;
-
-            try
-            {
-                // --- STAGE 0: PREPARE USER INTERFACE ---
-                button.Invoke((MethodInvoker)(() =>
-                {
-                    button.Text = "In progress...";
-                    button.Enabled = false;
-                }));
-
-                // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
-                var itemsToRemove = new List<ListViewItem>();
-                this.Invoke((MethodInvoker)delegate
-                {
-                    foreach (ListViewItem item in listViewAudioFiles.Items)
-                    {
-                        string filePath = item.Tag?.ToString() ?? string.Empty;
-                        if (!File.Exists(filePath))
-                        {
-                            itemsToRemove.Add(item);
-                        }
-                    }
-
-                    foreach (var item in itemsToRemove)
-                    {
-                        listViewAudioFiles.Items.Remove(item);
-                    }
-
-                    UpdateGroupBoxAudioFilesHeader();
-                    if (itemsToRemove.Count > 0)
-                    {
-                        ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
-                    }
-                });
-
-                if (listViewAudioFiles.Items.Count == 0)
-                {
-                    MessageBox.Show("No audio files to process.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                // --- STAGE 0.2: COLLECT FILE PATHS (on UI thread) ---
-                var filePaths = new List<string>();
-                this.Invoke((MethodInvoker)delegate
-                {
-                    filePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>().Select(item => item.Tag.ToString()));
-                });
-
-                // --- STAGE 1: PERFORM DUPLICATE DETECTION IN BACKGROUND THREAD ---
-                await Task.Run(async () =>
-                {
-                    hashDict = new Dictionary<string, List<string>>(); // Group files by MD5 hash.
-                    filesWithMD5Errors = new List<string>(); // Track paths of files with MD5 errors.
-                    var itemsToCheck = new List<string>();   // Paths of files to mark as checked (primary).
-                    var itemsToUncheck = new List<string>(); // Paths of files to mark as unchecked (non-primary duplicates).
-
-                    // --- STAGE 1.1: CALCULATE OR RETRIEVE MD5 HASHES ---
-                    foreach (string filePath in filePaths)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                            return;
-
-                        string md5Hash = audioInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
-
-                        if (string.IsNullOrEmpty(md5Hash) ||
-                            md5Hash == "MD5 calculation failed" ||
-                            md5Hash == "00000000000000000000000000000000" ||
-                            md5Hash == "N/A")
-                        {
-                            string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
-                            if (fileExtension == ".wav")
-                            {
-                                md5Hash = await CalculateWavMD5Async(filePath);
-                            }
-                            else if (fileExtension == ".flac")
-                            {
-                                md5Hash = await CalculateFlacMD5Async(filePath);
-                            }
-                            else
-                            {
-                                md5Hash = "MD5 calculation failed";
-                            }
-
-                            // Update the cache with the new MD5 hash — preserve existing object
-                            if (audioInfoCache.TryGetValue(filePath, out var infoToUpdate))
-                            {
-                                infoToUpdate.Md5Hash = md5Hash;
-                                // Do NOT replace the object — preserve other properties (ErrorDetails, LastWriteTime, etc.)
-                            }
-                            else
-                            {
-                                // Create new cache entry if it doesn't exist
-                                var newInfo = new AudioFileInfo
-                                {
-                                    FilePath = filePath,
-                                    Md5Hash = md5Hash,
-                                    FileName = Path.GetFileName(filePath),
-                                    DirectoryPath = Path.GetDirectoryName(filePath),
-                                    Extension = fileExtension
-                                };
-                                audioInfoCache.TryAdd(filePath, newInfo);
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "MD5 calculation failed")
-                        {
-                            if (!hashDict.ContainsKey(md5Hash))
-                                hashDict[md5Hash] = new List<string>();
-                            hashDict[md5Hash].Add(filePath);
-                        }
-                        else
-                        {
-                            filesWithMD5Errors.Add(filePath);
-                        }
-                    }
-
-                    if (cts.Token.IsCancellationRequested)
-                        return;
-
-                    // --- STAGE 1.2: DETERMINE PRIMARY DUPLICATE IN EACH GROUP ---
-                    foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
-                    {
-                        var sortedPaths = kvp.Value
-                            .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
-                            .Where(x => x.Info != null)
-                            .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)          // FLAC > WAV
-                            .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)  // Shorter path first
-                            .ThenByDescending(x => x.Info.LastWriteTime)                // Newer first
-                            .ThenBy(x => x.Path)                                        // Then by path
-                            .ToList();
-
-                        if (sortedPaths.Count > 0)
-                        {
-                            itemsToCheck.Add(sortedPaths[0].Path); // Primary file
-                            itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Others
-                        }
-                    }
-
-                    // --- STAGE 2: UPDATE USER INTERFACE (on UI thread) ---
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
-                        for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
-                        {
-                            DataGridViewRow row = dataGridViewLogDetectDupes.Rows[i];
-                            if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed" ||
-                                !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()))
-                            {
-                                dataGridViewLogDetectDupes.Rows.RemoveAt(i);
-                            }
-                        }
-
-                        // --- STAGE 2.2: UPDATE CHECKBOX STATES IN LISTVIEW ---
-                        foreach (ListViewItem item in listViewAudioFiles.Items)
-                        {
-                            string path = item.Tag.ToString();
-                            item.Checked = !itemsToUncheck.Contains(path); // Uncheck non-primary duplicates
-                        }
-
-                        // --- STAGE 2.3: UPDATE MD5 DISPLAY IN LISTVIEW ---
-                        foreach (ListViewItem item in listViewAudioFiles.Items)
-                        {
-                            string path = item.Tag.ToString();
-                            if (audioInfoCache.TryGetValue(path, out var info))
-                            {
-                                if (item.SubItems.Count > 6 && item.SubItems[6].Text != info.Md5Hash)
-                                {
-                                    item.SubItems[6].Text = info.Md5Hash;
-                                }
-                            }
-                        }
-
-                        // --- STAGE 2.4: LOG MD5 CALCULATION ERROR RESULTS ---
-                        foreach (string filePath in filesWithMD5Errors)
-                        {
-                            if (audioInfoCache.TryGetValue(filePath, out var info))
-                            {
-                                int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
-                                    info.FileName, // 0 Name
-                                    "", // 1 Channels
-                                    "", // 2 BitDepth
-                                    "", // 3 SamplingRate
-                                    "", // 4 InputFileSize
-                                    "", // 5 OutputFileSize
-                                    "", // 6 Compression
-                                    "", // 7 Time
-                                    "", // 8 Speed
-                                    "", // 9 SpeedMin
-                                    "", // 10 SpeedMax
-                                    "", // 11 SpeedRange
-                                    "", // 12 SpeedConsistency
-                                    "", // 13 CPULoadEncoder
-                                    "", // 14 CPUClock
-                                    "", // 15 Passes
-                                    "", // 16 Parameters
-                                    "", // 17 Encoder
-                                    "", // 18 Version
-                                    "", // 19 EncoderDirectory
-                                    "", // 20 FastestEncoder
-                                    "", // 21 BestSize
-                                    "", // 22 SameSize
-                                    info.DirectoryPath, // 23 AudioFileDirectory
-                                    "MD5 calculation failed", // 24 MD5
-                                    "", // 25 Duplicates
-                                    info.ErrorDetails ?? string.Empty // 26 Errors
-                                );
-                                dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
-                            }
-                        }
-
-                        // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
-                        foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
-                        {
-                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
-                                audioInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
-
-                            foreach (string path in kvp.Value)
-                            {
-                                if (audioInfoCache.TryGetValue(path, out var info))
-                                {
-                                    int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
-                                        info.FileName, // 0 Name
-                                        "", // 1 Channels
-                                        "", // 2 BitDepth
-                                        "", // 3 SamplingRate
-                                        "", // 4 InputFileSize
-                                        "", // 5 OutputFileSize
-                                        "", // 6 Compression
-                                        "", // 7 Time
-                                        "", // 8 Speed
-                                        "", // 9 SpeedMin
-                                        "", // 10 SpeedMax
-                                        "", // 11 SpeedRange
-                                        "", // 12 SpeedConsistency
-                                        "", // 13 CPULoadEncoder
-                                        "", // 14 CPUClock
-                                        "", // 15 Passes
-                                        "", // 16 Parameters
-                                        "", // 17 Encoder
-                                        "", // 18 Version
-                                        "", // 19 EncoderDirectory
-                                        "", // 20 FastestEncoder
-                                        "", // 21 BestSize
-                                        "", // 22 SameSize
-                                        info.DirectoryPath, // 23 AudioFileDirectory
-                                        kvp.Key, // 24 MD5
-                                        duplicatesList, // 25 Duplicates
-                                        "" // 26 Errors
-                                    );
-                                    dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
-                                }
-                            }
-                        }
-
-                        // --- STAGE 2.6: MANAGE LOG TAB VISIBILITY ---
-
-                        if (dataGridViewLogDetectDupes.Rows.Count > 0)
-                        {
-                            tabControlLog.SelectedTab = DetectDupes;
-                        }
-
-                        // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
-                        var allItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
-                        var duplicateGroups = hashDict
-                            .Where(kvp => kvp.Value.Count > 1)
-                            .Select(kvp => new
-                            {
-                                Group = kvp.Value,
-                                Primary = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p)) ?? kvp.Value.First()
-                            })
-                            .OrderBy(g => g.Primary) // Order groups by primary file path
-                            .ToList();
-
-                        listViewAudioFiles.BeginUpdate();
-                        try
-                        {
-                            // Remove ALL items first
-                            listViewAudioFiles.Items.Clear();
-
-                            // Add duplicate groups first (with primary item first in group)
-                            foreach (var group in duplicateGroups)
-                            {
-                                var groupItems = allItems.Where(item => group.Group.Contains(item.Tag.ToString())).ToList();
-                                var primaryItem = groupItems.FirstOrDefault(item => item.Tag.ToString() == group.Primary);
-                                var otherItems = groupItems.Where(item => item != primaryItem).ToList();
-
-                                if (primaryItem != null)
-                                    listViewAudioFiles.Items.Add(primaryItem);
-                                foreach (var item in otherItems)
-                                    listViewAudioFiles.Items.Add(item);
-                            }
-
-                            // Add non-duplicate items — only those NOT in any duplicate group
-                            var duplicatePaths = duplicateGroups.SelectMany(g => g.Group).ToHashSet();
-                            var nonDuplicateItems = allItems.Where(item => !duplicatePaths.Contains(item.Tag.ToString()));
-                            foreach (var item in nonDuplicateItems)
-                                listViewAudioFiles.Items.Add(item);
-                        }
-                        finally
-                        {
-                            listViewAudioFiles.EndUpdate();
-                        }
-                    }); // End of UI update Invoke
-                }); // End of background Task.Run
-            }
-            catch (OperationCanceledException)
-            {
-                // Operation was cancelled — exit silently
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (button != null && !button.IsDisposed)
-                {
-                    button.Invoke((MethodInvoker)(() =>
-                    {
-                        button.Text = originalText;
-                        button.Enabled = true;
-                    }));
-                }
-
-                // Show summary message to user
-                if (!cts.IsCancellationRequested && hashDict != null && filesWithMD5Errors != null)
-                {
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        int totalFiles = listViewAudioFiles.Items.Count;
-                        int duplicateGroups = hashDict.Count(g => g.Value.Count > 1);
-                        int duplicateFiles = hashDict.Where(g => g.Value.Count > 1).Sum(g => g.Value.Count);
-                        int filesWithErrors = filesWithMD5Errors.Count;
-
-                        string message = $"Duplicate detection completed.\n\n" +
-                                       $"Total files processed: {totalFiles}\n" +
-                                       $"Duplicate groups found: {duplicateGroups}\n" +
-                                       $"Duplicate files (total): {duplicateFiles}\n" +
-                                       $"Files with MD5 errors: {filesWithErrors}\n\n" +
-                                       $"Primary files are CHECKED.\n" +
-                                       $"Duplicate files are UNCHECKED.";
-
-                        MessageBox.Show(message, "Duplicate Detection Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }));
-                }
-
-                cts.Dispose();
-            }
-        }
-        private async void buttonTestForErrors_Click(object? sender, EventArgs e)
-        {
-            var button = (Button)sender;
-            var originalText = button.Text;
-            var cts = new CancellationTokenSource();
-
-            try
-            {
-                button.Text = "In progress...";
-                button.Enabled = false;
-
-                // --- STAGE 1: COLLECT DATA FROM UI ---
-                var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
-                {
-                    List<string> flacFilePaths = new List<string>();
-                    string encoderPath = null;
-                    bool useWarningsAsErrors = false;
-
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        // Clear previous results
-                        for (int i = dataGridViewLogTestForErrors.Rows.Count - 1; i >= 0; i--)
-                        {
-                            if (dataGridViewLogTestForErrors.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
-                                dataGridViewLogTestForErrors.Rows.RemoveAt(i);
-                        }
-
-                        // Remove missing files
-                        var itemsToRemove = listViewAudioFiles.Items.Cast<ListViewItem>()
-                            .Where(item => !File.Exists(item.Tag.ToString())).ToList();
-
-                        foreach (var item in itemsToRemove)
-                            listViewAudioFiles.Items.Remove(item);
-
-                        if (itemsToRemove.Count > 0)
-                        {
-                            UpdateGroupBoxAudioFilesHeader();
-                            ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) removed");
-                        }
-
-                        // Collect FLAC files and settings
-                        flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
-                            .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                            .Select(item => item.Tag.ToString()));
-
-                        encoderPath = listViewEncoders.Items
-                            .Cast<ListViewItem>()
-                            .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                            ?.Tag?.ToString();
-
-                        useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
-                    });
-
-                    return (flacFilePaths, encoderPath, useWarningsAsErrors);
-                });
-
-                // Validation
-                if (flacFilePaths.Count == 0)
-                {
-                    MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
-                {
-                    MessageBox.Show("No encoders found in the list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // --- STAGE 2: PARALLEL INTEGRITY TEST ---
-                var errorResults = new ConcurrentBag<(string FileName, string FilePath, string Message)>();
-                var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
-
-                await Task.WhenAll(flacFilePaths.Select(async filePath =>
-                {
-                    if (cts.Token.IsCancellationRequested) return;
-
-                    await semaphore.WaitAsync(cts.Token);
-                    try
-                    {
-                        string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
-
-                        using var process = new Process();
-                        process.StartInfo = new ProcessStartInfo
-                        {
-                            FileName = encoderPath,
-                            Arguments = $" --test --silent{(useWarningsAsErrors ? " --warnings-as-errors" : "")} \"{filePath}\"",
-                            UseShellExecute = false,
-                            RedirectStandardError = true,
-                            RedirectStandardOutput = true,
-                            CreateNoWindow = true,
-                            StandardErrorEncoding = Encoding.UTF8,
-                            StandardOutputEncoding = Encoding.UTF8
-                        };
-
-                        process.Start();
-
-                        var errorTask = process.StandardError.ReadToEndAsync();
-                        var outputTask = process.StandardOutput.ReadToEndAsync();
-
-                        await process.WaitForExitAsync(cts.Token);
-
-                        string errorOutput = await errorTask;
-                        string output = await outputTask; // Not used: flac --test --silent never writes to stdout (only stderr), per official docs and source code.
-                        if (process.ExitCode != 0)
-                        {
-                            string message = errorOutput;
-
-                            // Check for illegal instruction (e.g. AVX-512 on older CPU)
-                            if (process.ExitCode == unchecked((int)0xC000001D))
-                            {
-                                message = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
-                            }
-                            else if (string.IsNullOrWhiteSpace(errorOutput))
-                            {
-                                message = "Unknown error (non-zero exit code).";
-                            }
-                            else
-                            {
-                                message = errorOutput.Trim();
-                            }
-
-                            errorResults.Add((fileName, filePath, message));
-                        }
-                    }
-                    catch (Exception ex) when (!(ex is OperationCanceledException))
-                    {
-                        errorResults.Add((Path.GetFileName(filePath), filePath, $"Process failed: {ex.Message}"));
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }));
-
-                if (cts.Token.IsCancellationRequested) return;
-
-                // --- STAGE 3: UPDATE UI ---
-                await this.InvokeAsync(() =>
-                {
-                    dataGridViewLogTestForErrors.SuspendLayout();
-                    try
-                    {
-                        var sortedResults = errorResults.OrderBy(r => r.FilePath).ToList();
-
-                        var rowsToAdd = sortedResults.Select(result =>
-                        {
-                            string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
-                                ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
-
-                            var row = new DataGridViewRow();
-                            row.CreateCells(dataGridViewLogTestForErrors);
-                            row.SetValues(
-                                result.FileName, // 0 Name
-                                "", // 1 Channels
-                                "", // 2 BitDepth
-                                "", // 3 SamplingRate
-                                "", // 4 InputFileSize
-                                "", // 5 OutputFileSize
-                                "", // 6 Compression
-                                "", // 7 Time
-                                "", // 8 Speed
-                                "", // 9 SpeedMin
-                                "", // 10 SpeedMax
-                                "", // 11 SpeedRange
-                                "", // 12 SpeedConsistency
-                                "", // 13 CPULoadEncoder
-                                "", // 14 CPUClock
-                                "", // 15 Passes
-                                "", // 16 Parameters
-                                "", // 17 Encoder
-                                "", // 18 Version
-                                "", // 19 EncoderDirectory
-                                "", // 20 FastestEncoder
-                                "", // 21 BestSize
-                                "", // 22 SameSize
-                                directoryPath, // 23 AudioFileDirectory
-                                "Integrity Check Failed", // 24 MD5
-                                "", // 25 Duplicates
-                                result.Message // 26 Errors
-                            );
-                            row.DefaultCellStyle.ForeColor = Color.Red;
-                            return row;
-                        }).ToList();
-
-                        if (rowsToAdd.Count > 0)
-                            dataGridViewLogTestForErrors.Rows.AddRange(rowsToAdd.ToArray());
-
-                        if (dataGridViewLogTestForErrors.Rows.Count > 0)
-                        {
-                            tabControlLog.SelectedTab = TestForErrors;
-                        }
-                    }
-                    finally
-                    {
-                        dataGridViewLogTestForErrors.ResumeLayout();
-                    }
-
-                    MessageBox.Show(
-                        errorResults.Count == 0
-                            ? "All FLAC files passed the integrity test."
-                            : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
-                        "Test Complete",
-                        MessageBoxButtons.OK,
-                        errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
-                    );
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                // Ignore cancellation
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (!button.IsDisposed)
-                {
-                    button.Text = originalText;
-                    button.Enabled = true;
-                }
-                cts.Dispose();
-            }
-        }
-
         private void buttonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
@@ -6220,6 +5634,642 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
+ 
+        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            var originalText = button.Text;
+            var cts = new CancellationTokenSource();
+
+            // Declare variables for summary message
+            Dictionary<string, List<string>> hashDict = null;
+            List<string> filesWithMD5Errors = null;
+
+            try
+            {
+                // --- STAGE 0: PREPARE USER INTERFACE ---
+                button.Invoke((MethodInvoker)(() =>
+                {
+                    button.Text = "In progress...";
+                    button.Enabled = false;
+                }));
+
+                // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
+                var itemsToRemove = new List<ListViewItem>();
+                this.Invoke((MethodInvoker)delegate
+                {
+                    foreach (ListViewItem item in listViewAudioFiles.Items)
+                    {
+                        string filePath = item.Tag?.ToString() ?? string.Empty;
+                        if (!File.Exists(filePath))
+                        {
+                            itemsToRemove.Add(item);
+                        }
+                    }
+
+                    foreach (var item in itemsToRemove)
+                    {
+                        listViewAudioFiles.Items.Remove(item);
+                    }
+
+                    UpdateGroupBoxAudioFilesHeader();
+                    if (itemsToRemove.Count > 0)
+                    {
+                        ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) were not found on disk and have been removed from the list.");
+                    }
+                });
+
+                if (listViewAudioFiles.Items.Count == 0)
+                {
+                    MessageBox.Show("No audio files to process.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // --- STAGE 0.2: COLLECT FILE PATHS (on UI thread) ---
+                var filePaths = new List<string>();
+                this.Invoke((MethodInvoker)delegate
+                {
+                    filePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>().Select(item => item.Tag.ToString()));
+                });
+
+                // --- STAGE 1: PERFORM DUPLICATE DETECTION IN BACKGROUND THREAD ---
+                await Task.Run(async () =>
+                {
+                    hashDict = new Dictionary<string, List<string>>(); // Group files by MD5 hash.
+                    filesWithMD5Errors = new List<string>(); // Track paths of files with MD5 errors.
+                    var itemsToCheck = new List<string>();   // Paths of files to mark as checked (primary).
+                    var itemsToUncheck = new List<string>(); // Paths of files to mark as unchecked (non-primary duplicates).
+
+                    // --- STAGE 1.1: CALCULATE OR RETRIEVE MD5 HASHES ---
+                    foreach (string filePath in filePaths)
+                    {
+                        if (cts.Token.IsCancellationRequested)
+                            return;
+
+                        string md5Hash = audioInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
+
+                        if (string.IsNullOrEmpty(md5Hash) ||
+                            md5Hash == "MD5 calculation failed" ||
+                            md5Hash == "00000000000000000000000000000000" ||
+                            md5Hash == "N/A")
+                        {
+                            string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
+                            if (fileExtension == ".wav")
+                            {
+                                md5Hash = await CalculateWavMD5Async(filePath);
+                            }
+                            else if (fileExtension == ".flac")
+                            {
+                                md5Hash = await CalculateFlacMD5Async(filePath);
+                            }
+                            else
+                            {
+                                md5Hash = "MD5 calculation failed";
+                            }
+
+                            // Update the cache with the new MD5 hash - preserve existing object
+                            if (audioInfoCache.TryGetValue(filePath, out var infoToUpdate))
+                            {
+                                infoToUpdate.Md5Hash = md5Hash;
+                                // Do NOT replace the object - preserve other properties (ErrorDetails, LastWriteTime, etc.)
+                            }
+                            else
+                            {
+                                // Create new cache entry if it doesn't exist
+                                var newInfo = new AudioFileInfo
+                                {
+                                    FilePath = filePath,
+                                    Md5Hash = md5Hash,
+                                    FileName = Path.GetFileName(filePath),
+                                    DirectoryPath = Path.GetDirectoryName(filePath),
+                                    Extension = fileExtension
+                                };
+                                audioInfoCache.TryAdd(filePath, newInfo);
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "MD5 calculation failed")
+                        {
+                            if (!hashDict.ContainsKey(md5Hash))
+                                hashDict[md5Hash] = new List<string>();
+                            hashDict[md5Hash].Add(filePath);
+                        }
+                        else
+                        {
+                            filesWithMD5Errors.Add(filePath);
+                        }
+                    }
+
+                    if (cts.Token.IsCancellationRequested)
+                        return;
+
+                    // --- STAGE 1.2: DETERMINE PRIMARY DUPLICATE IN EACH GROUP ---
+                    foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
+                    {
+                        var sortedPaths = kvp.Value
+                            .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
+                            .Where(x => x.Info != null)
+                            .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)          // FLAC > WAV
+                            .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)  // Shorter path first
+                            .ThenByDescending(x => x.Info.LastWriteTime)                // Newer first
+                            .ThenBy(x => x.Path)                                        // Then by path
+                            .ToList();
+
+                        if (sortedPaths.Count > 0)
+                        {
+                            itemsToCheck.Add(sortedPaths[0].Path); // Primary file
+                            itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Others
+                        }
+                    }
+
+                    // --- STAGE 2: UPDATE USER INTERFACE (on UI thread) ---
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
+                        for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
+                        {
+                            DataGridViewRow row = dataGridViewLogDetectDupes.Rows[i];
+                            if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed" ||
+                                !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()))
+                            {
+                                dataGridViewLogDetectDupes.Rows.RemoveAt(i);
+                            }
+                        }
+
+                        // --- STAGE 2.2: UPDATE CHECKBOX STATES IN LISTVIEW ---
+                        foreach (ListViewItem item in listViewAudioFiles.Items)
+                        {
+                            string path = item.Tag.ToString();
+                            item.Checked = !itemsToUncheck.Contains(path); // Uncheck non-primary duplicates
+                        }
+
+                        // --- STAGE 2.3: UPDATE MD5 DISPLAY IN LISTVIEW ---
+                        foreach (ListViewItem item in listViewAudioFiles.Items)
+                        {
+                            string path = item.Tag.ToString();
+                            if (audioInfoCache.TryGetValue(path, out var info))
+                            {
+                                if (item.SubItems.Count > 6 && item.SubItems[6].Text != info.Md5Hash)
+                                {
+                                    item.SubItems[6].Text = info.Md5Hash;
+                                }
+                            }
+                        }
+
+                        // --- STAGE 2.4: LOG MD5 CALCULATION ERROR RESULTS ---
+                        foreach (string filePath in filesWithMD5Errors)
+                        {
+                            if (audioInfoCache.TryGetValue(filePath, out var info))
+                            {
+                                int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
+                                    info.FileName, // 0 Name
+                                    "", // 1 Channels
+                                    "", // 2 BitDepth
+                                    "", // 3 SamplingRate
+                                    "", // 4 InputFileSize
+                                    "", // 5 OutputFileSize
+                                    "", // 6 Compression
+                                    "", // 7 Time
+                                    "", // 8 Speed
+                                    "", // 9 SpeedMin
+                                    "", // 10 SpeedMax
+                                    "", // 11 SpeedRange
+                                    "", // 12 SpeedConsistency
+                                    "", // 13 CPULoadEncoder
+                                    "", // 14 CPUClock
+                                    "", // 15 Passes
+                                    "", // 16 Parameters
+                                    "", // 17 Encoder
+                                    "", // 18 Version
+                                    "", // 19 EncoderDirectory
+                                    "", // 20 FastestEncoder
+                                    "", // 21 BestSize
+                                    "", // 22 SameSize
+                                    info.DirectoryPath, // 23 AudioFileDirectory
+                                    "MD5 calculation failed", // 24 MD5
+                                    "", // 25 Duplicates
+                                    info.ErrorDetails ?? string.Empty // 26 Errors
+                                );
+                                dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
+                            }
+                        }
+
+                        // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
+                        foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
+                        {
+                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
+                                audioInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
+
+                            foreach (string path in kvp.Value)
+                            {
+                                if (audioInfoCache.TryGetValue(path, out var info))
+                                {
+                                    int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
+                                        info.FileName, // 0 Name
+                                        "", // 1 Channels
+                                        "", // 2 BitDepth
+                                        "", // 3 SamplingRate
+                                        "", // 4 InputFileSize
+                                        "", // 5 OutputFileSize
+                                        "", // 6 Compression
+                                        "", // 7 Time
+                                        "", // 8 Speed
+                                        "", // 9 SpeedMin
+                                        "", // 10 SpeedMax
+                                        "", // 11 SpeedRange
+                                        "", // 12 SpeedConsistency
+                                        "", // 13 CPULoadEncoder
+                                        "", // 14 CPUClock
+                                        "", // 15 Passes
+                                        "", // 16 Parameters
+                                        "", // 17 Encoder
+                                        "", // 18 Version
+                                        "", // 19 EncoderDirectory
+                                        "", // 20 FastestEncoder
+                                        "", // 21 BestSize
+                                        "", // 22 SameSize
+                                        info.DirectoryPath, // 23 AudioFileDirectory
+                                        kvp.Key, // 24 MD5
+                                        duplicatesList, // 25 Duplicates
+                                        "" // 26 Errors
+                                    );
+                                    dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
+                                }
+                            }
+                        }
+
+                        // --- STAGE 2.6: MANAGE LOG TAB VISIBILITY ---
+
+                        if (dataGridViewLogDetectDupes.Rows.Count > 0)
+                        {
+                            tabControlLog.SelectedTab = DetectDupes;
+                        }
+
+                        // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
+                        var allItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+                        var duplicateGroups = hashDict
+                            .Where(kvp => kvp.Value.Count > 1)
+                            .Select(kvp => new
+                            {
+                                Group = kvp.Value,
+                                Primary = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p)) ?? kvp.Value.First()
+                            })
+                            .OrderBy(g => g.Primary) // Order groups by primary file path
+                            .ToList();
+
+                        listViewAudioFiles.BeginUpdate();
+                        try
+                        {
+                            // Remove ALL items first
+                            listViewAudioFiles.Items.Clear();
+
+                            // Add duplicate groups first (with primary item first in group)
+                            foreach (var group in duplicateGroups)
+                            {
+                                var groupItems = allItems.Where(item => group.Group.Contains(item.Tag.ToString())).ToList();
+                                var primaryItem = groupItems.FirstOrDefault(item => item.Tag.ToString() == group.Primary);
+                                var otherItems = groupItems.Where(item => item != primaryItem).ToList();
+
+                                if (primaryItem != null)
+                                    listViewAudioFiles.Items.Add(primaryItem);
+                                foreach (var item in otherItems)
+                                    listViewAudioFiles.Items.Add(item);
+                            }
+
+                            // Add non-duplicate items - only those NOT in any duplicate group
+                            var duplicatePaths = duplicateGroups.SelectMany(g => g.Group).ToHashSet();
+                            var nonDuplicateItems = allItems.Where(item => !duplicatePaths.Contains(item.Tag.ToString()));
+                            foreach (var item in nonDuplicateItems)
+                                listViewAudioFiles.Items.Add(item);
+                        }
+                        finally
+                        {
+                            listViewAudioFiles.EndUpdate();
+                        }
+                    }); // End of UI update Invoke
+                }); // End of background Task.Run
+            }
+            catch (OperationCanceledException)
+            {
+                // Operation was cancelled - exit silently
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (button != null && !button.IsDisposed)
+                {
+                    button.Invoke((MethodInvoker)(() =>
+                    {
+                        button.Text = originalText;
+                        button.Enabled = true;
+                    }));
+                }
+
+                // Show summary message to user
+                if (!cts.IsCancellationRequested && hashDict != null && filesWithMD5Errors != null)
+                {
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        int totalFiles = listViewAudioFiles.Items.Count;
+                        int duplicateGroups = hashDict.Count(g => g.Value.Count > 1);
+                        int duplicateFiles = hashDict.Where(g => g.Value.Count > 1).Sum(g => g.Value.Count);
+                        int filesWithErrors = filesWithMD5Errors.Count;
+
+                        string message = $"Duplicate detection completed.\n\n" +
+                                       $"Total files processed: {totalFiles}\n" +
+                                       $"Duplicate groups found: {duplicateGroups}\n" +
+                                       $"Duplicate files (total): {duplicateFiles}\n" +
+                                       $"Files with MD5 errors: {filesWithErrors}\n\n" +
+                                       $"Primary files are CHECKED.\n" +
+                                       $"Duplicate files are UNCHECKED.";
+
+                        MessageBox.Show(message, "Duplicate Detection Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }));
+                }
+
+                cts.Dispose();
+            }
+        }
+        private async void buttonTestForErrors_Click(object? sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            var originalText = button.Text;
+            var cts = new CancellationTokenSource();
+
+            try
+            {
+                button.Text = "In progress...";
+                button.Enabled = false;
+
+                // --- STAGE 1: COLLECT DATA FROM UI ---
+                var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
+                {
+                    List<string> flacFilePaths = new List<string>();
+                    string encoderPath = null;
+                    bool useWarningsAsErrors = false;
+
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        // Clear previous results
+                        for (int i = dataGridViewLogTestForErrors.Rows.Count - 1; i >= 0; i--)
+                        {
+                            if (dataGridViewLogTestForErrors.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
+                                dataGridViewLogTestForErrors.Rows.RemoveAt(i);
+                        }
+
+                        // Remove missing files
+                        var itemsToRemove = listViewAudioFiles.Items.Cast<ListViewItem>()
+                            .Where(item => !File.Exists(item.Tag.ToString())).ToList();
+
+                        foreach (var item in itemsToRemove)
+                            listViewAudioFiles.Items.Remove(item);
+
+                        if (itemsToRemove.Count > 0)
+                        {
+                            UpdateGroupBoxAudioFilesHeader();
+                            ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) removed");
+                        }
+
+                        // Collect FLAC files and settings
+                        flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
+                            .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                            .Select(item => item.Tag.ToString()));
+
+                        encoderPath = listViewEncoders.Items
+                            .Cast<ListViewItem>()
+                            .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                            ?.Tag?.ToString();
+
+                        useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
+                    });
+
+                    return (flacFilePaths, encoderPath, useWarningsAsErrors);
+                });
+
+                // Validation
+                if (flacFilePaths.Count == 0)
+                {
+                    MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
+                {
+                    MessageBox.Show("No encoders found in the list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // --- STAGE 2: PARALLEL INTEGRITY TEST ---
+                var errorResults = new ConcurrentBag<(string FileName, string FilePath, string Message)>();
+                var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+
+                await Task.WhenAll(flacFilePaths.Select(async filePath =>
+                {
+                    if (cts.Token.IsCancellationRequested) return;
+
+                    await semaphore.WaitAsync(cts.Token);
+                    try
+                    {
+                        string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
+
+                        using var process = new Process();
+                        process.StartInfo = new ProcessStartInfo
+                        {
+                            FileName = encoderPath,
+                            Arguments = $" --test --silent{(useWarningsAsErrors ? " --warnings-as-errors" : "")} \"{filePath}\"",
+                            UseShellExecute = false,
+                            RedirectStandardError = true,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true,
+                            StandardErrorEncoding = Encoding.UTF8,
+                            StandardOutputEncoding = Encoding.UTF8
+                        };
+
+                        process.Start();
+
+                        var errorTask = process.StandardError.ReadToEndAsync();
+                        var outputTask = process.StandardOutput.ReadToEndAsync();
+
+                        await process.WaitForExitAsync(cts.Token);
+
+                        string errorOutput = await errorTask;
+                        string output = await outputTask; // Not used: flac --test --silent never writes to stdout (only stderr), per official docs and source code.
+                        if (process.ExitCode != 0)
+                        {
+                            string message = errorOutput;
+
+                            // Check for illegal instruction (e.g. AVX-512 on older CPU)
+                            if (process.ExitCode == unchecked((int)0xC000001D))
+                            {
+                                message = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
+                            }
+                            else if (string.IsNullOrWhiteSpace(errorOutput))
+                            {
+                                message = "Unknown error (non-zero exit code).";
+                            }
+                            else
+                            {
+                                message = errorOutput.Trim();
+                            }
+
+                            errorResults.Add((fileName, filePath, message));
+                        }
+                    }
+                    catch (Exception ex) when (!(ex is OperationCanceledException))
+                    {
+                        errorResults.Add((Path.GetFileName(filePath), filePath, $"Process failed: {ex.Message}"));
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
+
+                if (cts.Token.IsCancellationRequested) return;
+
+                // --- STAGE 3: UPDATE UI ---
+                await this.InvokeAsync(() =>
+                {
+                    dataGridViewLogTestForErrors.SuspendLayout();
+                    try
+                    {
+                        var sortedResults = errorResults.OrderBy(r => r.FilePath).ToList();
+
+                        var rowsToAdd = sortedResults.Select(result =>
+                        {
+                            string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
+                                ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
+
+                            var row = new DataGridViewRow();
+                            row.CreateCells(dataGridViewLogTestForErrors);
+                            row.SetValues(
+                                result.FileName, // 0 Name
+                                "", // 1 Channels
+                                "", // 2 BitDepth
+                                "", // 3 SamplingRate
+                                "", // 4 InputFileSize
+                                "", // 5 OutputFileSize
+                                "", // 6 Compression
+                                "", // 7 Time
+                                "", // 8 Speed
+                                "", // 9 SpeedMin
+                                "", // 10 SpeedMax
+                                "", // 11 SpeedRange
+                                "", // 12 SpeedConsistency
+                                "", // 13 CPULoadEncoder
+                                "", // 14 CPUClock
+                                "", // 15 Passes
+                                "", // 16 Parameters
+                                "", // 17 Encoder
+                                "", // 18 Version
+                                "", // 19 EncoderDirectory
+                                "", // 20 FastestEncoder
+                                "", // 21 BestSize
+                                "", // 22 SameSize
+                                directoryPath, // 23 AudioFileDirectory
+                                "Integrity Check Failed", // 24 MD5
+                                "", // 25 Duplicates
+                                result.Message // 26 Errors
+                            );
+                            row.DefaultCellStyle.ForeColor = Color.Red;
+                            return row;
+                        }).ToList();
+
+                        if (rowsToAdd.Count > 0)
+                            dataGridViewLogTestForErrors.Rows.AddRange(rowsToAdd.ToArray());
+
+                        if (dataGridViewLogTestForErrors.Rows.Count > 0)
+                        {
+                            tabControlLog.SelectedTab = TestForErrors;
+                        }
+                    }
+                    finally
+                    {
+                        dataGridViewLogTestForErrors.ResumeLayout();
+                    }
+
+                    MessageBox.Show(
+                        errorResults.Count == 0
+                            ? "All FLAC files passed the integrity test."
+                            : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
+                        "Test Complete",
+                        MessageBoxButtons.OK,
+                        errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+                    );
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (!button.IsDisposed)
+                {
+                    button.Text = originalText;
+                    button.Enabled = true;
+                }
+                cts.Dispose();
+            }
+        }
+
+        private void buttonStop_Click(object? sender, EventArgs e)
+        {
+            _isEncodingStopped = true; // Flag to request encoding stop
+            _isPaused = false; // Reset pause flag
+            _pauseEvent.Set(); // Unblock execution
+
+            if (_process != null)
+            {
+                try
+                {
+                    // Check if process is running
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill(); // Terminate the process
+                        ShowTemporaryStoppedMessage("Stopped");
+                    }
+                    else
+                    {
+                        ShowTemporaryStoppedMessage("Stopped");
+                    }
+                }
+                catch (Exception)
+                {
+                    ShowTemporaryStoppedMessage("Stopped");
+                }
+                finally
+                {
+                    progressBarEncoder.Value = 0;
+                    progressBarDecoder.Value = 0;
+                    progressBarEncoder.ManualText = "";
+                    progressBarDecoder.ManualText = "";
+                }
+            }
+        }
+        private void buttonPauseResume_Click(object sender, EventArgs e)
+        {
+            _isPaused = !_isPaused; // Toggle pause flag
+
+            if (_isPaused)
+            {
+                buttonPauseResume.Text = "Resume";
+                _pauseEvent.Reset(); // Block execution
+            }
+            else
+            {
+                buttonPauseResume.Text = "Pause";
+                _pauseEvent.Set(); // Unblock execution
+            }
+        }
 
         // Encoder and Decoder options
         private void button5CompressionLevel_Click(object? sender, EventArgs e)
@@ -6325,56 +6375,6 @@ namespace FLAC_Benchmark_H
                 e.SuppressKeyPress = true;
 
                 buttonAddJobToJobListDecoder_Click(sender, e);
-            }
-        }
-
-        private void buttonStop_Click(object? sender, EventArgs e)
-        {
-            _isEncodingStopped = true; // Flag to request encoding stop
-            _isPaused = false; // Reset pause flag
-            _pauseEvent.Set(); // Unblock execution
-
-            if (_process != null)
-            {
-                try
-                {
-                    // Check if process is running
-                    if (!_process.HasExited)
-                    {
-                        _process.Kill(); // Terminate the process
-                        ShowTemporaryStoppedMessage("Stopped");
-                    }
-                    else
-                    {
-                        ShowTemporaryStoppedMessage("Stopped");
-                    }
-                }
-                catch (Exception)
-                {
-                    ShowTemporaryStoppedMessage("Stopped");
-                }
-                finally
-                {
-                    progressBarEncoder.Value = 0;
-                    progressBarDecoder.Value = 0;
-                    progressBarEncoder.ManualText = "";
-                    progressBarDecoder.ManualText = "";
-                }
-            }
-        }
-        private void buttonPauseResume_Click(object sender, EventArgs e)
-        {
-            _isPaused = !_isPaused; // Toggle pause flag
-
-            if (_isPaused)
-            {
-                buttonPauseResume.Text = "Resume";
-                _pauseEvent.Reset(); // Block execution
-            }
-            else
-            {
-                buttonPauseResume.Text = "Pause";
-                _pauseEvent.Set(); // Unblock execution
             }
         }
 
