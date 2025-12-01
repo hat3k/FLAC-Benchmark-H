@@ -18,7 +18,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.7.6 build 20251125"; // Current app version
+        public string programVersionCurrent = "1.7.6 build 20251201"; // Current app version
         public string programVersionIgnored = null;                   // Previously ignored update
 
         // Hardware info
@@ -328,16 +328,16 @@ namespace FLAC_Benchmark_H
                 priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
             }
 
-            switch (priorityText)
+            return priorityText switch
             {
-                case "Idle": return ProcessPriorityClass.Idle;
-                case "BelowNormal": return ProcessPriorityClass.BelowNormal;
-                case "Normal": return ProcessPriorityClass.Normal;
-                case "AboveNormal": return ProcessPriorityClass.AboveNormal;
-                case "High": return ProcessPriorityClass.High;
-                case "RealTime": return ProcessPriorityClass.RealTime;
-                default: return ProcessPriorityClass.Normal;
-            }
+                "Idle" => ProcessPriorityClass.Idle,
+                "BelowNormal" => ProcessPriorityClass.BelowNormal,
+                "Normal" => ProcessPriorityClass.Normal,
+                "AboveNormal" => ProcessPriorityClass.AboveNormal,
+                "High" => ProcessPriorityClass.High,
+                "RealTime" => ProcessPriorityClass.RealTime,
+                _ => ProcessPriorityClass.Normal,
+            };
         }
 
         // Method to save settings to .txt files
@@ -2312,7 +2312,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log Settings
+        // Log Settings (now supports only "Benchmark" tab)
         private DataGridViewLogSettingsForm? _logSettingsForm = null;
         private void buttonDataGridViewLogSettings_Click(object sender, EventArgs e)
         {
@@ -2329,7 +2329,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log Benchmark
+        // Log for "Benchmark"
         private void InitializedataGridViewLog()
         {
             // Configure DataGridView
@@ -2490,7 +2490,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log Detect Dupes
+        // Log for "Detect Dupes"
         private void InitializedataGridViewLogDetectDupes()
         {
             // Configure DataGridView
@@ -2651,7 +2651,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        // Log Test for Errors
+        // Log for "Test for Errors"
         private void InitializedataGridViewLogTestForErrors()
         {
             // Configure DataGridView
@@ -5033,8 +5033,8 @@ namespace FLAC_Benchmark_H
                                                 // Process completed too early
                                             }
 
-                                            _process.WaitForExit();
                                             errorOutput = _process.StandardError.ReadToEnd();
+                                            _process.WaitForExit();
                                             exitCode = _process.ExitCode;
                                         }
                                         catch (Exception ex)
@@ -5418,8 +5418,8 @@ namespace FLAC_Benchmark_H
                                                 // Process completed too early
                                             }
 
-                                            _process.WaitForExit();
                                             errorOutput = _process.StandardError.ReadToEnd();
+                                            _process.WaitForExit();
                                             exitCode = _process.ExitCode;
                                         }
                                         catch (Exception ex)
@@ -5886,8 +5886,8 @@ namespace FLAC_Benchmark_H
                                                             // Process completed too early
                                                         }
 
-                                                        _process.WaitForExit();
                                                         errorOutput = _process.StandardError.ReadToEnd();
+                                                        _process.WaitForExit();
                                                         exitCode = _process.ExitCode;
                                                     }
                                                     catch (Exception ex)
@@ -6102,8 +6102,8 @@ namespace FLAC_Benchmark_H
                                                             // Process completed too early
                                                         }
 
-                                                        _process.WaitForExit();
                                                         errorOutput = _process.StandardError.ReadToEnd();
+                                                        _process.WaitForExit();
                                                         exitCode = _process.ExitCode;
                                                     }
                                                     catch (Exception ex)
