@@ -348,8 +348,7 @@ namespace FLAC_Benchmark_H
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                 string tempPathToSave = tempFolderPath;
 
-                if (!string.IsNullOrEmpty(tempFolderPath) &&
-                    tempFolderPath.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(tempFolderPath) && tempFolderPath.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
                 {
                     string relativePart = tempFolderPath.Substring(baseDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     tempPathToSave = $".\\{relativePart}";
@@ -396,21 +395,21 @@ namespace FLAC_Benchmark_H
             try
             {
                 var encoders = listViewEncoders.Items
-                    .Cast<ListViewItem>()
-                    .Select(item =>
-                    {
-                        string status = item.Checked ? "Checked" : "Unchecked";
-                        string path = item.Tag?.ToString() ?? "";
-                        return $"{status}|{path}";
-                    })
-                    .ToArray();
+                .Cast<ListViewItem>()
+                .Select(item =>
+                {
+                    string status = item.Checked ? "Checked" : "Unchecked";
+                    string path = item.Tag?.ToString() ?? "";
+                    return $"{status}|{path}";
+                })
+                .ToArray();
 
                 File.WriteAllLines(SettingsEncodersFilePath, encoders, Encoding.UTF8);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving encoders: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveAudioFiles()
@@ -418,21 +417,21 @@ namespace FLAC_Benchmark_H
             try
             {
                 var audioFiles = listViewAudioFiles.Items
-                    .Cast<ListViewItem>()
-                    .Select(item =>
-                    {
-                        string status = item.Checked ? "Checked" : "Unchecked";
-                        string path = item.Tag?.ToString() ?? "";
-                        return $"{status}|{path}";
-                    })
-                    .ToArray();
+                .Cast<ListViewItem>()
+                .Select(item =>
+                {
+                    string status = item.Checked ? "Checked" : "Unchecked";
+                    string path = item.Tag?.ToString() ?? "";
+                    return $"{status}|{path}";
+                })
+                .ToArray();
 
                 File.WriteAllLines(SettingsAudioFilesFilePath, audioFiles, Encoding.UTF8);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving audio files: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveJobs()
@@ -442,27 +441,27 @@ namespace FLAC_Benchmark_H
                 // Create an array of formatted strings representing the rows in dataGridViewJobs
                 // Exclude the new row if it exists (though we disabled it)
                 var lines = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
-                    .Where(row => !row.IsNewRow) // Filter out the new row
-                    .Select(row =>
-                    {
-                        // Get values from the respective cells
-                        bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
-                        string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
-                        string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
-                        string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+                .Where(row => !row.IsNewRow) // Filter out the new row
+                .Select(row =>
+                {
+                    // Get values from the respective cells
+                    bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                    string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                    string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                    string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
 
-                        // Format the row data as a single line
-                        string status = isChecked ? "Checked" : "Unchecked";
-                        return $"{status}|{type}|{passes}|{parameters}";
-                    })
-                    .ToArray();
+                    // Format the row data as a single line
+                    string status = isChecked ? "Checked" : "Unchecked";
+                    return $"{status}|{type}|{passes}|{parameters}";
+                })
+                .ToArray();
 
                 File.WriteAllLines(SettingsJobsFilePath, lines, Encoding.UTF8);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -582,10 +581,10 @@ namespace FLAC_Benchmark_H
                         }
 
                         MessageBox.Show(
-                            $"Cannot use specified temp folder:\n\n{failedPath}\n\nUsing default location:\n\n{tempFolderPath}",
-                            "Info",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+                        $"Cannot use specified temp folder:\n\n{failedPath}\n\nUsing default location:\n\n{tempFolderPath}",
+                        "Info",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
                     }
                 }
             }
@@ -677,17 +676,17 @@ namespace FLAC_Benchmark_H
                 if (missingFiles.Count > 0)
                 {
                     string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
-                                          string.Join("\n", missingFiles.Select(Path.GetFileName)) +
-                                          "\n\nCheck if they still exist on your system.";
+                    string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                    "\n\nCheck if they still exist on your system.";
 
                     MessageBox.Show(warningMessage, "Missing Encoders",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading encoders: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             UpdateGroupBoxEncodersHeader();
         }
@@ -772,17 +771,17 @@ namespace FLAC_Benchmark_H
                 if (missingFiles.Count > 0)
                 {
                     string warningMessage = $"The following audio files were missing and not loaded:\n\n" +
-                                          string.Join("\n", missingFiles.Select(Path.GetFileName)) +
-                                          "\n\nCheck if they still exist on your system.";
+                    string.Join("\n", missingFiles.Select(Path.GetFileName)) +
+                    "\n\nCheck if they still exist on your system.";
 
                     MessageBox.Show(warningMessage, "Missing Audio Files",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading audio files: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             UpdateGroupBoxAudioFilesHeader();
         }
@@ -837,13 +836,13 @@ namespace FLAC_Benchmark_H
                     }
 
                     MessageBox.Show($"Invalid line format: {line}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             dataGridViewJobs.ClearSelection();
         }
@@ -883,9 +882,9 @@ namespace FLAC_Benchmark_H
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 // Check if there's at least one .exe file that is NOT metaflac.exe
                 bool hasValidExeFiles = files.Any(file =>
-                    Directory.Exists(file) ||
-                    (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
-                     !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase)));
+                Directory.Exists(file) ||
+                (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase)));
                 e.Effect = hasValidExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -946,13 +945,13 @@ namespace FLAC_Benchmark_H
                     groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
 
                     var tasks = openFileDialog.FileNames
-                        // Filter out metaflac.exe to prevent adding it to the encoders list
-                        .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                        .Select(async file =>
-                        {
-                            var item = await CreateListViewEncodersItem(file, true); // Create a list item
-                            return item; // Return the created item
-                        });
+                    // Filter out metaflac.exe to prevent adding it to the encoders list
+                    .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                    .Select(async file =>
+                    {
+                        var item = await CreateListViewEncodersItem(file, true); // Create a list item
+                        return item; // Return the created item
+                    });
 
                     var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
 
@@ -973,8 +972,8 @@ namespace FLAC_Benchmark_H
             {
                 // Get all .exe files, but exclude metaflac.exe
                 var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories)
-                    .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                    .ToList(); // ToList() to execute the query and avoid issues if directory changes
+                .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                .ToList(); // ToList() to execute the query and avoid issues if directory changes
 
                 var tasks = exeFiles.Select(async file =>
                 {
@@ -1144,8 +1143,8 @@ namespace FLAC_Benchmark_H
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
                 // Check if there's at least one audio file
                 bool hasAudioFiles = files.Any(file =>
-                    Directory.Exists(file) ||
-                    IsAudioFile(file)); // Use the IsAudioFile function
+                Directory.Exists(file) ||
+                IsAudioFile(file)); // Use the IsAudioFile function
                 e.Effect = hasAudioFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -1166,7 +1165,7 @@ namespace FLAC_Benchmark_H
                     {
                         // Get all audio files in the directory
                         var directoryFiles = Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
-                            .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
+                        .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
 
                         // Create a ListViewItem for each found audio file
                         var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItem(f, true))));
@@ -1230,7 +1229,7 @@ namespace FLAC_Benchmark_H
         {
             string extension = Path.GetExtension(audioFilePath);
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
+            extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
         private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFilePath, bool isChecked)
         {
@@ -1481,8 +1480,8 @@ namespace FLAC_Benchmark_H
                 await this.InvokeAsync(() =>
                 {
                     var encoderItem = listViewEncoders.Items
-                        .Cast<ListViewItem>()
-                        .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
+                    .Cast<ListViewItem>()
+                    .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase));
                     encoderExePath = encoderItem?.Tag?.ToString();
                 });
 
@@ -1808,7 +1807,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-            // Hide optional columns by default
+            // Hide or show columns by default
             dataGridViewLog.Columns["Name"].Visible = true;
             dataGridViewLog.Columns["Channels"].Visible = false;
             dataGridViewLog.Columns["BitDepth"].Visible = false;
@@ -1855,8 +1854,7 @@ namespace FLAC_Benchmark_H
                 string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
                 string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(fileName))
+                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
                     string fullPath = Path.Combine(directoryPath, fileName);
                     if (File.Exists(fullPath))
@@ -1879,7 +1877,7 @@ namespace FLAC_Benchmark_H
                 string encoderFileName = dataGridViewLog.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
 
                 if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(encoderFileName))
+                !string.IsNullOrEmpty(encoderFileName))
                 {
                     string encoderExePath = Path.Combine(directoryPath, encoderFileName);
                     if (File.Exists(encoderExePath))
@@ -2016,8 +2014,7 @@ namespace FLAC_Benchmark_H
                 string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
                 string fileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(fileName))
+                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
                     string fullPath = Path.Combine(directoryPath, fileName);
                     if (File.Exists(fullPath))
@@ -2039,8 +2036,7 @@ namespace FLAC_Benchmark_H
                 string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
                 string encoderFileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(encoderFileName))
+                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(encoderFileName))
                 {
                     string encoderExePath = Path.Combine(directoryPath, encoderFileName);
                     if (File.Exists(encoderExePath))
@@ -2177,8 +2173,7 @@ namespace FLAC_Benchmark_H
                 string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
                 string fileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(fileName))
+                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
                     string fullPath = Path.Combine(directoryPath, fileName);
                     if (File.Exists(fullPath))
@@ -2200,8 +2195,7 @@ namespace FLAC_Benchmark_H
                 string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
                 string encoderFileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
 
-                if (!string.IsNullOrEmpty(directoryPath) &&
-                    !string.IsNullOrEmpty(encoderFileName))
+                if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(encoderFileName))
                 {
                     string encoderExePath = Path.Combine(directoryPath, encoderFileName);
                     if (File.Exists(encoderExePath))
@@ -2290,34 +2284,34 @@ namespace FLAC_Benchmark_H
 
                 // Add record to DataGridView log
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    audioFileName,                          //  0 "Name"
-                    audioFileInfo.Channels,                 //  1 "Channels"
-                    audioFileInfo.BitDepth,                 //  2 "BitDepth"
-                    samplingRateFormatted,                  //  3 "SamplingRate"
-                    inputSizeFormatted,                     //  4 "InputFileSize"
-                    outputSizeFormatted,                    //  5 "OutputFileSize"
-                    $"{compressionPercentage:F3}%",         //  6 "Compression"
-                    $"{elapsedTime.TotalMilliseconds:F3}",  //  7 "Time"
-                    $"{encodingSpeed:F3}x",                 //  8 "Speed"
-                    string.Empty,                           //  9 "SpeedMin"
-                    string.Empty,                           // 10 "SpeedMax"
-                    string.Empty,                           // 11 "SpeedRange"
-                    string.Empty,                           // 12 "SpeedConsistency"
-                    $"{cpuLoadEncoder:F3}%",                // 13 "CPULoadEncoder"
-                    $"{avgClock:F0} MHz",                   // 14 "CPUClock"
-                    "1",                                    // 15 "Passes"
-                    parameters,                             // 16 "Parameters"
-                    encoderInfo.FileName,                   // 17 "Encoder"
-                    encoderInfo.Version,                    // 18 "Version"
-                    encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
-                    string.Empty,                           // 20 "FastestEncoder"
-                    string.Empty,                           // 21 "BestSize"
-                    string.Empty,                           // 22 "SameSize"
-                    audioFileDirectory,                     // 23 "AudioFileDirectory"
-                    Md5Hash,                                // 24 "MD5"
-                    string.Empty,                           // 25 "Duplicates"
-                    string.Empty                            // 26 "Errors"
-                 );
+                audioFileName,                          //  0 "Name"
+                audioFileInfo.Channels,                 //  1 "Channels"
+                audioFileInfo.BitDepth,                 //  2 "BitDepth"
+                samplingRateFormatted,                  //  3 "SamplingRate"
+                inputSizeFormatted,                     //  4 "InputFileSize"
+                outputSizeFormatted,                    //  5 "OutputFileSize"
+                $"{compressionPercentage:F3}%",         //  6 "Compression"
+                $"{elapsedTime.TotalMilliseconds:F3}",  //  7 "Time"
+                $"{encodingSpeed:F3}x",                 //  8 "Speed"
+                string.Empty,                           //  9 "SpeedMin"
+                string.Empty,                           // 10 "SpeedMax"
+                string.Empty,                           // 11 "SpeedRange"
+                string.Empty,                           // 12 "SpeedConsistency"
+                $"{cpuLoadEncoder:F3}%",                // 13 "CPULoadEncoder"
+                $"{avgClock:F0} MHz",                   // 14 "CPUClock"
+                "1",                                    // 15 "Passes"
+                parameters,                             // 16 "Parameters"
+                encoderInfo.FileName,                   // 17 "Encoder"
+                encoderInfo.Version,                    // 18 "Version"
+                encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
+                string.Empty,                           // 20 "FastestEncoder"
+                string.Empty,                           // 21 "BestSize"
+                string.Empty,                           // 22 "SameSize"
+                audioFileDirectory,                     // 23 "AudioFileDirectory"
+                Md5Hash,                                // 24 "MD5"
+                string.Empty,                           // 25 "Duplicates"
+                string.Empty                            // 26 "Errors"
+                );
 
                 // Add a tag to Log raw
                 dataGridViewLog.Rows[rowIndex].Tag = benchmarkPass;
@@ -2378,33 +2372,33 @@ namespace FLAC_Benchmark_H
                 }
 
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    audioFileInfo.FileName,                 //  0 "Name"
-                    string.Empty,                           //  1 "Channels"
-                    string.Empty,                           //  2 "BitDepth"
-                    string.Empty,                           //  3 "SamplingRate"
-                    string.Empty,                           //  4 "InputFileSize"
-                    string.Empty,                           //  5 "OutputFileSize"
-                    string.Empty,                           //  6 "Compression"
-                    string.Empty,                           //  7 "Time"
-                    string.Empty,                           //  8 "Speed"
-                    string.Empty,                           //  9 "SpeedMin"
-                    string.Empty,                           // 10 "SpeedMax"
-                    string.Empty,                           // 11 "SpeedRange"
-                    string.Empty,                           // 12 "SpeedConsistency"
-                    string.Empty,                           // 13 "CPULoadEncoder"
-                    string.Empty,                           // 14 "CPUClock"
-                    "1",                                    // 15 "Passes"
-                    parameters,                             // 16 "Parameters"
-                    encoderInfo.FileName,                   // 17 "Encoder"
-                    encoderInfo.Version,                    // 18 "Version"
-                    encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
-                    string.Empty,                           // 20 "FastestEncoder"
-                    string.Empty,                           // 21 "BestSize"
-                    string.Empty,                           // 22 "SameSize"
-                    audioFileInfo.DirectoryPath,            // 23 "AudioFileDirectory"
-                    audioFileInfo.Md5Hash,                  // 24 "MD5"
-                    string.Empty,                           // 25 "Duplicates"
-                    finalError                              // 26 "Errors"
+                audioFileInfo.FileName,                 //  0 "Name"
+                string.Empty,                           //  1 "Channels"
+                string.Empty,                           //  2 "BitDepth"
+                string.Empty,                           //  3 "SamplingRate"
+                string.Empty,                           //  4 "InputFileSize"
+                string.Empty,                           //  5 "OutputFileSize"
+                string.Empty,                           //  6 "Compression"
+                string.Empty,                           //  7 "Time"
+                string.Empty,                           //  8 "Speed"
+                string.Empty,                           //  9 "SpeedMin"
+                string.Empty,                           // 10 "SpeedMax"
+                string.Empty,                           // 11 "SpeedRange"
+                string.Empty,                           // 12 "SpeedConsistency"
+                string.Empty,                           // 13 "CPULoadEncoder"
+                string.Empty,                           // 14 "CPUClock"
+                "1",                                    // 15 "Passes"
+                parameters,                             // 16 "Parameters"
+                encoderInfo.FileName,                   // 17 "Encoder"
+                encoderInfo.Version,                    // 18 "Version"
+                encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
+                string.Empty,                           // 20 "FastestEncoder"
+                string.Empty,                           // 21 "BestSize"
+                string.Empty,                           // 22 "SameSize"
+                audioFileInfo.DirectoryPath,            // 23 "AudioFileDirectory"
+                audioFileInfo.Md5Hash,                  // 24 "MD5"
+                string.Empty,                           // 25 "Duplicates"
+                finalError                              // 26 "Errors"
                 );
 
                 // Highlight entire row in red
@@ -2418,13 +2412,13 @@ namespace FLAC_Benchmark_H
 
                 // Log to file
                 File.AppendAllText("log.txt",
-                    $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} " +
-                    $"{audioFilePath}\t" +
-                    $"Parameters: {parameters.Trim()}\t" +
-                    $"Encoder: {encoderInfo.FileName}\t" +
-                    $"Version: {encoderInfo.Version}\t" +
-                    $"Encoder Path: {encoderInfo.DirectoryPath}\t" +
-                    $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} " +
+                $"{audioFilePath}\t" +
+                $"Parameters: {parameters.Trim()}\t" +
+                $"Encoder: {encoderInfo.FileName}\t" +
+                $"Version: {encoderInfo.Version}\t" +
+                $"Encoder Path: {encoderInfo.DirectoryPath}\t" +
+                $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
             }
         }
         private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
@@ -2463,34 +2457,32 @@ namespace FLAC_Benchmark_H
         {
             // 1. Group all benchmark passes by unique test configuration
             var grouped = _benchmarkPasses
-                .GroupBy(pass => new
-                {
-                    pass.AudioFilePath,
-                    pass.EncoderPath,
-                    pass.Parameters
-                })
-                .Select(g => new
-                {
-                    AudioFilePath = g.Key.AudioFilePath,
-                    EncoderPath = g.Key.EncoderPath,
-                    Parameters = g.Key.Parameters,
-                    PassesCount = g.Count(),
-                    AvgTimeMs = g.Average(p => p.Time),
-                    AvgSpeed = g.Average(p => p.Speed),
-                    AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
-                    AvgCPUClock = g.Where(p => p.CPUClock > 0).Any()
-                        ? g.Where(p => p.CPUClock > 0).Average(p => p.CPUClock)
-                        : 0,
-                    MinOutputSize = g.Min(p => p.OutputSize),
-                    MaxOutputSize = g.Max(p => p.OutputSize),
-                    InputSize = g.First().InputSize,
-                    Channels = g.First().Channels,
-                    BitDepth = g.First().BitDepth,
-                    SamplingRate = g.First().SamplingRate,
-                    Speeds = g.Where(p => p.Speed > 0).Select(p => p.Speed).OrderBy(s => s).ToList(), // Extract sorted speeds once
-                    LatestPass = g.OrderByDescending(p => p.Timestamp).First() // Latest pass for final size
-                })
-                .ToList();
+            .GroupBy(pass => new
+            {
+                pass.AudioFilePath,
+                pass.EncoderPath,
+                pass.Parameters
+            })
+            .Select(g => new
+            {
+                AudioFilePath = g.Key.AudioFilePath,
+                EncoderPath = g.Key.EncoderPath,
+                Parameters = g.Key.Parameters,
+                PassesCount = g.Count(),
+                AvgTimeMs = g.Average(p => p.Time),
+                AvgSpeed = g.Average(p => p.Speed),
+                AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
+                AvgCPUClock = g.Where(p => p.CPUClock > 0).Any() ? g.Where(p => p.CPUClock > 0).Average(p => p.CPUClock) : 0,
+                MinOutputSize = g.Min(p => p.OutputSize),
+                MaxOutputSize = g.Max(p => p.OutputSize),
+                InputSize = g.First().InputSize,
+                Channels = g.First().Channels,
+                BitDepth = g.First().BitDepth,
+                SamplingRate = g.First().SamplingRate,
+                Speeds = g.Where(p => p.Speed > 0).Select(p => p.Speed).OrderBy(s => s).ToList(), // Extract sorted speeds once
+                LatestPass = g.OrderByDescending(p => p.Timestamp).First() // Latest pass for final size
+            })
+            .ToList();
 
             var resultEntries = new List<LogEntry>();
 
@@ -2534,8 +2526,8 @@ namespace FLAC_Benchmark_H
                     // Calculate p50 (median)
                     int n = speeds.Count;
                     double p50 = n % 2 == 0
-                        ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
-                        : speeds[n / 2];
+                    ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
+                    : speeds[n / 2];
 
                     // Calculate p90 (90th percentile)
                     double p90Index = 0.9 * (n - 1);
@@ -2576,11 +2568,11 @@ namespace FLAC_Benchmark_H
 
                     // Set text colors based on results
                     OutputForeColor = outputSizeFinal < group.InputSize ? Color.Green :
-                            outputSizeFinal > group.InputSize ? Color.Red : Color.Black,
+                outputSizeFinal > group.InputSize ? Color.Red : Color.Black,
                     CompressionForeColor = compressionPercentage < 100 ? Color.Green :
-                                         compressionPercentage > 100 ? Color.Red : Color.Black,
+                compressionPercentage > 100 ? Color.Red : Color.Black,
                     SpeedForeColor = group.AvgSpeed > 1 ? Color.Green :
-                                   group.AvgSpeed < 1 ? Color.Red : Color.Black
+                group.AvgSpeed < 1 ? Color.Red : Color.Black
                 };
 
                 resultEntries.Add(logEntry);
@@ -2613,9 +2605,9 @@ namespace FLAC_Benchmark_H
 
                 // Analyze output file sizes
                 var validEntries = entries
-                    .Where(e => long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
-                    .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
-                    .ToList();
+                .Where(e => long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
+                .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
+                .ToList();
 
                 if (validEntries.Count == 0)
                 {
@@ -2654,22 +2646,22 @@ namespace FLAC_Benchmark_H
 
             // Group error rows from current log
             var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
-                .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
-                .GroupBy(row => new
-                {
-                    Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
-                    Encoder = (row.Cells["EncoderDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Encoder"].Value?.ToString() ?? ""),
-                    Params = row.Cells["Parameters"].Value?.ToString() ?? ""
+            .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+            .GroupBy(row => new
+            {
+                Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
+                Encoder = (row.Cells["EncoderDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Encoder"].Value?.ToString() ?? ""),
+                Params = row.Cells["Parameters"].Value?.ToString() ?? ""
+            })
+            .Select(g => new
+            {
+                First = g.First(),
+                TotalPasses = g.Sum(row => {
+                    string passesStr = row.Cells["Passes"].Value?.ToString() ?? "1";
+                    return int.TryParse(passesStr, out int p) ? p : 1;
                 })
-                .Select(g => new
-                {
-                    First = g.First(),
-                    TotalPasses = g.Sum(row => {
-                        string passesStr = row.Cells["Passes"].Value?.ToString() ?? "1";
-                        return int.TryParse(passesStr, out int p) ? p : 1;
-                    })
-                })
-                .ToList();
+            })
+            .ToList();
 
             var errorEntries = new List<LogEntry>();
             foreach (var eg in errorGroups)
@@ -2713,33 +2705,33 @@ namespace FLAC_Benchmark_H
                 foreach (var entry in finalEntries)
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
-                        entry.Name,
-                        entry.Channels,
-                        entry.BitDepth,
-                        entry.SamplingRate,
-                        entry.InputFileSize,
-                        entry.OutputFileSize,
-                        entry.Compression,
-                        entry.Time,
-                        entry.Speed,
-                        entry.SpeedMin,
-                        entry.SpeedMax,
-                        entry.SpeedRange,
-                        entry.SpeedConsistency,
-                        entry.CPULoadEncoder,
-                        entry.CPUClock,
-                        entry.Passes,
-                        entry.Parameters,
-                        entry.Encoder,
-                        entry.Version,
-                        entry.EncoderDirectory,
-                        entry.FastestEncoder,
-                        entry.BestSize,
-                        entry.SameSize,
-                        entry.AudioFileDirectory,
-                        entry.MD5,
-                        entry.Duplicates,
-                        entry.Errors
+                    entry.Name,
+                    entry.Channels,
+                    entry.BitDepth,
+                    entry.SamplingRate,
+                    entry.InputFileSize,
+                    entry.OutputFileSize,
+                    entry.Compression,
+                    entry.Time,
+                    entry.Speed,
+                    entry.SpeedMin,
+                    entry.SpeedMax,
+                    entry.SpeedRange,
+                    entry.SpeedConsistency,
+                    entry.CPULoadEncoder,
+                    entry.CPUClock,
+                    entry.Passes,
+                    entry.Parameters,
+                    entry.Encoder,
+                    entry.Version,
+                    entry.EncoderDirectory,
+                    entry.FastestEncoder,
+                    entry.BestSize,
+                    entry.SameSize,
+                    entry.AudioFileDirectory,
+                    entry.MD5,
+                    entry.Duplicates,
+                    entry.Errors
                     );
 
                     // Restore text colors
@@ -2747,7 +2739,7 @@ namespace FLAC_Benchmark_H
                     dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
                     dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
                 }
-                
+
                 // Resort after analysis
                 SortDataGridView();
 
@@ -2775,11 +2767,11 @@ namespace FLAC_Benchmark_H
                 string taskWord = errorEntries.Count == 1 ? "task" : "tasks";
                 string runWord = totalRuns == 1 ? "run" : "runs";
                 MessageBox.Show(
-                    $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
-                    "Results are based only on successful runs.",
-                    "Analysis Summary",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
+                "Results are based only on successful runs.",
+                "Analysis Summary",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
                 );
             }
         }
@@ -2884,45 +2876,45 @@ namespace FLAC_Benchmark_H
 
             // Perform multi-level sorting with natural sort for Parameters
             var sortedData = dataToSort
-                .OrderBy(x => x.AudioFileDirectory)
-                .ThenBy(x => x.Name)
-                .ThenBy(x => x.Parameters, new NaturalStringComparer())
-                .ThenBy(x => x.EncoderDirectory)
-                .ThenBy(x => x.Encoder)
-                .ToList();
+            .OrderBy(x => x.AudioFileDirectory)
+            .ThenBy(x => x.Name)
+            .ThenBy(x => x.Parameters, new NaturalStringComparer())
+            .ThenBy(x => x.EncoderDirectory)
+            .ThenBy(x => x.Encoder)
+            .ToList();
 
             // Clear DataGridView and add sorted data
             dataGridViewLog.Rows.Clear();
             foreach (var data in sortedData)
             {
                 int rowIndex = dataGridViewLog.Rows.Add(
-                    data.Name,
-                    data.Channels,
-                    data.BitDepth,
-                    data.SamplingRate,
-                    data.InputFileSize,
-                    data.OutputFileSize,
-                    data.Compression,
-                    data.Time,
-                    data.Speed,
-                    data.SpeedMin,
-                    data.SpeedMax,
-                    data.SpeedRange,
-                    data.SpeedConsistency,
-                    data.CPULoadEncoder,
-                    data.CPUClock,
-                    data.Passes,
-                    data.Parameters,
-                    data.Encoder,
-                    data.Version,
-                    data.EncoderDirectory,
-                    data.FastestEncoder,
-                    data.BestSize,
-                    data.SameSize,
-                    data.AudioFileDirectory,
-                    data.MD5,
-                    data.Duplicates,
-                    data.Errors);
+                data.Name,
+                data.Channels,
+                data.BitDepth,
+                data.SamplingRate,
+                data.InputFileSize,
+                data.OutputFileSize,
+                data.Compression,
+                data.Time,
+                data.Speed,
+                data.SpeedMin,
+                data.SpeedMax,
+                data.SpeedRange,
+                data.SpeedConsistency,
+                data.CPULoadEncoder,
+                data.CPUClock,
+                data.Passes,
+                data.Parameters,
+                data.Encoder,
+                data.Version,
+                data.EncoderDirectory,
+                data.FastestEncoder,
+                data.BestSize,
+                data.SameSize,
+                data.AudioFileDirectory,
+                data.MD5,
+                data.Duplicates,
+                data.Errors);
 
                 // Set text color
                 dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = data.OutputForeColor; // OutputFileSize
@@ -2991,8 +2983,8 @@ namespace FLAC_Benchmark_H
 
                 // Ask to open
                 if (MessageBox.Show(
-                    $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
-                    "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
+                "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                 {
                     Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
                 }
@@ -3006,9 +2998,9 @@ namespace FLAC_Benchmark_H
 
             // Get only VISIBLE columns in display order
             var visibleColumns = dgv.Columns.Cast<DataGridViewColumn>()
-                .Where(col => col.Visible)
-                .OrderBy(col => col.DisplayIndex)
-                .ToList();
+            .Where(col => col.Visible)
+            .OrderBy(col => col.DisplayIndex)
+            .ToList();
 
             if (visibleColumns.Count == 0) return;
 
@@ -3065,13 +3057,12 @@ namespace FLAC_Benchmark_H
                         else
                             sheetCell.Value = cellValue?.ToString() ?? string.Empty;
                     }
-                    else if (colName == "Time" || colName == "Speed" || colName == "SpeedMin" ||
-                             colName == "SpeedMax" || colName == "SpeedRange" || colName == "CPUClock")
+                    else if (colName == "Time" || colName == "Speed" || colName == "SpeedMin" || colName == "SpeedMax" || colName == "SpeedRange" || colName == "CPUClock")
                     {
                         if (cellValue != null)
                         {
                             string cleanValue = cellValue.ToString()
-                                .Replace("x", "").Replace("MHz", "").Trim();
+                            .Replace("x", "").Replace("MHz", "").Trim();
                             if (double.TryParse(cleanValue, out double val))
                                 sheetCell.Value = val;
                             else
@@ -3164,9 +3155,9 @@ namespace FLAC_Benchmark_H
             {
                 // Get only VISIBLE columns, sorted by their display order in the UI
                 var visibleColumns = dataGridViewLog.Columns.Cast<DataGridViewColumn>()
-                    .Where(col => col.Visible)
-                    .OrderBy(col => col.DisplayIndex)
-                    .ToList();
+                .Where(col => col.Visible)
+                .OrderBy(col => col.DisplayIndex)
+                .ToList();
 
                 // Check if there are any visible columns to copy
                 if (visibleColumns.Count == 0)
@@ -3177,7 +3168,7 @@ namespace FLAC_Benchmark_H
 
                 // Check if there are any data rows (excluding the new row placeholder)
                 bool hasData = dataGridViewLog.Rows.Cast<DataGridViewRow>()
-                    .Any(row => !row.IsNewRow);
+                .Any(row => !row.IsNewRow);
 
                 if (!hasData)
                 {
@@ -3222,7 +3213,7 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
@@ -3271,9 +3262,9 @@ namespace FLAC_Benchmark_H
 
             // Get only VISIBLE columns, sorted by their display order in the UI
             var visibleColumns = activeGrid.Columns.Cast<DataGridViewColumn>()
-                .Where(col => col.Visible)
-                .OrderBy(col => col.DisplayIndex)
-                .ToList();
+            .Where(col => col.Visible)
+            .OrderBy(col => col.DisplayIndex)
+            .ToList();
 
             // Check if there are any visible columns to copy
             if (visibleColumns.Count == 0)
@@ -3284,7 +3275,7 @@ namespace FLAC_Benchmark_H
 
             // Check if there are any data rows (excluding the new row placeholder)
             bool hasData = activeGrid.Rows.Cast<DataGridViewRow>()
-                .Any(row => !row.IsNewRow);
+            .Any(row => !row.IsNewRow);
 
             if (!hasData)
             {
@@ -3482,13 +3473,13 @@ namespace FLAC_Benchmark_H
                         // Sort them by Timestamp (oldest first) to match the order in which they were originally added
                         // Then take only the first 'passesCount' entries - this corresponds to the group that was analyzed
                         var matchingPasses = _benchmarkPasses
-                            .Where(p =>
-                                p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
-                                p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
-                                p.Parameters == parameters)
-                            .OrderBy(p => p.Timestamp) // Oldest first
-                            .Take(passesCount)         // Take exactly N = Passes
-                            .ToList();
+                        .Where(p =>
+                        p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
+                        p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
+                        p.Parameters == parameters)
+                        .OrderBy(p => p.Timestamp) // Oldest first
+                        .Take(passesCount)         // Take exactly N = Passes
+                        .ToList();
 
                         passesToDelete.AddRange(matchingPasses);
                     }
@@ -3496,10 +3487,10 @@ namespace FLAC_Benchmark_H
 
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 var indexes = dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
-                    .Where(r => !r.IsNewRow)
-                    .Select(r => r.Index)
-                    .OrderByDescending(i => i)
-                    .ToList();
+                .Where(r => !r.IsNewRow)
+                .Select(r => r.Index)
+                .OrderByDescending(i => i)
+                .ToList();
 
                 foreach (int index in indexes)
                 {
@@ -3523,10 +3514,10 @@ namespace FLAC_Benchmark_H
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 var indexes = dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
-                    .Where(r => !r.IsNewRow)
-                    .Select(r => r.Index)
-                    .OrderByDescending(i => i)
-                    .ToList();
+                .Where(r => !r.IsNewRow)
+                .Select(r => r.Index)
+                .OrderByDescending(i => i)
+                .ToList();
 
                 foreach (int index in indexes)
                 {
@@ -3543,10 +3534,10 @@ namespace FLAC_Benchmark_H
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 var indexes = dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
-                    .Where(r => !r.IsNewRow)
-                    .Select(r => r.Index)
-                    .OrderByDescending(i => i)
-                    .ToList();
+                .Where(r => !r.IsNewRow)
+                .Select(r => r.Index)
+                .OrderByDescending(i => i)
+                .ToList();
 
                 foreach (int index in indexes)
                 {
@@ -3585,8 +3576,7 @@ namespace FLAC_Benchmark_H
                 {
                     AddJobsFromDirectory(file);
                 }
-                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
-                         Path.GetExtension(file).Equals(".bak", StringComparison.OrdinalIgnoreCase))
+                else if (Path.GetExtension(file).Equals(".txt", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(file).Equals(".bak", StringComparison.OrdinalIgnoreCase))
                 {
                     LoadJobsFromFile(file); // Load jobs from file
                 }
@@ -3618,7 +3608,7 @@ namespace FLAC_Benchmark_H
             if (!File.Exists(filePath))
             {
                 MessageBox.Show("The specified file does not exist.", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -3665,13 +3655,13 @@ namespace FLAC_Benchmark_H
                     }
 
                     MessageBox.Show($"Invalid line format: {line}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error reading file: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private async void buttonImportJobList_Click(object? sender, EventArgs e)
@@ -3729,14 +3719,14 @@ namespace FLAC_Benchmark_H
                                 }
 
                                 MessageBox.Show($"Invalid line format: {line}", "Error",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error reading file: {ex.Message}", "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -3756,27 +3746,27 @@ namespace FLAC_Benchmark_H
                         // Create an array of formatted strings representing the rows in dataGridViewJobs
                         // Exclude the new row if it exists (though we disabled it)
                         var jobList = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
-                            .Where(row => !row.IsNewRow) // Filter out the new row
-                            .Select(row =>
-                            {
-                                // Get values from the respective cells
-                                bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
-                                string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
-                                string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
-                                string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+                        .Where(row => !row.IsNewRow) // Filter out the new row
+                        .Select(row =>
+                        {
+                            // Get values from the respective cells
+                            bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                            string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                            string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                            string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
 
-                                // Format the row data as a single line
-                                string status = isChecked ? "Checked" : "Unchecked";
-                                return $"{status}|{type}|{passes}|{parameters}";
-                            })
-                            .ToArray();
+                            // Format the row data as a single line
+                            string status = isChecked ? "Checked" : "Unchecked";
+                            return $"{status}|{type}|{passes}|{parameters}";
+                        })
+                        .ToArray();
 
                         File.WriteAllLines(saveFileDialog.FileName, jobList, Encoding.UTF8);
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -3794,9 +3784,9 @@ namespace FLAC_Benchmark_H
             // Remove selected rows from dataGridViewJobs
             // Get selected row indices in descending order to avoid index shifting issues during removal
             var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
-                                                              .Select(row => row.Index)
-                                                              .OrderByDescending(index => index)
-                                                              .ToList();
+            .Select(row => row.Index)
+            .OrderByDescending(index => index)
+            .ToList();
 
             foreach (int index in selectedIndices)
             {
@@ -3838,8 +3828,7 @@ namespace FLAC_Benchmark_H
             {
                 var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
                 // Compare Job Type and Parameters columns
-                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName &&
-                    lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
+                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
                     // Update the last row's pass count in dataGridViewJobs
                     int currentPasses = int.Parse(lastRow.Cells["Column3Passes"].Value?.ToString() ?? "1");
@@ -3875,8 +3864,7 @@ namespace FLAC_Benchmark_H
             {
                 var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
                 // Compare Job Type and Parameters columns
-                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName &&
-                    lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
+                if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
                     // Update the last row's pass count in dataGridViewJobs
                     int currentPasses = int.Parse(lastRow.Cells["Column3Passes"].Value?.ToString() ?? "1");
@@ -3949,9 +3937,9 @@ namespace FLAC_Benchmark_H
                 // --- LOGIC FOR SELECTED ROWS ---
                 // Get the indices of the selected rows
                 var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
-                                                                 .Select(row => row.Index)
-                                                                 .OrderBy(index => index) // Sort indices in ascending order (top -> down)
-                                                                 .ToList();
+                .Select(row => row.Index)
+                .OrderBy(index => index) // Sort indices in ascending order (top -> down)
+                .ToList();
 
                 // Iterate through rows in the order of their ascending index
                 foreach (int index in selectedIndices)
@@ -4002,7 +3990,7 @@ namespace FLAC_Benchmark_H
             {
                 // Show a message if no rows were found to copy
                 MessageBox.Show("No jobs to copy.", "Information",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private void buttonPasteJobs_Click(object? sender, EventArgs e)
@@ -4055,21 +4043,21 @@ namespace FLAC_Benchmark_H
 
                         // Show a warning if a line doesn't match expected formats
                         MessageBox.Show($"Invalid line format: {line}", "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 else
                 {
                     // Show a message if the clipboard is empty
                     MessageBox.Show("Clipboard is empty.", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
                 // Show an error message if an exception occurs during pasting
                 MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void DataGridViewJobs_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -4101,8 +4089,8 @@ namespace FLAC_Benchmark_H
             {
                 // Get only data rows (exclude new row and any other special rows)
                 var dataRows = dataGridViewJobs.Rows
-                    .Cast<DataGridViewRow>()
-                    .Where(row => !row.IsNewRow && row.Index >= 0);
+                .Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow && row.Index >= 0);
 
                 // Check if all data rows are selected
                 bool allChecked = true;
@@ -4524,16 +4512,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                    outputFilePath: "",
-                                    audioFilePath: audioFilePath,
-                                    parameters: parameters,
-                                    encoder: encoder,
-                                    elapsedTime: TimeSpan.Zero,
-                                    userProcessorTime: TimeSpan.Zero,
-                                    privilegedProcessorTime: TimeSpan.Zero,
-                                    avgClock: 0,
-                                    errorOutput: specificError,
-                                    exitCode: -1
+                                outputFilePath: "",
+                                audioFilePath: audioFilePath,
+                                parameters: parameters,
+                                encoder: encoder,
+                                elapsedTime: TimeSpan.Zero,
+                                userProcessorTime: TimeSpan.Zero,
+                                privilegedProcessorTime: TimeSpan.Zero,
+                                avgClock: 0,
+                                errorOutput: specificError,
+                                exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -4545,16 +4533,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                    outputFilePath: "",
-                                    audioFilePath: audioFilePath,
-                                    parameters: parameters,
-                                    encoder: encoder,
-                                    elapsedTime: TimeSpan.Zero,
-                                    userProcessorTime: TimeSpan.Zero,
-                                    privilegedProcessorTime: TimeSpan.Zero,
-                                    avgClock: 0,
-                                    errorOutput: ex.Message,
-                                    exitCode: -1
+                                outputFilePath: "",
+                                audioFilePath: audioFilePath,
+                                parameters: parameters,
+                                encoder: encoder,
+                                elapsedTime: TimeSpan.Zero,
+                                userProcessorTime: TimeSpan.Zero,
+                                privilegedProcessorTime: TimeSpan.Zero,
+                                avgClock: 0,
+                                errorOutput: ex.Message,
+                                exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -4878,16 +4866,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                    outputFilePath: "",
-                                    audioFilePath: audioFilePath,
-                                    parameters: parameters,
-                                    encoder: encoder,
-                                    elapsedTime: TimeSpan.Zero,
-                                    userProcessorTime: TimeSpan.Zero,
-                                    privilegedProcessorTime: TimeSpan.Zero,
-                                    avgClock: 0,
-                                    errorOutput: specificError,
-                                    exitCode: -1
+                                outputFilePath: "",
+                                audioFilePath: audioFilePath,
+                                parameters: parameters,
+                                encoder: encoder,
+                                elapsedTime: TimeSpan.Zero,
+                                userProcessorTime: TimeSpan.Zero,
+                                privilegedProcessorTime: TimeSpan.Zero,
+                                avgClock: 0,
+                                errorOutput: specificError,
+                                exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -4899,16 +4887,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                    outputFilePath: "",
-                                    audioFilePath: audioFilePath,
-                                    parameters: parameters,
-                                    encoder: encoder,
-                                    elapsedTime: TimeSpan.Zero,
-                                    userProcessorTime: TimeSpan.Zero,
-                                    privilegedProcessorTime: TimeSpan.Zero,
-                                    avgClock: 0,
-                                    errorOutput: ex.Message,
-                                    exitCode: -1
+                                outputFilePath: "",
+                                audioFilePath: audioFilePath,
+                                parameters: parameters,
+                                encoder: encoder,
+                                elapsedTime: TimeSpan.Zero,
+                                userProcessorTime: TimeSpan.Zero,
+                                privilegedProcessorTime: TimeSpan.Zero,
+                                avgClock: 0,
+                                errorOutput: ex.Message,
+                                exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -5377,16 +5365,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                                outputFilePath: "",
-                                                audioFilePath: audioFilePath,
-                                                parameters: parameters,
-                                                encoder: encoder,
-                                                elapsedTime: TimeSpan.Zero,
-                                                userProcessorTime: TimeSpan.Zero,
-                                                privilegedProcessorTime: TimeSpan.Zero,
-                                                avgClock: 0,
-                                                errorOutput: specificError,
-                                                exitCode: -1
+                                            outputFilePath: "",
+                                            audioFilePath: audioFilePath,
+                                            parameters: parameters,
+                                            encoder: encoder,
+                                            elapsedTime: TimeSpan.Zero,
+                                            userProcessorTime: TimeSpan.Zero,
+                                            privilegedProcessorTime: TimeSpan.Zero,
+                                            avgClock: 0,
+                                            errorOutput: specificError,
+                                            exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -5398,16 +5386,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                                outputFilePath: "",
-                                                audioFilePath: audioFilePath,
-                                                parameters: parameters,
-                                                encoder: encoder,
-                                                elapsedTime: TimeSpan.Zero,
-                                                userProcessorTime: TimeSpan.Zero,
-                                                privilegedProcessorTime: TimeSpan.Zero,
-                                                avgClock: 0,
-                                                errorOutput: ex.Message,
-                                                exitCode: -1
+                                            outputFilePath: "",
+                                            audioFilePath: audioFilePath,
+                                            parameters: parameters,
+                                            encoder: encoder,
+                                            elapsedTime: TimeSpan.Zero,
+                                            userProcessorTime: TimeSpan.Zero,
+                                            privilegedProcessorTime: TimeSpan.Zero,
+                                            avgClock: 0,
+                                            errorOutput: ex.Message,
+                                            exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -5562,16 +5550,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                                outputFilePath: "",
-                                                audioFilePath: audioFilePath,
-                                                parameters: parameters,
-                                                encoder: encoder,
-                                                elapsedTime: TimeSpan.Zero,
-                                                userProcessorTime: TimeSpan.Zero,
-                                                privilegedProcessorTime: TimeSpan.Zero,
-                                                avgClock: 0,
-                                                errorOutput: specificError,
-                                                exitCode: -1
+                                            outputFilePath: "",
+                                            audioFilePath: audioFilePath,
+                                            parameters: parameters,
+                                            encoder: encoder,
+                                            elapsedTime: TimeSpan.Zero,
+                                            userProcessorTime: TimeSpan.Zero,
+                                            privilegedProcessorTime: TimeSpan.Zero,
+                                            avgClock: 0,
+                                            errorOutput: specificError,
+                                            exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -5583,16 +5571,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                                outputFilePath: "",
-                                                audioFilePath: audioFilePath,
-                                                parameters: parameters,
-                                                encoder: encoder,
-                                                elapsedTime: TimeSpan.Zero,
-                                                userProcessorTime: TimeSpan.Zero,
-                                                privilegedProcessorTime: TimeSpan.Zero,
-                                                avgClock: 0,
-                                                errorOutput: ex.Message,
-                                                exitCode: -1
+                                            outputFilePath: "",
+                                            audioFilePath: audioFilePath,
+                                            parameters: parameters,
+                                            encoder: encoder,
+                                            elapsedTime: TimeSpan.Zero,
+                                            userProcessorTime: TimeSpan.Zero,
+                                            privilegedProcessorTime: TimeSpan.Zero,
+                                            avgClock: 0,
+                                            errorOutput: ex.Message,
+                                            exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -5634,7 +5622,7 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
- 
+
         private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var button = (Button)sender;
@@ -5709,9 +5697,9 @@ namespace FLAC_Benchmark_H
                         string md5Hash = audioInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
 
                         if (string.IsNullOrEmpty(md5Hash) ||
-                            md5Hash == "MD5 calculation failed" ||
-                            md5Hash == "00000000000000000000000000000000" ||
-                            md5Hash == "N/A")
+                        md5Hash == "MD5 calculation failed" ||
+                        md5Hash == "00000000000000000000000000000000" ||
+                        md5Hash == "N/A")
                         {
                             string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
                             if (fileExtension == ".wav")
@@ -5767,13 +5755,13 @@ namespace FLAC_Benchmark_H
                     foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                     {
                         var sortedPaths = kvp.Value
-                            .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
-                            .Where(x => x.Info != null)
-                            .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)          // FLAC > WAV
-                            .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)  // Shorter path first
-                            .ThenByDescending(x => x.Info.LastWriteTime)                // Newer first
-                            .ThenBy(x => x.Path)                                        // Then by path
-                            .ToList();
+                        .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
+                        .Where(x => x.Info != null)
+                        .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)          // FLAC > WAV
+                        .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)  // Shorter path first
+                        .ThenByDescending(x => x.Info.LastWriteTime)                // Newer first
+                        .ThenBy(x => x.Path)                                        // Then by path
+                        .ToList();
 
                         if (sortedPaths.Count > 0)
                         {
@@ -5789,8 +5777,7 @@ namespace FLAC_Benchmark_H
                         for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
                         {
                             DataGridViewRow row = dataGridViewLogDetectDupes.Rows[i];
-                            if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed" ||
-                                !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()))
+                            if (row.Cells["MD5"].Value?.ToString() == "MD5 calculation failed" || !string.IsNullOrEmpty(row.Cells["Duplicates"].Value?.ToString()))
                             {
                                 dataGridViewLogDetectDupes.Rows.RemoveAt(i);
                             }
@@ -5822,6 +5809,49 @@ namespace FLAC_Benchmark_H
                             if (audioInfoCache.TryGetValue(filePath, out var info))
                             {
                                 int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
+                                info.FileName, // 0 Name
+                                "", // 1 Channels
+                                "", // 2 BitDepth
+                                "", // 3 SamplingRate
+                                "", // 4 InputFileSize
+                                "", // 5 OutputFileSize
+                                "", // 6 Compression
+                                "", // 7 Time
+                                "", // 8 Speed
+                                "", // 9 SpeedMin
+                                "", // 10 SpeedMax
+                                "", // 11 SpeedRange
+                                "", // 12 SpeedConsistency
+                                "", // 13 CPULoadEncoder
+                                "", // 14 CPUClock
+                                "", // 15 Passes
+                                "", // 16 Parameters
+                                "", // 17 Encoder
+                                "", // 18 Version
+                                "", // 19 EncoderDirectory
+                                "", // 20 FastestEncoder
+                                "", // 21 BestSize
+                                "", // 22 SameSize
+                                info.DirectoryPath, // 23 AudioFileDirectory
+                                "MD5 calculation failed", // 24 MD5
+                                "", // 25 Duplicates
+                                info.ErrorDetails ?? string.Empty // 26 Errors
+                                );
+                                dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
+                            }
+                        }
+
+                        // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
+                        foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
+                        {
+                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
+                            audioInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
+
+                            foreach (string path in kvp.Value)
+                            {
+                                if (audioInfoCache.TryGetValue(path, out var info))
+                                {
+                                    int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                     info.FileName, // 0 Name
                                     "", // 1 Channels
                                     "", // 2 BitDepth
@@ -5846,52 +5876,9 @@ namespace FLAC_Benchmark_H
                                     "", // 21 BestSize
                                     "", // 22 SameSize
                                     info.DirectoryPath, // 23 AudioFileDirectory
-                                    "MD5 calculation failed", // 24 MD5
-                                    "", // 25 Duplicates
-                                    info.ErrorDetails ?? string.Empty // 26 Errors
-                                );
-                                dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Gray;
-                            }
-                        }
-
-                        // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
-                        foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
-                        {
-                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
-                                audioInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
-
-                            foreach (string path in kvp.Value)
-                            {
-                                if (audioInfoCache.TryGetValue(path, out var info))
-                                {
-                                    int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
-                                        info.FileName, // 0 Name
-                                        "", // 1 Channels
-                                        "", // 2 BitDepth
-                                        "", // 3 SamplingRate
-                                        "", // 4 InputFileSize
-                                        "", // 5 OutputFileSize
-                                        "", // 6 Compression
-                                        "", // 7 Time
-                                        "", // 8 Speed
-                                        "", // 9 SpeedMin
-                                        "", // 10 SpeedMax
-                                        "", // 11 SpeedRange
-                                        "", // 12 SpeedConsistency
-                                        "", // 13 CPULoadEncoder
-                                        "", // 14 CPUClock
-                                        "", // 15 Passes
-                                        "", // 16 Parameters
-                                        "", // 17 Encoder
-                                        "", // 18 Version
-                                        "", // 19 EncoderDirectory
-                                        "", // 20 FastestEncoder
-                                        "", // 21 BestSize
-                                        "", // 22 SameSize
-                                        info.DirectoryPath, // 23 AudioFileDirectory
-                                        kvp.Key, // 24 MD5
-                                        duplicatesList, // 25 Duplicates
-                                        "" // 26 Errors
+                                    kvp.Key, // 24 MD5
+                                    duplicatesList, // 25 Duplicates
+                                    "" // 26 Errors
                                     );
                                     dataGridViewLogDetectDupes.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.Brown;
                                 }
@@ -5908,14 +5895,14 @@ namespace FLAC_Benchmark_H
                         // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
                         var allItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
                         var duplicateGroups = hashDict
-                            .Where(kvp => kvp.Value.Count > 1)
-                            .Select(kvp => new
-                            {
-                                Group = kvp.Value,
-                                Primary = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p)) ?? kvp.Value.First()
-                            })
-                            .OrderBy(g => g.Primary) // Order groups by primary file path
-                            .ToList();
+                        .Where(kvp => kvp.Value.Count > 1)
+                        .Select(kvp => new
+                        {
+                            Group = kvp.Value,
+                            Primary = itemsToCheck.FirstOrDefault(p => kvp.Value.Contains(p)) ?? kvp.Value.First()
+                        })
+                        .OrderBy(g => g.Primary) // Order groups by primary file path
+                        .ToList();
 
                         listViewAudioFiles.BeginUpdate();
                         try
@@ -5979,12 +5966,12 @@ namespace FLAC_Benchmark_H
                         int filesWithErrors = filesWithMD5Errors.Count;
 
                         string message = $"Duplicate detection completed.\n\n" +
-                                       $"Total files processed: {totalFiles}\n" +
-                                       $"Duplicate groups found: {duplicateGroups}\n" +
-                                       $"Duplicate files (total): {duplicateFiles}\n" +
-                                       $"Files with MD5 errors: {filesWithErrors}\n\n" +
-                                       $"Primary files are CHECKED.\n" +
-                                       $"Duplicate files are UNCHECKED.";
+                        $"Total files processed: {totalFiles}\n" +
+                        $"Duplicate groups found: {duplicateGroups}\n" +
+                        $"Duplicate files (total): {duplicateFiles}\n" +
+                        $"Files with MD5 errors: {filesWithErrors}\n\n" +
+                        $"Primary files are CHECKED.\n" +
+                        $"Duplicate files are UNCHECKED.";
 
                         MessageBox.Show(message, "Duplicate Detection Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }));
@@ -6022,7 +6009,7 @@ namespace FLAC_Benchmark_H
 
                         // Remove missing files
                         var itemsToRemove = listViewAudioFiles.Items.Cast<ListViewItem>()
-                            .Where(item => !File.Exists(item.Tag.ToString())).ToList();
+                        .Where(item => !File.Exists(item.Tag.ToString())).ToList();
 
                         foreach (var item in itemsToRemove)
                             listViewAudioFiles.Items.Remove(item);
@@ -6035,13 +6022,13 @@ namespace FLAC_Benchmark_H
 
                         // Collect FLAC files and settings
                         flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
-                            .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                            .Select(item => item.Tag.ToString()));
+                        .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
+                        .Select(item => item.Tag.ToString()));
 
                         encoderPath = listViewEncoders.Items
-                            .Cast<ListViewItem>()
-                            .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                            ?.Tag?.ToString();
+                        .Cast<ListViewItem>()
+                        .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                        ?.Tag?.ToString();
 
                         useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
                     });
@@ -6141,38 +6128,38 @@ namespace FLAC_Benchmark_H
                         var rowsToAdd = sortedResults.Select(result =>
                         {
                             string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
-                                ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
+                            ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
 
                             var row = new DataGridViewRow();
                             row.CreateCells(dataGridViewLogTestForErrors);
                             row.SetValues(
-                                result.FileName, // 0 Name
-                                "", // 1 Channels
-                                "", // 2 BitDepth
-                                "", // 3 SamplingRate
-                                "", // 4 InputFileSize
-                                "", // 5 OutputFileSize
-                                "", // 6 Compression
-                                "", // 7 Time
-                                "", // 8 Speed
-                                "", // 9 SpeedMin
-                                "", // 10 SpeedMax
-                                "", // 11 SpeedRange
-                                "", // 12 SpeedConsistency
-                                "", // 13 CPULoadEncoder
-                                "", // 14 CPUClock
-                                "", // 15 Passes
-                                "", // 16 Parameters
-                                "", // 17 Encoder
-                                "", // 18 Version
-                                "", // 19 EncoderDirectory
-                                "", // 20 FastestEncoder
-                                "", // 21 BestSize
-                                "", // 22 SameSize
-                                directoryPath, // 23 AudioFileDirectory
-                                "Integrity Check Failed", // 24 MD5
-                                "", // 25 Duplicates
-                                result.Message // 26 Errors
+                            result.FileName, // 0 Name
+                            "", // 1 Channels
+                            "", // 2 BitDepth
+                            "", // 3 SamplingRate
+                            "", // 4 InputFileSize
+                            "", // 5 OutputFileSize
+                            "", // 6 Compression
+                            "", // 7 Time
+                            "", // 8 Speed
+                            "", // 9 SpeedMin
+                            "", // 10 SpeedMax
+                            "", // 11 SpeedRange
+                            "", // 12 SpeedConsistency
+                            "", // 13 CPULoadEncoder
+                            "", // 14 CPUClock
+                            "", // 15 Passes
+                            "", // 16 Parameters
+                            "", // 17 Encoder
+                            "", // 18 Version
+                            "", // 19 EncoderDirectory
+                            "", // 20 FastestEncoder
+                            "", // 21 BestSize
+                            "", // 22 SameSize
+                            directoryPath, // 23 AudioFileDirectory
+                            "Integrity Check Failed", // 24 MD5
+                            "", // 25 Duplicates
+                            result.Message // 26 Errors
                             );
                             row.DefaultCellStyle.ForeColor = Color.Red;
                             return row;
@@ -6192,12 +6179,12 @@ namespace FLAC_Benchmark_H
                     }
 
                     MessageBox.Show(
-                        errorResults.Count == 0
-                            ? "All FLAC files passed the integrity test."
-                            : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
-                        "Test Complete",
-                        MessageBoxButtons.OK,
-                        errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+                    errorResults.Count == 0
+                    ? "All FLAC files passed the integrity test."
+                    : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
+                    "Test Complete",
+                    MessageBoxButtons.OK,
+                    errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
                     );
                 });
             }
@@ -6208,7 +6195,7 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -6405,7 +6392,8 @@ namespace FLAC_Benchmark_H
                     // Check boundaries
                     if (newIndex < 0 || newIndex >= listView.Items.Count)
                         return; // If out of bounds, exit the method
-                                // Remove item from current position
+                    
+                    // Remove item from current position
                     listView.Items.Remove(item);
                     // Insert item at new position
                     listView.Items.Insert(newIndex, item);
@@ -6443,15 +6431,14 @@ namespace FLAC_Benchmark_H
 
             // Get the indices of all selected rows and sort them in ascending order
             var selectedIndices = dataGridView.SelectedRows.Cast<DataGridViewRow>()
-                                                           .Select(row => row.Index)
-                                                           .OrderBy(index => index)
-                                                           .ToList();
+            .Select(row => row.Index)
+            .OrderBy(index => index)
+            .ToList();
 
             // Check boundaries: Ensure no selected row is at the edge where it cannot move further
             // For moving UP, no selected row should be at index 0
             // For moving DOWN, no selected row should be at the last index (Count - 1)
-            if ((direction == -1 && selectedIndices.Contains(0)) ||
-                (direction == 1 && selectedIndices.Contains(dataGridView.Rows.Count - 1)))
+            if ((direction == -1 && selectedIndices.Contains(0)) || (direction == 1 && selectedIndices.Contains(dataGridView.Rows.Count - 1)))
             {
                 return; // Out of bounds for at least one selected row
             }
@@ -6460,8 +6447,8 @@ namespace FLAC_Benchmark_H
             // Moving UP: Process rows from top to bottom (lowest index first) to prevent index shifts affecting subsequent moves.
             // Moving DOWN: Process rows from bottom to top (highest index first) for the same reason.
             List<int> sortedIndices = (direction == -1)
-                ? selectedIndices.OrderBy(i => i).ToList()      // 0, 1, 2, ...
-                : selectedIndices.OrderByDescending(i => i).ToList(); // ..., 2, 1, 0
+            ? selectedIndices.OrderBy(i => i).ToList()      // 0, 1, 2, ...
+            : selectedIndices.OrderByDescending(i => i).ToList(); // ..., 2, 1, 0
 
             // Perform the move operation for each selected row in the calculated order
             foreach (int originalIndex in sortedIndices)
@@ -6549,7 +6536,7 @@ namespace FLAC_Benchmark_H
             catch (Exception ex)
             {
                 MessageBox.Show($"Unable to delete {filePath}: {ex.Message}",
-                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void checkBoxAutoAnalyzeLog_CheckedChanged(object sender, EventArgs e)
@@ -6636,11 +6623,11 @@ namespace FLAC_Benchmark_H
         private void ShowUpdateDialog(Version current, Version latest, string latestVersionStr)
         {
             var result = MessageBox.Show(
-                this,
-                $"A new version is available!\n\nCurrent version:\t{current}\nLatest version:\t{latestVersionStr}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
-                "Update Available",
-                MessageBoxButtons.YesNoCancel,
-                MessageBoxIcon.Information);
+            this,
+            $"A new version is available!\n\nCurrent version:\t{current}\nLatest version:\t{latestVersionStr}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
+            "Update Available",
+            MessageBoxButtons.YesNoCancel,
+            MessageBoxIcon.Information);
 
             if (result == DialogResult.Yes)
             {
@@ -6685,16 +6672,16 @@ namespace FLAC_Benchmark_H
         {
             // Form the message
             string message = $"FLAC Benchmark-H {programVersionCurrent}\n\n" +
-                             "Do you want to visit the project's homepage?\n" +
-                             "https://github.com/hat3k/FLAC-Benchmark-H";
+            "Do you want to visit the project's homepage?\n" +
+            "https://github.com/hat3k/FLAC-Benchmark-H";
 
             // Show dialog
             DialogResult result = MessageBox.Show(
-                message,
-                "About",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Information,
-                MessageBoxDefaultButton.Button1);
+            message,
+            "About",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Information,
+            MessageBoxDefaultButton.Button1);
 
             // If user clicked Yes - open browser
             if (result == DialogResult.Yes)
