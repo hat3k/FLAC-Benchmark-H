@@ -19,7 +19,7 @@ namespace FLAC_Benchmark_H
     {
         // Application version
         public string programVersionCurrent = "1.7.6 build 20251201"; // Current app version
-        public string programVersionIgnored = null;                   // Previously ignored update
+        public string? programVersionIgnored = null;                  // Previously ignored update
 
         // Hardware info
         private int physicalCores; // Number of physical CPU cores
