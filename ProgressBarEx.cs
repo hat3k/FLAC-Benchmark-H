@@ -82,11 +82,11 @@ namespace FLAC_Benchmark_H
         [Description("The font used for the text on the progress bar.")]
         [Browsable(true)]
         [EditorBrowsable(EditorBrowsableState.Always)]
-        public override Font Font
-        {
-            get => base.Font;
-            set => base.Font = value!;
-        }
+        //public override Font Font
+        //{
+        //    get => base.Font;
+        //    set => base.Font = value!;
+        //}
 
         protected override CreateParams CreateParams
         {

@@ -571,7 +571,7 @@ namespace FLAC_Benchmark_H
                     {
                         Directory.CreateDirectory(tempFolderPath);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         string failedPath = tempFolderPath;
                         tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
@@ -6349,7 +6349,7 @@ namespace FLAC_Benchmark_H
                         ShowTemporaryStoppedMessage("Stopped");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     ShowTemporaryStoppedMessage("Stopped");
                 }
