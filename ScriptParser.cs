@@ -98,7 +98,7 @@ namespace FLAC_Benchmark_H
                 if (trimmed.Contains(".."))
                 {
                     // --- Handle numeric ranges ---
-                    var segments = trimmed.Split(new[] { ".." }, StringSplitOptions.None)
+                    var segments = trimmed.Split([".."], StringSplitOptions.None)
                         .Select(s => s.Trim())
                         .ToArray();
 

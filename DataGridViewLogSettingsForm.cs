@@ -115,7 +115,7 @@ namespace FLAC_Benchmark_H
 
         private void OnResetToDefault(object? sender, EventArgs e)
         {
-            // Reset to defaults (as in InitializedataGridViewLog)
+            // Reset to defaults (as in InitializeDataGridViewLog)
             var defaultVisibility = new Dictionary<string, bool>
             {
                 { "Name", true },

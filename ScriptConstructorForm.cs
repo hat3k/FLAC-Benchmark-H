@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace FLAC_Benchmark_H
 {
-    public struct ScriptJobData(bool isChecked, string jobType, string passes, string parameters)
+    public readonly struct ScriptJobData(bool isChecked, string jobType, string passes, string parameters)
     {
         public bool IsChecked { get; } = isChecked;
         public string JobType { get; } = jobType;
@@ -39,7 +39,7 @@ namespace FLAC_Benchmark_H
             };
 
         }
-        private System.Windows.Forms.Timer _debounceTimer;
+        private readonly System.Windows.Forms.Timer _debounceTimer;
 
         /// <summary>
         /// Called when the form is fully displayed.
@@ -320,7 +320,7 @@ namespace FLAC_Benchmark_H
 
             var jobsToAdd = new List<ScriptJobData>
             {
-                new ScriptJobData(true, "Encode", "1", scriptText) // Pass the script text as the 'parameter'
+                new(true, "Encode", "1", scriptText) // Pass the script text as the 'parameter'
             };
 
             OnJobsAdded?.Invoke(jobsToAdd);
@@ -339,12 +339,12 @@ namespace FLAC_Benchmark_H
                 buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
 
                 // Subscribe to CellFormatting event for the new DataGridView to handle colors
-                dataGridViewPreviewJobsListMadeByScript.CellFormatting += dataGridViewPreviewJobsListMadeByScript_CellFormatting;
-                dataGridViewPreviewJobsListMadeByScript.MouseDown += dataGridViewPreviewJobsListMadeByScript_MouseDown;
-                dataGridViewPreviewJobsListMadeByScript.KeyDown += dataGridViewPreviewJobsListMadeByScript_KeyDown;
+                dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreviewJobsListMadeByScript_CellFormatting;
+                dataGridViewPreviewJobsListMadeByScript.MouseDown += DataGridViewPreviewJobsListMadeByScript_MouseDown;
+                dataGridViewPreviewJobsListMadeByScript.KeyDown += DataGridViewPreviewJobsListMadeByScript_KeyDown;
             }
         }
-        private void dataGridViewPreviewJobsListMadeByScript_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void DataGridViewPreviewJobsListMadeByScript_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1)
             if (e.ColumnIndex == 1 && e.Value != null)
@@ -377,7 +377,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewPreviewJobsListMadeByScript.CurrentCell = null;
             }
         }
-        private void dataGridViewPreviewJobsListMadeByScript_MouseDown(object? sender, MouseEventArgs e)
+        private void DataGridViewPreviewJobsListMadeByScript_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewPreviewJobsListMadeByScript.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
@@ -385,7 +385,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewPreviewJobsListMadeByScript.ClearSelection();
             }
         }
-        private void dataGridViewPreviewJobsListMadeByScript_KeyDown(object? sender, KeyEventArgs e)
+        private void DataGridViewPreviewJobsListMadeByScript_KeyDown(object? sender, KeyEventArgs e)
         {
             // Check if Ctrl and A are pressed simultaneously
             if (e.Control && e.KeyCode == Keys.A)
@@ -407,7 +407,7 @@ namespace FLAC_Benchmark_H
         }
         private void CopyJobsFromPreviewDataGridView()
         {
-            StringBuilder jobsText = new StringBuilder();
+            StringBuilder jobsText = new();
 
             if (dataGridViewPreviewJobsListMadeByScript.SelectedRows.Count > 0)
             {
@@ -472,7 +472,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
+        private void ButtonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
         {
             Close();
         }

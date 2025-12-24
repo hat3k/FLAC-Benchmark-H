@@ -207,7 +207,7 @@
             buttonScriptConstructor.TabIndex = 22;
             buttonScriptConstructor.Text = "Script Constructor";
             buttonScriptConstructor.UseVisualStyleBackColor = true;
-            buttonScriptConstructor.Click += buttonScriptConstructor_Click;
+            buttonScriptConstructor.Click += ButtonScriptConstructor_Click;
             // 
             // progressBarEncoder
             // 
@@ -236,7 +236,7 @@
             buttonAddJobToJobListEncoder.Text = "Add to Job List";
             toolTip1.SetToolTip(buttonAddJobToJobListEncoder, "This will add encoding parameters to a job list.\r\n\r\nLater you may use them to benchmark all checked encoders with all checked audiofiles.");
             buttonAddJobToJobListEncoder.UseVisualStyleBackColor = true;
-            buttonAddJobToJobListEncoder.Click += buttonAddJobToJobListEncoder_Click;
+            buttonAddJobToJobListEncoder.Click += ButtonAddJobToJobListEncoder_Click;
             // 
             // buttonStartEncode
             // 
@@ -248,7 +248,7 @@
             buttonStartEncode.Text = "Encode";
             toolTip1.SetToolTip(buttonStartEncode, "Encode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartEncode.UseVisualStyleBackColor = true;
-            buttonStartEncode.Click += buttonStartEncode_Click;
+            buttonStartEncode.Click += ButtonStartEncode_Click;
             // 
             // labelSetThreads
             // 
@@ -292,7 +292,7 @@
             buttonEpr8.TabIndex = 16;
             buttonEpr8.Text = "-epr8";
             buttonEpr8.UseVisualStyleBackColor = true;
-            buttonEpr8.Click += buttonEpr8_Click;
+            buttonEpr8.Click += ButtonEpr8_Click;
             // 
             // buttonSetHalfThreads
             // 
@@ -302,7 +302,7 @@
             buttonSetHalfThreads.TabIndex = 11;
             buttonSetHalfThreads.Text = "50%";
             buttonSetHalfThreads.UseVisualStyleBackColor = true;
-            buttonSetHalfThreads.Click += buttonSetHalfThreads_Click;
+            buttonSetHalfThreads.Click += ButtonSetHalfThreads_Click;
             // 
             // buttonAsubdividetukey5flattop
             // 
@@ -312,7 +312,7 @@
             buttonAsubdividetukey5flattop.TabIndex = 17;
             buttonAsubdividetukey5flattop.Text = "-A \"subdivide_tukey(5);flattop\"";
             buttonAsubdividetukey5flattop.UseVisualStyleBackColor = true;
-            buttonAsubdividetukey5flattop.Click += buttonAsubdividetukey5flattop_Click;
+            buttonAsubdividetukey5flattop.Click += ButtonAsubdividetukey5flattop_Click;
             // 
             // buttonSetMaxThreads
             // 
@@ -322,7 +322,7 @@
             buttonSetMaxThreads.TabIndex = 12;
             buttonSetMaxThreads.Text = "100%";
             buttonSetMaxThreads.UseVisualStyleBackColor = true;
-            buttonSetMaxThreads.Click += buttonSetMaxThreads_Click;
+            buttonSetMaxThreads.Click += ButtonSetMaxThreads_Click;
             // 
             // buttonNoPadding
             // 
@@ -332,7 +332,7 @@
             buttonNoPadding.TabIndex = 18;
             buttonNoPadding.Text = "No Padding";
             buttonNoPadding.UseVisualStyleBackColor = true;
-            buttonNoPadding.Click += buttonNoPadding_Click;
+            buttonNoPadding.Click += ButtonNoPadding_Click;
             // 
             // buttonHalfCores
             // 
@@ -342,7 +342,7 @@
             buttonHalfCores.TabIndex = 8;
             buttonHalfCores.Text = "50%";
             buttonHalfCores.UseVisualStyleBackColor = true;
-            buttonHalfCores.Click += buttonHalfCores_Click;
+            buttonHalfCores.Click += ButtonHalfCores_Click;
             // 
             // buttonNoSeektable
             // 
@@ -352,7 +352,7 @@
             buttonNoSeektable.TabIndex = 19;
             buttonNoSeektable.Text = "No Seektable";
             buttonNoSeektable.UseVisualStyleBackColor = true;
-            buttonNoSeektable.Click += buttonNoSeektable_Click;
+            buttonNoSeektable.Click += ButtonNoSeektable_Click;
             // 
             // buttonSetMaxCores
             // 
@@ -362,7 +362,7 @@
             buttonSetMaxCores.TabIndex = 9;
             buttonSetMaxCores.Text = "100%";
             buttonSetMaxCores.UseVisualStyleBackColor = true;
-            buttonSetMaxCores.Click += buttonSetMaxCores_Click;
+            buttonSetMaxCores.Click += ButtonSetMaxCores_Click;
             // 
             // buttonClearCommandLineEncoder
             // 
@@ -372,7 +372,7 @@
             buttonClearCommandLineEncoder.TabIndex = 15;
             buttonClearCommandLineEncoder.Text = "Clear";
             buttonClearCommandLineEncoder.UseVisualStyleBackColor = true;
-            buttonClearCommandLineEncoder.Click += buttonClearCommandLineEncoder_Click;
+            buttonClearCommandLineEncoder.Click += ButtonClearCommandLineEncoder_Click;
             // 
             // buttonMaxCompressionLevel
             // 
@@ -382,7 +382,7 @@
             buttonMaxCompressionLevel.TabIndex = 4;
             buttonMaxCompressionLevel.Text = "MAX";
             buttonMaxCompressionLevel.UseVisualStyleBackColor = true;
-            buttonMaxCompressionLevel.Click += buttonMaxCompressionLevel_Click;
+            buttonMaxCompressionLevel.Click += ButtonMaxCompressionLevel_Click;
             // 
             // button5CompressionLevel
             // 
@@ -392,7 +392,7 @@
             button5CompressionLevel.TabIndex = 3;
             button5CompressionLevel.Text = "Default";
             button5CompressionLevel.UseVisualStyleBackColor = true;
-            button5CompressionLevel.Click += button5CompressionLevel_Click;
+            button5CompressionLevel.Click += Button5CompressionLevel_Click;
             // 
             // labelThreads
             // 
@@ -468,7 +468,7 @@
             buttonStop.Text = "Stop all (Esc)";
             toolTip1.SetToolTip(buttonStop, "Stop all encoding and decoding jobs.");
             buttonStop.UseVisualStyleBackColor = true;
-            buttonStop.Click += buttonStop_Click;
+            buttonStop.Click += ButtonStop_Click;
             // 
             // buttonStartDecode
             // 
@@ -480,7 +480,7 @@
             buttonStartDecode.Text = "Decode";
             toolTip1.SetToolTip(buttonStartDecode, "Decode all checked audio files using all checked encoders with the specified parameters.");
             buttonStartDecode.UseVisualStyleBackColor = true;
-            buttonStartDecode.Click += buttonStartDecode_Click;
+            buttonStartDecode.Click += ButtonStartDecode_Click;
             // 
             // buttonOpenLogtxt
             // 
@@ -491,7 +491,7 @@
             buttonOpenLogtxt.TabIndex = 6;
             buttonOpenLogtxt.Text = "Open log.txt";
             buttonOpenLogtxt.UseVisualStyleBackColor = true;
-            buttonOpenLogtxt.Click += buttonOpenLogtxt_Click;
+            buttonOpenLogtxt.Click += ButtonOpenLogtxt_Click;
             // 
             // buttonClearLog
             // 
@@ -503,7 +503,7 @@
             buttonClearLog.Text = "Clear";
             toolTip1.SetToolTip(buttonClearLog, "Clear current log tab.\r\nHold 'Shift' to clear all tabs.\r\n\r\nIf the \"Benchmark\" tab is cleared:\r\nRemoves all displayed entries and reset internal benchmark history.");
             buttonClearLog.UseVisualStyleBackColor = true;
-            buttonClearLog.Click += buttonClearLog_Click;
+            buttonClearLog.Click += ButtonClearLog_Click;
             // 
             // groupBoxEncoders
             // 
@@ -530,7 +530,7 @@
             buttonDownEncoder.TabIndex = 3;
             buttonDownEncoder.Text = "▼";
             buttonDownEncoder.UseVisualStyleBackColor = true;
-            buttonDownEncoder.Click += buttonDownEncoder_Click;
+            buttonDownEncoder.Click += ButtonDownEncoder_Click;
             // 
             // buttonUpEncoder
             // 
@@ -541,7 +541,7 @@
             buttonUpEncoder.TabIndex = 2;
             buttonUpEncoder.Text = "▲";
             buttonUpEncoder.UseVisualStyleBackColor = true;
-            buttonUpEncoder.Click += buttonUpEncoder_Click;
+            buttonUpEncoder.Click += ButtonUpEncoder_Click;
             // 
             // buttonRemoveEncoder
             // 
@@ -553,7 +553,7 @@
             buttonRemoveEncoder.TabIndex = 4;
             buttonRemoveEncoder.Text = "❌";
             buttonRemoveEncoder.UseVisualStyleBackColor = true;
-            buttonRemoveEncoder.Click += buttonRemoveEncoder_Click;
+            buttonRemoveEncoder.Click += ButtonRemoveEncoder_Click;
             // 
             // listViewEncoders
             // 
@@ -609,7 +609,7 @@
             buttonAddEncoders.TabIndex = 1;
             buttonAddEncoders.Text = "Add encoders";
             buttonAddEncoders.UseVisualStyleBackColor = true;
-            buttonAddEncoders.Click += buttonAddEncoders_Click;
+            buttonAddEncoders.Click += ButtonAddEncoders_Click;
             // 
             // buttonClearEncoders
             // 
@@ -621,7 +621,7 @@
             buttonClearEncoders.TabIndex = 5;
             buttonClearEncoders.Text = "Clear";
             buttonClearEncoders.UseVisualStyleBackColor = true;
-            buttonClearEncoders.Click += buttonClearEncoders_Click;
+            buttonClearEncoders.Click += ButtonClearEncoders_Click;
             // 
             // groupBoxAudioFiles
             // 
@@ -656,7 +656,7 @@
             checkBoxWarningsAsErrors.Text = "Warnings as errors";
             toolTip1.SetToolTip(checkBoxWarningsAsErrors, "Treat all warnings as errors when performing FLAC files test.\r\n\r\nWarnings will be shown in the log in addition to errors.");
             checkBoxWarningsAsErrors.UseVisualStyleBackColor = true;
-            checkBoxWarningsAsErrors.CheckedChanged += checkBoxWarningsAsErrors_CheckedChanged;
+            checkBoxWarningsAsErrors.CheckedChanged += CheckBoxWarningsAsErrors_CheckedChanged;
             // 
             // labelAudioFileRemoved
             // 
@@ -678,7 +678,7 @@
             buttonClearUnchecked.Text = "Clear unchecked";
             toolTip1.SetToolTip(buttonClearUnchecked, "Clears all unchecked files from the list.\r\n\r\nHold 'Shift' while clicking to move unchecked files to the Recycle Bin.");
             buttonClearUnchecked.UseVisualStyleBackColor = true;
-            buttonClearUnchecked.Click += buttonClearUnchecked_Click;
+            buttonClearUnchecked.Click += ButtonClearUnchecked_Click;
             // 
             // buttonDownAudioFile
             // 
@@ -689,7 +689,7 @@
             buttonDownAudioFile.TabIndex = 3;
             buttonDownAudioFile.Text = "▼";
             buttonDownAudioFile.UseVisualStyleBackColor = true;
-            buttonDownAudioFile.Click += buttonDownAudioFile_Click;
+            buttonDownAudioFile.Click += ButtonDownAudioFile_Click;
             // 
             // buttonTestForErrors
             // 
@@ -701,7 +701,7 @@
             buttonTestForErrors.Text = "Test for Errors";
             toolTip1.SetToolTip(buttonTestForErrors, resources.GetString("buttonTestForErrors.ToolTip"));
             buttonTestForErrors.UseVisualStyleBackColor = true;
-            buttonTestForErrors.Click += buttonTestForErrors_Click;
+            buttonTestForErrors.Click += ButtonTestForErrors_Click;
             // 
             // buttonDetectDupesAudioFiles
             // 
@@ -713,7 +713,7 @@
             buttonDetectDupesAudioFiles.Text = "Detect Dupes";
             toolTip1.SetToolTip(buttonDetectDupesAudioFiles, resources.GetString("buttonDetectDupesAudioFiles.ToolTip"));
             buttonDetectDupesAudioFiles.UseVisualStyleBackColor = true;
-            buttonDetectDupesAudioFiles.Click += buttonDetectDupesAudioFiles_Click;
+            buttonDetectDupesAudioFiles.Click += ButtonDetectDupesAudioFiles_Click;
             // 
             // buttonUpAudioFile
             // 
@@ -724,7 +724,7 @@
             buttonUpAudioFile.TabIndex = 2;
             buttonUpAudioFile.Text = "▲";
             buttonUpAudioFile.UseVisualStyleBackColor = true;
-            buttonUpAudioFile.Click += buttonUpAudioFile_Click;
+            buttonUpAudioFile.Click += ButtonUpAudioFile_Click;
             // 
             // listViewAudioFiles
             // 
@@ -801,7 +801,7 @@
             buttonRemoveAudioFile.TabIndex = 4;
             buttonRemoveAudioFile.Text = "❌";
             buttonRemoveAudioFile.UseVisualStyleBackColor = true;
-            buttonRemoveAudioFile.Click += buttonRemoveAudioFile_Click;
+            buttonRemoveAudioFile.Click += ButtonRemoveAudioFile_Click;
             // 
             // buttonAddAudioFiles
             // 
@@ -812,7 +812,7 @@
             buttonAddAudioFiles.TabIndex = 1;
             buttonAddAudioFiles.Text = "Add audio files";
             buttonAddAudioFiles.UseVisualStyleBackColor = true;
-            buttonAddAudioFiles.Click += buttonAddAudioFiles_Click;
+            buttonAddAudioFiles.Click += ButtonAddAudioFiles_Click;
             // 
             // buttonClearAudioFiles
             // 
@@ -823,7 +823,7 @@
             buttonClearAudioFiles.TabIndex = 9;
             buttonClearAudioFiles.Text = "Clear";
             buttonClearAudioFiles.UseVisualStyleBackColor = true;
-            buttonClearAudioFiles.Click += buttonClearAudioFiles_Click;
+            buttonClearAudioFiles.Click += ButtonClearAudioFiles_Click;
             // 
             // groupBoxJobsList
             // 
@@ -919,7 +919,7 @@
             buttonMinusPass.Text = "➖";
             toolTip1.SetToolTip(buttonMinusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonMinusPass.UseVisualStyleBackColor = true;
-            buttonMinusPass.Click += buttonMinusPass_Click;
+            buttonMinusPass.Click += ButtonMinusPass_Click;
             // 
             // buttonPlusPass
             // 
@@ -931,7 +931,7 @@
             buttonPlusPass.Text = "➕";
             toolTip1.SetToolTip(buttonPlusPass, "You can add several passes of the same job to obtain averaged results.");
             buttonPlusPass.UseVisualStyleBackColor = true;
-            buttonPlusPass.Click += buttonPlusPass_Click;
+            buttonPlusPass.Click += ButtonPlusPass_Click;
             // 
             // buttonDownJob
             // 
@@ -942,7 +942,7 @@
             buttonDownJob.TabIndex = 3;
             buttonDownJob.Text = "▼";
             buttonDownJob.UseVisualStyleBackColor = true;
-            buttonDownJob.Click += buttonDownJob_Click;
+            buttonDownJob.Click += ButtonDownJob_Click;
             // 
             // buttonUpJob
             // 
@@ -953,7 +953,7 @@
             buttonUpJob.TabIndex = 2;
             buttonUpJob.Text = "▲";
             buttonUpJob.UseVisualStyleBackColor = true;
-            buttonUpJob.Click += buttonUpJob_Click;
+            buttonUpJob.Click += ButtonUpJob_Click;
             // 
             // buttonRemoveJob
             // 
@@ -964,7 +964,7 @@
             buttonRemoveJob.TabIndex = 4;
             buttonRemoveJob.Text = "❌";
             buttonRemoveJob.UseVisualStyleBackColor = true;
-            buttonRemoveJob.Click += buttonRemoveJob_Click;
+            buttonRemoveJob.Click += ButtonRemoveJob_Click;
             // 
             // buttonCopyJobs
             // 
@@ -976,7 +976,7 @@
             buttonCopyJobs.Text = "Copy";
             toolTip1.SetToolTip(buttonCopyJobs, "You may copy joblist to notepad to edit and to paste it back.");
             buttonCopyJobs.UseVisualStyleBackColor = true;
-            buttonCopyJobs.Click += buttonCopyJobs_Click;
+            buttonCopyJobs.Click += ButtonCopyJobs_Click;
             // 
             // buttonPasteJobs
             // 
@@ -988,7 +988,7 @@
             buttonPasteJobs.Text = "Paste";
             toolTip1.SetToolTip(buttonPasteJobs, "You may copy joblist to notepad to edit and to paste it back.");
             buttonPasteJobs.UseVisualStyleBackColor = true;
-            buttonPasteJobs.Click += buttonPasteJobs_Click;
+            buttonPasteJobs.Click += ButtonPasteJobs_Click;
             // 
             // buttonStartJobList
             // 
@@ -1000,7 +1000,7 @@
             buttonStartJobList.Text = "Start Job List";
             toolTip1.SetToolTip(buttonStartJobList, "Start all checked jobs to encode and decode all checked audio files using all checked encoders with listed parameters.");
             buttonStartJobList.UseVisualStyleBackColor = true;
-            buttonStartJobList.Click += buttonStartJobList_Click;
+            buttonStartJobList.Click += ButtonStartJobList_Click;
             // 
             // buttonExportJobList
             // 
@@ -1011,7 +1011,7 @@
             buttonExportJobList.TabIndex = 8;
             buttonExportJobList.Text = "Export";
             buttonExportJobList.UseVisualStyleBackColor = true;
-            buttonExportJobList.Click += buttonExportJobList_Click;
+            buttonExportJobList.Click += ButtonExportJobList_Click;
             // 
             // buttonImportJobList
             // 
@@ -1022,7 +1022,7 @@
             buttonImportJobList.TabIndex = 9;
             buttonImportJobList.Text = "Import";
             buttonImportJobList.UseVisualStyleBackColor = true;
-            buttonImportJobList.Click += buttonImportJobList_Click;
+            buttonImportJobList.Click += ButtonImportJobList_Click;
             // 
             // buttonClearJobList
             // 
@@ -1033,7 +1033,7 @@
             buttonClearJobList.TabIndex = 12;
             buttonClearJobList.Text = "Clear";
             buttonClearJobList.UseVisualStyleBackColor = true;
-            buttonClearJobList.Click += buttonClearJobList_Click;
+            buttonClearJobList.Click += ButtonClearJobList_Click;
             // 
             // groupBoxLog
             // 
@@ -1216,7 +1216,7 @@
             buttonCopyLogAsBBCode.Text = "Copy as BBCode";
             toolTip1.SetToolTip(buttonCopyLogAsBBCode, "Copy current log as a BBCode to paste it in forums as a table.");
             buttonCopyLogAsBBCode.UseVisualStyleBackColor = true;
-            buttonCopyLogAsBBCode.Click += buttonCopyLogAsBBCode_Click;
+            buttonCopyLogAsBBCode.Click += ButtonCopyLogAsBBCode_Click;
             // 
             // buttonLogColumnsAutoWidth
             // 
@@ -1227,7 +1227,7 @@
             buttonLogColumnsAutoWidth.Text = "⟷";
             toolTip1.SetToolTip(buttonLogColumnsAutoWidth, "Set columns auto-width.\r\nHold 'Shift' to apply to all tabs.");
             buttonLogColumnsAutoWidth.UseVisualStyleBackColor = true;
-            buttonLogColumnsAutoWidth.Click += buttonLogColumnsAutoWidth_Click;
+            buttonLogColumnsAutoWidth.Click += ButtonLogColumnsAutoWidth_Click;
             // 
             // buttonPauseResume
             // 
@@ -1250,7 +1250,7 @@
             buttonLogToExcel.TabIndex = 4;
             buttonLogToExcel.Text = "Log to Excel";
             buttonLogToExcel.UseVisualStyleBackColor = true;
-            buttonLogToExcel.Click += buttonLogToExcel_Click;
+            buttonLogToExcel.Click += ButtonLogToExcel_Click;
             // 
             // buttonAnalyzeLog
             // 
@@ -1262,7 +1262,7 @@
             buttonAnalyzeLog.Text = "Analyze log";
             toolTip1.SetToolTip(buttonAnalyzeLog, resources.GetString("buttonAnalyzeLog.ToolTip"));
             buttonAnalyzeLog.UseVisualStyleBackColor = true;
-            buttonAnalyzeLog.Click += buttonAnalyzeLog_Click;
+            buttonAnalyzeLog.Click += ButtonAnalyzeLog_Click;
             // 
             // labelStopped
             // 
@@ -1285,7 +1285,7 @@
             buttonCopyLog.Text = "Copy";
             toolTip1.SetToolTip(buttonCopyLog, "Copy current log.");
             buttonCopyLog.UseVisualStyleBackColor = true;
-            buttonCopyLog.Click += buttonCopyLog_Click;
+            buttonCopyLog.Click += ButtonCopyLog_Click;
             // 
             // buttonDataGridViewLogSettings
             // 
@@ -1296,7 +1296,7 @@
             buttonDataGridViewLogSettings.TabIndex = 10;
             buttonDataGridViewLogSettings.Text = "Log Settings";
             buttonDataGridViewLogSettings.UseVisualStyleBackColor = true;
-            buttonDataGridViewLogSettings.Click += buttonDataGridViewLogSettings_Click;
+            buttonDataGridViewLogSettings.Click += ButtonDataGridViewLogSettings_Click;
             // 
             // groupBoxSettings
             // 
@@ -1329,7 +1329,7 @@
             checkBoxPreventSleep.Text = "Prevent Sleep mode";
             toolTip1.SetToolTip(checkBoxPreventSleep, "When enabled, prevents the computer from entering sleep or hibernation mode\r\n\r\nNote: This does not prevent the display from turning off.");
             checkBoxPreventSleep.UseVisualStyleBackColor = true;
-            checkBoxPreventSleep.CheckedChanged += checkBoxPreventSleep_CheckedChanged;
+            checkBoxPreventSleep.CheckedChanged += CheckBoxPreventSleep_CheckedChanged;
             // 
             // checkBoxCheckForUpdatesOnStartup
             // 
@@ -1341,7 +1341,7 @@
             checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
             toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup.\r\n\r\nCheck for updates immediately when re-enabled.");
             checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
-            checkBoxCheckForUpdatesOnStartup.CheckedChanged += checkBoxCheckForUpdatesOnStartup_CheckedChanged;
+            checkBoxCheckForUpdatesOnStartup.CheckedChanged += CheckBoxCheckForUpdatesOnStartup_CheckedChanged;
             // 
             // checkBoxAutoAnalyzeLog
             // 
@@ -1353,7 +1353,7 @@
             checkBoxAutoAnalyzeLog.Text = "Analyze Log on Jobs finish";
             toolTip1.SetToolTip(checkBoxAutoAnalyzeLog, "Starts log analysis automatically after all encoding/decoding jobs are finished.");
             checkBoxAutoAnalyzeLog.UseVisualStyleBackColor = true;
-            checkBoxAutoAnalyzeLog.CheckedChanged += checkBoxAutoAnalyzeLog_CheckedChanged;
+            checkBoxAutoAnalyzeLog.CheckedChanged += CheckBoxAutoAnalyzeLog_CheckedChanged;
             // 
             // checkBoxAddMD5OnLoadWav
             // 
@@ -1410,7 +1410,7 @@
             buttonSelectTempFolder.TabIndex = 6;
             buttonSelectTempFolder.Text = "Select Temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
-            buttonSelectTempFolder.Click += buttonSelectTempFolder_Click;
+            buttonSelectTempFolder.Click += ButtonSelectTempFolder_Click;
             // 
             // checkBoxClearTempFolder
             // 
@@ -1466,7 +1466,7 @@
             buttonAddJobToJobListDecoder.Text = "Add to Job List";
             toolTip1.SetToolTip(buttonAddJobToJobListDecoder, "This will add decoding parameters to a job list.\r\n\r\nLater you may use them to benchmark all checked encoders with all checked audiofiles.\r\n");
             buttonAddJobToJobListDecoder.UseVisualStyleBackColor = true;
-            buttonAddJobToJobListDecoder.Click += buttonAddJobToJobListDecoder_Click;
+            buttonAddJobToJobListDecoder.Click += ButtonAddJobToJobListDecoder_Click;
             // 
             // textBoxCommandLineOptionsDecoder
             // 
@@ -1483,7 +1483,7 @@
             buttonClearCommandLineDecoder.TabIndex = 2;
             buttonClearCommandLineDecoder.Text = "Clear";
             buttonClearCommandLineDecoder.UseVisualStyleBackColor = true;
-            buttonClearCommandLineDecoder.Click += buttonClearCommandLineDecoder_Click;
+            buttonClearCommandLineDecoder.Click += ButtonClearCommandLineDecoder_Click;
             // 
             // toolTip1
             // 
@@ -1514,7 +1514,7 @@
             buttonAbout.TabIndex = 3;
             buttonAbout.Text = "About";
             buttonAbout.UseVisualStyleBackColor = true;
-            buttonAbout.Click += buttonAbout_Click;
+            buttonAbout.Click += ButtonAbout_Click;
             // 
             // labelCpuUsageValue
             // 

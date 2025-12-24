@@ -112,23 +112,21 @@ namespace FLAC_Benchmark_H
             string text = GetDisplayText();
             if (string.IsNullOrEmpty(text)) return;
 
-            using (var g = Graphics.FromHwnd(Handle))
-            {
-                var rect = new Rectangle(0, 0, Width, Height);
+            using var g = Graphics.FromHwnd(Handle);
+            var rect = new Rectangle(0, 0, Width, Height);
 
-                TextRenderer.DrawText(
-                    g,                         // graphics
-                    text,                      // text
-                    Font,                      // font
-                    rect,                      // bounds
-                    TextColor,                 // foreColor
-                    TextFormatFlags.HorizontalCenter |
-                    TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.SingleLine |
-                    TextFormatFlags.NoPadding |
-                    TextFormatFlags.PreserveGraphicsClipping
-                );
-            }
+            TextRenderer.DrawText(
+                g,                         // graphics
+                text,                      // text
+                Font,                      // font
+                rect,                      // bounds
+                TextColor,                 // foreColor
+                TextFormatFlags.HorizontalCenter |
+                TextFormatFlags.VerticalCenter |
+                TextFormatFlags.SingleLine |
+                TextFormatFlags.NoPadding |
+                TextFormatFlags.PreserveGraphicsClipping
+            );
         }
 
         private string GetDisplayText()

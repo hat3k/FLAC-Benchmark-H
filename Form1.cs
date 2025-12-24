@@ -26,14 +26,14 @@ namespace FLAC_Benchmark_H
         private int threadCount;   // Total logical threads
 
         // CPU monitoring
-        private readonly PerformanceCounter? cpuLoadCounter = null; // CPU Load counter (whole system)
-        private readonly bool performanceCountersAvailable = false; // True if counters initialized
-        private System.Windows.Forms.Timer cpuUsageTimer;           // Updates CPU usage label
-        private System.Windows.Forms.Timer temporaryMessageTimer;   // Updates temporary messages
+        private readonly PerformanceCounter? cpuLoadCounter = null;                 // CPU Load counter (whole system)
+        private readonly bool performanceCountersAvailable = false;                 // True if counters initialized
+        private readonly System.Windows.Forms.Timer cpuUsageTimer = new();          // Updates CPU usage label
+        private readonly System.Windows.Forms.Timer temporaryMessageTimer = new();  // Updates temporary messages
 
-        private PerformanceCounter _cpuClockCounter;            // CPU clock counter (as % of base frequency)
-        private List<double> _cpuClockReadings;
-        private int _baseClockMhz = 0;                          // Base CPU frequency in MHz
+        private readonly PerformanceCounter? _cpuClockCounter = null;               // CPU clock counter (as % of base frequency)
+        private List<double> _cpuClockReadings = [];
+        private int _baseClockMhz = 0;                                              // Base CPU frequency in MHz
 
         // UI state
         private bool isCpuInfoLoaded = false;
@@ -50,7 +50,7 @@ namespace FLAC_Benchmark_H
         }
 
         // MediaInfo object pool for efficient resource reuse
-        private readonly ConcurrentQueue<MediaInfo> _mediaInfoPool = new ConcurrentQueue<MediaInfo>();
+        private readonly ConcurrentQueue<MediaInfo> _mediaInfoPool = new();
         private const int MediaInfoPoolSize = 20;
 
         // Prevents the system from entering sleep or turning off the display
@@ -69,11 +69,11 @@ namespace FLAC_Benchmark_H
         private string tempFolderPath;                                                      // Path to temporary working directory
 
         // Process execution
-        private Process _process;                                           // Running process instance
-        private bool isExecuting = false;                                   // True if encoding/decoding is active
-        private bool _isEncodingStopped = false;                            // Request to stop
-        private bool _isPaused = false;                                     // Pause state
-        private ManualResetEvent _pauseEvent = new ManualResetEvent(true);  // Controls pause/resume sync for encoding thread
+        private Process _process;                                   // Running process instance
+        private bool isExecuting = false;                           // True if encoding/decoding is active
+        private bool _isEncodingStopped = false;                    // Request to stop
+        private bool _isPaused = false;                             // Pause state
+        private readonly ManualResetEvent _pauseEvent = new(true);  // Controls pause/resume sync for encoding thread
 
         public Form1()
         {
@@ -85,27 +85,27 @@ namespace FLAC_Benchmark_H
             this.dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
             this.dataGridViewLogDetectDupes.KeyDown += DataGridViewLogDetectDupes_KeyDown;
             this.dataGridViewLogTestForErrors.KeyDown += DataGridViewLogTestForErrors_KeyDown;
-            this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.textBoxCompressionLevel_KeyDown);
-            this.textBoxThreads.KeyDown += new KeyEventHandler(this.textBoxThreads_KeyDown);
-            this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsEncoder_KeyDown);
-            this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.textBoxCommandLineOptionsDecoder_KeyDown);
+            this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.TextBoxCompressionLevel_KeyDown);
+            this.textBoxThreads.KeyDown += new KeyEventHandler(this.TextBoxThreads_KeyDown);
+            this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.TextBoxCommandLineOptionsEncoder_KeyDown);
+            this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.TextBoxCommandLineOptionsDecoder_KeyDown);
 
-            dataGridViewLog.CellContentClick += dataGridViewLog_CellContentClick;
-            dataGridViewLog.MouseDown += dataGridViewLog_MouseDown;
+            dataGridViewLog.CellContentClick += DataGridViewLog_CellContentClick;
+            dataGridViewLog.MouseDown += DataGridViewLog_MouseDown;
 
-            dataGridViewLogDetectDupes.CellContentClick += dataGridViewLogDetectDupes_CellContentClick;
-            dataGridViewLogDetectDupes.MouseDown += dataGridViewLogDetectDupes_MouseDown;
+            dataGridViewLogDetectDupes.CellContentClick += DataGridViewLogDetectDupes_CellContentClick;
+            dataGridViewLogDetectDupes.MouseDown += DataGridViewLogDetectDupes_MouseDown;
 
-            dataGridViewLogTestForErrors.CellContentClick += dataGridViewLogTestForErrors_CellContentClick;
-            dataGridViewLogTestForErrors.MouseDown += dataGridViewLogTestForErrors_MouseDown;
+            dataGridViewLogTestForErrors.CellContentClick += DataGridViewLogTestForErrors_CellContentClick;
+            dataGridViewLogTestForErrors.MouseDown += DataGridViewLogTestForErrors_MouseDown;
 
             dataGridViewJobs.CellFormatting += DataGridViewJobs_CellFormatting;
-            dataGridViewJobs.MouseDown += dataGridViewJobs_MouseDown;
+            dataGridViewJobs.MouseDown += DataGridViewJobs_MouseDown;
             dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
             dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
             dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
 
-            buttonPauseResume.Click += buttonPauseResume_Click;
+            buttonPauseResume.Click += ButtonPauseResume_Click;
 
             LoadCPUInfoAsync();
 
@@ -115,8 +115,7 @@ namespace FLAC_Benchmark_H
                 cpuLoadCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
                 performanceCountersAvailable = true;
             }
-            catch (Exception ex) when (
-            ex is InvalidOperationException || ex is System.ComponentModel.Win32Exception)
+            catch (Exception ex) when (ex is InvalidOperationException || ex is System.ComponentModel.Win32Exception)
             {
                 MessageBox.Show(
                 "Performance counters are unavailable.\n" +
@@ -133,12 +132,11 @@ namespace FLAC_Benchmark_H
 
                 performanceCountersAvailable = false;
             }
-            cpuUsageTimer = new System.Windows.Forms.Timer(); // Explicitly specify System.Windows.Forms.Timer
+
             cpuUsageTimer.Interval = 250; // Every 250 ms
             cpuUsageTimer.Tick += async (sender, e) => await UpdateCpuUsageAsync();
             cpuUsageTimer.Start();
 
-            temporaryMessageTimer = new System.Windows.Forms.Timer();
             temporaryMessageTimer.Tick += (s, e) =>
             {
                 try
@@ -176,9 +174,9 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            InitializedataGridViewLog();
-            InitializedataGridViewLogDetectDupes();
-            InitializedataGridViewLogTestForErrors();
+            InitializeDataGridViewLog();
+            InitializeDataGridViewLogDetectDupes();
+            InitializeDataGridViewLogTestForErrors();
 
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Initialize the path to the temporary folder
             _process = new Process(); // Initialize _process to avoid nullability warning
@@ -186,7 +184,7 @@ namespace FLAC_Benchmark_H
             comboBoxCPUPriority.SelectedIndex = 3;
         }
 
-        private string NormalizeSpaces(string input)
+        private static string NormalizeSpaces(string input)
         {
             return Regex.Replace(input.Trim(), @"\s+", " "); // Remove extra spaces inside the string
         }
@@ -202,21 +200,19 @@ namespace FLAC_Benchmark_H
 
                 await Task.Run(() =>
                 {
-                    using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from Win32_Processor"))
+                    using ManagementObjectSearcher searcher = new("select * from Win32_Processor");
+                    foreach (ManagementObject obj in searcher.Get())
                     {
-                        foreach (ManagementObject obj in searcher.Get())
+                        if (obj["NumberOfCores"] != null && obj["ThreadCount"] != null)
                         {
-                            if (obj["NumberOfCores"] != null && obj["ThreadCount"] != null)
-                            {
-                                physicalCores += int.Parse(obj["NumberOfCores"].ToString()!);
-                                threadCount += int.Parse(obj["ThreadCount"].ToString()!);
-                            }
+                            physicalCores += int.Parse(obj["NumberOfCores"].ToString()!);
+                            threadCount += int.Parse(obj["ThreadCount"].ToString()!);
+                        }
 
-                            // Get base clock speed in MHz
-                            if (_baseClockMhz == 0 && obj["MaxClockSpeed"] != null)
-                            {
-                                _baseClockMhz = Convert.ToInt32(obj["MaxClockSpeed"]);
-                            }
+                        // Get base clock speed in MHz
+                        if (_baseClockMhz == 0 && obj["MaxClockSpeed"] != null)
+                        {
+                            _baseClockMhz = Convert.ToInt32(obj["MaxClockSpeed"]);
                         }
                     }
                 });
@@ -481,7 +477,7 @@ namespace FLAC_Benchmark_H
 
                 foreach (var line in lines)
                 {
-                    var parts = line.Split(new[] { '=' }, 2);
+                    var parts = line.Split(['='], 2);
                     if (parts.Length != 2) continue;
 
                     var key = parts[0].Trim();
@@ -518,28 +514,28 @@ namespace FLAC_Benchmark_H
                             }
                             break;
                         case "ClearTempFolderOnExit":
-                            checkBoxClearTempFolder.Checked = bool.TryParse(value, out bool clear) ? clear : false;
+                            checkBoxClearTempFolder.Checked = bool.TryParse(value, out bool clear) && clear;
                             break;
                         case "RemoveMetadata":
-                            checkBoxRemoveMetadata.Checked = bool.TryParse(value, out bool remove) ? remove : false;
+                            checkBoxRemoveMetadata.Checked = bool.TryParse(value, out bool remove) && remove;
                             break;
                         case "AddMD5OnLoadWav":
-                            checkBoxAddMD5OnLoadWav.Checked = bool.TryParse(value, out bool addMd5) ? addMd5 : false;
+                            checkBoxAddMD5OnLoadWav.Checked = bool.TryParse(value, out bool addMd5) && addMd5;
                             break;
                         case "AddWarmupPass":
-                            checkBoxWarmupPass.Checked = bool.TryParse(value, out bool warmup) ? warmup : false;
+                            checkBoxWarmupPass.Checked = bool.TryParse(value, out bool warmup) && warmup;
                             break;
                         case "WarningsAsErrors":
-                            checkBoxWarningsAsErrors.Checked = bool.TryParse(value, out bool warnings) ? warnings : false;
+                            checkBoxWarningsAsErrors.Checked = bool.TryParse(value, out bool warnings) && warnings;
                             break;
                         case "AutoAnalyzeLog":
-                            checkBoxAutoAnalyzeLog.Checked = bool.TryParse(value, out bool analyze) ? analyze : false;
+                            checkBoxAutoAnalyzeLog.Checked = bool.TryParse(value, out bool analyze) && analyze;
                             break;
                         case "PreventSleep":
-                            checkBoxPreventSleep.Checked = bool.TryParse(value, out bool prevent) ? prevent : false;
+                            checkBoxPreventSleep.Checked = bool.TryParse(value, out bool prevent) && prevent;
                             break;
                         case "CheckForUpdatesOnStartup":
-                            checkBoxCheckForUpdatesOnStartup.Checked = bool.TryParse(value, out bool check) ? check : false;
+                            checkBoxCheckForUpdatesOnStartup.Checked = bool.TryParse(value, out bool check) && check;
                             break;
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
@@ -639,7 +635,7 @@ namespace FLAC_Benchmark_H
                     {
                         // Old format: path~checked
                         var parts = line.Split('~');
-                        if (parts.Length >= 2 && bool.TryParse(parts[parts.Length - 1], out bool isChecked))
+                        if (parts.Length >= 2 && bool.TryParse(parts[^1], out bool isChecked))
                         {
                             string encoderPath = string.Join("~", parts.Take(parts.Length - 1));
 
@@ -734,7 +730,7 @@ namespace FLAC_Benchmark_H
                     else if (line.Contains('~'))
                     {
                         var parts = line.Split('~');
-                        if (parts.Length >= 2 && bool.TryParse(parts[parts.Length - 1], out bool isChecked))
+                        if (parts.Length >= 2 && bool.TryParse(parts[^1], out bool isChecked))
                         {
                             string audioFilePath = string.Join("~", parts.Take(parts.Length - 1));
 
@@ -858,7 +854,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, $"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -879,7 +875,7 @@ namespace FLAC_Benchmark_H
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? [];
                 // Check if there's at least one .exe file that is NOT metaflac.exe
                 bool hasValidExeFiles = files.Any(file =>
                 Directory.Exists(file) ||
@@ -894,7 +890,7 @@ namespace FLAC_Benchmark_H
         }
         private async void ListViewEncoders_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
             if (files.Length > 0)
             {
                 groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
@@ -932,9 +928,9 @@ namespace FLAC_Benchmark_H
             }
             UpdateGroupBoxEncodersHeader();
         }
-        private async void buttonAddEncoders_Click(object? sender, EventArgs e)
+        private async void ButtonAddEncoders_Click(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (OpenFileDialog openFileDialog = new())
             {
                 openFileDialog.Title = "Select Executable Files";
                 openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
@@ -1045,20 +1041,18 @@ namespace FLAC_Benchmark_H
             {
                 version = await Task.Run(() =>
                 {
-                    using (Process process = new Process())
-                    {
-                        process.StartInfo.FileName = encoderPath;
-                        process.StartInfo.Arguments = "--version"; // Argument to get the version
-                        process.StartInfo.UseShellExecute = false;
-                        process.StartInfo.RedirectStandardOutput = true; // Redirect standard output
-                        process.StartInfo.CreateNoWindow = true;
+                    using Process process = new();
+                    process.StartInfo.FileName = encoderPath;
+                    process.StartInfo.Arguments = "--version"; // Argument to get the version
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true; // Redirect standard output
+                    process.StartInfo.CreateNoWindow = true;
 
-                        process.Start();
-                        string result = process.StandardOutput.ReadLine(); // Read the first line of output
-                        process.WaitForExit();
+                    process.Start();
+                    string result = process.StandardOutput.ReadLine(); // Read the first line of output
+                    process.WaitForExit();
 
-                        return result ?? "N/A"; // Return "N/A" if the version is not found
-                    }
+                    return result ?? "N/A"; // Return "N/A" if the version is not found
                 });
             }
             catch (Exception)
@@ -1092,17 +1086,17 @@ namespace FLAC_Benchmark_H
             public long FileSize { get; set; }
             public DateTime LastModified { get; set; }
         }
-        private ConcurrentDictionary<string, EncoderInfo> encoderInfoCache = new ConcurrentDictionary<string, EncoderInfo>();
+        private readonly ConcurrentDictionary<string, EncoderInfo> encoderInfoCache = new();
 
-        private void buttonUpEncoder_Click(object? sender, EventArgs e)
+        private void ButtonUpEncoder_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewEncoders, -1); // Pass -1 to move up
         }
-        private void buttonDownEncoder_Click(object? sender, EventArgs e)
+        private void ButtonDownEncoder_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewEncoders, 1); // Pass 1 to move down
         }
-        private void buttonRemoveEncoder_Click(object? sender, EventArgs e)
+        private void ButtonRemoveEncoder_Click(object? sender, EventArgs e)
         {
             // Remove selected items from listViewEncoders
             for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
@@ -1114,7 +1108,7 @@ namespace FLAC_Benchmark_H
             }
             UpdateGroupBoxEncodersHeader();
         }
-        private void buttonClearEncoders_Click(object? sender, EventArgs e)
+        private void ButtonClearEncoders_Click(object? sender, EventArgs e)
         {
             listViewEncoders.Items.Clear();
             UpdateGroupBoxEncodersHeader();
@@ -1140,7 +1134,7 @@ namespace FLAC_Benchmark_H
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? [];
                 // Check if there's at least one audio file
                 bool hasAudioFiles = files.Any(file =>
                 Directory.Exists(file) ||
@@ -1154,7 +1148,7 @@ namespace FLAC_Benchmark_H
         }
         private async void ListViewAudioFiles_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
             if (files.Length > 0)
             {
                 groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
@@ -1174,10 +1168,10 @@ namespace FLAC_Benchmark_H
                     else if (IsAudioFile(file) && File.Exists(file))
                     {
                         var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Create a list item
-                        return new[] { item }; // Return an array with one item
+                        return [item]; // Return an array with one item
                     }
 
-                    return Array.Empty<ListViewItem>(); // Return an empty array if it's not an audio file
+                    return []; // Return an empty array if it's not an audio file
                 });
 
                 var itemsList = await Task.WhenAll(tasks); // Wait for all tasks to complete
@@ -1193,9 +1187,9 @@ namespace FLAC_Benchmark_H
             }
             UpdateGroupBoxAudioFilesHeader();
         }
-        private async void buttonAddAudioFiles_Click(object? sender, EventArgs e)
+        private async void ButtonAddAudioFiles_Click(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (OpenFileDialog openFileDialog = new())
             {
                 openFileDialog.Title = "Select Audio Files";
                 openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|FLAC Files (*.flac)|*.flac|WAV Files (*.wav)|*.wav|All Files (*.*)|*.*";
@@ -1225,11 +1219,10 @@ namespace FLAC_Benchmark_H
             }
             UpdateGroupBoxAudioFilesHeader();
         }
-        private bool IsAudioFile(string audioFilePath)
+        private static bool IsAudioFile(string audioFilePath)
         {
             string extension = Path.GetExtension(audioFilePath);
-            return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
+            return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) || extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
         private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFilePath, bool isChecked)
         {
@@ -1279,7 +1272,7 @@ namespace FLAC_Benchmark_H
                 string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
                 string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";              // Number only (e.g. 44100)
                 string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A"; // Number + kHz (44.1 kHz)
-                FileInfo file = new FileInfo(audioFilePath);
+                FileInfo file = new(audioFilePath);
                 long fileSize = file.Length;
                 DateTime lastWriteTime = file.LastWriteTime;
                 string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
@@ -1343,7 +1336,7 @@ namespace FLAC_Benchmark_H
             public string Md5Hash { get; set; }
             public string ErrorDetails { get; set; }
         }
-        private ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new ConcurrentDictionary<string, AudioFileInfo>();
+        private readonly ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new();
 
         /// <summary>
         /// Calculates the MD5 hash of the PCM audio data in a WAV file by reading only the "data" chunk.
@@ -1405,7 +1398,7 @@ namespace FLAC_Benchmark_H
                         while (totalBytesRead < bytesToRead)
                         {
                             int bytesToReadThisIteration = (int)Math.Min(buffer.Length, bytesToRead - totalBytesRead);
-                            int bytesRead = await reader.BaseStream.ReadAsync(buffer, 0, bytesToReadThisIteration);
+                            int bytesRead = await reader.BaseStream.ReadAsync(buffer.AsMemory(0, bytesToReadThisIteration));
 
                             if (bytesRead == 0)
                             {
@@ -1419,8 +1412,8 @@ namespace FLAC_Benchmark_H
                         }
 
                         // Finalize hash
-                        md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        string md5Hash = BitConverter.ToString(md5.Hash).Replace("-", "").ToUpperInvariant();
+                        md5.TransformFinalBlock([], 0, 0);
+                        string md5Hash = Convert.ToHexString(md5.Hash).ToUpperInvariant();
 
                         // Update cache with result
                         if (audioInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
@@ -1611,15 +1604,15 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonUpAudioFile_Click(object? sender, EventArgs e)
+        private void ButtonUpAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
         }
-        private void buttonDownAudioFile_Click(object? sender, EventArgs e)
+        private void ButtonDownAudioFile_Click(object? sender, EventArgs e)
         {
             MoveSelectedItems(listViewAudioFiles, 1); // Pass 1 to move down
         }
-        private void buttonRemoveAudioFile_Click(object? sender, EventArgs e)
+        private void ButtonRemoveAudioFile_Click(object? sender, EventArgs e)
         {
             // Remove selected items from listViewAudioFiles
             for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
@@ -1631,7 +1624,7 @@ namespace FLAC_Benchmark_H
             }
             UpdateGroupBoxAudioFilesHeader();
         }
-        private void buttonClearUnchecked_Click(object? sender, EventArgs e)
+        private void ButtonClearUnchecked_Click(object? sender, EventArgs e)
         {
             // Check if the Shift key is pressed
             if (ModifierKeys == Keys.Shift)
@@ -1641,7 +1634,7 @@ namespace FLAC_Benchmark_H
             else
             {
                 // Create a list to remember the indices of unchecked items
-                List<int> itemsToRemove = new List<int>();
+                List<int> itemsToRemove = [];
 
                 // Iterate through the list items and add unchecked items to the removal list
                 for (int i = 0; i < listViewAudioFiles.Items.Count; i++)
@@ -1704,7 +1697,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("Unchecked audio files have been moved to the recycle bin.", "Deletion", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private void buttonClearAudioFiles_Click(object? sender, EventArgs e)
+        private void ButtonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
             UpdateGroupBoxAudioFilesHeader();
@@ -1727,7 +1720,7 @@ namespace FLAC_Benchmark_H
 
         // Log Settings (now supports only "Benchmark" tab)
         private DataGridViewLogSettingsForm? _logSettingsForm = null;
-        private void buttonDataGridViewLogSettings_Click(object sender, EventArgs e)
+        private void ButtonDataGridViewLogSettings_Click(object? sender, EventArgs e)
         {
             if (_logSettingsForm == null || _logSettingsForm.IsDisposed)
             {
@@ -1743,7 +1736,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Log for "Benchmark"
-        private void InitializedataGridViewLog()
+        private void InitializeDataGridViewLog()
         {
             // Configure DataGridView
             dataGridViewLog.Columns.Add("Name", "Name");
@@ -1791,57 +1784,57 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
-            dataGridViewLog.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLog.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["BitDepth"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SamplingRate"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["InputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["OutputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Compression"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Time"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Speed"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedMin"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedMax"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedRange"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["SpeedConsistency"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["CPULoadEncoder"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["CPUClock"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLog.Columns["Passes"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide or show columns by default
-            dataGridViewLog.Columns["Name"].Visible = true;
-            dataGridViewLog.Columns["Channels"].Visible = false;
-            dataGridViewLog.Columns["BitDepth"].Visible = false;
-            dataGridViewLog.Columns["SamplingRate"].Visible = false;
-            dataGridViewLog.Columns["InputFileSize"].Visible = true;
-            dataGridViewLog.Columns["OutputFileSize"].Visible = true;
-            dataGridViewLog.Columns["Compression"].Visible = true;
-            dataGridViewLog.Columns["Time"].Visible = false;
-            dataGridViewLog.Columns["Speed"].Visible = true;
-            dataGridViewLog.Columns["SpeedMin"].Visible = false;
-            dataGridViewLog.Columns["SpeedMax"].Visible = false;
-            dataGridViewLog.Columns["SpeedRange"].Visible = false;
-            dataGridViewLog.Columns["SpeedConsistency"].Visible = false;
-            dataGridViewLog.Columns["CPULoadEncoder"].Visible = true;
-            dataGridViewLog.Columns["CPUClock"].Visible = true;
-            dataGridViewLog.Columns["Passes"].Visible = true;
-            dataGridViewLog.Columns["Parameters"].Visible = true;
-            dataGridViewLog.Columns["Encoder"].Visible = true;
-            dataGridViewLog.Columns["Version"].Visible = false;
-            dataGridViewLog.Columns["EncoderDirectory"].Visible = false;
-            dataGridViewLog.Columns["FastestEncoder"].Visible = true;
-            dataGridViewLog.Columns["BestSize"].Visible = true;
-            dataGridViewLog.Columns["SameSize"].Visible = true;
-            dataGridViewLog.Columns["AudioFileDirectory"].Visible = true;
-            dataGridViewLog.Columns["MD5"].Visible = false;
-            dataGridViewLog.Columns["Duplicates"].Visible = false;
-            dataGridViewLog.Columns["Errors"].Visible = false;
+            dataGridViewLog.Columns["Name"]!.Visible = true;
+            dataGridViewLog.Columns["Channels"]!.Visible = false;
+            dataGridViewLog.Columns["BitDepth"]!.Visible = false;
+            dataGridViewLog.Columns["SamplingRate"]!.Visible = false;
+            dataGridViewLog.Columns["InputFileSize"]!.Visible = true;
+            dataGridViewLog.Columns["OutputFileSize"]!.Visible = true;
+            dataGridViewLog.Columns["Compression"]!.Visible = true;
+            dataGridViewLog.Columns["Time"]!.Visible = false;
+            dataGridViewLog.Columns["Speed"]!.Visible = true;
+            dataGridViewLog.Columns["SpeedMin"]!.Visible = false;
+            dataGridViewLog.Columns["SpeedMax"]!.Visible = false;
+            dataGridViewLog.Columns["SpeedRange"]!.Visible = false;
+            dataGridViewLog.Columns["SpeedConsistency"]!.Visible = false;
+            dataGridViewLog.Columns["CPULoadEncoder"]!.Visible = true;
+            dataGridViewLog.Columns["CPUClock"]!.Visible = true;
+            dataGridViewLog.Columns["Passes"]!.Visible = true;
+            dataGridViewLog.Columns["Parameters"]!.Visible = true;
+            dataGridViewLog.Columns["Encoder"]!.Visible = true;
+            dataGridViewLog.Columns["Version"]!.Visible = false;
+            dataGridViewLog.Columns["EncoderDirectory"]!.Visible = false;
+            dataGridViewLog.Columns["FastestEncoder"]!.Visible = true;
+            dataGridViewLog.Columns["BestSize"]!.Visible = true;
+            dataGridViewLog.Columns["SameSize"]!.Visible = true;
+            dataGridViewLog.Columns["AudioFileDirectory"]!.Visible = true;
+            dataGridViewLog.Columns["MD5"]!.Visible = false;
+            dataGridViewLog.Columns["Duplicates"]!.Visible = false;
+            dataGridViewLog.Columns["Errors"]!.Visible = false;
 
             foreach (DataGridViewColumn column in dataGridViewLog.Columns)
             {
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
         }
-        private void dataGridViewLog_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridViewLog_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
             if (e.RowIndex < 0) return;
@@ -1893,7 +1886,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void dataGridViewLog_MouseDown(object sender, MouseEventArgs e)
+        private void DataGridViewLog_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewLog.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
@@ -1903,7 +1896,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Log for "Detect Dupes"
-        private void InitializedataGridViewLogDetectDupes()
+        private void InitializeDataGridViewLogDetectDupes()
         {
             // Configure DataGridView
             dataGridViewLogDetectDupes.Columns.Add("Name", "Name");
@@ -1951,57 +1944,57 @@ namespace FLAC_Benchmark_H
             dataGridViewLogDetectDupes.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
-            dataGridViewLogDetectDupes.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogDetectDupes.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["BitDepth"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SamplingRate"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["InputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["OutputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Compression"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Time"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Speed"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedMin"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedMax"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedRange"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["SpeedConsistency"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["CPUClock"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogDetectDupes.Columns["Passes"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide or show columns by default
-            dataGridViewLogDetectDupes.Columns["Name"].Visible = true;
-            dataGridViewLogDetectDupes.Columns["Channels"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["BitDepth"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SamplingRate"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["InputFileSize"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["OutputFileSize"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Compression"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Time"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Speed"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SpeedMin"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SpeedMax"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SpeedRange"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SpeedConsistency"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["CPUClock"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Passes"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Parameters"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Encoder"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["Version"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["EncoderDirectory"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["FastestEncoder"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["BestSize"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["SameSize"].Visible = false;
-            dataGridViewLogDetectDupes.Columns["AudioFileDirectory"].Visible = true;
-            dataGridViewLogDetectDupes.Columns["MD5"].Visible = true;
-            dataGridViewLogDetectDupes.Columns["Duplicates"].Visible = true;
-            dataGridViewLogDetectDupes.Columns["Errors"].Visible = true;
+            dataGridViewLogDetectDupes.Columns["Name"]!.Visible = true;
+            dataGridViewLogDetectDupes.Columns["Channels"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["BitDepth"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SamplingRate"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["InputFileSize"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["OutputFileSize"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Compression"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Time"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Speed"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedMin"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedMax"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedRange"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SpeedConsistency"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["CPULoadEncoder"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["CPUClock"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Passes"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Parameters"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Encoder"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["Version"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["EncoderDirectory"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["FastestEncoder"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["BestSize"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["SameSize"]!.Visible = false;
+            dataGridViewLogDetectDupes.Columns["AudioFileDirectory"]!.Visible = true;
+            dataGridViewLogDetectDupes.Columns["MD5"]!.Visible = true;
+            dataGridViewLogDetectDupes.Columns["Duplicates"]!.Visible = true;
+            dataGridViewLogDetectDupes.Columns["Errors"]!.Visible = true;
 
             foreach (DataGridViewColumn column in dataGridViewLogDetectDupes.Columns)
             {
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
         }
-        private void dataGridViewLogDetectDupes_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridViewLogDetectDupes_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
             if (e.RowIndex < 0) return;
@@ -2052,7 +2045,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void dataGridViewLogDetectDupes_MouseDown(object sender, MouseEventArgs e)
+        private void DataGridViewLogDetectDupes_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewLogDetectDupes.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
@@ -2062,7 +2055,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Log for "Test for Errors"
-        private void InitializedataGridViewLogTestForErrors()
+        private void InitializeDataGridViewLogTestForErrors()
         {
             // Configure DataGridView
             dataGridViewLogTestForErrors.Columns.Add("Name", "Name");
@@ -2110,57 +2103,57 @@ namespace FLAC_Benchmark_H
             dataGridViewLogTestForErrors.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
-            dataGridViewLogTestForErrors.Columns["Channels"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["BitDepth"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["SamplingRate"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["InputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["OutputFileSize"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["Compression"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["Time"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["Speed"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["SpeedMin"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["SpeedMax"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["SpeedRange"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["SpeedConsistency"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["CPUClock"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewLogTestForErrors.Columns["Passes"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["BitDepth"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SamplingRate"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["InputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["OutputFileSize"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Compression"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Time"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Speed"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedMin"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedMax"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedRange"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["SpeedConsistency"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["CPUClock"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dataGridViewLogTestForErrors.Columns["Passes"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             // Hide or show columns by default
-            dataGridViewLogTestForErrors.Columns["Name"].Visible = true;
-            dataGridViewLogTestForErrors.Columns["Channels"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["BitDepth"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SamplingRate"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["InputFileSize"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["OutputFileSize"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Compression"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Time"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Speed"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SpeedMin"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SpeedMax"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SpeedRange"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SpeedConsistency"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["CPUClock"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Passes"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Parameters"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Encoder"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Version"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["EncoderDirectory"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["FastestEncoder"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["BestSize"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["SameSize"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["AudioFileDirectory"].Visible = true;
-            dataGridViewLogTestForErrors.Columns["MD5"].Visible = true;
-            dataGridViewLogTestForErrors.Columns["Duplicates"].Visible = false;
-            dataGridViewLogTestForErrors.Columns["Errors"].Visible = true;
+            dataGridViewLogTestForErrors.Columns["Name"]!.Visible = true;
+            dataGridViewLogTestForErrors.Columns["Channels"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["BitDepth"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SamplingRate"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["InputFileSize"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["OutputFileSize"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Compression"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Time"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Speed"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedMin"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedMax"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedRange"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SpeedConsistency"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["CPULoadEncoder"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["CPUClock"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Passes"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Parameters"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Encoder"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Version"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["EncoderDirectory"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["FastestEncoder"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["BestSize"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["SameSize"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["AudioFileDirectory"]!.Visible = true;
+            dataGridViewLogTestForErrors.Columns["MD5"]!.Visible = true;
+            dataGridViewLogTestForErrors.Columns["Duplicates"]!.Visible = false;
+            dataGridViewLogTestForErrors.Columns["Errors"]!.Visible = true;
 
             foreach (DataGridViewColumn column in dataGridViewLogTestForErrors.Columns)
             {
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
         }
-        private void dataGridViewLogTestForErrors_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void DataGridViewLogTestForErrors_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
             if (e.RowIndex < 0) return;
@@ -2211,7 +2204,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void dataGridViewLogTestForErrors_MouseDown(object sender, MouseEventArgs e)
+        private void DataGridViewLogTestForErrors_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewLogTestForErrors.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
@@ -2225,7 +2218,7 @@ namespace FLAC_Benchmark_H
         {
             if (exitCode == 0)
             {
-                FileInfo outputFile = new FileInfo(outputFilePath);
+                FileInfo outputFile = new(outputFilePath);
                 if (!outputFile.Exists)
                     return;
 
@@ -2408,7 +2401,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Ensure Errors column is visible
-                dataGridViewLog.Columns["Errors"].Visible = true;
+                dataGridViewLog.Columns["Errors"]!.Visible = true;
 
                 // Log to file
                 File.AppendAllText("log.txt",
@@ -2421,13 +2414,11 @@ namespace FLAC_Benchmark_H
                 $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
             }
         }
-        private void buttonLogColumnsAutoWidth_Click(object sender, EventArgs e)
+        private void ButtonLogColumnsAutoWidth_Click(object? sender, EventArgs e)
         {
-            bool autoWidthAllTabs = ModifierKeys.HasFlag(Keys.Shift);
-
-            if (autoWidthAllTabs)
+            if (ModifierKeys.HasFlag(Keys.Shift))
             {
-                // Auto-resize columns in ALL three DataGridViews
+                // Auto-resize all tabs
                 dataGridViewLog.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 dataGridViewLogDetectDupes.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
                 dataGridViewLogTestForErrors.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
@@ -2435,21 +2426,19 @@ namespace FLAC_Benchmark_H
             else
             {
                 // Auto-resize only the currently selected tab
-                DataGridView activeGrid = tabControlLog.SelectedTab switch
+                var selectedTab = tabControlLog.SelectedTab;
+                DataGridView? activeGrid = selectedTab switch
                 {
-                    _ when tabControlLog.SelectedTab == Benchmark => dataGridViewLog,
-                    _ when tabControlLog.SelectedTab == DetectDupes => dataGridViewLogDetectDupes,
-                    _ when tabControlLog.SelectedTab == TestForErrors => dataGridViewLogTestForErrors,
+                    _ when selectedTab == Benchmark => dataGridViewLog,
+                    _ when selectedTab == DetectDupes => dataGridViewLogDetectDupes,
+                    _ when selectedTab == TestForErrors => dataGridViewLogTestForErrors,
                     _ => null
                 };
 
-                if (activeGrid != null)
-                {
-                    activeGrid.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
-                }
+                activeGrid?.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
             }
         }
-        private async void buttonAnalyzeLog_Click(object? sender, EventArgs e)
+        private async void ButtonAnalyzeLog_Click(object? sender, EventArgs e)
         {
             await AnalyzeLogAsync();
         }
@@ -2827,7 +2816,7 @@ namespace FLAC_Benchmark_H
             public string SamplingRate { get; set; }
             public DateTime Timestamp { get; set; }
         }
-        private readonly List<BenchmarkPass> _benchmarkPasses = new();
+        private readonly List<BenchmarkPass> _benchmarkPasses = [];
         private void SortDataGridView()
         {
             // Collect data from DataGridView into a list
@@ -2964,33 +2953,31 @@ namespace FLAC_Benchmark_H
         }
 
         // Log to Excel, copy, clear
-        private void buttonLogToExcel_Click(object? sender, EventArgs e)
+        private void ButtonLogToExcel_Click(object? sender, EventArgs e)
         {
-            using (var workbook = new XLWorkbook())
+            using var workbook = new XLWorkbook();
+            // Export each tab as a separate worksheet
+            ExportDataGridViewToWorksheet(workbook, dataGridViewLog, "Benchmark");
+            ExportDataGridViewToWorksheet(workbook, dataGridViewLogDetectDupes, "Detect Dupes");
+            ExportDataGridViewToWorksheet(workbook, dataGridViewLogTestForErrors, "Test for Errors");
+
+            // Create filename
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+            string fileName = $"Log {timestamp}.xlsx";
+            string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+
+            // Save
+            workbook.SaveAs(fullPath);
+
+            // Ask to open
+            if (MessageBox.Show(
+            $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
+            "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
             {
-                // Export each tab as a separate worksheet
-                ExportDataGridViewToWorksheet(workbook, dataGridViewLog, "Benchmark");
-                ExportDataGridViewToWorksheet(workbook, dataGridViewLogDetectDupes, "Detect Dupes");
-                ExportDataGridViewToWorksheet(workbook, dataGridViewLogTestForErrors, "Test for Errors");
-
-                // Create filename
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
-                string fileName = $"Log {timestamp}.xlsx";
-                string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
-
-                // Save
-                workbook.SaveAs(fullPath);
-
-                // Ask to open
-                if (MessageBox.Show(
-                $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
-                "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                {
-                    Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
-                }
+                Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
             }
         }
-        private void ExportDataGridViewToWorksheet(XLWorkbook workbook, DataGridView dgv, string sheetName)
+        private static void ExportDataGridViewToWorksheet(XLWorkbook workbook, DataGridView dgv, string sheetName)
         {
             if (dgv.Rows.Count == 0) return;
 
@@ -3149,7 +3136,7 @@ namespace FLAC_Benchmark_H
             worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
             worksheet.Row(1).Style.Font.FontColor = XLColor.White;
         }
-        private void buttonCopyLogAsBBCode_Click(object? sender, EventArgs e)
+        private void ButtonCopyLogAsBBCode_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -3216,7 +3203,7 @@ namespace FLAC_Benchmark_H
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void buttonOpenLogtxt_Click(object? sender, EventArgs e)
+        private void ButtonOpenLogtxt_Click(object? sender, EventArgs e)
         {
             // Path to log file
             string logFilePath = "log.txt";
@@ -3242,7 +3229,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        private void buttonCopyLog_Click(object? sender, EventArgs e)
+        private void ButtonCopyLog_Click(object? sender, EventArgs e)
         {
             // Determine which DataGridView corresponds to the currently selected tab
             DataGridView activeGrid = tabControlLog.SelectedTab switch
@@ -3314,7 +3301,7 @@ namespace FLAC_Benchmark_H
                 // Optional: MessageBox.Show("Log copied to clipboard!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private void buttonClearLog_Click(object? sender, EventArgs e)
+        private void ButtonClearLog_Click(object? sender, EventArgs e)
         {
             // Check if Shift key is pressed
             bool clearAllTabs = ModifierKeys.HasFlag(Keys.Shift);
@@ -3327,7 +3314,7 @@ namespace FLAC_Benchmark_H
                 dataGridViewLogTestForErrors.Rows.Clear();
 
                 // Hide optional columns 
-                dataGridViewLog.Columns["Errors"].Visible = false;
+                dataGridViewLog.Columns["Errors"]!.Visible = false;
 
                 // Clear internal benchmark cache (only relevant to Benchmark tab)
                 _benchmarkPasses.Clear();
@@ -3346,7 +3333,7 @@ namespace FLAC_Benchmark_H
                 if (tabControlLog.SelectedTab == Benchmark)
                 {
                     dataGridViewLog.Rows.Clear();
-                    dataGridViewLog.Columns["Errors"].Visible = false;
+                    dataGridViewLog.Columns["Errors"]!.Visible = false;
                     _benchmarkPasses.Clear();
                     dataGridViewLog.ClearSelection();
                 }
@@ -3404,7 +3391,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void DataGridViewJobs_KeyDown(object sender, KeyEventArgs e)
+        private void DataGridViewJobs_KeyDown(object? sender, KeyEventArgs e)
         {
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
@@ -3425,7 +3412,7 @@ namespace FLAC_Benchmark_H
             // Handle Ctrl+C (Copy in custom format)
             if (e.Control && e.KeyCode == Keys.C)
             {
-                buttonCopyJobs_Click(sender, EventArgs.Empty);
+                ButtonCopyJobs_Click(sender, EventArgs.Empty);
                 e.Handled = true; // Cancel default behavior
                 e.SuppressKeyPress = true; // Suppress beep
             }
@@ -3554,7 +3541,7 @@ namespace FLAC_Benchmark_H
         {
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
-                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+                string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? [];
 
                 // Check for .txt or .bak files or directories
                 e.Effect = files.Any(file => Directory.Exists(file) ||
@@ -3569,7 +3556,7 @@ namespace FLAC_Benchmark_H
         }
         private void DataGridViewJobs_DragDrop(object? sender, DragEventArgs e)
         {
-            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? Array.Empty<string>();
+            string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
             foreach (var file in files)
             {
                 if (Directory.Exists(file))
@@ -3664,122 +3651,118 @@ namespace FLAC_Benchmark_H
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async void buttonImportJobList_Click(object? sender, EventArgs e)
+        private async void ButtonImportJobList_Click(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using OpenFileDialog openFileDialog = new();
+            openFileDialog.Filter = "Text and Backup files (*.txt;*.bak)|*.txt;*.bak|All files (*.*)|*.*";
+            openFileDialog.Title = "Import Job Lists";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                openFileDialog.Filter = "Text and Backup files (*.txt;*.bak)|*.txt;*.bak|All files (*.*)|*.*";
-                openFileDialog.Title = "Import Job Lists";
-                openFileDialog.Multiselect = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    try
+                    foreach (string fileName in openFileDialog.FileNames)
                     {
-                        foreach (string fileName in openFileDialog.FileNames)
+                        string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
+                        foreach (var line in lines)
                         {
-                            string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
-                            foreach (var line in lines)
+                            if (string.IsNullOrWhiteSpace(line))
+                                continue;
+
+                            // Check for the primary format: "Status|Type|Passes|Parameters"
+                            if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                             {
-                                if (string.IsNullOrWhiteSpace(line))
+                                int firstBar = line.IndexOf('|');
+                                int secondBar = line.IndexOf('|', firstBar + 1);
+                                int thirdBar = line.IndexOf('|', secondBar + 1);
+
+                                if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                                {
+                                    bool isChecked = line.StartsWith("Checked");
+                                    string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+                                    string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+                                    string parameters = line.Substring(thirdBar + 1);
+
+                                    // Add the parsed job data as a new row to dataGridViewJobs
+                                    dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                                     continue;
-
-                                // Check for the primary format: "Status|Type|Passes|Parameters"
-                                if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
-                                {
-                                    int firstBar = line.IndexOf('|');
-                                    int secondBar = line.IndexOf('|', firstBar + 1);
-                                    int thirdBar = line.IndexOf('|', secondBar + 1);
-
-                                    if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
-                                    {
-                                        bool isChecked = line.StartsWith("Checked");
-                                        string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
-                                        string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                                        string parameters = line.Substring(thirdBar + 1);
-
-                                        // Add the parsed job data as a new row to dataGridViewJobs
-                                        dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
-                                        continue;
-                                    }
                                 }
-                                // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
-                                else if (line.Contains('~'))
-                                {
-                                    var parts = line.Split('~');
-                                    if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                                    {
-                                        string jobName = NormalizeSpaces(parts[0]);
-                                        string passes = NormalizeSpaces(parts[2]);
-                                        string parameters = NormalizeSpaces(parts[3]);
-                                        // Add the parsed job data as a new row to dataGridViewJobs
-                                        dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
-                                        continue;
-                                    }
-                                }
-
-                                MessageBox.Show($"Invalid line format: {line}", "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             }
+                            // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
+                            else if (line.Contains('~'))
+                            {
+                                var parts = line.Split('~');
+                                if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
+                                {
+                                    string jobName = NormalizeSpaces(parts[0]);
+                                    string passes = NormalizeSpaces(parts[2]);
+                                    string parameters = NormalizeSpaces(parts[3]);
+                                    // Add the parsed job data as a new row to dataGridViewJobs
+                                    dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
+                                    continue;
+                                }
+                            }
+
+                            MessageBox.Show($"Invalid line format: {line}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error reading file: {ex.Message}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
                 }
-            }
-        }
-        private void buttonExportJobList_Click(object? sender, EventArgs e)
-        {
-            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-            {
-                saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                saveFileDialog.Title = "Save Job List";
-                string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt";
-                saveFileDialog.FileName = fileName;
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        // Create an array of formatted strings representing the rows in dataGridViewJobs
-                        // Exclude the new row if it exists (though we disabled it)
-                        var jobList = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
-                        .Where(row => !row.IsNewRow) // Filter out the new row
-                        .Select(row =>
-                        {
-                            // Get values from the respective cells
-                            bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
-                            string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
-                            string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
-                            string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
-
-                            // Format the row data as a single line
-                            string status = isChecked ? "Checked" : "Unchecked";
-                            return $"{status}|{type}|{passes}|{parameters}";
-                        })
-                        .ToArray();
-
-                        File.WriteAllLines(saveFileDialog.FileName, jobList, Encoding.UTF8);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    MessageBox.Show($"Error reading file: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
-        private void buttonUpJob_Click(object? sender, EventArgs e)
+        private void ButtonExportJobList_Click(object? sender, EventArgs e)
+        {
+            using SaveFileDialog saveFileDialog = new();
+            saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            saveFileDialog.Title = "Save Job List";
+            string fileName = $"Settings_joblist {DateTime.Now:yyyy-MM-dd}.txt";
+            saveFileDialog.FileName = fileName;
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Create an array of formatted strings representing the rows in dataGridViewJobs
+                    // Exclude the new row if it exists (though we disabled it)
+                    var jobList = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
+                    .Where(row => !row.IsNewRow) // Filter out the new row
+                    .Select(row =>
+                    {
+                        // Get values from the respective cells
+                        bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
+                        string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
+                        string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
+                        string parameters = row.Cells["Column4Parameters"].Value?.ToString() ?? "";
+
+                        // Format the row data as a single line
+                        string status = isChecked ? "Checked" : "Unchecked";
+                        return $"{status}|{type}|{passes}|{parameters}";
+                    })
+                    .ToArray();
+
+                    File.WriteAllLines(saveFileDialog.FileName, jobList, Encoding.UTF8);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void ButtonUpJob_Click(object? sender, EventArgs e)
         {
             MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, -1); // Pass -1 to move up
         }
-        private void buttonDownJob_Click(object? sender, EventArgs e)
+        private void ButtonDownJob_Click(object? sender, EventArgs e)
         {
             MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, 1); // Pass 1 to move down
         }
-        private void buttonRemoveJob_Click(object? sender, EventArgs e)
+        private void ButtonRemoveJob_Click(object? sender, EventArgs e)
         {
             // Remove selected rows from dataGridViewJobs
             // Get selected row indices in descending order to avoid index shifting issues during removal
@@ -3799,11 +3782,11 @@ namespace FLAC_Benchmark_H
             dataGridViewJobs.ClearSelection();
             dataGridViewJobs.CurrentCell = null;
         }
-        private void buttonClearJobList_Click(object? sender, EventArgs e)
+        private void ButtonClearJobList_Click(object? sender, EventArgs e)
         {
             dataGridViewJobs.Rows.Clear();
         }
-        private void buttonAddJobToJobListEncoder_Click(object? sender, EventArgs e)
+        private void ButtonAddJobToJobListEncoder_Click(object? sender, EventArgs e)
         {
             // Get values from text fields and form parameters
             string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
@@ -3826,7 +3809,7 @@ namespace FLAC_Benchmark_H
             bool existingRowFoundForDGV = false;
             if (dataGridViewJobs.Rows.Count > 0)
             {
-                var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
+                var lastRow = dataGridViewJobs.Rows[^1];
                 // Compare Job Type and Parameters columns
                 if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
@@ -3848,7 +3831,7 @@ namespace FLAC_Benchmark_H
             dataGridViewJobs.ClearSelection();
             dataGridViewJobs.CurrentCell = null;
         }
-        private void buttonAddJobToJobListDecoder_Click(object? sender, EventArgs e)
+        private void ButtonAddJobToJobListDecoder_Click(object? sender, EventArgs e)
         {
             // Get values from text fields and form parameters
             string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
@@ -3862,7 +3845,7 @@ namespace FLAC_Benchmark_H
             bool existingRowFoundForDGV = false;
             if (dataGridViewJobs.Rows.Count > 0)
             {
-                var lastRow = dataGridViewJobs.Rows[dataGridViewJobs.Rows.Count - 1];
+                var lastRow = dataGridViewJobs.Rows[^1];
                 // Compare Job Type and Parameters columns
                 if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
@@ -3884,7 +3867,7 @@ namespace FLAC_Benchmark_H
             dataGridViewJobs.ClearSelection();
             dataGridViewJobs.CurrentCell = null;
         }
-        private void buttonPlusPass_Click(object? sender, EventArgs e)
+        private void ButtonPlusPass_Click(object? sender, EventArgs e)
         {
             // Iterate through the selected rows in dataGridViewJobs
             foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
@@ -3904,7 +3887,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonMinusPass_Click(object? sender, EventArgs e)
+        private void ButtonMinusPass_Click(object? sender, EventArgs e)
         {
             // Iterate through the selected rows in dataGridViewJobs
             foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
@@ -3928,9 +3911,9 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonCopyJobs_Click(object? sender, EventArgs e)
+        private void ButtonCopyJobs_Click(object? sender, EventArgs e)
         {
-            StringBuilder jobsText = new StringBuilder();
+            StringBuilder jobsText = new();
 
             if (dataGridViewJobs.SelectedRows.Count > 0)
             {
@@ -3993,7 +3976,7 @@ namespace FLAC_Benchmark_H
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private void buttonPasteJobs_Click(object? sender, EventArgs e)
+        private void ButtonPasteJobs_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -4001,7 +3984,7 @@ namespace FLAC_Benchmark_H
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     // Split the clipboard text into lines
-                    string[] lines = clipboardText.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] lines = clipboardText.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
                     foreach (var line in lines)
                     {
                         if (string.IsNullOrWhiteSpace(line))
@@ -4060,7 +4043,7 @@ namespace FLAC_Benchmark_H
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void DataGridViewJobs_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void DataGridViewJobs_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1 or name "Column2JobType")
             if (e.ColumnIndex == 1 && e.Value != null)
@@ -4080,7 +4063,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void dataGridViewJobs_MouseDown(object sender, MouseEventArgs e)
+        private void DataGridViewJobs_MouseDown(object? sender, MouseEventArgs e)
         {
             var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
 
@@ -4108,7 +4091,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 // If no data rows exist, default to checked state
-                bool newState = !hasDataRows ? true : !allChecked;
+                bool newState = !(hasDataRows && allChecked);
 
                 // Set new state for all data rows
                 foreach (DataGridViewRow row in dataRows)
@@ -4130,7 +4113,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Script Constructor
-        private void buttonScriptConstructor_Click(object sender, EventArgs e)
+        private void ButtonScriptConstructor_Click(object? sender, EventArgs e)
         {
             // Build initial script parameters from UI controls
             string compressionLevel = NormalizeSpaces(textBoxCompressionLevel.Text);
@@ -4180,7 +4163,7 @@ namespace FLAC_Benchmark_H
         }
 
         // Actions (Buttons)
-        private async void buttonStartEncode_Click(object? sender, EventArgs e)
+        private async void ButtonStartEncode_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
@@ -4364,7 +4347,7 @@ namespace FLAC_Benchmark_H
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Prepare for CPU clock monitoring
-                        _cpuClockReadings = new List<double>();
+                        _cpuClockReadings = [];
                         var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
@@ -4476,22 +4459,20 @@ namespace FLAC_Benchmark_H
                                     // Run metaflac.exe --remove-all if checkbox is checked
                                     try
                                     {
-                                        using (var metaflacProcess = new Process())
+                                        using var metaflacProcess = new Process();
+                                        metaflacProcess.StartInfo = new ProcessStartInfo
                                         {
-                                            metaflacProcess.StartInfo = new ProcessStartInfo
-                                            {
-                                                FileName = "metaflac.exe",
-                                                Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
-                                                UseShellExecute = false,
-                                                CreateNoWindow = true,
-                                            };
+                                            FileName = "metaflac.exe",
+                                            Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                            UseShellExecute = false,
+                                            CreateNoWindow = true,
+                                        };
 
-                                            await Task.Run(() =>
-                                            {
-                                                metaflacProcess.Start();
-                                                metaflacProcess.WaitForExit();
-                                            });
-                                        }
+                                        await Task.Run(() =>
+                                        {
+                                            metaflacProcess.Start();
+                                            metaflacProcess.WaitForExit();
+                                        });
                                     }
                                     catch (Exception ex)
                                     {
@@ -4581,7 +4562,7 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
-        private async void buttonStartDecode_Click(object? sender, EventArgs e)
+        private async void ButtonStartDecode_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
@@ -4749,7 +4730,7 @@ namespace FLAC_Benchmark_H
                         string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                         // Prepare for CPU clock monitoring
-                        _cpuClockReadings = new List<double>();
+                        _cpuClockReadings = [];
                         var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
@@ -4935,7 +4916,7 @@ namespace FLAC_Benchmark_H
                 }));
             }
         }
-        private async void buttonStartJobList_Click(object? sender, EventArgs e)
+        private async void ButtonStartJobList_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
             Directory.CreateDirectory(tempFolderPath);
@@ -5217,7 +5198,7 @@ namespace FLAC_Benchmark_H
                                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                     // Prepare for CPU clock monitoring
-                                    _cpuClockReadings = new List<double>();
+                                    _cpuClockReadings = [];
                                     var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                                     bool isFirstValue = true;
                                     clockTimer.Elapsed += (s, e) =>
@@ -5329,22 +5310,20 @@ namespace FLAC_Benchmark_H
                                                 // Run metaflac.exe --remove-all if checkbox is checked
                                                 try
                                                 {
-                                                    using (var metaflacProcess = new Process())
+                                                    using var metaflacProcess = new Process();
+                                                    metaflacProcess.StartInfo = new ProcessStartInfo
                                                     {
-                                                        metaflacProcess.StartInfo = new ProcessStartInfo
-                                                        {
-                                                            FileName = "metaflac.exe",
-                                                            Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
-                                                            UseShellExecute = false,
-                                                            CreateNoWindow = true,
-                                                        };
+                                                        FileName = "metaflac.exe",
+                                                        Arguments = $"--remove-all --dont-use-padding \"{outputFilePath}\"",
+                                                        UseShellExecute = false,
+                                                        CreateNoWindow = true,
+                                                    };
 
-                                                        await Task.Run(() =>
-                                                        {
-                                                            metaflacProcess.Start();
-                                                            metaflacProcess.WaitForExit();
-                                                        });
-                                                    }
+                                                    await Task.Run(() =>
+                                                    {
+                                                        metaflacProcess.Start();
+                                                        metaflacProcess.WaitForExit();
+                                                    });
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -5433,7 +5412,7 @@ namespace FLAC_Benchmark_H
                                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
                                     // Prepare for CPU clock monitoring
-                                    _cpuClockReadings = new List<double>();
+                                    _cpuClockReadings = [];
                                     var clockTimer = new System.Timers.Timer(20); // Read every 20ms
                                     bool isFirstValue = true;
                                     clockTimer.Elapsed += (s, e) =>
@@ -5623,7 +5602,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private async void buttonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
+        private async void ButtonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
             var button = (Button)sender;
             var originalText = button.Text;
@@ -5683,8 +5662,8 @@ namespace FLAC_Benchmark_H
                 // --- STAGE 1: PERFORM DUPLICATE DETECTION IN BACKGROUND THREAD ---
                 await Task.Run(async () =>
                 {
-                    hashDict = new Dictionary<string, List<string>>(); // Group files by MD5 hash.
-                    filesWithMD5Errors = new List<string>(); // Track paths of files with MD5 errors.
+                    hashDict = []; // Group files by MD5 hash.
+                    filesWithMD5Errors = []; // Track paths of files with MD5 errors.
                     var itemsToCheck = new List<string>();   // Paths of files to mark as checked (primary).
                     var itemsToUncheck = new List<string>(); // Paths of files to mark as unchecked (non-primary duplicates).
 
@@ -5739,7 +5718,7 @@ namespace FLAC_Benchmark_H
                         if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "MD5 calculation failed")
                         {
                             if (!hashDict.ContainsKey(md5Hash))
-                                hashDict[md5Hash] = new List<string>();
+                                hashDict[md5Hash] = [];
                             hashDict[md5Hash].Add(filePath);
                         }
                         else
@@ -5980,7 +5959,7 @@ namespace FLAC_Benchmark_H
                 cts.Dispose();
             }
         }
-        private async void buttonTestForErrors_Click(object? sender, EventArgs e)
+        private async void ButtonTestForErrors_Click(object? sender, EventArgs e)
         {
             var button = (Button)sender;
             var originalText = button.Text;
@@ -5994,7 +5973,7 @@ namespace FLAC_Benchmark_H
                 // --- STAGE 1: COLLECT DATA FROM UI ---
                 var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
                 {
-                    List<string> flacFilePaths = new List<string>();
+                    List<string> flacFilePaths = [];
                     string encoderPath = null;
                     bool useWarningsAsErrors = false;
 
@@ -6105,7 +6084,7 @@ namespace FLAC_Benchmark_H
                             errorResults.Add((fileName, filePath, message));
                         }
                     }
-                    catch (Exception ex) when (!(ex is OperationCanceledException))
+                    catch (Exception ex) when (ex is not OperationCanceledException)
                     {
                         errorResults.Add((Path.GetFileName(filePath), filePath, $"Process failed: {ex.Message}"));
                     }
@@ -6179,12 +6158,12 @@ namespace FLAC_Benchmark_H
                     }
 
                     MessageBox.Show(
-                    errorResults.Count == 0
+                    errorResults.IsEmpty
                     ? "All FLAC files passed the integrity test."
                     : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
                     "Test Complete",
                     MessageBoxButtons.OK,
-                    errorResults.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning
+                    errorResults.IsEmpty ? MessageBoxIcon.Information : MessageBoxIcon.Warning
                     );
                 });
             }
@@ -6208,7 +6187,7 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void buttonStop_Click(object? sender, EventArgs e)
+        private void ButtonStop_Click(object? sender, EventArgs e)
         {
             _isEncodingStopped = true; // Flag to request encoding stop
             _isPaused = false; // Reset pause flag
@@ -6242,7 +6221,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void buttonPauseResume_Click(object sender, EventArgs e)
+        private void ButtonPauseResume_Click(object? sender, EventArgs e)
         {
             _isPaused = !_isPaused; // Toggle pause flag
 
@@ -6259,39 +6238,39 @@ namespace FLAC_Benchmark_H
         }
 
         // Encoder and Decoder options
-        private void button5CompressionLevel_Click(object? sender, EventArgs e)
+        private void Button5CompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "5";
         }
-        private void buttonMaxCompressionLevel_Click(object? sender, EventArgs e)
+        private void ButtonMaxCompressionLevel_Click(object? sender, EventArgs e)
         {
             textBoxCompressionLevel.Text = "8";
         }
-        private void buttonHalfCores_Click(object? sender, EventArgs e)
+        private void ButtonHalfCores_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = (physicalCores / 2).ToString(); // Set half of the cores
         }
-        private void buttonSetMaxCores_Click(object? sender, EventArgs e)
+        private void ButtonSetMaxCores_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = physicalCores.ToString(); // Set maximum number of cores
         }
-        private void buttonSetHalfThreads_Click(object? sender, EventArgs e)
+        private void ButtonSetHalfThreads_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = (threadCount / 2).ToString(); // Set half of the threads
         }
-        private void buttonSetMaxThreads_Click(object? sender, EventArgs e)
+        private void ButtonSetMaxThreads_Click(object? sender, EventArgs e)
         {
             textBoxThreads.Text = threadCount.ToString(); // Set maximum number of threads
         }
-        private void buttonClearCommandLineEncoder_Click(object? sender, EventArgs e)
+        private void ButtonClearCommandLineEncoder_Click(object? sender, EventArgs e)
         {
             textBoxCommandLineOptionsEncoder.Clear(); // Clear textCommandLineOptions
         }
-        private void buttonClearCommandLineDecoder_Click(object? sender, EventArgs e)
+        private void ButtonClearCommandLineDecoder_Click(object? sender, EventArgs e)
         {
             textBoxCommandLineOptionsDecoder.Clear(); // Clear textCommandLineOptions
         }
-        private void buttonEpr8_Click(object? sender, EventArgs e)
+        private void ButtonEpr8_Click(object? sender, EventArgs e)
         {
             // Check if -epr8 is already in textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("-epr8"))
@@ -6300,7 +6279,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" -epr8"); // Add with space before text
             }
         }
-        private void buttonAsubdividetukey5flattop_Click(object? sender, EventArgs e)
+        private void ButtonAsubdividetukey5flattop_Click(object? sender, EventArgs e)
         {
             // Check if -A "subdivide_tukey(5);flattop" is already in textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("-A \"subdivide_tukey(5);flattop\""))
@@ -6309,7 +6288,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" -A \"subdivide_tukey(5);flattop\""); // Add with space before text
             }
         }
-        private void buttonNoPadding_Click(object? sender, EventArgs e)
+        private void ButtonNoPadding_Click(object? sender, EventArgs e)
         {
             // Check if --no-padding is already in textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-padding"))
@@ -6318,7 +6297,7 @@ namespace FLAC_Benchmark_H
                 textBoxCommandLineOptionsEncoder.AppendText(" --no-padding"); // Add with space before text
             }
         }
-        private void buttonNoSeektable_Click(object? sender, EventArgs e)
+        private void ButtonNoSeektable_Click(object? sender, EventArgs e)
         {
             // Check if --no-seektable is already in textBoxAdditionalArguments
             if (!textBoxCommandLineOptionsEncoder.Text.Contains("--no-seektable"))
@@ -6328,45 +6307,45 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void textBoxCompressionLevel_KeyDown(object? sender, KeyEventArgs e)
+        private void TextBoxCompressionLevel_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
 
-                buttonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, e);
             }
         }
-        private void textBoxThreads_KeyDown(object? sender, KeyEventArgs e)
+        private void TextBoxThreads_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
 
-                buttonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, e);
             }
         }
-        private void textBoxCommandLineOptionsEncoder_KeyDown(object? sender, KeyEventArgs e)
+        private void TextBoxCommandLineOptionsEncoder_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
 
-                buttonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, e);
             }
         }
-        private void textBoxCommandLineOptionsDecoder_KeyDown(object? sender, KeyEventArgs e)
+        private void TextBoxCommandLineOptionsDecoder_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
 
-                buttonAddJobToJobListDecoder_Click(sender, e);
+                ButtonAddJobToJobListDecoder_Click(sender, e);
             }
         }
 
         // General methods
-        private void MoveSelectedItems(ListView listView, int direction)
+        private static void MoveSelectedItems(ListView listView, int direction)
         {
             // Get selected items and sort them by indices
             var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
@@ -6407,7 +6386,7 @@ namespace FLAC_Benchmark_H
                 listView.EndUpdate();
             }
         }
-        private void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
+        private static void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
         {
             // Clear selection from all items
             foreach (ListViewItem item in listView.Items)
@@ -6421,7 +6400,7 @@ namespace FLAC_Benchmark_H
             }
             listView.Focus(); // Set focus on the list
         }
-        private void MoveSelectedItemsForDataGridViewEx(DataGridViewEx dataGridView, int direction)
+        private static void MoveSelectedItemsForDataGridViewEx(DataGridViewEx dataGridView, int direction)
         {
             // Validate inputs and check for selection
             if (dataGridView.Rows.Count == 0 || dataGridView.SelectedRows.Count == 0)
@@ -6503,26 +6482,24 @@ namespace FLAC_Benchmark_H
             temporaryMessageTimer.Start();
         }
 
-        private void buttonSelectTempFolder_Click(object? sender, EventArgs e)
+        private void ButtonSelectTempFolder_Click(object? sender, EventArgs e)
         {
-            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            using FolderBrowserDialog folderBrowserDialog = new();
+            folderBrowserDialog.Description = "Select temp folder";
+            // If path is saved in settings, set it
+            if (Directory.Exists(tempFolderPath))
             {
-                folderBrowserDialog.Description = "Select temp folder";
-                // If path is saved in settings, set it
-                if (Directory.Exists(tempFolderPath))
-                {
-                    folderBrowserDialog.SelectedPath = tempFolderPath;
-                }
-                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Get selected path
-                    tempFolderPath = folderBrowserDialog.SelectedPath;
-                    // Save path in settings
-                    SaveSettings(); // This will also need to be changed to save the path
-                }
+                folderBrowserDialog.SelectedPath = tempFolderPath;
+            }
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Get selected path
+                tempFolderPath = folderBrowserDialog.SelectedPath;
+                // Save path in settings
+                SaveSettings(); // This will also need to be changed to save the path
             }
         }
-        private void DeleteFileIfExists(string filePath)
+        private static void DeleteFileIfExists(string filePath)
         {
             try
             {
@@ -6539,15 +6516,15 @@ namespace FLAC_Benchmark_H
                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void checkBoxAutoAnalyzeLog_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxAutoAnalyzeLog_CheckedChanged(object? sender, EventArgs e)
         {
 
         }
-        private void checkBoxWarningsAsErrors_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxWarningsAsErrors_CheckedChanged(object? sender, EventArgs e)
         {
 
         }
-        private void checkBoxPreventSleep_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxPreventSleep_CheckedChanged(object? sender, EventArgs e)
         {
             if (checkBoxPreventSleep.Checked)
             {
@@ -6558,7 +6535,7 @@ namespace FLAC_Benchmark_H
                 SetThreadExecutionState(ES_CONTINUOUS);
             }
         }
-        private void checkBoxCheckForUpdatesOnStartup_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxCheckForUpdatesOnStartup_CheckedChanged(object? sender, EventArgs e)
         {
             if (checkBoxCheckForUpdatesOnStartup.Checked)
             {
@@ -6577,90 +6554,94 @@ namespace FLAC_Benchmark_H
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("FLAC-Benchmark-H-App");
 
-                string programVersionLatestUrl = "https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/Version.txt";
-                string programVersionLatestOnline = await client.GetStringAsync(programVersionLatestUrl).ConfigureAwait(false);
-                programVersionLatestOnline = programVersionLatestOnline.Trim();
+                string programVersionOnlineUrl = "https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/Version.txt";
+                string programVersionOnline = (await client.GetStringAsync(programVersionOnlineUrl).ConfigureAwait(false)).Trim();
 
-                Version current = ParseVersion(programVersionCurrent);
-                Version latest = ParseVersion(programVersionLatestOnline);
+                Version programVersionCurrentParsed = ParseVersion(programVersionCurrent);
+                Version programVersionOnlineParsed = ParseVersion(programVersionOnline);
 
-                if (latest != null && current != null && latest > current)
+                if (programVersionOnlineParsed != null && programVersionCurrentParsed != null && programVersionOnlineParsed > programVersionCurrentParsed)
                 {
-                    if (programVersionIgnored == programVersionLatestOnline)
+                    if (programVersionIgnored == programVersionOnline)
                         return;
 
                     this.Invoke((MethodInvoker)delegate
                     {
-                        ShowUpdateDialog(current, latest, programVersionLatestOnline);
+                        ShowDialogUpdateAvailable(programVersionOnline);
                     });
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // Timeout or network issue - silently ignore
-            }
-            catch (HttpRequestException)
-            {
-                // Network unreachable, HTTP error - silently ignore
             }
             catch (Exception ex)
             {
+                void ShowDialogUpdateError()
+                {
+                    MessageBox.Show(this,
+                        ex.Message,
+                        "Error checking for updates",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+
                 if (this.InvokeRequired)
-                {
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        MessageBox.Show(this, $"Error checking for updates:\n{ex.Message}",
-                        "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    });
-                }
+                    this.Invoke((MethodInvoker)ShowDialogUpdateError);
                 else
-                {
-                    MessageBox.Show(this, $"Error checking for updates:\n{ex.Message}",
-                    "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                    ShowDialogUpdateError();
             }
         }
-        private void ShowUpdateDialog(Version current, Version latest, string latestVersionStr)
+        private void ShowDialogUpdateAvailable(string programVersionOnline)
         {
             var result = MessageBox.Show(
             this,
-            $"A new version is available!\n\nCurrent version:\t{current}\nLatest version:\t{latestVersionStr}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
+            $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
             "Update Available",
             MessageBoxButtons.YesNoCancel,
             MessageBoxIcon.Information);
 
             if (result == DialogResult.Yes)
             {
-                Process.Start(new ProcessStartInfo
+                try
                 {
-                    FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
-                    UseShellExecute = true
-                });
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this,
+                        $"Failed to open the releases page:\n{ex.Message}",
+                        "Browser Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
             }
             else if (result == DialogResult.Cancel)
             {
-                programVersionIgnored = latestVersionStr;
+                programVersionIgnored = programVersionOnline;
                 SaveSettings();
             }
         }
-        private Version ParseVersion(string versionStr)
+        private static Version ParseVersion(string versionString)
         {
-            if (string.IsNullOrWhiteSpace(versionStr))
+            if (string.IsNullOrWhiteSpace(versionString))
                 return new Version("0.0.0");
 
-            var parts = versionStr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 3 && parts[1].Equals("build", StringComparison.OrdinalIgnoreCase))
-            {
-                if (int.TryParse(parts[2], out int buildNumber))
-                {
-                    string[] versionParts = parts[0].Split('.');
-                    if (versionParts.Length >= 2)
-                    {
-                        int major = int.TryParse(versionParts[0], out int m) ? m : 0;
-                        int minor = int.TryParse(versionParts[1], out int n) ? n : 0;
-                        int patch = (versionParts.Length > 2 && int.TryParse(versionParts[2], out int p)) ? p : 0;
+            var versionStringParts = versionString.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
-                        return new Version(major, minor, patch, buildNumber);
+            // Expect format "1.7.6 build 20251201"
+            if (versionStringParts.Length >= 3 && versionStringParts[1].Equals("build", StringComparison.OrdinalIgnoreCase))
+            {
+                if (int.TryParse(versionStringParts[2], out int versionComponentBuildNumber))
+                {
+                    string[] versionComponents = versionStringParts[0].Split('.');
+                    if (versionComponents.Length >= 2)
+                    {
+                        int versionComponentMajor = int.TryParse(versionComponents[0], out int versionComponentMajorParsed) ? versionComponentMajorParsed : 0;
+                        int versionComponentMinor = int.TryParse(versionComponents[1], out int versionComponentMinorParsed) ? versionComponentMinorParsed : 0;
+                        int versionComponentPatch = (versionComponents.Length > 2 && int.TryParse(versionComponents[2], out int versionComponentPatchParsed)) ? versionComponentPatchParsed : 0;
+
+                        return new Version(versionComponentMajor, versionComponentMinor, versionComponentPatch, versionComponentBuildNumber);
                     }
                 }
             }
@@ -6668,7 +6649,8 @@ namespace FLAC_Benchmark_H
             // If format is not recognized, consider version very old
             return new Version("0.0.0");
         }
-        private void buttonAbout_Click(object sender, EventArgs e)
+
+        private void ButtonAbout_Click(object? sender, EventArgs e)
         {
             // Form the message
             string message = $"FLAC Benchmark-H {programVersionCurrent}\n\n" +

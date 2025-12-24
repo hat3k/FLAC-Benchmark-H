@@ -81,7 +81,7 @@
             buttonCloseScriptConstructorForm.TabIndex = 7;
             buttonCloseScriptConstructorForm.Text = "Close";
             buttonCloseScriptConstructorForm.UseVisualStyleBackColor = true;
-            buttonCloseScriptConstructorForm.Click += buttonCloseScriptConstructorForm_Click;
+            buttonCloseScriptConstructorForm.Click += ButtonCloseScriptConstructorForm_Click;
             // 
             // buttonAddJobToJobListScript
             // 
