@@ -115,6 +115,12 @@
             tabControlLog = new TabControl();
             Benchmark = new TabPage();
             dataGridViewLog = new DataGridViewEx();
+            ScalingPlots = new TabPage();
+            tabControlScalingPlots = new TabControl();
+            tabPageSpeedByThreads = new TabPage();
+            plotScalingPlotSpeedByThreads = new ScottPlot.FormsPlot();
+            tabPageCPULoadByThreads = new TabPage();
+            plotScalingPlotCPULoadByThreads = new ScottPlot.FormsPlot();
             DetectDupes = new TabPage();
             dataGridViewLogDetectDupes = new DataGridViewEx();
             TestForErrors = new TabPage();
@@ -147,6 +153,8 @@
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
             labelCpuUsageValue = new Label();
+            tabPageCPUClockByThreads = new TabPage();
+            plotScalingPlotCPUClockByThreads = new ScottPlot.FormsPlot();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -156,6 +164,10 @@
             tabControlLog.SuspendLayout();
             Benchmark.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).BeginInit();
+            ScalingPlots.SuspendLayout();
+            tabControlScalingPlots.SuspendLayout();
+            tabPageSpeedByThreads.SuspendLayout();
+            tabPageCPULoadByThreads.SuspendLayout();
             DetectDupes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).BeginInit();
             TestForErrors.SuspendLayout();
@@ -163,6 +175,7 @@
             groupBoxSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             groupBoxInformation.SuspendLayout();
+            tabPageCPUClockByThreads.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
@@ -1061,6 +1074,7 @@
             // 
             tabControlLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tabControlLog.Controls.Add(Benchmark);
+            tabControlLog.Controls.Add(ScalingPlots);
             tabControlLog.Controls.Add(DetectDupes);
             tabControlLog.Controls.Add(TestForErrors);
             tabControlLog.Location = new Point(6, 19);
@@ -1114,6 +1128,70 @@
             dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLog.Size = new Size(753, 305);
             dataGridViewLog.TabIndex = 1;
+            // 
+            // ScalingPlots
+            // 
+            ScalingPlots.Controls.Add(tabControlScalingPlots);
+            ScalingPlots.Location = new Point(4, 24);
+            ScalingPlots.Name = "ScalingPlots";
+            ScalingPlots.Size = new Size(759, 312);
+            ScalingPlots.TabIndex = 3;
+            ScalingPlots.Text = "Scaling Plots";
+            ScalingPlots.UseVisualStyleBackColor = true;
+            // 
+            // tabControlScalingPlots
+            // 
+            tabControlScalingPlots.Controls.Add(tabPageSpeedByThreads);
+            tabControlScalingPlots.Controls.Add(tabPageCPULoadByThreads);
+            tabControlScalingPlots.Controls.Add(tabPageCPUClockByThreads);
+            tabControlScalingPlots.Dock = DockStyle.Fill;
+            tabControlScalingPlots.Location = new Point(0, 0);
+            tabControlScalingPlots.Name = "tabControlScalingPlots";
+            tabControlScalingPlots.SelectedIndex = 0;
+            tabControlScalingPlots.Size = new Size(759, 312);
+            tabControlScalingPlots.TabIndex = 1;
+            // 
+            // tabPageSpeedByThreads
+            // 
+            tabPageSpeedByThreads.Controls.Add(plotScalingPlotSpeedByThreads);
+            tabPageSpeedByThreads.Location = new Point(4, 24);
+            tabPageSpeedByThreads.Name = "tabPageSpeedByThreads";
+            tabPageSpeedByThreads.Padding = new Padding(3);
+            tabPageSpeedByThreads.Size = new Size(751, 284);
+            tabPageSpeedByThreads.TabIndex = 0;
+            tabPageSpeedByThreads.Text = "Speed by Threads";
+            toolTip1.SetToolTip(tabPageSpeedByThreads, "Scale Speed by Threads");
+            tabPageSpeedByThreads.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotSpeedByThreads
+            // 
+            plotScalingPlotSpeedByThreads.Dock = DockStyle.Fill;
+            plotScalingPlotSpeedByThreads.Location = new Point(3, 3);
+            plotScalingPlotSpeedByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotSpeedByThreads.Name = "plotScalingPlotSpeedByThreads";
+            plotScalingPlotSpeedByThreads.Size = new Size(745, 278);
+            plotScalingPlotSpeedByThreads.TabIndex = 2;
+            // 
+            // tabPageCPULoadByThreads
+            // 
+            tabPageCPULoadByThreads.Controls.Add(plotScalingPlotCPULoadByThreads);
+            tabPageCPULoadByThreads.Location = new Point(4, 24);
+            tabPageCPULoadByThreads.Name = "tabPageCPULoadByThreads";
+            tabPageCPULoadByThreads.Padding = new Padding(3);
+            tabPageCPULoadByThreads.Size = new Size(751, 284);
+            tabPageCPULoadByThreads.TabIndex = 1;
+            tabPageCPULoadByThreads.Text = "CPU Load by Threads";
+            toolTip1.SetToolTip(tabPageCPULoadByThreads, "Scale CPU Load by Threads");
+            tabPageCPULoadByThreads.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotCPULoadByThreads
+            // 
+            plotScalingPlotCPULoadByThreads.Dock = DockStyle.Fill;
+            plotScalingPlotCPULoadByThreads.Location = new Point(3, 3);
+            plotScalingPlotCPULoadByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotCPULoadByThreads.Name = "plotScalingPlotCPULoadByThreads";
+            plotScalingPlotCPULoadByThreads.Size = new Size(745, 278);
+            plotScalingPlotCPULoadByThreads.TabIndex = 2;
             // 
             // DetectDupes
             // 
@@ -1524,6 +1602,27 @@
             labelCpuUsageValue.TabIndex = 2;
             labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
             // 
+            // tabPageCPUClockByThreads
+            // 
+            tabPageCPUClockByThreads.Controls.Add(plotScalingPlotCPUClockByThreads);
+            tabPageCPUClockByThreads.Location = new Point(4, 24);
+            tabPageCPUClockByThreads.Name = "tabPageCPUClockByThreads";
+            tabPageCPUClockByThreads.Padding = new Padding(3);
+            tabPageCPUClockByThreads.Size = new Size(751, 284);
+            tabPageCPUClockByThreads.TabIndex = 2;
+            tabPageCPUClockByThreads.Text = "CPU Clock by Threads";
+            toolTip1.SetToolTip(tabPageCPUClockByThreads, "Scale CPU Clock by Threads");
+            tabPageCPUClockByThreads.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotCPUClockByThreads
+            // 
+            plotScalingPlotCPUClockByThreads.Dock = DockStyle.Fill;
+            plotScalingPlotCPUClockByThreads.Location = new Point(3, 3);
+            plotScalingPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotCPUClockByThreads.Name = "plotScalingPlotCPUClockByThreads";
+            plotScalingPlotCPUClockByThreads.Size = new Size(745, 278);
+            plotScalingPlotCPUClockByThreads.TabIndex = 2;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1559,6 +1658,10 @@
             tabControlLog.ResumeLayout(false);
             Benchmark.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLog).EndInit();
+            ScalingPlots.ResumeLayout(false);
+            tabControlScalingPlots.ResumeLayout(false);
+            tabPageSpeedByThreads.ResumeLayout(false);
+            tabPageCPULoadByThreads.ResumeLayout(false);
             DetectDupes.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).EndInit();
             TestForErrors.ResumeLayout(false);
@@ -1568,6 +1671,7 @@
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             groupBoxInformation.ResumeLayout(false);
+            tabPageCPUClockByThreads.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1691,5 +1795,13 @@
         private DataGridViewTextBoxColumn Column2JobType;
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
+        private TabPage ScalingPlots;
+        private ScottPlot.FormsPlot plotScalingPlotSpeedByThreads;
+        private TabControl tabControlScalingPlots;
+        private TabPage tabPageSpeedByThreads;
+        private TabPage tabPageCPULoadByThreads;
+        private ScottPlot.FormsPlot plotScalingPlotCPULoadByThreads;
+        private TabPage tabPageCPUClockByThreads;
+        private ScottPlot.FormsPlot plotScalingPlotCPUClockByThreads;
     }
 }

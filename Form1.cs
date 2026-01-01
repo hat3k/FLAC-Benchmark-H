@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
+using ScottPlot;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Data;
@@ -11,7 +12,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-
 
 namespace FLAC_Benchmark_H
 {
@@ -2473,297 +2473,345 @@ namespace FLAC_Benchmark_H
             })
             .ToList();
 
-            var resultEntries = new List<LogEntry>();
+            var speedSeries = new Dictionary<string, (List<int> Threads, List<double> Speeds)>();
+            var cpuSeries = new Dictionary<string, (List<int> Threads, List<double> Loads)>();
+            var clockSeries = new Dictionary<string, (List<int> Threads, List<double> Clocks)>();
 
             foreach (var group in grouped)
             {
-                // Get file and encoder info for display
-                var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
-                var encoderInfo = await GetEncoderInfo(group.EncoderPath);
+                var jMatch = Regex.Match(group.Parameters, @"-j(\d+)");
+                if (!jMatch.Success) continue;
 
-                string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
+                int j = int.Parse(jMatch.Groups[1].Value);
+                if (j <= 0 || j > 256) continue;
 
-                // Use the final OutputSize (after metaflac used or not) for analysis
-                long outputSizeFinal = group.LatestPass.OutputSize;
-                string outputSizeFormatted = outputSizeFinal.ToString("N0", NumberFormatWithSpaces);
+                string fileName = Path.GetFileName(group.AudioFilePath);
+                string encoderName = Path.GetFileName(group.EncoderPath);
+                string baseParams = GetBaseParameters(group.Parameters);
+                string seriesKey = $"{fileName}|{encoderName}|{baseParams}".TrimEnd('|');
 
-                // Calculate Compression using the final output size
-                double compressionPercentage = ((double)outputSizeFinal / group.InputSize) * 100;
-
-                // Format SamplingRate for display (e.g. 44100 -> "44 100")
-                string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", NumberFormatWithSpaces) : "N/A";
-
-                // Determine output file directory
-                string audioFileDirectory = audioFileInfo?.DirectoryPath ?? Path.GetDirectoryName(group.AudioFilePath) ?? string.Empty;
-
-                // --- Speed Stability Analysis ---
-                var speeds = group.Speeds; // Use pre-extracted list
-
-                string speedMin = "", speedMax = "", speedRange = "", speedConsistency = "";
-
-                if (group.PassesCount > 1 && speeds.Any())
+                if (!speedSeries.TryGetValue(seriesKey, out var speedValue))
                 {
-                    // Since 'speeds' is already sorted in ascending order:
-                    double minSpeed = speeds.First();  // Equivalent to Min()
-                    double maxSpeed = speeds.Last();   // Equivalent to Max()
-                    double range = maxSpeed - minSpeed;
-
-                    speedMin = $"{minSpeed:F3}x";
-                    speedMax = $"{maxSpeed:F3}x";
-                    speedRange = $"{range:F3}x";
-
-                    // Calculate p50 (median)
-                    int n = speeds.Count;
-                    double p50 = n % 2 == 0
-                    ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
-                    : speeds[n / 2];
-
-                    // Calculate p90 (90th percentile)
-                    double p90Index = 0.9 * (n - 1);
-                    int p90Low = (int)Math.Floor(p90Index);
-                    int p90High = (int)Math.Ceiling(p90Index);
-                    double p90 = speeds[p90Low] + (p90Index - p90Low) * (speeds[p90High] - speeds[p90Low]);
-
-                    // Speed Consistency = ratio of p50 to p90, expressed as a percentage
-                    double consistency = p90 > 0 ? (p50 / p90) * 100.0 : 0.0;
-                    speedConsistency = $"{consistency:F3}%";
+                    speedValue = (new List<int>(), new List<double>());
+                    speedSeries[seriesKey] = speedValue;
                 }
+                speedValue.Threads.Add(j);
+                speedValue.Speeds.Add(group.AvgSpeed);
 
-                // Create the log entry with averaged values
-                var logEntry = new LogEntry
+                if (!cpuSeries.TryGetValue(seriesKey, out var cpuValue))
                 {
-                    Name = audioFileInfo?.FileName ?? Path.GetFileName(group.AudioFilePath),
-                    Channels = group.Channels,
-                    BitDepth = group.BitDepth,
-                    SamplingRate = samplingRateFormatted,
-                    InputFileSize = inputSizeFormatted,
-                    OutputFileSize = outputSizeFormatted,
-                    Compression = $"{compressionPercentage:F3}%",
-                    Time = group.AvgTimeMs.ToString("F3"),
-                    Speed = $"{group.AvgSpeed:F3}x",
-                    SpeedMin = speedMin,
-                    SpeedMax = speedMax,
-                    SpeedRange = speedRange,
-                    SpeedConsistency = speedConsistency,
-                    CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
-                    CPUClock = group.AvgCPUClock > 0 ? $"{group.AvgCPUClock:F0} MHz" : "N/A",
-                    Passes = group.PassesCount.ToString(),
-                    Parameters = group.Parameters,
-                    Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
-                    Version = encoderInfo?.Version ?? "N/A",
-                    EncoderDirectory = encoderInfo?.DirectoryPath ?? Path.GetDirectoryName(group.EncoderPath) ?? string.Empty,
-                    AudioFileDirectory = audioFileDirectory,
-                    MD5 = audioFileInfo?.Md5Hash ?? "N/A",
+                    cpuValue = (new List<int>(), new List<double>());
+                    cpuSeries[seriesKey] = cpuValue;
+                }
+                cpuValue.Threads.Add(j);
+                cpuValue.Loads.Add(group.AvgCPULoadEncoder);
 
-                    // Set text colors based on results
-                    OutputForeColor = outputSizeFinal < group.InputSize ? Color.Green :
-                outputSizeFinal > group.InputSize ? Color.Red : Color.Black,
-                    CompressionForeColor = compressionPercentage < 100 ? Color.Green :
-                compressionPercentage > 100 ? Color.Red : Color.Black,
-                    SpeedForeColor = group.AvgSpeed > 1 ? Color.Green :
-                group.AvgSpeed < 1 ? Color.Red : Color.Black
-                };
-
-                resultEntries.Add(logEntry);
+                if (!clockSeries.TryGetValue(seriesKey, out var clockValue))
+                {
+                    clockValue = (new List<int>(), new List<double>());
+                    clockSeries[seriesKey] = clockValue;
+                }
+                clockValue.Threads.Add(j);
+                clockValue.Clocks.Add(group.AvgCPUClock);
             }
 
-            // 2. Split into encoding and decoding groups
-            var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
-            var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
+            var resultEntries = new List<LogEntry>();
 
-            // 3. Analysis for encoding: find fastest encoder and best compression
-            var finalEncodeEntries = new List<LogEntry>();
-            var encodeParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-
-            foreach (var group in encodeParamGroups)
-            {
-                var entries = group.ToList();
-                if (entries.Count <= 1)
+                foreach (var group in grouped)
                 {
-                    finalEncodeEntries.AddRange(entries);
-                    continue;
-                }
+                    // Get file and encoder info for display
+                    var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
+                    var encoderInfo = await GetEncoderInfo(group.EncoderPath);
 
-                // Find fastest encoder
-                double maxSpeed = entries.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
-                foreach (var entry in entries)
-                {
-                    if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
-                        entry.FastestEncoder = "fastest encoder";
-                }
+                    string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
 
-                // Analyze output file sizes
-                var validEntries = entries
-                .Where(e => long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
-                .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
-                .ToList();
+                    // Use the final OutputSize (after metaflac used or not) for analysis
+                    long outputSizeFinal = group.LatestPass.OutputSize;
+                    string outputSizeFormatted = outputSizeFinal.ToString("N0", NumberFormatWithSpaces);
 
-                if (validEntries.Count == 0)
-                {
-                    finalEncodeEntries.AddRange(entries);
-                    continue;
-                }
+                    // Calculate Compression using the final output size
+                    double compressionPercentage = ((double)outputSizeFinal / group.InputSize) * 100;
 
-                long minSize = validEntries.Min(x => x.Item2);
-                var sizeCountDict = validEntries.GroupBy(x => x.Item2).ToDictionary(g => g.Key, g => g.Count());
+                    // Format SamplingRate for display (e.g. 44100 -> "44 100")
+                    string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", NumberFormatWithSpaces) : "N/A";
 
-                foreach (var (entry, size) in validEntries)
-                {
-                    entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize)) ? "smallest size" : string.Empty;
-                    entry.SameSize = (sizeCountDict[size] > 1) ? "has same size" : string.Empty;
-                }
+                    // Determine output file directory
+                    string audioFileDirectory = audioFileInfo?.DirectoryPath ?? Path.GetDirectoryName(group.AudioFilePath) ?? string.Empty;
 
-                finalEncodeEntries.AddRange(entries);
-            }
+                    // --- Speed Stability Analysis ---
+                    var speeds = group.Speeds; // Use pre-extracted list
 
-            // 4. Analysis for decoding: find fastest decoder
-            var decodeParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-            foreach (var group in decodeParamGroups)
-            {
-                if (group.Count() <= 1) continue;
+                    string speedMin = "", speedMax = "", speedRange = "", speedConsistency = "";
 
-                double maxSpeed = group.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
-                foreach (var entry in group)
-                {
-                    if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
-                        entry.FastestEncoder = "fastest decoder";
-                }
-            }
-
-            // 5. Merge successful results
-            var finalSuccessEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
-
-            // Group error rows from current log
-            var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
-            .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
-            .GroupBy(row => new
-            {
-                Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
-                Encoder = (row.Cells["EncoderDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Encoder"].Value?.ToString() ?? ""),
-                Params = row.Cells["Parameters"].Value?.ToString() ?? ""
-            })
-            .Select(g => new
-            {
-                First = g.First(),
-                TotalPasses = g.Sum(row => {
-                    string passesStr = row.Cells["Passes"].Value?.ToString() ?? "1";
-                    return int.TryParse(passesStr, out int p) ? p : 1;
-                })
-            })
-            .ToList();
-
-            var errorEntries = new List<LogEntry>();
-            foreach (var eg in errorGroups)
-            {
-                var r = eg.First;
-                errorEntries.Add(new LogEntry
-                {
-                    Name = r.Cells["Name"].Value?.ToString() ?? "",
-                    Channels = "",
-                    BitDepth = "",
-                    SamplingRate = "",
-                    InputFileSize = "",
-                    OutputFileSize = "",
-                    Compression = "",
-                    Time = "",
-                    Speed = "",
-                    SpeedMin = "",
-                    SpeedMax = "",
-                    SpeedRange = "",
-                    SpeedConsistency = "",
-                    CPULoadEncoder = "",
-                    CPUClock = "",
-                    Passes = eg.TotalPasses.ToString(),
-                    Parameters = r.Cells["Parameters"].Value?.ToString() ?? "",
-                    Encoder = r.Cells["Encoder"].Value?.ToString() ?? "",
-                    Version = r.Cells["Version"].Value?.ToString() ?? "",
-                    EncoderDirectory = r.Cells["EncoderDirectory"].Value?.ToString() ?? "",
-                    AudioFileDirectory = r.Cells["AudioFileDirectory"].Value?.ToString() ?? "",
-                    MD5 = "",
-                    Errors = r.Cells["Errors"].Value?.ToString() ?? "",
-                });
-            }
-
-            // 6. Merge all results
-            var finalEntries = finalSuccessEntries.Concat(errorEntries).ToList();
-
-            // 7. Update UI
-            await this.InvokeAsync(() =>
-            {
-                dataGridViewLog.Rows.Clear();
-                foreach (var entry in finalEntries)
-                {
-                    int rowIndex = dataGridViewLog.Rows.Add(
-                    entry.Name,
-                    entry.Channels,
-                    entry.BitDepth,
-                    entry.SamplingRate,
-                    entry.InputFileSize,
-                    entry.OutputFileSize,
-                    entry.Compression,
-                    entry.Time,
-                    entry.Speed,
-                    entry.SpeedMin,
-                    entry.SpeedMax,
-                    entry.SpeedRange,
-                    entry.SpeedConsistency,
-                    entry.CPULoadEncoder,
-                    entry.CPUClock,
-                    entry.Passes,
-                    entry.Parameters,
-                    entry.Encoder,
-                    entry.Version,
-                    entry.EncoderDirectory,
-                    entry.FastestEncoder,
-                    entry.BestSize,
-                    entry.SameSize,
-                    entry.AudioFileDirectory,
-                    entry.MD5,
-                    entry.Duplicates,
-                    entry.Errors
-                    );
-
-                    // Restore text colors
-                    dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = entry.OutputForeColor;
-                    dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
-                    dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
-                }
-
-                // Resort after analysis
-                SortDataGridView();
-
-                // Apply red color to all text in error rows
-                foreach (DataGridViewRow row in dataGridViewLog.Rows)
-                {
-                    if (row.IsNewRow) continue;
-                    if (!string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+                    if (group.PassesCount > 1 && speeds.Any())
                     {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cell.Style.ForeColor = System.Drawing.Color.Red;
-                        }
+                        // Since 'speeds' is already sorted in ascending order:
+                        double minSpeed = speeds.First();  // Equivalent to Min()
+                        double maxSpeed = speeds.Last();   // Equivalent to Max()
+                        double range = maxSpeed - minSpeed;
+
+                        speedMin = $"{minSpeed:F3}x";
+                        speedMax = $"{maxSpeed:F3}x";
+                        speedRange = $"{range:F3}x";
+
+                        // Calculate p50 (median)
+                        int n = speeds.Count;
+                        double p50 = n % 2 == 0
+                        ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
+                        : speeds[n / 2];
+
+                        // Calculate p90 (90th percentile)
+                        double p90Index = 0.9 * (n - 1);
+                        int p90Low = (int)Math.Floor(p90Index);
+                        int p90High = (int)Math.Ceiling(p90Index);
+                        double p90 = speeds[p90Low] + (p90Index - p90Low) * (speeds[p90High] - speeds[p90Low]);
+
+                        // Speed Consistency = ratio of p50 to p90, expressed as a percentage
+                        double consistency = p90 > 0 ? (p50 / p90) * 100.0 : 0.0;
+                        speedConsistency = $"{consistency:F3}%";
+                    }
+
+                    // Create the log entry with averaged values
+                    var logEntry = new LogEntry
+                    {
+                        Name = audioFileInfo?.FileName ?? Path.GetFileName(group.AudioFilePath),
+                        Channels = group.Channels,
+                        BitDepth = group.BitDepth,
+                        SamplingRate = samplingRateFormatted,
+                        InputFileSize = inputSizeFormatted,
+                        OutputFileSize = outputSizeFormatted,
+                        Compression = $"{compressionPercentage:F3}%",
+                        Time = group.AvgTimeMs.ToString("F3"),
+                        Speed = $"{group.AvgSpeed:F3}x",
+                        SpeedMin = speedMin,
+                        SpeedMax = speedMax,
+                        SpeedRange = speedRange,
+                        SpeedConsistency = speedConsistency,
+                        CPULoadEncoder = $"{group.AvgCPULoadEncoder:F3}%",
+                        CPUClock = group.AvgCPUClock > 0 ? $"{group.AvgCPUClock:F0} MHz" : "N/A",
+                        Passes = group.PassesCount.ToString(),
+                        Parameters = group.Parameters,
+                        Encoder = encoderInfo?.FileName ?? Path.GetFileName(group.EncoderPath),
+                        Version = encoderInfo?.Version ?? "N/A",
+                        EncoderDirectory = encoderInfo?.DirectoryPath ?? Path.GetDirectoryName(group.EncoderPath) ?? string.Empty,
+                        AudioFileDirectory = audioFileDirectory,
+                        MD5 = audioFileInfo?.Md5Hash ?? "N/A",
+
+                        // Set text colors based on results
+                        OutputForeColor = outputSizeFinal < group.InputSize ? Color.Green :
+                    outputSizeFinal > group.InputSize ? Color.Red : Color.Black,
+                        CompressionForeColor = compressionPercentage < 100 ? Color.Green :
+                    compressionPercentage > 100 ? Color.Red : Color.Black,
+                        SpeedForeColor = group.AvgSpeed > 1 ? Color.Green :
+                    group.AvgSpeed < 1 ? Color.Red : Color.Black
+                    };
+
+                    resultEntries.Add(logEntry);
+                }
+
+                // 2. Split into encoding and decoding groups
+                var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
+                var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
+
+                // 3. Analysis for encoding: find fastest encoder and best compression
+                var finalEncodeEntries = new List<LogEntry>();
+                var encodeParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+
+                foreach (var group in encodeParamGroups)
+                {
+                    var entries = group.ToList();
+                    if (entries.Count <= 1)
+                    {
+                        finalEncodeEntries.AddRange(entries);
+                        continue;
+                    }
+
+                    // Find fastest encoder
+                    double maxSpeed = entries.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
+                    foreach (var entry in entries)
+                    {
+                        if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
+                            entry.FastestEncoder = "fastest encoder";
+                    }
+
+                    // Analyze output file sizes
+                    var validEntries = entries
+                    .Where(e => long.TryParse(e.OutputFileSize?.Replace(" ", "").Trim(), out long size) && size > 0)
+                    .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
+                    .ToList();
+
+                    if (validEntries.Count == 0)
+                    {
+                        finalEncodeEntries.AddRange(entries);
+                        continue;
+                    }
+
+                    long minSize = validEntries.Min(x => x.Item2);
+                    var sizeCountDict = validEntries.GroupBy(x => x.Item2).ToDictionary(g => g.Key, g => g.Count());
+
+                    foreach (var (entry, size) in validEntries)
+                    {
+                        entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize)) ? "smallest size" : string.Empty;
+                        entry.SameSize = (sizeCountDict[size] > 1) ? "has same size" : string.Empty;
+                    }
+
+                    finalEncodeEntries.AddRange(entries);
+                }
+
+                // 4. Analysis for decoding: find fastest decoder
+                var decodeParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+                foreach (var group in decodeParamGroups)
+                {
+                    if (group.Count() <= 1) continue;
+
+                    double maxSpeed = group.Max(e => double.TryParse(e.Speed?.Replace("x", "").Trim(), out double s) ? s : 0.0);
+                    foreach (var entry in group)
+                    {
+                        if (double.TryParse(entry.Speed?.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
+                            entry.FastestEncoder = "fastest decoder";
                     }
                 }
 
-                // Ensure Benchmark tab is active after analysis
-                tabControlLog.SelectedTab = Benchmark;
-            });
+                // 5. Merge successful results
+                var finalSuccessEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
 
-            // Show error summary
-            if (errorEntries.Count > 0)
-            {
-                int totalRuns = errorEntries.Sum(e => int.Parse(e.Passes));
-                string taskWord = errorEntries.Count == 1 ? "task" : "tasks";
-                string runWord = totalRuns == 1 ? "run" : "runs";
-                MessageBox.Show(
-                $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
-                "Results are based only on successful runs.",
-                "Analysis Summary",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
-                );
+                // Group error rows from current log
+                var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+                .GroupBy(row => new
+                {
+                    Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
+                    Encoder = (row.Cells["EncoderDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Encoder"].Value?.ToString() ?? ""),
+                    Params = row.Cells["Parameters"].Value?.ToString() ?? ""
+                })
+                .Select(g => new
+                {
+                    First = g.First(),
+                    TotalPasses = g.Sum(row =>
+                    {
+                        string passesStr = row.Cells["Passes"].Value?.ToString() ?? "1";
+                        return int.TryParse(passesStr, out int p) ? p : 1;
+                    })
+                })
+                .ToList();
+
+                var errorEntries = new List<LogEntry>();
+                foreach (var eg in errorGroups)
+                {
+                    var r = eg.First;
+                    errorEntries.Add(new LogEntry
+                    {
+                        Name = r.Cells["Name"].Value?.ToString() ?? "",
+                        Channels = "",
+                        BitDepth = "",
+                        SamplingRate = "",
+                        InputFileSize = "",
+                        OutputFileSize = "",
+                        Compression = "",
+                        Time = "",
+                        Speed = "",
+                        SpeedMin = "",
+                        SpeedMax = "",
+                        SpeedRange = "",
+                        SpeedConsistency = "",
+                        CPULoadEncoder = "",
+                        CPUClock = "",
+                        Passes = eg.TotalPasses.ToString(),
+                        Parameters = r.Cells["Parameters"].Value?.ToString() ?? "",
+                        Encoder = r.Cells["Encoder"].Value?.ToString() ?? "",
+                        Version = r.Cells["Version"].Value?.ToString() ?? "",
+                        EncoderDirectory = r.Cells["EncoderDirectory"].Value?.ToString() ?? "",
+                        AudioFileDirectory = r.Cells["AudioFileDirectory"].Value?.ToString() ?? "",
+                        MD5 = "",
+                        Errors = r.Cells["Errors"].Value?.ToString() ?? "",
+                    });
+                }
+
+                // 6. Merge all results
+                var finalEntries = finalSuccessEntries.Concat(errorEntries).ToList();
+
+                // 7. Update UI
+                await this.InvokeAsync(() =>
+                {
+                    dataGridViewLog.Rows.Clear();
+                    foreach (var entry in finalEntries)
+                    {
+                        int rowIndex = dataGridViewLog.Rows.Add(
+                        entry.Name,
+                        entry.Channels,
+                        entry.BitDepth,
+                        entry.SamplingRate,
+                        entry.InputFileSize,
+                        entry.OutputFileSize,
+                        entry.Compression,
+                        entry.Time,
+                        entry.Speed,
+                        entry.SpeedMin,
+                        entry.SpeedMax,
+                        entry.SpeedRange,
+                        entry.SpeedConsistency,
+                        entry.CPULoadEncoder,
+                        entry.CPUClock,
+                        entry.Passes,
+                        entry.Parameters,
+                        entry.Encoder,
+                        entry.Version,
+                        entry.EncoderDirectory,
+                        entry.FastestEncoder,
+                        entry.BestSize,
+                        entry.SameSize,
+                        entry.AudioFileDirectory,
+                        entry.MD5,
+                        entry.Duplicates,
+                        entry.Errors
+                        );
+
+                        // Restore text colors
+                        dataGridViewLog.Rows[rowIndex].Cells["OutputFileSize"].Style.ForeColor = entry.OutputForeColor;
+                        dataGridViewLog.Rows[rowIndex].Cells["Compression"].Style.ForeColor = entry.CompressionForeColor;
+                        dataGridViewLog.Rows[rowIndex].Cells["Speed"].Style.ForeColor = entry.SpeedForeColor;
+                    }
+
+                    // Resort after analysis
+                    SortDataGridView();
+
+                    // Apply red color to all text in error rows
+                    foreach (DataGridViewRow row in dataGridViewLog.Rows)
+                    {
+                        if (row.IsNewRow) continue;
+                        if (!string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+                        {
+                            foreach (DataGridViewCell cell in row.Cells)
+                            {
+                                cell.Style.ForeColor = System.Drawing.Color.Red;
+                            }
+                        }
+                    }
+
+                    RenderScalingGraphSpeedByThreads(speedSeries);
+                    RenderScalingGraphCPULoadByThreads(cpuSeries);
+                    RenderScalingGraphCPUClockByThreads(clockSeries);
+
+                    // Ensure Benchmark tab is active after analysis
+                    // tabControlLog.SelectedTab = Benchmark;
+                });
+
+                // Show error summary
+                if (errorEntries.Count > 0)
+                {
+                    int totalRuns = errorEntries.Sum(e => int.Parse(e.Passes));
+                    string taskWord = errorEntries.Count == 1 ? "task" : "tasks";
+                    string runWord = totalRuns == 1 ? "run" : "runs";
+                    MessageBox.Show(
+                    $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
+                    "Results are based only on successful runs.",
+                    "Analysis Summary",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                    );
+                }
             }
-        }
+
         private class LogEntry
         {
             public string Name { get; set; }
@@ -2950,6 +2998,175 @@ namespace FLAC_Benchmark_H
                 }
                 return strA.Length.CompareTo(strB.Length);
             }
+        }
+
+        private static string GetBaseParameters(string parameters)
+        {
+            if (string.IsNullOrWhiteSpace(parameters))
+                return string.Empty;
+
+            string result = System.Text.RegularExpressions.Regex.Replace(
+                parameters,
+                @"\s*-j\d+\s*",
+                " "
+            ).Trim();
+
+            return System.Text.RegularExpressions.Regex.Replace(result, @"\s+", " ");
+        }
+
+        private void RenderScalingGraphSpeedByThreads(Dictionary<string, (List<int> Threads, List<double> Speeds)> series)
+        {
+            var plt = plotScalingPlotSpeedByThreads.Plot;
+            plt.Clear();
+
+            if (series.Count == 0)
+            {
+                plt.Title("No scaling data found");
+                plotScalingPlotSpeedByThreads.Refresh();
+                return;
+            }
+
+            // Determine thread range (always starts from 1)
+            int minThread = 1;
+            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+            int threadCount = maxThread - minThread + 1;
+
+            foreach (var kvp in series)
+            {
+                string label = kvp.Key;
+                var (threads, speeds) = kvp.Value;
+
+                var sorted = threads.Zip(speeds, (t, s) => new { t, s })
+                                    .OrderBy(x => x.t)
+                                    .ToList();
+
+                double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                double[] ys = sorted.Select(x => x.s).ToArray();
+
+                plt.AddScatter(xs, ys, label: label);
+            }
+
+            // Set manual X-axis ticks to show only integer thread counts
+            double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+            string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+            plt.XTicks(tickPositions, tickLabels);
+
+            plt.XLabel("Threads (-jN)");
+            plt.YLabel("Speed (x real-time)");
+            plt.Title("Speed Scaling by Threads");
+            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+
+            plt.AxisAuto();
+            plotScalingPlotSpeedByThreads.Refresh();
+        }
+
+        private void RenderScalingGraphCPULoadByThreads(Dictionary<string, (List<int> Threads, List<double> Loads)> series)
+        {
+            var plt = plotScalingPlotCPULoadByThreads.Plot;
+            plt.Clear();
+
+            if (series.Count == 0)
+            {
+                plt.Title("No CPU scaling data found");
+                plotScalingPlotCPULoadByThreads.Refresh();
+                return;
+            }
+
+            // Determine thread range (always starts from 1)
+            int minThread = 1;
+            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+            int threadCount = maxThread - minThread + 1;
+
+            // Ideal CPU load line: 100% per thread (e.g., 1 thread = 100%, 4 threads = 400%)
+            double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+            double[] idealY = idealX.Select(j => j * 100.0).ToArray();
+
+            // Plot real data series
+            foreach (var kvp in series)
+            {
+                string label = kvp.Key;
+                var (threads, loads) = kvp.Value;
+
+                var sorted = threads.Zip(loads, (t, l) => new { t, l })
+                                    .OrderBy(x => x.t)
+                                    .ToList();
+
+                double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                double[] ys = sorted.Select(x => x.l).ToArray();
+
+                plt.AddScatter(xs, ys, label: label);
+            }
+
+            // Add ideal linear load line (dashed, no markers)
+            plt.AddScatter(
+                xs: idealX,
+                ys: idealY,
+                label: "Ideal (100% per thread)",
+                color: Color.Gray,
+                lineStyle: ScottPlot.LineStyle.Dash,
+                markerSize: 0
+            );
+
+            plt.XLabel("Threads (-jN)");
+            plt.YLabel("CPU Load (%)");
+            plt.Title("CPU Load Scaling by Threads");
+
+            // Set manual X-axis ticks to show only integer thread counts
+            double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+            string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+            plt.XTicks(tickPositions, tickLabels);
+
+            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+
+            plt.AxisAuto();
+            plotScalingPlotCPULoadByThreads.Refresh();
+        }
+
+        private void RenderScalingGraphCPUClockByThreads(Dictionary<string, (List<int> Threads, List<double> Clocks)> series)
+        {
+            var plt = plotScalingPlotCPUClockByThreads.Plot;
+            plt.Clear();
+
+            if (series.Count == 0)
+            {
+                plt.Title("No CPU clock scaling data found");
+                plotScalingPlotCPUClockByThreads.Refresh();
+                return;
+            }
+
+            // Determine thread range (always starts from 1)
+            int minThread = 1;
+            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+            int threadCount = maxThread - minThread + 1;
+
+            foreach (var kvp in series)
+            {
+                string label = kvp.Key;
+                var (threads, clocks) = kvp.Value;
+
+                var sorted = threads.Zip(clocks, (t, c) => new { t, c })
+                                    .OrderBy(x => x.t)
+                                    .ToList();
+
+                double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                double[] ys = sorted.Select(x => x.c).ToArray();
+
+                plt.AddScatter(xs, ys, label: label);
+            }
+
+            plt.XLabel("Threads (-jN)");
+            plt.YLabel("CPU Clock (MHz)");
+            plt.Title("CPU Clock Scaling by Threads");
+
+            // Set manual X-axis ticks to show only integer thread counts
+            double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+            string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+            plt.XTicks(tickPositions, tickLabels);
+
+            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+
+            plt.AxisAuto();
+            plotScalingPlotCPUClockByThreads.Refresh();
         }
 
         // Log to Excel, copy, clear
@@ -6557,8 +6774,8 @@ namespace FLAC_Benchmark_H
                 string programVersionOnlineUrl = "https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/Version.txt";
                 string programVersionOnline = (await client.GetStringAsync(programVersionOnlineUrl).ConfigureAwait(false)).Trim();
 
-                Version programVersionCurrentParsed = ParseVersion(programVersionCurrent);
-                Version programVersionOnlineParsed = ParseVersion(programVersionOnline);
+                System.Version programVersionCurrentParsed = ParseVersion(programVersionCurrent);
+                System.Version programVersionOnlineParsed = ParseVersion(programVersionOnline);
 
                 if (programVersionOnlineParsed != null && programVersionCurrentParsed != null && programVersionOnlineParsed > programVersionCurrentParsed)
                 {
@@ -6622,10 +6839,10 @@ namespace FLAC_Benchmark_H
                 SaveSettings();
             }
         }
-        private static Version ParseVersion(string versionString)
+        private static System.Version ParseVersion(string versionString)
         {
             if (string.IsNullOrWhiteSpace(versionString))
-                return new Version("0.0.0");
+                return new System.Version("0.0.0");
 
             var versionStringParts = versionString.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
@@ -6641,13 +6858,13 @@ namespace FLAC_Benchmark_H
                         int versionComponentMinor = int.TryParse(versionComponents[1], out int versionComponentMinorParsed) ? versionComponentMinorParsed : 0;
                         int versionComponentPatch = (versionComponents.Length > 2 && int.TryParse(versionComponents[2], out int versionComponentPatchParsed)) ? versionComponentPatchParsed : 0;
 
-                        return new Version(versionComponentMajor, versionComponentMinor, versionComponentPatch, versionComponentBuildNumber);
+                        return new System.Version(versionComponentMajor, versionComponentMinor, versionComponentPatch, versionComponentBuildNumber);
                     }
                 }
             }
 
             // If format is not recognized, consider version very old
-            return new Version("0.0.0");
+            return new System.Version("0.0.0");
         }
 
         private void ButtonAbout_Click(object? sender, EventArgs e)
