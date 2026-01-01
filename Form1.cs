@@ -2479,17 +2479,20 @@ namespace FLAC_Benchmark_H
 
             foreach (var group in grouped)
             {
+                int j = 1;
                 var jMatch = Regex.Match(group.Parameters, @"-j(\d+)");
-                if (!jMatch.Success) continue;
-
-                int j = int.Parse(jMatch.Groups[1].Value);
-                if (j <= 0 || j > 256) continue;
+                if (jMatch.Success)
+                {
+                    j = int.Parse(jMatch.Groups[1].Value);
+                    if (j <= 0 || j > 256) continue;
+                }
 
                 string fileName = Path.GetFileName(group.AudioFilePath);
                 string encoderName = Path.GetFileName(group.EncoderPath);
                 string baseParams = GetBaseParameters(group.Parameters);
                 string seriesKey = $"{fileName}|{encoderName}|{baseParams}".TrimEnd('|');
 
+                // Speed series
                 if (!speedSeries.TryGetValue(seriesKey, out var speedValue))
                 {
                     speedValue = (new List<int>(), new List<double>());
@@ -2498,6 +2501,7 @@ namespace FLAC_Benchmark_H
                 speedValue.Threads.Add(j);
                 speedValue.Speeds.Add(group.AvgSpeed);
 
+                // CPU Load series
                 if (!cpuSeries.TryGetValue(seriesKey, out var cpuValue))
                 {
                     cpuValue = (new List<int>(), new List<double>());
@@ -2506,6 +2510,7 @@ namespace FLAC_Benchmark_H
                 cpuValue.Threads.Add(j);
                 cpuValue.Loads.Add(group.AvgCPULoadEncoder);
 
+                // CPU Clock series
                 if (!clockSeries.TryGetValue(seriesKey, out var clockValue))
                 {
                     clockValue = (new List<int>(), new List<double>());
@@ -3005,13 +3010,8 @@ namespace FLAC_Benchmark_H
             if (string.IsNullOrWhiteSpace(parameters))
                 return string.Empty;
 
-            string result = System.Text.RegularExpressions.Regex.Replace(
-                parameters,
-                @"\s*-j\d+\s*",
-                " "
-            ).Trim();
-
-            return System.Text.RegularExpressions.Regex.Replace(result, @"\s+", " ");
+            string result = Regex.Replace(parameters, @"\s*-j\d+\s*", " ");
+            return Regex.Replace(result.Trim(), @"\s+", " ");
         }
 
         private void RenderScalingGraphSpeedByThreads(Dictionary<string, (List<int> Threads, List<double> Speeds)> series)
@@ -3021,7 +3021,7 @@ namespace FLAC_Benchmark_H
 
             if (series.Count == 0)
             {
-                plt.Title("No scaling data found");
+                plt.Title("No Speed scaling data found");
                 plotScalingPlotSpeedByThreads.Refresh();
                 return;
             }
