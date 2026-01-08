@@ -121,6 +121,16 @@
             plotScalingPlotSpeedByThreads = new ScottPlot.FormsPlot();
             tabPageCPULoadByThreads = new TabPage();
             plotScalingPlotCPULoadByThreads = new ScottPlot.FormsPlot();
+            tabPageCPUClockByThreads = new TabPage();
+            plotScalingPlotCPUClockByThreads = new ScottPlot.FormsPlot();
+            tabPageSpeedByParameters = new TabPage();
+            plotScalingPlotSpeedByParameters = new ScottPlot.FormsPlot();
+            tabPageCompressionByParameters = new TabPage();
+            plotScalingPlotCompressionByParameters = new ScottPlot.FormsPlot();
+            tabPage1 = new TabPage();
+            formsPlotCompressionDistribution = new ScottPlot.FormsPlot();
+            tabPage2 = new TabPage();
+            plotScalingPlotMeanCompressionByParameters = new ScottPlot.FormsPlot();
             DetectDupes = new TabPage();
             dataGridViewLogDetectDupes = new DataGridViewEx();
             TestForErrors = new TabPage();
@@ -153,8 +163,6 @@
             groupBoxInformation = new GroupBox();
             buttonAbout = new Button();
             labelCpuUsageValue = new Label();
-            tabPageCPUClockByThreads = new TabPage();
-            plotScalingPlotCPUClockByThreads = new ScottPlot.FormsPlot();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
@@ -168,6 +176,11 @@
             tabControlScalingPlots.SuspendLayout();
             tabPageSpeedByThreads.SuspendLayout();
             tabPageCPULoadByThreads.SuspendLayout();
+            tabPageCPUClockByThreads.SuspendLayout();
+            tabPageSpeedByParameters.SuspendLayout();
+            tabPageCompressionByParameters.SuspendLayout();
+            tabPage1.SuspendLayout();
+            tabPage2.SuspendLayout();
             DetectDupes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).BeginInit();
             TestForErrors.SuspendLayout();
@@ -175,7 +188,6 @@
             groupBoxSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             groupBoxInformation.SuspendLayout();
-            tabPageCPUClockByThreads.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
@@ -1144,6 +1156,10 @@
             tabControlScalingPlots.Controls.Add(tabPageSpeedByThreads);
             tabControlScalingPlots.Controls.Add(tabPageCPULoadByThreads);
             tabControlScalingPlots.Controls.Add(tabPageCPUClockByThreads);
+            tabControlScalingPlots.Controls.Add(tabPageSpeedByParameters);
+            tabControlScalingPlots.Controls.Add(tabPageCompressionByParameters);
+            tabControlScalingPlots.Controls.Add(tabPage1);
+            tabControlScalingPlots.Controls.Add(tabPage2);
             tabControlScalingPlots.Dock = DockStyle.Fill;
             tabControlScalingPlots.Location = new Point(0, 0);
             tabControlScalingPlots.Name = "tabControlScalingPlots";
@@ -1156,7 +1172,6 @@
             tabPageSpeedByThreads.Controls.Add(plotScalingPlotSpeedByThreads);
             tabPageSpeedByThreads.Location = new Point(4, 24);
             tabPageSpeedByThreads.Name = "tabPageSpeedByThreads";
-            tabPageSpeedByThreads.Padding = new Padding(3);
             tabPageSpeedByThreads.Size = new Size(751, 284);
             tabPageSpeedByThreads.TabIndex = 0;
             tabPageSpeedByThreads.Text = "Speed by Threads";
@@ -1166,10 +1181,10 @@
             // plotScalingPlotSpeedByThreads
             // 
             plotScalingPlotSpeedByThreads.Dock = DockStyle.Fill;
-            plotScalingPlotSpeedByThreads.Location = new Point(3, 3);
+            plotScalingPlotSpeedByThreads.Location = new Point(0, 0);
             plotScalingPlotSpeedByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotSpeedByThreads.Name = "plotScalingPlotSpeedByThreads";
-            plotScalingPlotSpeedByThreads.Size = new Size(745, 278);
+            plotScalingPlotSpeedByThreads.Size = new Size(751, 284);
             plotScalingPlotSpeedByThreads.TabIndex = 2;
             // 
             // tabPageCPULoadByThreads
@@ -1177,7 +1192,6 @@
             tabPageCPULoadByThreads.Controls.Add(plotScalingPlotCPULoadByThreads);
             tabPageCPULoadByThreads.Location = new Point(4, 24);
             tabPageCPULoadByThreads.Name = "tabPageCPULoadByThreads";
-            tabPageCPULoadByThreads.Padding = new Padding(3);
             tabPageCPULoadByThreads.Size = new Size(751, 284);
             tabPageCPULoadByThreads.TabIndex = 1;
             tabPageCPULoadByThreads.Text = "CPU Load by Threads";
@@ -1187,11 +1201,109 @@
             // plotScalingPlotCPULoadByThreads
             // 
             plotScalingPlotCPULoadByThreads.Dock = DockStyle.Fill;
-            plotScalingPlotCPULoadByThreads.Location = new Point(3, 3);
+            plotScalingPlotCPULoadByThreads.Location = new Point(0, 0);
             plotScalingPlotCPULoadByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotCPULoadByThreads.Name = "plotScalingPlotCPULoadByThreads";
-            plotScalingPlotCPULoadByThreads.Size = new Size(745, 278);
+            plotScalingPlotCPULoadByThreads.Size = new Size(751, 284);
             plotScalingPlotCPULoadByThreads.TabIndex = 2;
+            // 
+            // tabPageCPUClockByThreads
+            // 
+            tabPageCPUClockByThreads.Controls.Add(plotScalingPlotCPUClockByThreads);
+            tabPageCPUClockByThreads.Location = new Point(4, 24);
+            tabPageCPUClockByThreads.Name = "tabPageCPUClockByThreads";
+            tabPageCPUClockByThreads.Size = new Size(751, 284);
+            tabPageCPUClockByThreads.TabIndex = 2;
+            tabPageCPUClockByThreads.Text = "CPU Clock by Threads";
+            toolTip1.SetToolTip(tabPageCPUClockByThreads, "Scale CPU Clock by Threads");
+            tabPageCPUClockByThreads.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotCPUClockByThreads
+            // 
+            plotScalingPlotCPUClockByThreads.Dock = DockStyle.Fill;
+            plotScalingPlotCPUClockByThreads.Location = new Point(0, 0);
+            plotScalingPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotCPUClockByThreads.Name = "plotScalingPlotCPUClockByThreads";
+            plotScalingPlotCPUClockByThreads.Size = new Size(751, 284);
+            plotScalingPlotCPUClockByThreads.TabIndex = 2;
+            // 
+            // tabPageSpeedByParameters
+            // 
+            tabPageSpeedByParameters.Controls.Add(plotScalingPlotSpeedByParameters);
+            tabPageSpeedByParameters.Location = new Point(4, 24);
+            tabPageSpeedByParameters.Name = "tabPageSpeedByParameters";
+            tabPageSpeedByParameters.Size = new Size(751, 284);
+            tabPageSpeedByParameters.TabIndex = 3;
+            tabPageSpeedByParameters.Text = "Speed by Parameters";
+            toolTip1.SetToolTip(tabPageSpeedByParameters, "Scale Speed by Parameters");
+            tabPageSpeedByParameters.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotSpeedByParameters
+            // 
+            plotScalingPlotSpeedByParameters.Dock = DockStyle.Fill;
+            plotScalingPlotSpeedByParameters.Location = new Point(0, 0);
+            plotScalingPlotSpeedByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotSpeedByParameters.Name = "plotScalingPlotSpeedByParameters";
+            plotScalingPlotSpeedByParameters.Size = new Size(751, 284);
+            plotScalingPlotSpeedByParameters.TabIndex = 3;
+            // 
+            // tabPageCompressionByParameters
+            // 
+            tabPageCompressionByParameters.Controls.Add(plotScalingPlotCompressionByParameters);
+            tabPageCompressionByParameters.Location = new Point(4, 24);
+            tabPageCompressionByParameters.Name = "tabPageCompressionByParameters";
+            tabPageCompressionByParameters.Size = new Size(751, 284);
+            tabPageCompressionByParameters.TabIndex = 4;
+            tabPageCompressionByParameters.Text = "Compression by Parameters";
+            toolTip1.SetToolTip(tabPageCompressionByParameters, "Scale Compression by Parameters");
+            tabPageCompressionByParameters.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotCompressionByParameters
+            // 
+            plotScalingPlotCompressionByParameters.Dock = DockStyle.Fill;
+            plotScalingPlotCompressionByParameters.Location = new Point(0, 0);
+            plotScalingPlotCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotCompressionByParameters.Name = "plotScalingPlotCompressionByParameters";
+            plotScalingPlotCompressionByParameters.Size = new Size(751, 284);
+            plotScalingPlotCompressionByParameters.TabIndex = 4;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(formsPlotCompressionDistribution);
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Size = new Size(751, 284);
+            tabPage1.TabIndex = 5;
+            tabPage1.Text = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // formsPlotCompressionDistribution
+            // 
+            formsPlotCompressionDistribution.Dock = DockStyle.Fill;
+            formsPlotCompressionDistribution.Location = new Point(0, 0);
+            formsPlotCompressionDistribution.Margin = new Padding(4, 3, 4, 3);
+            formsPlotCompressionDistribution.Name = "formsPlotCompressionDistribution";
+            formsPlotCompressionDistribution.Size = new Size(751, 284);
+            formsPlotCompressionDistribution.TabIndex = 5;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(plotScalingPlotMeanCompressionByParameters);
+            tabPage2.Location = new Point(4, 24);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Size = new Size(751, 284);
+            tabPage2.TabIndex = 6;
+            tabPage2.Text = "tabPage2";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotMeanCompressionByParameters
+            // 
+            plotScalingPlotMeanCompressionByParameters.Dock = DockStyle.Fill;
+            plotScalingPlotMeanCompressionByParameters.Location = new Point(0, 0);
+            plotScalingPlotMeanCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotMeanCompressionByParameters.Name = "plotScalingPlotMeanCompressionByParameters";
+            plotScalingPlotMeanCompressionByParameters.Size = new Size(751, 284);
+            plotScalingPlotMeanCompressionByParameters.TabIndex = 6;
             // 
             // DetectDupes
             // 
@@ -1602,27 +1714,6 @@
             labelCpuUsageValue.TabIndex = 2;
             labelCpuUsageValue.TextAlign = ContentAlignment.TopRight;
             // 
-            // tabPageCPUClockByThreads
-            // 
-            tabPageCPUClockByThreads.Controls.Add(plotScalingPlotCPUClockByThreads);
-            tabPageCPUClockByThreads.Location = new Point(4, 24);
-            tabPageCPUClockByThreads.Name = "tabPageCPUClockByThreads";
-            tabPageCPUClockByThreads.Padding = new Padding(3);
-            tabPageCPUClockByThreads.Size = new Size(751, 284);
-            tabPageCPUClockByThreads.TabIndex = 2;
-            tabPageCPUClockByThreads.Text = "CPU Clock by Threads";
-            toolTip1.SetToolTip(tabPageCPUClockByThreads, "Scale CPU Clock by Threads");
-            tabPageCPUClockByThreads.UseVisualStyleBackColor = true;
-            // 
-            // plotScalingPlotCPUClockByThreads
-            // 
-            plotScalingPlotCPUClockByThreads.Dock = DockStyle.Fill;
-            plotScalingPlotCPUClockByThreads.Location = new Point(3, 3);
-            plotScalingPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
-            plotScalingPlotCPUClockByThreads.Name = "plotScalingPlotCPUClockByThreads";
-            plotScalingPlotCPUClockByThreads.Size = new Size(745, 278);
-            plotScalingPlotCPUClockByThreads.TabIndex = 2;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1662,6 +1753,11 @@
             tabControlScalingPlots.ResumeLayout(false);
             tabPageSpeedByThreads.ResumeLayout(false);
             tabPageCPULoadByThreads.ResumeLayout(false);
+            tabPageCPUClockByThreads.ResumeLayout(false);
+            tabPageSpeedByParameters.ResumeLayout(false);
+            tabPageCompressionByParameters.ResumeLayout(false);
+            tabPage1.ResumeLayout(false);
+            tabPage2.ResumeLayout(false);
             DetectDupes.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).EndInit();
             TestForErrors.ResumeLayout(false);
@@ -1671,7 +1767,6 @@
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             groupBoxInformation.ResumeLayout(false);
-            tabPageCPUClockByThreads.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1803,5 +1898,13 @@
         private ScottPlot.FormsPlot plotScalingPlotCPULoadByThreads;
         private TabPage tabPageCPUClockByThreads;
         private ScottPlot.FormsPlot plotScalingPlotCPUClockByThreads;
+        private TabPage tabPageSpeedByParameters;
+        private TabPage tabPageCompressionByParameters;
+        private ScottPlot.FormsPlot plotScalingPlotSpeedByParameters;
+        private ScottPlot.FormsPlot plotScalingPlotCompressionByParameters;
+        private TabPage tabPage1;
+        private ScottPlot.FormsPlot formsPlotCompressionDistribution;
+        private TabPage tabPage2;
+        private ScottPlot.FormsPlot plotScalingPlotMeanCompressionByParameters;
     }
 }
