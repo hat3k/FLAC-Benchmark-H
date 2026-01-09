@@ -123,14 +123,19 @@
             plotScalingPlotCPULoadByThreads = new ScottPlot.FormsPlot();
             tabPageCPUClockByThreads = new TabPage();
             plotScalingPlotCPUClockByThreads = new ScottPlot.FormsPlot();
+            tabPageMultiplotByThreads = new TabPage();
+            tableLayoutPanelMultiPlotByThreads = new TableLayoutPanel();
+            plotScalingMultiPlotCPUClockByThreads = new ScottPlot.FormsPlot();
+            plotScalingMultiPlotCPULoadByThreads = new ScottPlot.FormsPlot();
+            plotScalingMultiPlotSpeedByThreads = new ScottPlot.FormsPlot();
             tabPageSpeedByParameters = new TabPage();
             plotScalingPlotSpeedByParameters = new ScottPlot.FormsPlot();
             tabPageCompressionByParameters = new TabPage();
             plotScalingPlotCompressionByParameters = new ScottPlot.FormsPlot();
-            tabPage1 = new TabPage();
-            formsPlotCompressionDistribution = new ScottPlot.FormsPlot();
-            tabPage2 = new TabPage();
-            plotScalingPlotMeanCompressionByParameters = new ScottPlot.FormsPlot();
+            tabPageMultiplotByParameters = new TabPage();
+            tableLayoutPanelMultiPlotByParameters = new TableLayoutPanel();
+            plotScalingMultiPlotCompressionByParameters = new ScottPlot.FormsPlot();
+            plotScalingMultiPlotSpeedByParameters = new ScottPlot.FormsPlot();
             DetectDupes = new TabPage();
             dataGridViewLogDetectDupes = new DataGridViewEx();
             TestForErrors = new TabPage();
@@ -189,10 +194,12 @@
             tabPageSpeedByThreads.SuspendLayout();
             tabPageCPULoadByThreads.SuspendLayout();
             tabPageCPUClockByThreads.SuspendLayout();
+            tabPageMultiplotByThreads.SuspendLayout();
+            tableLayoutPanelMultiPlotByThreads.SuspendLayout();
             tabPageSpeedByParameters.SuspendLayout();
             tabPageCompressionByParameters.SuspendLayout();
-            tabPage1.SuspendLayout();
-            tabPage2.SuspendLayout();
+            tabPageMultiplotByParameters.SuspendLayout();
+            tableLayoutPanelMultiPlotByParameters.SuspendLayout();
             DetectDupes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).BeginInit();
             TestForErrors.SuspendLayout();
@@ -1174,10 +1181,10 @@
             tabControlScalingPlots.Controls.Add(tabPageSpeedByThreads);
             tabControlScalingPlots.Controls.Add(tabPageCPULoadByThreads);
             tabControlScalingPlots.Controls.Add(tabPageCPUClockByThreads);
+            tabControlScalingPlots.Controls.Add(tabPageMultiplotByThreads);
             tabControlScalingPlots.Controls.Add(tabPageSpeedByParameters);
             tabControlScalingPlots.Controls.Add(tabPageCompressionByParameters);
-            tabControlScalingPlots.Controls.Add(tabPage1);
-            tabControlScalingPlots.Controls.Add(tabPage2);
+            tabControlScalingPlots.Controls.Add(tabPageMultiplotByParameters);
             tabControlScalingPlots.Dock = DockStyle.Fill;
             tabControlScalingPlots.Location = new Point(0, 0);
             tabControlScalingPlots.Name = "tabControlScalingPlots";
@@ -1245,6 +1252,60 @@
             plotScalingPlotCPUClockByThreads.Size = new Size(751, 284);
             plotScalingPlotCPUClockByThreads.TabIndex = 2;
             // 
+            // tabPageMultiplotByThreads
+            // 
+            tabPageMultiplotByThreads.Controls.Add(tableLayoutPanelMultiPlotByThreads);
+            tabPageMultiplotByThreads.Location = new Point(4, 24);
+            tabPageMultiplotByThreads.Name = "tabPageMultiplotByThreads";
+            tabPageMultiplotByThreads.Size = new Size(751, 284);
+            tabPageMultiplotByThreads.TabIndex = 7;
+            tabPageMultiplotByThreads.Text = "Multiplot by Threads";
+            tabPageMultiplotByThreads.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanelMultiPlotByThreads
+            // 
+            tableLayoutPanelMultiPlotByThreads.ColumnCount = 1;
+            tableLayoutPanelMultiPlotByThreads.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPUClockByThreads, 0, 2);
+            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPULoadByThreads, 0, 1);
+            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotSpeedByThreads, 0, 0);
+            tableLayoutPanelMultiPlotByThreads.Dock = DockStyle.Fill;
+            tableLayoutPanelMultiPlotByThreads.Location = new Point(0, 0);
+            tableLayoutPanelMultiPlotByThreads.Name = "tableLayoutPanelMultiPlotByThreads";
+            tableLayoutPanelMultiPlotByThreads.RowCount = 3;
+            tableLayoutPanelMultiPlotByThreads.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanelMultiPlotByThreads.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333359F));
+            tableLayoutPanelMultiPlotByThreads.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333359F));
+            tableLayoutPanelMultiPlotByThreads.Size = new Size(751, 284);
+            tableLayoutPanelMultiPlotByThreads.TabIndex = 0;
+            // 
+            // plotScalingMultiPlotCPUClockByThreads
+            // 
+            plotScalingMultiPlotCPUClockByThreads.Dock = DockStyle.Fill;
+            plotScalingMultiPlotCPUClockByThreads.Location = new Point(4, 191);
+            plotScalingMultiPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotCPUClockByThreads.Name = "plotScalingMultiPlotCPUClockByThreads";
+            plotScalingMultiPlotCPUClockByThreads.Size = new Size(743, 90);
+            plotScalingMultiPlotCPUClockByThreads.TabIndex = 5;
+            // 
+            // plotScalingMultiPlotCPULoadByThreads
+            // 
+            plotScalingMultiPlotCPULoadByThreads.Dock = DockStyle.Fill;
+            plotScalingMultiPlotCPULoadByThreads.Location = new Point(4, 97);
+            plotScalingMultiPlotCPULoadByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotCPULoadByThreads.Name = "plotScalingMultiPlotCPULoadByThreads";
+            plotScalingMultiPlotCPULoadByThreads.Size = new Size(743, 88);
+            plotScalingMultiPlotCPULoadByThreads.TabIndex = 4;
+            // 
+            // plotScalingMultiPlotSpeedByThreads
+            // 
+            plotScalingMultiPlotSpeedByThreads.Dock = DockStyle.Fill;
+            plotScalingMultiPlotSpeedByThreads.Location = new Point(4, 3);
+            plotScalingMultiPlotSpeedByThreads.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotSpeedByThreads.Name = "plotScalingMultiPlotSpeedByThreads";
+            plotScalingMultiPlotSpeedByThreads.Size = new Size(743, 88);
+            plotScalingMultiPlotSpeedByThreads.TabIndex = 3;
+            // 
             // tabPageSpeedByParameters
             // 
             tabPageSpeedByParameters.Controls.Add(plotScalingPlotSpeedByParameters);
@@ -1285,43 +1346,48 @@
             plotScalingPlotCompressionByParameters.Size = new Size(751, 284);
             plotScalingPlotCompressionByParameters.TabIndex = 4;
             // 
-            // tabPage1
+            // tabPageMultiplotByParameters
             // 
-            tabPage1.Controls.Add(formsPlotCompressionDistribution);
-            tabPage1.Location = new Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Size = new Size(751, 284);
-            tabPage1.TabIndex = 5;
-            tabPage1.Text = "tabPage1";
-            tabPage1.UseVisualStyleBackColor = true;
+            tabPageMultiplotByParameters.Controls.Add(tableLayoutPanelMultiPlotByParameters);
+            tabPageMultiplotByParameters.Location = new Point(4, 24);
+            tabPageMultiplotByParameters.Name = "tabPageMultiplotByParameters";
+            tabPageMultiplotByParameters.Size = new Size(751, 284);
+            tabPageMultiplotByParameters.TabIndex = 8;
+            tabPageMultiplotByParameters.Text = "Multiplot by Parameters";
+            tabPageMultiplotByParameters.UseVisualStyleBackColor = true;
             // 
-            // formsPlotCompressionDistribution
+            // tableLayoutPanelMultiPlotByParameters
             // 
-            formsPlotCompressionDistribution.Dock = DockStyle.Fill;
-            formsPlotCompressionDistribution.Location = new Point(0, 0);
-            formsPlotCompressionDistribution.Margin = new Padding(4, 3, 4, 3);
-            formsPlotCompressionDistribution.Name = "formsPlotCompressionDistribution";
-            formsPlotCompressionDistribution.Size = new Size(751, 284);
-            formsPlotCompressionDistribution.TabIndex = 5;
+            tableLayoutPanelMultiPlotByParameters.ColumnCount = 1;
+            tableLayoutPanelMultiPlotByParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotCompressionByParameters, 0, 1);
+            tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotSpeedByParameters, 0, 0);
+            tableLayoutPanelMultiPlotByParameters.Dock = DockStyle.Fill;
+            tableLayoutPanelMultiPlotByParameters.Location = new Point(0, 0);
+            tableLayoutPanelMultiPlotByParameters.Name = "tableLayoutPanelMultiPlotByParameters";
+            tableLayoutPanelMultiPlotByParameters.RowCount = 2;
+            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMultiPlotByParameters.Size = new Size(751, 284);
+            tableLayoutPanelMultiPlotByParameters.TabIndex = 1;
             // 
-            // tabPage2
+            // plotScalingMultiPlotCompressionByParameters
             // 
-            tabPage2.Controls.Add(plotScalingPlotMeanCompressionByParameters);
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Size = new Size(751, 284);
-            tabPage2.TabIndex = 6;
-            tabPage2.Text = "tabPage2";
-            tabPage2.UseVisualStyleBackColor = true;
+            plotScalingMultiPlotCompressionByParameters.Dock = DockStyle.Fill;
+            plotScalingMultiPlotCompressionByParameters.Location = new Point(4, 145);
+            plotScalingMultiPlotCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotCompressionByParameters.Name = "plotScalingMultiPlotCompressionByParameters";
+            plotScalingMultiPlotCompressionByParameters.Size = new Size(743, 136);
+            plotScalingMultiPlotCompressionByParameters.TabIndex = 4;
             // 
-            // plotScalingPlotMeanCompressionByParameters
+            // plotScalingMultiPlotSpeedByParameters
             // 
-            plotScalingPlotMeanCompressionByParameters.Dock = DockStyle.Fill;
-            plotScalingPlotMeanCompressionByParameters.Location = new Point(0, 0);
-            plotScalingPlotMeanCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
-            plotScalingPlotMeanCompressionByParameters.Name = "plotScalingPlotMeanCompressionByParameters";
-            plotScalingPlotMeanCompressionByParameters.Size = new Size(751, 284);
-            plotScalingPlotMeanCompressionByParameters.TabIndex = 6;
+            plotScalingMultiPlotSpeedByParameters.Dock = DockStyle.Fill;
+            plotScalingMultiPlotSpeedByParameters.Location = new Point(4, 3);
+            plotScalingMultiPlotSpeedByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotSpeedByParameters.Name = "plotScalingMultiPlotSpeedByParameters";
+            plotScalingMultiPlotSpeedByParameters.Size = new Size(743, 136);
+            plotScalingMultiPlotSpeedByParameters.TabIndex = 3;
             // 
             // DetectDupes
             // 
@@ -1914,10 +1980,12 @@
             tabPageSpeedByThreads.ResumeLayout(false);
             tabPageCPULoadByThreads.ResumeLayout(false);
             tabPageCPUClockByThreads.ResumeLayout(false);
+            tabPageMultiplotByThreads.ResumeLayout(false);
+            tableLayoutPanelMultiPlotByThreads.ResumeLayout(false);
             tabPageSpeedByParameters.ResumeLayout(false);
             tabPageCompressionByParameters.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            tabPage2.ResumeLayout(false);
+            tabPageMultiplotByParameters.ResumeLayout(false);
+            tableLayoutPanelMultiPlotByParameters.ResumeLayout(false);
             DetectDupes.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogDetectDupes).EndInit();
             TestForErrors.ResumeLayout(false);
@@ -2070,10 +2138,6 @@
         private TabPage tabPageCompressionByParameters;
         private ScottPlot.FormsPlot plotScalingPlotSpeedByParameters;
         private ScottPlot.FormsPlot plotScalingPlotCompressionByParameters;
-        private TabPage tabPage1;
-        private ScottPlot.FormsPlot formsPlotCompressionDistribution;
-        private TabPage tabPage2;
-        private ScottPlot.FormsPlot plotScalingPlotMeanCompressionByParameters;
         private TabControl tabControlSettings;
         private TabPage tabPageQuickSettings;
         private TabPage tabPageMiscSettings;
@@ -2087,5 +2151,14 @@
         private CheckBox checkBoxClearLogsOnExitIncludeDetectDupes;
         private CheckBox checkBoxShowAggregatedByEncoderPlots;
         private CheckBox checkBoxDrawMultiplots;
+        private TabPage tabPageMultiplotByThreads;
+        private TableLayoutPanel tableLayoutPanelMultiPlotByThreads;
+        private ScottPlot.FormsPlot plotScalingMultiPlotCPULoadByThreads;
+        private ScottPlot.FormsPlot plotScalingMultiPlotSpeedByThreads;
+        private ScottPlot.FormsPlot plotScalingMultiPlotCPUClockByThreads;
+        private TabPage tabPageMultiplotByParameters;
+        private TableLayoutPanel tableLayoutPanelMultiPlotByParameters;
+        private ScottPlot.FormsPlot plotScalingMultiPlotCompressionByParameters;
+        private ScottPlot.FormsPlot plotScalingMultiPlotSpeedByParameters;
     }
 }

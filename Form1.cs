@@ -371,7 +371,8 @@ namespace FLAC_Benchmark_H
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}",
                     $"ShowIndividualFilesPlots={checkBoxShowIndividualFilesPlots.Checked}",
-                    $"ShowAggregatedByEncoderPlots={checkBoxShowAggregatedByEncoderPlots.Checked}"
+                    $"ShowAggregatedByEncoderPlots={checkBoxShowAggregatedByEncoderPlots.Checked}",
+                    $"DrawMultiplots={checkBoxDrawMultiplots.Checked}"
                 };
 
                 foreach (DataGridViewColumn col in dataGridViewLog.Columns)
@@ -550,6 +551,9 @@ namespace FLAC_Benchmark_H
                             break;
                         case "ShowAggregatedByEncoderPlots":
                             checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showAggregatedByEncoder) && showAggregatedByEncoder;
+                            break;
+                        case "DrawMultiplots":
+                            checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool BoxDrawMultiplots) && BoxDrawMultiplots;
                             break;
                         case string s when s.StartsWith("LogColumnVisibility_"):
                             string columnNameVis = s.Substring("LogColumnVisibility_".Length);
@@ -2494,8 +2498,6 @@ namespace FLAC_Benchmark_H
             var avgCPULoadsForAllFilesByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)>();
             var avgCPUClocksForAllFilesByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)>();
 
-
-
             foreach (var group in grouped)
             {
                 int j = 1;
@@ -2940,6 +2942,7 @@ namespace FLAC_Benchmark_H
                     checkBoxShowIndividualFilesPlots.Checked,
                     checkBoxShowAggregatedByEncoderPlots.Checked);
 
+
                 //RenderCompressionHistogramsByParamEncoder(compressionByParamEncoder);
                 //RenderScalingPlotMeanCompressionByParameters(meanCompressionByParamEncoder);
 
@@ -3166,74 +3169,144 @@ namespace FLAC_Benchmark_H
             bool showIndividualFiles = true,
             bool showAggregatedByEncoder = true)
         {
-            var plt = plotScalingPlotSpeedByThreads.Plot;
-            plt.Clear();
-
-            if (series.Count == 0)
             {
-                plt.Title("No Speed scaling data found");
-                plotScalingPlotSpeedByThreads.Refresh();
-                return;
-            }
+                var plt = plotScalingPlotSpeedByThreads.Plot;
+                plt.Clear();
 
-            // Determine thread range (always starts from 1)
-            int minThread = 1;
-            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
-            int threadCount = maxThread - minThread + 1;
-
-            // Plot individual file series (colored lines)
-            if (showIndividualFiles)
-            {
-                foreach (var kvp in series)
+                if (series.Count == 0)
                 {
-                    string label = kvp.Key;
-                    var (threads, avgSpeeds) = kvp.Value;
-
-                    var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
-                                        .OrderBy(x => x.t)
-                                        .ToList();
-
-                    double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                    double[] ys = sorted.Select(x => x.s).ToArray();
-
-                    plt.AddScatter(xs, ys, label: label);
+                    plt.Title("No Speed scaling data found");
+                    plotScalingPlotSpeedByThreads.Refresh();
                 }
-            }
-
-            // Plot aggregated series
-            if (showAggregatedByEncoder && aggregatedSeries != null)
-            {
-                foreach (var kvp in aggregatedSeries)
+                else
                 {
-                    string label = $"Avg Speed: {kvp.Key}";
-                    var (threads, avgSpeedsForAllFiles) = kvp.Value;
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
 
-                    // Group by thread count and calculate true mean
-                    var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
-                                                .GroupBy(x => x.t)
-                                                .Select(g => new { Thread = g.Key, AvgSpeedsForAllFiles = g.Average(x => x.s) })
-                                                .OrderBy(x => x.Thread)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgSpeeds = kvp.Value.AvgSpeeds;
+
+                            var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
+                                                .OrderBy(x => x.t)
                                                 .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.s).ToArray();
 
-                    double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                    double[] ys = groupedByThread.Select(x => x.AvgSpeedsForAllFiles).ToArray();
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
 
-                    plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg Speed: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new { Thread = g.Key, AvgSpeedsForAllFiles = g.Average(x => x.s) })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgSpeedsForAllFiles).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    plt.XTicks(tickPositions, tickLabels);
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("Speed (x real-time)");
+                    plt.Title("Speed Scaling by Threads");
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingPlotSpeedByThreads.Refresh();
                 }
             }
 
-            // Set manual X-axis ticks to show only integer thread counts
-            double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-            string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
-            plt.XTicks(tickPositions, tickLabels);
+            {
+                var plt = plotScalingMultiPlotSpeedByThreads.Plot;
+                plt.Clear();
 
-            plt.XLabel("Threads (-jN)");
-            plt.YLabel("Speed (x real-time)");
-            plt.Title("Speed Scaling by Threads");
-            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                if (series.Count == 0)
+                {
+                    plt.Title("No Speed scaling data found");
+                    plotScalingMultiPlotSpeedByThreads.Refresh();
+                }
+                else
+                {
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
 
-            plt.AxisAuto();
-            plotScalingPlotSpeedByThreads.Refresh();
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgSpeeds = kvp.Value.AvgSpeeds;
+
+                            var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
+                                                .OrderBy(x => x.t)
+                                                .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.s).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
+
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg Speed: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new { Thread = g.Key, AvgSpeedsForAllFiles = g.Average(x => x.s) })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgSpeedsForAllFiles).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    plt.XTicks(tickPositions, tickLabels);
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("Speed (x real-time)");
+                    plt.Title("Speed Scaling by Threads");
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingMultiPlotSpeedByThreads.Refresh();
+                }
+            }
+
+            plotScalingMultiPlotSpeedByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCPULoadByThreads, horizontal: true, vertical: false);
+            plotScalingMultiPlotSpeedByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCPUClockByThreads, horizontal: true, vertical: false);
         }
 
         private void RenderScalingGraphCPULoadByThreads(
@@ -3242,85 +3315,170 @@ namespace FLAC_Benchmark_H
             bool showIndividualFiles = true,
             bool showAggregatedByEncoder = true)
         {
-            var plt = plotScalingPlotCPULoadByThreads.Plot;
-            plt.Clear();
-
-            if (series.Count == 0)
             {
-                plt.Title("No CPU scaling data found");
-                plotScalingPlotCPULoadByThreads.Refresh();
-                return;
-            }
+                var plt = plotScalingPlotCPULoadByThreads.Plot;
+                plt.Clear();
 
-            // Determine thread range (always starts from 1)
-            int minThread = 1;
-            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
-            int threadCount = maxThread - minThread + 1;
-
-            // Ideal CPU load line: 100% per thread (e.g., 1 thread = 100%, 4 threads = 400%)
-            double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-            double[] idealY = idealX.Select(j => j * 100.0).ToArray();
-
-            // Plot real data series (individual files)
-            if (showIndividualFiles)
-            {
-                foreach (var kvp in series)
+                if (series.Count == 0)
                 {
-                    string label = kvp.Key;
-                    var (threads, avgCPULoads) = kvp.Value;
-
-                    var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
-                                        .OrderBy(x => x.t)
-                                        .ToList();
-                    double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                    double[] ys = sorted.Select(x => x.l).ToArray();
-
-                    plt.AddScatter(xs, ys, label: label);
+                    plt.Title("No CPU scaling data found");
+                    plotScalingPlotCPULoadByThreads.Refresh();
                 }
-            }
-
-            // Plot aggregated series (bold lines)
-            if (showAggregatedByEncoder && aggregatedSeries != null)
-            {
-                foreach (var kvp in aggregatedSeries)
+                else
                 {
-                    string label = $"Avg CPU Load: {kvp.Key}";
-                    var (threads, avgCPULoadsForAllFiles) = kvp.Value;
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
 
-                    var groupedByThread = threads.Zip(avgCPULoadsForAllFiles, (t, l) => new { t, l })
-                                                .GroupBy(x => x.t)
-                                                .Select(g => new
-                                                {
-                                                    Thread = g.Key,
-                                                    AvgCPULoad = g.Average(x => x.l)
-                                                })
-                                                .OrderBy(x => x.Thread)
+                    double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    double[] idealY = idealX.Select(j => j * 100.0).ToArray();
+
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgCPULoads = kvp.Value.AvgCPULoads;
+
+                            var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
+                                                .OrderBy(x => x.t)
                                                 .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.l).ToArray();
 
-                    double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                    double[] ys = groupedByThread.Select(x => x.AvgCPULoad).ToArray();
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
 
-                    plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg CPU Load: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgCPULoadsForAllFiles, (t, l) => new { t, l })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgCPULoad = g.Average(x => x.l)
+                                                        })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgCPULoad).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    plt.AddScatter(
+                        xs: idealX,
+                        ys: idealY,
+                        label: "Ideal (100% per thread)",
+                        color: Color.Gray,
+                        lineStyle: ScottPlot.LineStyle.Dash,
+                        markerSize: 0
+                    );
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Load (%)");
+                    plt.Title("CPU Load Scaling by Threads");
+                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingPlotCPULoadByThreads.Refresh();
                 }
             }
 
-            // Add ideal linear load line (dashed, no markers)
-            plt.AddScatter(
-                xs: idealX,
-                ys: idealY,
-                label: "Ideal (100% per thread)",
-                color: Color.Gray,
-                lineStyle: ScottPlot.LineStyle.Dash,
-                markerSize: 0
-            );
+            {
+                var plt = plotScalingMultiPlotCPULoadByThreads.Plot;
+                plt.Clear();
 
-            plt.XLabel("Threads (-jN)");
-            plt.YLabel("CPU Load (%)");
-            plt.Title("CPU Load Scaling by Threads");
-            plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
-            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
-            plt.AxisAuto();
-            plotScalingPlotCPULoadByThreads.Refresh();
+                if (series.Count == 0)
+                {
+                    plt.Title("No CPU scaling data found");
+                    plotScalingMultiPlotCPULoadByThreads.Refresh();
+                }
+                else
+                {
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
+
+                    double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    double[] idealY = idealX.Select(j => j * 100.0).ToArray();
+
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgCPULoads = kvp.Value.AvgCPULoads;
+
+                            var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
+                                                .OrderBy(x => x.t)
+                                                .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.l).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
+
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg CPU Load: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgCPULoadsForAllFiles, (t, l) => new { t, l })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgCPULoad = g.Average(x => x.l)
+                                                        })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgCPULoad).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    plt.AddScatter(
+                        xs: idealX,
+                        ys: idealY,
+                        label: "Ideal (100% per thread)",
+                        color: Color.Gray,
+                        lineStyle: ScottPlot.LineStyle.Dash,
+                        markerSize: 0
+                    );
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Load (%)");
+                    plt.Title("CPU Load Scaling by Threads");
+                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingMultiPlotCPULoadByThreads.Refresh();
+                }
+            }
+
+            plotScalingMultiPlotCPULoadByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotSpeedByThreads, horizontal: true, vertical: false);
+            plotScalingMultiPlotCPULoadByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCPUClockByThreads, horizontal: true, vertical: false);
         }
 
         private void RenderScalingGraphCPUClockByThreads(
@@ -3329,76 +3487,150 @@ namespace FLAC_Benchmark_H
             bool showIndividualFiles = true,
             bool showAggregatedByEncoder = true)
         {
-            var plt = plotScalingPlotCPUClockByThreads.Plot;
-            plt.Clear();
-
-            if (series.Count == 0)
             {
-                plt.Title("No CPU clock scaling data found");
-                plotScalingPlotCPUClockByThreads.Refresh();
-                return;
-            }
+                var plt = plotScalingPlotCPUClockByThreads.Plot;
+                plt.Clear();
 
-            // Determine thread range (always starts from 1)
-            int minThread = 1;
-            int maxThread = series.Values.SelectMany(v => v.Threads).Max();
-            int threadCount = maxThread - minThread + 1;
-
-            // Plot individual file series (colored lines)
-            if (showIndividualFiles)
-            {
-                foreach (var kvp in series)
+                if (series.Count == 0)
                 {
-                    string label = kvp.Key;
-                    var (threads, avgCPUClocks) = kvp.Value;
-
-                    var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
-                                        .OrderBy(x => x.t)
-                                        .ToList();
-                    double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                    double[] ys = sorted.Select(x => x.c).ToArray();
-
-                    plt.AddScatter(xs, ys, label: label);
+                    plt.Title("No CPU clock scaling data found");
+                    plotScalingPlotCPUClockByThreads.Refresh();
                 }
-            }
-
-            // Plot aggregated series (bold lines)
-            if (showAggregatedByEncoder && aggregatedSeries != null)
-            {
-                foreach (var kvp in aggregatedSeries)
+                else
                 {
-                    string label = $"Avg CPU Clock: {kvp.Key}";
-                    var (threads, avgCPUClocksForAllFiles) = kvp.Value;
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
 
-                    var groupedByThread = threads.Zip(avgCPUClocksForAllFiles, (t, c) => new { t, c })
-                                                .GroupBy(x => x.t)
-                                                .Select(g => new
-                                                {
-                                                    Thread = g.Key,
-                                                    AvgCPUClock = g.Average(x => x.c)
-                                                })
-                                                .OrderBy(x => x.Thread)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgCPUClocks = kvp.Value.AvgCPUClocks;
+
+                            var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
+                                                .OrderBy(x => x.t)
                                                 .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.c).ToArray();
 
-                    double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                    double[] ys = groupedByThread.Select(x => x.AvgCPUClock).ToArray();
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
 
-                    plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg CPU Clock: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgCPUClocksForAllFiles, (t, c) => new { t, c })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgCPUClock = g.Average(x => x.c)
+                                                        })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgCPUClock).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Clock (MHz)");
+                    plt.Title("CPU Clock Scaling by Threads");
+                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    plt.XTicks(tickPositions, tickLabels);
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingPlotCPUClockByThreads.Refresh();
                 }
             }
 
-            plt.XLabel("Threads (-jN)");
-            plt.YLabel("CPU Clock (MHz)");
-            plt.Title("CPU Clock Scaling by Threads");
+            {
+                var plt = plotScalingMultiPlotCPUClockByThreads.Plot;
+                plt.Clear();
 
-            // Set manual X-axis ticks to show only integer thread counts
-            double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-            string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
-            plt.XTicks(tickPositions, tickLabels);
+                if (series.Count == 0)
+                {
+                    plt.Title("No CPU clock scaling data found");
+                    plotScalingMultiPlotCPUClockByThreads.Refresh();
+                }
+                else
+                {
+                    int minThread = 1;
+                    int maxThread = series.Values.SelectMany(v => v.Threads).Max();
+                    int threadCount = maxThread - minThread + 1;
 
-            plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
-            plt.AxisAuto();
-            plotScalingPlotCPUClockByThreads.Refresh();
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var threads = kvp.Value.Threads;
+                            var avgCPUClocks = kvp.Value.AvgCPUClocks;
+
+                            var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
+                                                .OrderBy(x => x.t)
+                                                .ToList();
+                            double[] xs = sorted.Select(x => (double)x.t).ToArray();
+                            double[] ys = sorted.Select(x => x.c).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
+
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg CPU Clock: {kvp.Key}";
+                            var threads = kvp.Value.Threads;
+                            var avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
+
+                            var groupedByThread = threads.Zip(avgCPUClocksForAllFiles, (t, c) => new { t, c })
+                                                        .GroupBy(x => x.t)
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgCPUClock = g.Average(x => x.c)
+                                                        })
+                                                        .OrderBy(x => x.Thread)
+                                                        .ToList();
+
+                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
+                            double[] ys = groupedByThread.Select(x => x.AvgCPUClock).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                        }
+                    }
+
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Clock (MHz)");
+                    plt.Title("CPU Clock Scaling by Threads");
+                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
+                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    plt.XTicks(tickPositions, tickLabels);
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+                    plotScalingMultiPlotCPUClockByThreads.Refresh();
+                }
+            }
+
+            plotScalingMultiPlotCPUClockByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotSpeedByThreads, horizontal: true, vertical: false);
+            plotScalingMultiPlotCPUClockByThreads.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCPULoadByThreads, horizontal: true, vertical: false);
         }
 
         private void RenderScalingGraphSpeedByParameters(
@@ -3407,82 +3639,167 @@ namespace FLAC_Benchmark_H
             bool showIndividualFiles = true,
             bool showAggregatedByEncoder = true)
         {
-            var plt = plotScalingPlotSpeedByParameters.Plot;
-            plt.Clear();
+            List<string> allParams = null;
+            double[] xPositions = null;
+            string[] xLabels = null;
 
-            if (series.Count == 0)
+            if (series.Count > 0)
             {
-                plt.Title("No parameter data found");
-                plotScalingPlotSpeedByParameters.Refresh();
-                return;
+                allParams = series.Values
+                    .SelectMany(v => v.Params)
+                    .Distinct()
+                    .OrderBy(p => p, new NaturalStringComparer())
+                    .ToList();
+                xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
+                xLabels = allParams.ToArray();
             }
 
-            var allParams = series.Values
-                .SelectMany(v => v.Params)
-                .Distinct()
-                .OrderBy(p => p, new NaturalStringComparer())
-                .ToList();
-
-            double[] xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
-            string[] xLabels = allParams.ToArray();
-
-            // Plot individual file series (colored lines)
-            if (showIndividualFiles)
             {
-                foreach (var kvp in series)
+                var plt = plotScalingPlotSpeedByParameters.Plot;
+                plt.Clear();
+
+                if (series.Count == 0)
                 {
-                    string label = kvp.Key;
-                    var (paramsList, speeds) = kvp.Value;
-
-                    double[] xs = paramsList.Select(p => (double)allParams.IndexOf(p)).ToArray();
-                    double[] ys = speeds.ToArray();
-
-                    var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
-                                         .OrderBy(p => p.x)
-                                         .ToArray();
-                    double[] sortedXs = sortedPoints.Select(p => p.x).ToArray();
-                    double[] sortedYs = sortedPoints.Select(p => p.y).ToArray();
-
-                    plt.AddScatter(sortedXs, sortedYs, label: label);
+                    plt.Title("No parameter data found");
+                    plotScalingPlotSpeedByParameters.Refresh();
                 }
-            }
-
-            // Plot aggregated series (bold lines)
-            if (showAggregatedByEncoder && aggregatedSeries != null)
-            {
-                foreach (var kvp in aggregatedSeries)
+                else
                 {
-                    string encoderName = kvp.Key;
-                    var dataPoints = kvp.Value;
-
-                    var groupedByParam = dataPoints
-                        .GroupBy(x => x.Param)
-                        .Select(g => new
+                    // Plot individual file series (colored lines)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
                         {
-                            Param = g.Key,
-                            AvgSpeed = g.Average(x => x.Speed)
-                        })
-                        .Where(x => allParams.Contains(x.Param))
-                        .OrderBy(x => x.Param, new NaturalStringComparer())
-                        .ToList();
+                            string label = kvp.Key;
+                            var paramsList = kvp.Value.Params;
+                            var speeds = kvp.Value.AvgSpeeds;
 
-                    if (groupedByParam.Count == 0) continue;
+                            double[] xs = paramsList.Select(p => (double)allParams.IndexOf(p)).ToArray();
+                            double[] ys = speeds.ToArray();
 
-                    double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                    double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
+                            var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
+                                                 .OrderBy(p => p.x)
+                                                 .ToArray();
+                            double[] sortedXs = sortedPoints.Select(p => p.x).ToArray();
+                            double[] sortedYs = sortedPoints.Select(p => p.y).ToArray();
 
-                    plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                            plt.AddScatter(sortedXs, sortedYs, label: label);
+                        }
+                    }
+
+                    // Plot aggregated series (bold lines)
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string encoderName = kvp.Key;
+                            var dataPoints = kvp.Value;
+
+                            var groupedByParam = dataPoints
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgSpeed = g.Average(x => x.Speed)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0) continue;
+
+                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
+                            double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
+
+                            plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Speed (x real-time)");
+                    plt.Title("Speed by Parameters");
+                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    plt.AxisAuto();
+                    plotScalingPlotSpeedByParameters.Refresh();
                 }
             }
 
-            plt.XTicks(xPositions, xLabels);
-            plt.XLabel("Parameters");
-            plt.YLabel("Speed (x real-time)");
-            plt.Title("Speed by Parameters");
-            plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
-            plt.AxisAuto();
-            plotScalingPlotSpeedByParameters.Refresh();
+            {
+                var plt = plotScalingMultiPlotSpeedByParameters.Plot;
+                plt.Clear();
+
+                if (series.Count == 0)
+                {
+                    plt.Title("No parameter data found");
+                    plotScalingMultiPlotSpeedByParameters.Refresh();
+                }
+                else
+                {
+                    // Plot individual file series (colored lines)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var paramsList = kvp.Value.Params;
+                            var speeds = kvp.Value.AvgSpeeds;
+
+                            double[] xs = paramsList.Select(p => (double)allParams.IndexOf(p)).ToArray();
+                            double[] ys = speeds.ToArray();
+
+                            var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
+                                                 .OrderBy(p => p.x)
+                                                 .ToArray();
+                            double[] sortedXs = sortedPoints.Select(p => p.x).ToArray();
+                            double[] sortedYs = sortedPoints.Select(p => p.y).ToArray();
+
+                            plt.AddScatter(sortedXs, sortedYs, label: label);
+                        }
+                    }
+
+                    // Plot aggregated series (bold lines)
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string encoderName = kvp.Key;
+                            var dataPoints = kvp.Value;
+
+                            var groupedByParam = dataPoints
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgSpeed = g.Average(x => x.Speed)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0) continue;
+
+                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
+                            double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
+
+                            plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Speed (x real-time)");
+                    plt.Title("Speed by Parameters");
+                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    plt.AxisAuto();
+                    plotScalingMultiPlotSpeedByParameters.Refresh();
+                }
+            }
+
+            plotScalingMultiPlotSpeedByParameters.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCompressionByParameters, horizontal: true, vertical: false);
         }
 
         private void RenderScalingGraphCompressionByParameters(
@@ -3491,164 +3808,163 @@ namespace FLAC_Benchmark_H
             bool showIndividualFiles = true,
             bool showAggregatedByEncoder = true)
         {
-            var plt = plotScalingPlotCompressionByParameters.Plot;
-            plt.Clear();
+            List<string> allParams = null;
+            double[] xPositions = null;
+            string[] xLabels = null;
 
-            if (series.Count == 0)
+            if (series.Count > 0)
             {
-                plt.Title("No compression data found");
-                plotScalingPlotCompressionByParameters.Refresh();
-                return;
+                allParams = series.Values
+                    .SelectMany(v => v.Params)
+                    .Distinct()
+                    .OrderBy(p => p, new NaturalStringComparer())
+                    .ToList();
+                xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
+                xLabels = allParams.ToArray();
             }
 
-            var allParams = series.Values
-                .SelectMany(v => v.Params)
-                .Distinct()
-                .OrderBy(p => p, new NaturalStringComparer())
-                .ToList();
-
-            double[] xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
-            string[] xLabels = allParams.ToArray();
-
-            // Plot individual file series (colored lines)
-            if (showIndividualFiles)
             {
-                foreach (var kvp in series)
+                var plt = plotScalingPlotCompressionByParameters.Plot;
+                plt.Clear();
+
+                if (series.Count == 0)
                 {
-                    string label = kvp.Key;
-                    var (paramsList, compressions) = kvp.Value;
-
-                    var points = paramsList.Select(p => (double)allParams.IndexOf(p))
-                                          .Zip(compressions, (x, y) => new { x, y })
-                                          .OrderBy(p => p.x)
-                                          .ToArray();
-                    double[] xs = points.Select(p => p.x).ToArray();
-                    double[] ys = points.Select(p => p.y).ToArray();
-
-                    plt.AddScatter(xs, ys, label: label);
+                    plt.Title("No compression data found");
+                    plotScalingPlotCompressionByParameters.Refresh();
                 }
-            }
-
-            // Plot aggregated series (bold lines)
-            if (showAggregatedByEncoder && aggregatedSeries != null)
-            {
-                foreach (var kvp in aggregatedSeries)
+                else
                 {
-                    string encoderName = kvp.Key;
-                    var dataPoints = kvp.Value;
-
-                    var groupedByParam = dataPoints
-                        .GroupBy(x => x.Param)
-                        .Select(g => new
+                    // Plot individual file series (colored lines)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
                         {
-                            Param = g.Key,
-                            AvgCompression = g.Average(x => x.Compression)
-                        })
-                        .Where(x => allParams.Contains(x.Param))
-                        .OrderBy(x => x.Param, new NaturalStringComparer())
-                        .ToList();
+                            string label = kvp.Key;
+                            var paramsList = kvp.Value.Params;
+                            var compressions = kvp.Value.Compressions;
 
-                    if (groupedByParam.Count == 0) continue;
+                            var points = paramsList.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(compressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
+                            double[] xs = points.Select(p => p.x).ToArray();
+                            double[] ys = points.Select(p => p.y).ToArray();
 
-                    double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                    double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
 
-                    plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                    // Plot aggregated series (bold lines)
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string encoderName = kvp.Key;
+                            var dataPoints = kvp.Value;
+
+                            var groupedByParam = dataPoints
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgCompression = g.Average(x => x.Compression)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0) continue;
+
+                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
+                            double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
+
+                            plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Compression (%)");
+                    plt.Title("Compression by Parameters");
+                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    plt.AxisAuto();
+                    plotScalingPlotCompressionByParameters.Refresh();
                 }
             }
 
-            plt.XTicks(xPositions, xLabels);
-            plt.XLabel("Parameters");
-            plt.YLabel("Compression (%)");
-            plt.Title("Compression by Parameters");
-            plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
-            plt.AxisAuto();
-
-            plotScalingPlotCompressionByParameters.Refresh();
-        }
-
-
-
-        private void RenderCompressionHistogramsByParamEncoder(Dictionary<string, List<double>> compressionByParamEncoder)
-        {
-            var plt = formsPlotCompressionDistribution.Plot;
-            plt.Clear();
-
-            if (compressionByParamEncoder.Count == 0)
             {
-                plt.Title("No Compression data");
-                formsPlotCompressionDistribution.Refresh();
-                return;
+                var plt = plotScalingMultiPlotCompressionByParameters.Plot;
+                plt.Clear();
+
+                if (series.Count == 0)
+                {
+                    plt.Title("No compression data found");
+                    plotScalingMultiPlotCompressionByParameters.Refresh();
+                }
+                else
+                {
+                    // Plot individual file series (colored lines)
+                    if (showIndividualFiles)
+                    {
+                        foreach (var kvp in series)
+                        {
+                            string label = kvp.Key;
+                            var paramsList = kvp.Value.Params;
+                            var compressions = kvp.Value.Compressions;
+
+                            var points = paramsList.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(compressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
+                            double[] xs = points.Select(p => p.x).ToArray();
+                            double[] ys = points.Select(p => p.y).ToArray();
+
+                            plt.AddScatter(xs, ys, label: label);
+                        }
+                    }
+
+                    // Plot aggregated series (bold lines)
+                    if (showAggregatedByEncoder && aggregatedSeries != null)
+                    {
+                        foreach (var kvp in aggregatedSeries)
+                        {
+                            string encoderName = kvp.Key;
+                            var dataPoints = kvp.Value;
+
+                            var groupedByParam = dataPoints
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgCompression = g.Average(x => x.Compression)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0) continue;
+
+                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
+                            double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
+
+                            plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Compression (%)");
+                    plt.Title("Compression by Parameters");
+                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    plt.AxisAuto();
+                    plotScalingMultiPlotCompressionByParameters.Refresh();
+                }
             }
 
-            double globalMin = compressionByParamEncoder.Values.SelectMany(v => v).Min();
-            double globalMax = compressionByParamEncoder.Values.SelectMany(v => v).Max();
-            int binCount = 100;
-
-            var sortedKeys = compressionByParamEncoder.Keys
-                .OrderBy(k => k.Length)
-                .ThenBy(k => k)
-                .ToList();
-
-            foreach (string key in sortedKeys)
-            {
-                var data = compressionByParamEncoder[key].ToArray();
-                var hist = new ScottPlot.Statistics.Histogram(globalMin, globalMax, binCount);
-                hist.AddRange(data);
-
-                var bar = plt.AddBar(values: hist.Counts, positions: hist.Bins);
-                bar.BarWidth = (globalMax - globalMin) / binCount;
-                bar.Label = key;
-                bar.BorderLineWidth = 0;
-            }
-
-            plt.XLabel("Compression (%)");
-            plt.YLabel("Number of Files");
-            plt.Title("Compression Distribution by Parameters + Encoder");
-            plt.Legend(location: ScottPlot.Alignment.UpperRight);
-            //plt.SetAxisLimits(yMin: 0);
-            plt.AxisAutoX();
-
-            formsPlotCompressionDistribution.Refresh();
-        }
-
-        private void RenderScalingPlotMeanCompressionByParameters(Dictionary<string, double> meanCompressionByParamEncoder)
-        {
-            var plt = plotScalingPlotMeanCompressionByParameters.Plot;
-            plt.Clear();
-
-            if (meanCompressionByParamEncoder.Count == 0)
-            {
-                plt.Title("No mean compression data");
-                plotScalingPlotMeanCompressionByParameters.Refresh();
-                return;
-            }
-
-            var sortedKeys = meanCompressionByParamEncoder.Keys
-                .OrderBy(k => k.Length)
-                .ThenBy(k => k)
-                .ToList();
-
-            double[] yValues = sortedKeys.Select(k => meanCompressionByParamEncoder[k]).ToArray();
-            double[] xPositions = Enumerable.Range(0, sortedKeys.Count).Select(i => (double)i).ToArray();
-            string[] xLabels = sortedKeys.ToArray();
-
-            var bar = plt.AddBar(yValues, xPositions);
-            bar.BarWidth = 0.8;
-            bar.BorderLineWidth = 0;
-
-            plt.XTicks(xPositions, xLabels);
-            plt.XLabel("Parameters + Encoder");
-            plt.YLabel("Mean Compression (%)");
-            plt.Title("Mean Compression by Parameters + Encoder");
-
-            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
-
-            //plt.SetAxisLimits(yMin: 0);
-            plt.AxisAutoX();
-
-            plotScalingPlotMeanCompressionByParameters.Refresh();
+            plotScalingMultiPlotCompressionByParameters.Configuration.AddLinkedControl(
+                plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
         }
 
 
@@ -7217,14 +7533,14 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             if (dataGridViewLog.Rows.Count > 0 && !dataGridViewLog.Rows[0].IsNewRow)
             {
                 _ = AnalyzeLogAsync();
             }
         }
-        private void CheckBoxShowAggregatedByEncoderPlots_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxShowAggregatedByEncoderPlots_CheckedChanged(object? sender, EventArgs e)
         {
             if (dataGridViewLog.Rows.Count > 0 && !dataGridViewLog.Rows[0].IsNewRow)
             {
@@ -7232,39 +7548,24 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void CheckBoxDrawMultiplots_CheckedChanged(object sender, EventArgs e)
+        private void CheckBoxDrawMultiplots_CheckedChanged(object? sender, EventArgs e)
         {
             if (checkBoxDrawMultiplots.Checked)
             {
-                if (tabControlScalingPlots.TabPages.Contains(tabPageCPULoadByThreads))
-                {
-                    tabControlScalingPlots.TabPages.Remove(tabPageCPULoadByThreads);
-                    tabControlScalingPlots.TabPages.Remove(tabPageCPUClockByThreads);
-                }
-
-                if (tabControlScalingPlots.TabPages.Contains(tabPageCompressionByParameters))
-                {
-                    tabControlScalingPlots.TabPages.Remove(tabPageCompressionByParameters);
-                }
+                tabControlScalingPlots.TabPages.Clear();
+                tabControlScalingPlots.TabPages.Add(tabPageMultiplotByThreads);
+                tabControlScalingPlots.TabPages.Add(tabPageMultiplotByParameters);
             }
             else
             {
-                if (!tabControlScalingPlots.TabPages.Contains(tabPageCPULoadByThreads))
-                {
-                    int insertIndex = tabControlScalingPlots.TabPages.IndexOf(tabPageSpeedByThreads) + 1;
-
-                    tabControlScalingPlots.TabPages.Insert(insertIndex, tabPageCPULoadByThreads);
-                    tabControlScalingPlots.TabPages.Insert(insertIndex + 1, tabPageCPUClockByThreads);
-                }
-
-                if (!tabControlScalingPlots.TabPages.Contains(tabPageCompressionByParameters))
-                {
-                    int compressionTabIndex = tabControlScalingPlots.TabPages.IndexOf(tabPageSpeedByParameters) + 1;
-                    tabControlScalingPlots.TabPages.Insert(compressionTabIndex, tabPageCompressionByParameters);
-                }
+                tabControlScalingPlots.TabPages.Clear();
+                tabControlScalingPlots.TabPages.Add(tabPageSpeedByThreads);
+                tabControlScalingPlots.TabPages.Add(tabPageCPULoadByThreads);
+                tabControlScalingPlots.TabPages.Add(tabPageCPUClockByThreads);
+                tabControlScalingPlots.TabPages.Add(tabPageSpeedByParameters);
+                tabControlScalingPlots.TabPages.Add(tabPageCompressionByParameters);
             }
         }
-
         private void CheckBoxAutoAnalyzeLog_CheckedChanged(object? sender, EventArgs e)
         {
 
@@ -7459,6 +7760,7 @@ namespace FLAC_Benchmark_H
             LoadEncoders();
             LoadAudioFiles();
             LoadJobs();
+            CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
 
             // Apply auto-width to all log tabs
             foreach (TabPage tab in new[] { DetectDupes, TestForErrors, Benchmark })
