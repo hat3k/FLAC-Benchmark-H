@@ -23,12 +23,12 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle11 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle12 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             buttonScriptConstructor = new Button();
             progressBarEncoder = new ProgressBarEx();
@@ -144,13 +144,25 @@
             buttonCopyLog = new Button();
             buttonDataGridViewLogSettings = new Button();
             groupBoxSettings = new GroupBox();
-            checkBoxPreventSleep = new CheckBox();
-            checkBoxCheckForUpdatesOnStartup = new CheckBox();
-            checkBoxAutoAnalyzeLog = new CheckBox();
-            checkBoxAddMD5OnLoadWav = new CheckBox();
+            tabControlSettings = new TabControl();
+            tabPageQuickSettings = new TabPage();
             checkBoxRemoveMetadata = new CheckBox();
+            checkBoxPreventSleep = new CheckBox();
+            checkBoxAutoAnalyzeLog = new CheckBox();
             labelCPUPriority = new Label();
             comboBoxCPUPriority = new ComboBox();
+            tabPageLogsSettings = new TabPage();
+            checkBoxClearLogsOnExitIncludeLogTXT = new CheckBox();
+            checkBoxClearLogsOnExitIncludeTestForErrors = new CheckBox();
+            checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
+            checkBoxClearLogsOnExit = new CheckBox();
+            tabPagePlotsSettings = new TabPage();
+            checkBoxDrawMultiplots = new CheckBox();
+            checkBoxShowAggregatedByEncoderPlots = new CheckBox();
+            checkBoxShowIndividualFilesPlots = new CheckBox();
+            tabPageMiscSettings = new TabPage();
+            checkBoxAddMD5OnLoadWav = new CheckBox();
+            checkBoxCheckForUpdatesOnStartup = new CheckBox();
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
@@ -186,6 +198,11 @@
             TestForErrors.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogTestForErrors).BeginInit();
             groupBoxSettings.SuspendLayout();
+            tabControlSettings.SuspendLayout();
+            tabPageQuickSettings.SuspendLayout();
+            tabPageLogsSettings.SuspendLayout();
+            tabPagePlotsSettings.SuspendLayout();
+            tabPageMiscSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             groupBoxInformation.SuspendLayout();
             SuspendLayout();
@@ -460,7 +477,7 @@
             // checkBoxWarmupPass
             // 
             checkBoxWarmupPass.AutoSize = true;
-            checkBoxWarmupPass.Location = new Point(6, 73);
+            checkBoxWarmupPass.Location = new Point(3, 32);
             checkBoxWarmupPass.Name = "checkBoxWarmupPass";
             checkBoxWarmupPass.Size = new Size(128, 19);
             checkBoxWarmupPass.TabIndex = 2;
@@ -1115,23 +1132,24 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = SystemColors.Control;
-            dataGridViewCellStyle7.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle7.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = SystemColors.Control;
-            dataGridViewCellStyle8.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle8.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewLog.Enabled = false;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(2, 4);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1325,23 +1343,23 @@
             dataGridViewLogDetectDupes.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogDetectDupes.BackgroundColor = SystemColors.Control;
             dataGridViewLogDetectDupes.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.BackColor = SystemColors.Control;
-            dataGridViewCellStyle9.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle9.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLogDetectDupes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = SystemColors.Control;
-            dataGridViewCellStyle10.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle10.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle10.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLogDetectDupes.GridColor = SystemColors.Control;
             dataGridViewLogDetectDupes.Location = new Point(2, 4);
             dataGridViewLogDetectDupes.Name = "dataGridViewLogDetectDupes";
@@ -1370,23 +1388,23 @@
             dataGridViewLogTestForErrors.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogTestForErrors.BackgroundColor = SystemColors.Control;
             dataGridViewLogTestForErrors.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle11.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle11.BackColor = SystemColors.Control;
-            dataGridViewCellStyle11.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle11.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle11.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = SystemColors.Control;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             dataGridViewLogTestForErrors.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle12.BackColor = SystemColors.Control;
-            dataGridViewCellStyle12.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle12.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle12.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle12.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle12.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = SystemColors.Control;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle6;
             dataGridViewLogTestForErrors.GridColor = SystemColors.Control;
             dataGridViewLogTestForErrors.Location = new Point(2, 4);
             dataGridViewLogTestForErrors.Name = "dataGridViewLogTestForErrors";
@@ -1480,27 +1498,17 @@
             // buttonDataGridViewLogSettings
             // 
             buttonDataGridViewLogSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonDataGridViewLogSettings.Location = new Point(183, 141);
+            buttonDataGridViewLogSettings.Location = new Point(3, 3);
             buttonDataGridViewLogSettings.Name = "buttonDataGridViewLogSettings";
-            buttonDataGridViewLogSettings.Size = new Size(165, 23);
+            buttonDataGridViewLogSettings.Size = new Size(164, 23);
             buttonDataGridViewLogSettings.TabIndex = 10;
-            buttonDataGridViewLogSettings.Text = "Log Settings";
+            buttonDataGridViewLogSettings.Text = "Log Columns Settings";
             buttonDataGridViewLogSettings.UseVisualStyleBackColor = true;
             buttonDataGridViewLogSettings.Click += ButtonDataGridViewLogSettings_Click;
             // 
             // groupBoxSettings
             // 
-            groupBoxSettings.Controls.Add(buttonDataGridViewLogSettings);
-            groupBoxSettings.Controls.Add(checkBoxPreventSleep);
-            groupBoxSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
-            groupBoxSettings.Controls.Add(checkBoxWarmupPass);
-            groupBoxSettings.Controls.Add(checkBoxAutoAnalyzeLog);
-            groupBoxSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
-            groupBoxSettings.Controls.Add(checkBoxRemoveMetadata);
-            groupBoxSettings.Controls.Add(labelCPUPriority);
-            groupBoxSettings.Controls.Add(comboBoxCPUPriority);
-            groupBoxSettings.Controls.Add(buttonSelectTempFolder);
-            groupBoxSettings.Controls.Add(checkBoxClearTempFolder);
+            groupBoxSettings.Controls.Add(tabControlSettings);
             groupBoxSettings.Location = new Point(1218, 278);
             groupBoxSettings.MinimumSize = new Size(354, 171);
             groupBoxSettings.Name = "groupBoxSettings";
@@ -1509,10 +1517,49 @@
             groupBoxSettings.TabStop = false;
             groupBoxSettings.Text = "Settings";
             // 
+            // tabControlSettings
+            // 
+            tabControlSettings.Controls.Add(tabPageQuickSettings);
+            tabControlSettings.Controls.Add(tabPageLogsSettings);
+            tabControlSettings.Controls.Add(tabPagePlotsSettings);
+            tabControlSettings.Controls.Add(tabPageMiscSettings);
+            tabControlSettings.Dock = DockStyle.Fill;
+            tabControlSettings.Location = new Point(3, 19);
+            tabControlSettings.Name = "tabControlSettings";
+            tabControlSettings.SelectedIndex = 0;
+            tabControlSettings.Size = new Size(348, 149);
+            tabControlSettings.TabIndex = 11;
+            // 
+            // tabPageQuickSettings
+            // 
+            tabPageQuickSettings.Controls.Add(checkBoxRemoveMetadata);
+            tabPageQuickSettings.Controls.Add(checkBoxPreventSleep);
+            tabPageQuickSettings.Controls.Add(checkBoxAutoAnalyzeLog);
+            tabPageQuickSettings.Controls.Add(labelCPUPriority);
+            tabPageQuickSettings.Controls.Add(comboBoxCPUPriority);
+            tabPageQuickSettings.Controls.Add(checkBoxWarmupPass);
+            tabPageQuickSettings.Location = new Point(4, 24);
+            tabPageQuickSettings.Name = "tabPageQuickSettings";
+            tabPageQuickSettings.Size = new Size(340, 121);
+            tabPageQuickSettings.TabIndex = 0;
+            tabPageQuickSettings.Text = "Quick";
+            tabPageQuickSettings.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxRemoveMetadata
+            // 
+            checkBoxRemoveMetadata.AutoSize = true;
+            checkBoxRemoveMetadata.Location = new Point(3, 8);
+            checkBoxRemoveMetadata.Name = "checkBoxRemoveMetadata";
+            checkBoxRemoveMetadata.Size = new Size(122, 19);
+            checkBoxRemoveMetadata.TabIndex = 0;
+            checkBoxRemoveMetadata.Text = "Remove metadata";
+            toolTip1.SetToolTip(checkBoxRemoveMetadata, resources.GetString("checkBoxRemoveMetadata.ToolTip"));
+            checkBoxRemoveMetadata.UseVisualStyleBackColor = true;
+            // 
             // checkBoxPreventSleep
             // 
             checkBoxPreventSleep.AutoSize = true;
-            checkBoxPreventSleep.Location = new Point(183, 73);
+            checkBoxPreventSleep.Location = new Point(3, 57);
             checkBoxPreventSleep.Name = "checkBoxPreventSleep";
             checkBoxPreventSleep.Size = new Size(131, 19);
             checkBoxPreventSleep.TabIndex = 8;
@@ -1521,22 +1568,10 @@
             checkBoxPreventSleep.UseVisualStyleBackColor = true;
             checkBoxPreventSleep.CheckedChanged += CheckBoxPreventSleep_CheckedChanged;
             // 
-            // checkBoxCheckForUpdatesOnStartup
-            // 
-            checkBoxCheckForUpdatesOnStartup.AutoSize = true;
-            checkBoxCheckForUpdatesOnStartup.Location = new Point(183, 98);
-            checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
-            checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
-            checkBoxCheckForUpdatesOnStartup.TabIndex = 9;
-            checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
-            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup.\r\n\r\nCheck for updates immediately when re-enabled.");
-            checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
-            checkBoxCheckForUpdatesOnStartup.CheckedChanged += CheckBoxCheckForUpdatesOnStartup_CheckedChanged;
-            // 
             // checkBoxAutoAnalyzeLog
             // 
             checkBoxAutoAnalyzeLog.AutoSize = true;
-            checkBoxAutoAnalyzeLog.Location = new Point(6, 98);
+            checkBoxAutoAnalyzeLog.Location = new Point(3, 82);
             checkBoxAutoAnalyzeLog.Name = "checkBoxAutoAnalyzeLog";
             checkBoxAutoAnalyzeLog.Size = new Size(165, 19);
             checkBoxAutoAnalyzeLog.TabIndex = 3;
@@ -1545,33 +1580,11 @@
             checkBoxAutoAnalyzeLog.UseVisualStyleBackColor = true;
             checkBoxAutoAnalyzeLog.CheckedChanged += CheckBoxAutoAnalyzeLog_CheckedChanged;
             // 
-            // checkBoxAddMD5OnLoadWav
-            // 
-            checkBoxAddMD5OnLoadWav.AutoSize = true;
-            checkBoxAddMD5OnLoadWav.Location = new Point(6, 48);
-            checkBoxAddMD5OnLoadWav.Name = "checkBoxAddMD5OnLoadWav";
-            checkBoxAddMD5OnLoadWav.Size = new Size(150, 19);
-            checkBoxAddMD5OnLoadWav.TabIndex = 1;
-            checkBoxAddMD5OnLoadWav.Text = "Add MD5 on .WAV load";
-            toolTip1.SetToolTip(checkBoxAddMD5OnLoadWav, "Calculate MD5 when loading .wav files into the list.\r\nThis may significantly slow down the loading process.\r\nBut \"Detect dupes\" will work faster.\r\n\r\nDoes not affect encoding or decoding speed.");
-            checkBoxAddMD5OnLoadWav.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxRemoveMetadata
-            // 
-            checkBoxRemoveMetadata.AutoSize = true;
-            checkBoxRemoveMetadata.Location = new Point(6, 23);
-            checkBoxRemoveMetadata.Name = "checkBoxRemoveMetadata";
-            checkBoxRemoveMetadata.Size = new Size(122, 19);
-            checkBoxRemoveMetadata.TabIndex = 0;
-            checkBoxRemoveMetadata.Text = "Remove metadata";
-            toolTip1.SetToolTip(checkBoxRemoveMetadata, resources.GetString("checkBoxRemoveMetadata.ToolTip"));
-            checkBoxRemoveMetadata.UseVisualStyleBackColor = true;
-            // 
             // labelCPUPriority
             // 
             labelCPUPriority.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             labelCPUPriority.AutoSize = true;
-            labelCPUPriority.Location = new Point(6, 145);
+            labelCPUPriority.Location = new Point(184, 9);
             labelCPUPriority.Name = "labelCPUPriority";
             labelCPUPriority.Size = new Size(48, 15);
             labelCPUPriority.TabIndex = 4;
@@ -1584,19 +1597,166 @@
             comboBoxCPUPriority.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCPUPriority.FormattingEnabled = true;
             comboBoxCPUPriority.Items.AddRange(new object[] { "RealTime", "High", "AboveNormal", "Normal", "BelowNormal", "Idle" });
-            comboBoxCPUPriority.Location = new Point(60, 141);
+            comboBoxCPUPriority.Location = new Point(238, 5);
             comboBoxCPUPriority.MaxDropDownItems = 5;
             comboBoxCPUPriority.Name = "comboBoxCPUPriority";
-            comboBoxCPUPriority.Size = new Size(110, 23);
+            comboBoxCPUPriority.Size = new Size(97, 23);
             comboBoxCPUPriority.TabIndex = 5;
             toolTip1.SetToolTip(comboBoxCPUPriority, "Encoding/Decoding process priority");
+            // 
+            // tabPageLogsSettings
+            // 
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeLogTXT);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeTestForErrors);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeDetectDupes);
+            tabPageLogsSettings.Controls.Add(buttonDataGridViewLogSettings);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExit);
+            tabPageLogsSettings.Location = new Point(4, 24);
+            tabPageLogsSettings.Name = "tabPageLogsSettings";
+            tabPageLogsSettings.Size = new Size(340, 121);
+            tabPageLogsSettings.TabIndex = 3;
+            tabPageLogsSettings.Text = "Logs";
+            tabPageLogsSettings.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxClearLogsOnExitIncludeLogTXT
+            // 
+            checkBoxClearLogsOnExitIncludeLogTXT.AutoSize = true;
+            checkBoxClearLogsOnExitIncludeLogTXT.Enabled = false;
+            checkBoxClearLogsOnExitIncludeLogTXT.Location = new Point(197, 81);
+            checkBoxClearLogsOnExitIncludeLogTXT.Name = "checkBoxClearLogsOnExitIncludeLogTXT";
+            checkBoxClearLogsOnExitIncludeLogTXT.Size = new Size(63, 19);
+            checkBoxClearLogsOnExitIncludeLogTXT.TabIndex = 13;
+            checkBoxClearLogsOnExitIncludeLogTXT.Text = "Log.txt";
+            checkBoxClearLogsOnExitIncludeLogTXT.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExitIncludeLogTXT.Visible = false;
+            // 
+            // checkBoxClearLogsOnExitIncludeTestForErrors
+            // 
+            checkBoxClearLogsOnExitIncludeTestForErrors.AutoSize = true;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Enabled = false;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Location = new Point(197, 56);
+            checkBoxClearLogsOnExitIncludeTestForErrors.Name = "checkBoxClearLogsOnExitIncludeTestForErrors";
+            checkBoxClearLogsOnExitIncludeTestForErrors.Size = new Size(97, 19);
+            checkBoxClearLogsOnExitIncludeTestForErrors.TabIndex = 12;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Text = "Test for Errors";
+            checkBoxClearLogsOnExitIncludeTestForErrors.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Visible = false;
+            // 
+            // checkBoxClearLogsOnExitIncludeDetectDupes
+            // 
+            checkBoxClearLogsOnExitIncludeDetectDupes.AutoSize = true;
+            checkBoxClearLogsOnExitIncludeDetectDupes.Enabled = false;
+            checkBoxClearLogsOnExitIncludeDetectDupes.Location = new Point(197, 31);
+            checkBoxClearLogsOnExitIncludeDetectDupes.Name = "checkBoxClearLogsOnExitIncludeDetectDupes";
+            checkBoxClearLogsOnExitIncludeDetectDupes.Size = new Size(96, 19);
+            checkBoxClearLogsOnExitIncludeDetectDupes.TabIndex = 11;
+            checkBoxClearLogsOnExitIncludeDetectDupes.Text = "Detect Dupes";
+            checkBoxClearLogsOnExitIncludeDetectDupes.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExitIncludeDetectDupes.Visible = false;
+            // 
+            // checkBoxClearLogsOnExit
+            // 
+            checkBoxClearLogsOnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            checkBoxClearLogsOnExit.AutoSize = true;
+            checkBoxClearLogsOnExit.Location = new Point(185, 6);
+            checkBoxClearLogsOnExit.Name = "checkBoxClearLogsOnExit";
+            checkBoxClearLogsOnExit.Size = new Size(120, 19);
+            checkBoxClearLogsOnExit.TabIndex = 7;
+            checkBoxClearLogsOnExit.Text = "Clear Logs on exit";
+            checkBoxClearLogsOnExit.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExit.Visible = false;
+            // 
+            // tabPagePlotsSettings
+            // 
+            tabPagePlotsSettings.Controls.Add(checkBoxDrawMultiplots);
+            tabPagePlotsSettings.Controls.Add(checkBoxShowAggregatedByEncoderPlots);
+            tabPagePlotsSettings.Controls.Add(checkBoxShowIndividualFilesPlots);
+            tabPagePlotsSettings.Location = new Point(4, 24);
+            tabPagePlotsSettings.Name = "tabPagePlotsSettings";
+            tabPagePlotsSettings.Size = new Size(340, 121);
+            tabPagePlotsSettings.TabIndex = 2;
+            tabPagePlotsSettings.Text = "Plots";
+            tabPagePlotsSettings.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDrawMultiplots
+            // 
+            checkBoxDrawMultiplots.AutoSize = true;
+            checkBoxDrawMultiplots.Location = new Point(3, 56);
+            checkBoxDrawMultiplots.Name = "checkBoxDrawMultiplots";
+            checkBoxDrawMultiplots.Size = new Size(110, 19);
+            checkBoxDrawMultiplots.TabIndex = 2;
+            checkBoxDrawMultiplots.Text = "Draw Multiplots";
+            checkBoxDrawMultiplots.UseVisualStyleBackColor = true;
+            checkBoxDrawMultiplots.CheckedChanged += CheckBoxDrawMultiplots_CheckedChanged;
+            // 
+            // checkBoxShowAggregatedByEncoderPlots
+            // 
+            checkBoxShowAggregatedByEncoderPlots.AutoSize = true;
+            checkBoxShowAggregatedByEncoderPlots.Checked = true;
+            checkBoxShowAggregatedByEncoderPlots.CheckState = CheckState.Checked;
+            checkBoxShowAggregatedByEncoderPlots.Location = new Point(3, 32);
+            checkBoxShowAggregatedByEncoderPlots.Name = "checkBoxShowAggregatedByEncoderPlots";
+            checkBoxShowAggregatedByEncoderPlots.Size = new Size(150, 19);
+            checkBoxShowAggregatedByEncoderPlots.TabIndex = 1;
+            checkBoxShowAggregatedByEncoderPlots.Text = "Aggregated by Encoder";
+            checkBoxShowAggregatedByEncoderPlots.UseVisualStyleBackColor = true;
+            checkBoxShowAggregatedByEncoderPlots.CheckedChanged += CheckBoxShowAggregatedByEncoderPlots_CheckedChanged;
+            // 
+            // checkBoxShowIndividualFilesPlots
+            // 
+            checkBoxShowIndividualFilesPlots.AutoSize = true;
+            checkBoxShowIndividualFilesPlots.Checked = true;
+            checkBoxShowIndividualFilesPlots.CheckState = CheckState.Checked;
+            checkBoxShowIndividualFilesPlots.Location = new Point(3, 8);
+            checkBoxShowIndividualFilesPlots.Name = "checkBoxShowIndividualFilesPlots";
+            checkBoxShowIndividualFilesPlots.Size = new Size(102, 19);
+            checkBoxShowIndividualFilesPlots.TabIndex = 0;
+            checkBoxShowIndividualFilesPlots.Text = "Individual files";
+            checkBoxShowIndividualFilesPlots.UseVisualStyleBackColor = true;
+            checkBoxShowIndividualFilesPlots.CheckedChanged += CheckBoxShowIndividualFilesPlots_CheckedChanged;
+            // 
+            // tabPageMiscSettings
+            // 
+            tabPageMiscSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
+            tabPageMiscSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
+            tabPageMiscSettings.Controls.Add(buttonSelectTempFolder);
+            tabPageMiscSettings.Controls.Add(checkBoxClearTempFolder);
+            tabPageMiscSettings.Location = new Point(4, 24);
+            tabPageMiscSettings.Name = "tabPageMiscSettings";
+            tabPageMiscSettings.Size = new Size(340, 121);
+            tabPageMiscSettings.TabIndex = 1;
+            tabPageMiscSettings.Text = "Misc";
+            tabPageMiscSettings.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxAddMD5OnLoadWav
+            // 
+            checkBoxAddMD5OnLoadWav.AutoSize = true;
+            checkBoxAddMD5OnLoadWav.Location = new Point(185, 6);
+            checkBoxAddMD5OnLoadWav.Name = "checkBoxAddMD5OnLoadWav";
+            checkBoxAddMD5OnLoadWav.Size = new Size(150, 19);
+            checkBoxAddMD5OnLoadWav.TabIndex = 1;
+            checkBoxAddMD5OnLoadWav.Text = "Add MD5 on .WAV load";
+            toolTip1.SetToolTip(checkBoxAddMD5OnLoadWav, "Calculate MD5 when loading .wav files into the list.\r\nThis may significantly slow down the loading process.\r\nBut \"Detect dupes\" will work faster.\r\n\r\nDoes not affect encoding or decoding speed.");
+            checkBoxAddMD5OnLoadWav.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxCheckForUpdatesOnStartup
+            // 
+            checkBoxCheckForUpdatesOnStartup.AutoSize = true;
+            checkBoxCheckForUpdatesOnStartup.Location = new Point(185, 32);
+            checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
+            checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
+            checkBoxCheckForUpdatesOnStartup.TabIndex = 9;
+            checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
+            toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup.\r\n\r\nCheck for updates immediately when re-enabled.");
+            checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
+            checkBoxCheckForUpdatesOnStartup.CheckedChanged += CheckBoxCheckForUpdatesOnStartup_CheckedChanged;
             // 
             // buttonSelectTempFolder
             // 
             buttonSelectTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSelectTempFolder.Location = new Point(183, 21);
+            buttonSelectTempFolder.Location = new Point(3, 3);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(165, 23);
+            buttonSelectTempFolder.Size = new Size(164, 23);
             buttonSelectTempFolder.TabIndex = 6;
             buttonSelectTempFolder.Text = "Select Temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
@@ -1606,7 +1766,7 @@
             // 
             checkBoxClearTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Location = new Point(183, 48);
+            checkBoxClearTempFolder.Location = new Point(3, 32);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
             checkBoxClearTempFolder.TabIndex = 7;
@@ -1763,7 +1923,15 @@
             TestForErrors.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewLogTestForErrors).EndInit();
             groupBoxSettings.ResumeLayout(false);
-            groupBoxSettings.PerformLayout();
+            tabControlSettings.ResumeLayout(false);
+            tabPageQuickSettings.ResumeLayout(false);
+            tabPageQuickSettings.PerformLayout();
+            tabPageLogsSettings.ResumeLayout(false);
+            tabPageLogsSettings.PerformLayout();
+            tabPagePlotsSettings.ResumeLayout(false);
+            tabPagePlotsSettings.PerformLayout();
+            tabPageMiscSettings.ResumeLayout(false);
+            tabPageMiscSettings.PerformLayout();
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             groupBoxInformation.ResumeLayout(false);
@@ -1906,5 +2074,18 @@
         private ScottPlot.FormsPlot formsPlotCompressionDistribution;
         private TabPage tabPage2;
         private ScottPlot.FormsPlot plotScalingPlotMeanCompressionByParameters;
+        private TabControl tabControlSettings;
+        private TabPage tabPageQuickSettings;
+        private TabPage tabPageMiscSettings;
+        private TabPage tabPagePlotsSettings;
+        private CheckBox checkBoxShowIndividualFilesPlots;
+        private CheckBox checkBoxClearLogsOnExit;
+        private TabPage tabPageLogsSettings;
+        private CheckBox checkBox5;
+        private CheckBox checkBoxClearLogsOnExitIncludeLogTXT;
+        private CheckBox checkBoxClearLogsOnExitIncludeTestForErrors;
+        private CheckBox checkBoxClearLogsOnExitIncludeDetectDupes;
+        private CheckBox checkBoxShowAggregatedByEncoderPlots;
+        private CheckBox checkBoxDrawMultiplots;
     }
 }
