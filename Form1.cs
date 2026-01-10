@@ -3369,7 +3369,7 @@ namespace FLAC_Benchmark_H
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
-                    idealCPULoadLine = plt.AddScatter(
+                    idealCPULoadLineSingle = plt.AddScatter(
                         xs: idealX,
                         ys: idealY,
                         label: "Ideal (100% per thread)",
@@ -3451,7 +3451,7 @@ namespace FLAC_Benchmark_H
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
-                    idealCPULoadLine = plt.AddScatter(
+                    idealCPULoadLineMultiplot = plt.AddScatter(
                         xs: idealX,
                         ys: idealY,
                         label: "Ideal (100% per thread)",
@@ -7495,7 +7495,8 @@ namespace FLAC_Benchmark_H
         // Plots settings
         private readonly List<ScottPlot.Plottable.ScatterPlot> allIndividualSeries = [];
         private readonly List<ScottPlot.Plottable.ScatterPlot> allAggregatedSeries = [];
-        private ScottPlot.Plottable.ScatterPlot? idealCPULoadLine;
+        private ScottPlot.Plottable.ScatterPlot? idealCPULoadLineSingle;
+        private ScottPlot.Plottable.ScatterPlot? idealCPULoadLineMultiplot;
         private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
@@ -7514,8 +7515,10 @@ namespace FLAC_Benchmark_H
                 series.IsVisible = checkBoxShowIndividualFilesPlots.Checked;
             foreach (var series in allAggregatedSeries)
                 series.IsVisible = checkBoxShowAggregatedByEncoderPlots.Checked;
-            if (idealCPULoadLine != null)
-                idealCPULoadLine.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
+            if (idealCPULoadLineSingle != null)
+                idealCPULoadLineSingle.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
+            if (idealCPULoadLineMultiplot != null)
+                idealCPULoadLineMultiplot.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
 
             plotScalingPlotSpeedByThreads.Refresh();
             plotScalingPlotCPULoadByThreads.Refresh();
