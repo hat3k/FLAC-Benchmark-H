@@ -3281,7 +3281,7 @@ namespace FLAC_Benchmark_H
                     string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
                     plt.XTicks(tickPositions, tickLabels);
 
-                    plt.XLabel("Threads (-jN)");
+                    // plt.XLabel("Threads (-jN)");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed Scaling by Threads");
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
@@ -3309,7 +3309,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3364,7 +3364,7 @@ namespace FLAC_Benchmark_H
                         label: "Ideal (100% per thread)",
                         color: Color.Gray,
                         lineStyle: ScottPlot.LineStyle.Dash,
-                        markerSize: 0
+                        markerSize: 3
                     );
 
                     plt.XLabel("Threads (-jN)");
@@ -3386,7 +3386,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3441,10 +3441,10 @@ namespace FLAC_Benchmark_H
                         label: "Ideal (100% per thread)",
                         color: Color.Gray,
                         lineStyle: ScottPlot.LineStyle.Dash,
-                        markerSize: 0
+                        markerSize: 3
                     );
 
-                    plt.XLabel("Threads (-jN)");
+                    // plt.XLabel("Threads (-jN)");
                     plt.YLabel("CPU Load (%)");
                     plt.Title("CPU Load Scaling by Threads");
                     plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
@@ -3747,7 +3747,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     plt.XTicks(xPositions, xLabels);
-                    plt.XLabel("Parameters");
+                    // plt.XLabel("Parameters");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
