@@ -372,6 +372,7 @@ namespace FLAC_Benchmark_H
                     $"IgnoredVersion={programVersionIgnored ?? ""}",
                     $"ShowIndividualFilesPlots={checkBoxShowIndividualFilesPlots.Checked}",
                     $"ShowAggregatedByEncoderPlots={checkBoxShowAggregatedByEncoderPlots.Checked}",
+                    $"ShowIdealCPULoadLine={checkBoxShowIdealCPULoadLine.Checked}",
                     $"DrawMultiplots={checkBoxDrawMultiplots.Checked}"
                 };
 
@@ -551,6 +552,9 @@ namespace FLAC_Benchmark_H
                             break;
                         case "ShowAggregatedByEncoderPlots":
                             checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showAggregatedByEncoder) && showAggregatedByEncoder;
+                            break;
+                        case "ShowIdealCPULoadLine":
+                            checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showIdealCPULoadLine) && showIdealCPULoadLine;
                             break;
                         case "DrawMultiplots":
                             checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool BoxDrawMultiplots) && BoxDrawMultiplots;
@@ -3358,7 +3362,14 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    plt.AddScatter(
+                    plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Load (%)");
+                    plt.Title("CPU Load Scaling by Threads");
+                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+
+                    idealCPULoadLine = plt.AddScatter(
                         xs: idealX,
                         ys: idealY,
                         label: "Ideal (100% per thread)",
@@ -3367,12 +3378,10 @@ namespace FLAC_Benchmark_H
                         markerSize: 3
                     );
 
-                    plt.XLabel("Threads (-jN)");
-                    plt.YLabel("CPU Load (%)");
-                    plt.Title("CPU Load Scaling by Threads");
-                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
-                    plt.AxisAuto();
+                    if (checkBoxShowIdealCPULoadLine.Checked)
+                    {
+                        plt.AxisAuto();
+                    }
                 }
             }
 
@@ -3435,7 +3444,14 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    plt.AddScatter(
+                    // plt.XLabel("Threads (-jN)");
+                    plt.YLabel("CPU Load (%)");
+                    plt.Title("CPU Load Scaling by Threads");
+                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    plt.AxisAuto();
+
+                    idealCPULoadLine = plt.AddScatter(
                         xs: idealX,
                         ys: idealY,
                         label: "Ideal (100% per thread)",
@@ -3444,12 +3460,10 @@ namespace FLAC_Benchmark_H
                         markerSize: 3
                     );
 
-                    // plt.XLabel("Threads (-jN)");
-                    plt.YLabel("CPU Load (%)");
-                    plt.Title("CPU Load Scaling by Threads");
-                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
-                    plt.AxisAuto();
+                    if (checkBoxShowIdealCPULoadLine.Checked)
+                    {
+                        plt.AxisAuto();
+                    }
                 }
             }
 
@@ -7481,11 +7495,16 @@ namespace FLAC_Benchmark_H
         // Plots settings
         private readonly List<ScottPlot.Plottable.ScatterPlot> allIndividualSeries = [];
         private readonly List<ScottPlot.Plottable.ScatterPlot> allAggregatedSeries = [];
+        private ScottPlot.Plottable.ScatterPlot? idealCPULoadLine;
         private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
         }
         private void CheckBoxShowAggregatedByEncoderPlots_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdateSeriesVisibility();
+        }
+        private void CheckBoxShowIdealCPULoadLine_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
         }
@@ -7495,6 +7514,8 @@ namespace FLAC_Benchmark_H
                 series.IsVisible = checkBoxShowIndividualFilesPlots.Checked;
             foreach (var series in allAggregatedSeries)
                 series.IsVisible = checkBoxShowAggregatedByEncoderPlots.Checked;
+            if (idealCPULoadLine != null)
+                idealCPULoadLine.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
 
             plotScalingPlotSpeedByThreads.Refresh();
             plotScalingPlotCPULoadByThreads.Refresh();

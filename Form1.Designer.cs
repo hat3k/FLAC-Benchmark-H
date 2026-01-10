@@ -162,6 +162,7 @@
             checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
             checkBoxClearLogsOnExit = new CheckBox();
             tabPagePlotsSettings = new TabPage();
+            checkBoxShowIdealCPULoadLine = new CheckBox();
             checkBoxDrawMultiplots = new CheckBox();
             checkBoxShowAggregatedByEncoderPlots = new CheckBox();
             checkBoxShowIndividualFilesPlots = new CheckBox();
@@ -1733,6 +1734,7 @@
             // 
             // tabPagePlotsSettings
             // 
+            tabPagePlotsSettings.Controls.Add(checkBoxShowIdealCPULoadLine);
             tabPagePlotsSettings.Controls.Add(checkBoxDrawMultiplots);
             tabPagePlotsSettings.Controls.Add(checkBoxShowAggregatedByEncoderPlots);
             tabPagePlotsSettings.Controls.Add(checkBoxShowIndividualFilesPlots);
@@ -1743,10 +1745,21 @@
             tabPagePlotsSettings.Text = "Plots";
             tabPagePlotsSettings.UseVisualStyleBackColor = true;
             // 
+            // checkBoxShowIdealCPULoadLine
+            // 
+            checkBoxShowIdealCPULoadLine.AutoSize = true;
+            checkBoxShowIdealCPULoadLine.Location = new Point(3, 56);
+            checkBoxShowIdealCPULoadLine.Name = "checkBoxShowIdealCPULoadLine";
+            checkBoxShowIdealCPULoadLine.Size = new Size(131, 19);
+            checkBoxShowIdealCPULoadLine.TabIndex = 3;
+            checkBoxShowIdealCPULoadLine.Text = "Ideal CPU Load line ";
+            checkBoxShowIdealCPULoadLine.UseVisualStyleBackColor = true;
+            checkBoxShowIdealCPULoadLine.CheckedChanged += CheckBoxShowIdealCPULoadLine_CheckedChanged;
+            // 
             // checkBoxDrawMultiplots
             // 
             checkBoxDrawMultiplots.AutoSize = true;
-            checkBoxDrawMultiplots.Location = new Point(3, 56);
+            checkBoxDrawMultiplots.Location = new Point(3, 80);
             checkBoxDrawMultiplots.Name = "checkBoxDrawMultiplots";
             checkBoxDrawMultiplots.Size = new Size(110, 19);
             checkBoxDrawMultiplots.TabIndex = 2;
@@ -2159,5 +2172,6 @@
         private TableLayoutPanel tableLayoutPanelMultiPlotByParameters;
         private ScottPlot.FormsPlot plotScalingMultiPlotCompressionByParameters;
         private ScottPlot.FormsPlot plotScalingMultiPlotSpeedByParameters;
+        private CheckBox checkBoxShowIdealCPULoadLine;
     }
 }
