@@ -1156,7 +1156,6 @@
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
             dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
-            dataGridViewLog.Enabled = false;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(2, 4);
             dataGridViewLog.Name = "dataGridViewLog";

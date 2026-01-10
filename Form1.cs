@@ -7769,18 +7769,21 @@ namespace FLAC_Benchmark_H
 
             InitializeMediaInfoPool();
 
-            LoadSettings();
-            LoadEncoders();
-            LoadAudioFiles();
-            LoadJobs();
-            CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
-
-            // Apply auto-width to all log tabs
-            foreach (TabPage tab in new[] { DetectDupes, TestForErrors, Benchmark })
+            // Ensure tabs are rendered
+            foreach (TabPage tab in new[] {
+                tabPageMiscSettings,
+                tabPagePlotsSettings,
+                tabPageLogsSettings,
+                tabPageQuickSettings,
+                DetectDupes,
+                ScalingPlots,
+                TestForErrors,
+                Benchmark })
             {
                 tabControlLog.SelectedTab = tab;
-                Application.DoEvents(); // Ensure the tab is rendered
+                Application.DoEvents();
 
+                // Apply auto-width to all log tabs
                 switch (tab)
                 {
                     case var _ when tab == DetectDupes:
@@ -7794,6 +7797,13 @@ namespace FLAC_Benchmark_H
                         break;
                 }
             }
+
+            LoadSettings();
+            LoadEncoders();
+            LoadAudioFiles();
+            LoadJobs();
+
+            CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
 
             this.ActiveControl = null; // Remove focus from all elements
         }
