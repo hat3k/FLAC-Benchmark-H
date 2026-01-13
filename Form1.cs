@@ -2671,7 +2671,7 @@ namespace FLAC_Benchmark_H
 
                 string speedMin = "", speedMax = "", speedRange = "", speedConsistency = "";
 
-                if (group.PassesCount > 1 && speeds.Any())
+                if (group.PassesCount > 1 && speeds.Count > 0)
                 {
                     // Since 'speeds' is already sorted in ascending order:
                     double minSpeed = speeds.First();  // Equivalent to Min()
@@ -5474,8 +5474,10 @@ namespace FLAC_Benchmark_H
 
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
-                _scriptForm = new ScriptConstructorForm();
-                _scriptForm.InitialScriptText = parameters;
+                _scriptForm = new ScriptConstructorForm
+                {
+                    InitialScriptText = parameters
+                };
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
@@ -5792,7 +5794,7 @@ namespace FLAC_Benchmark_H
                             clockTimer.Stop();
 
                             double avgClock = 0;
-                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                            if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                             {
                                 double avgPercent = _cpuClockReadings.Average();
                                 avgClock = (avgPercent / 100.0) * _baseClockMhz;
@@ -6175,7 +6177,7 @@ namespace FLAC_Benchmark_H
                             clockTimer.Stop();
 
                             double avgClock = 0;
-                            if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                            if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                             {
                                 double avgPercent = _cpuClockReadings.Average();
                                 avgClock = (avgPercent / 100.0) * _baseClockMhz;
@@ -6403,7 +6405,7 @@ namespace FLAC_Benchmark_H
                     foreach (var jobRow in dataGridViewJobsExpanded)
                     {
                         string type = NormalizeSpaces(jobRow.Cells[1].Value?.ToString() ?? "");
-                        if (string.Equals(type, "Encode", StringComparison.OrdinalIgnoreCase) && selectedAudioFiles.Any())
+                        if (string.Equals(type, "Encode", StringComparison.OrdinalIgnoreCase) && selectedAudioFiles.Count > 0)
                         {
                             firstExecutableJobRow = jobRow;
                             jobType = type;
@@ -6411,7 +6413,7 @@ namespace FLAC_Benchmark_H
                             outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
                             break;
                         }
-                        else if (string.Equals(type, "Decode", StringComparison.OrdinalIgnoreCase) && selectedFlacAudioFiles.Any())
+                        else if (string.Equals(type, "Decode", StringComparison.OrdinalIgnoreCase) && selectedFlacAudioFiles.Count > 0)
                         {
                             firstExecutableJobRow = jobRow;
                             jobType = type;
@@ -6643,7 +6645,7 @@ namespace FLAC_Benchmark_H
                                         clockTimer.Stop();
 
                                         double avgClock = 0;
-                                        if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                                        if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                                         {
                                             double avgPercent = _cpuClockReadings.Average();
                                             avgClock = (avgPercent / 100.0) * _baseClockMhz;
@@ -6857,7 +6859,7 @@ namespace FLAC_Benchmark_H
                                         clockTimer.Stop();
 
                                         double avgClock = 0;
-                                        if (_cpuClockReadings.Any() && _baseClockMhz > 0)
+                                        if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                                         {
                                             double avgPercent = _cpuClockReadings.Average();
                                             avgClock = (avgPercent / 100.0) * _baseClockMhz;
