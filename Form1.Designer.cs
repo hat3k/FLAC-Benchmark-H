@@ -162,6 +162,7 @@
             checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
             checkBoxClearLogsOnExit = new CheckBox();
             tabPagePlotsSettings = new TabPage();
+            checkBoxShowTooltips = new CheckBox();
             checkBoxShowIdealCPULoadLine = new CheckBox();
             checkBoxDrawMultiplots = new CheckBox();
             checkBoxShowAggregatedByEncoderPlots = new CheckBox();
@@ -1734,6 +1735,7 @@
             // 
             // tabPagePlotsSettings
             // 
+            tabPagePlotsSettings.Controls.Add(checkBoxShowTooltips);
             tabPagePlotsSettings.Controls.Add(checkBoxShowIdealCPULoadLine);
             tabPagePlotsSettings.Controls.Add(checkBoxDrawMultiplots);
             tabPagePlotsSettings.Controls.Add(checkBoxShowAggregatedByEncoderPlots);
@@ -1744,6 +1746,19 @@
             tabPagePlotsSettings.TabIndex = 2;
             tabPagePlotsSettings.Text = "Plots";
             tabPagePlotsSettings.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxShowTooltips
+            // 
+            checkBoxShowTooltips.AutoSize = true;
+            checkBoxShowTooltips.Checked = true;
+            checkBoxShowTooltips.CheckState = CheckState.Checked;
+            checkBoxShowTooltips.Location = new Point(170, 8);
+            checkBoxShowTooltips.Name = "checkBoxShowTooltips";
+            checkBoxShowTooltips.Size = new Size(67, 19);
+            checkBoxShowTooltips.TabIndex = 4;
+            checkBoxShowTooltips.Text = "Tooltips";
+            checkBoxShowTooltips.UseVisualStyleBackColor = true;
+            checkBoxShowTooltips.CheckedChanged += CheckBoxShowTooltips_CheckedChanged;
             // 
             // checkBoxShowIdealCPULoadLine
             // 
@@ -2157,7 +2172,6 @@
         private CheckBox checkBoxShowIndividualFilesPlots;
         private CheckBox checkBoxClearLogsOnExit;
         private TabPage tabPageLogsSettings;
-        private CheckBox checkBox5;
         private CheckBox checkBoxClearLogsOnExitIncludeLogTXT;
         private CheckBox checkBoxClearLogsOnExitIncludeTestForErrors;
         private CheckBox checkBoxClearLogsOnExitIncludeDetectDupes;
@@ -2173,5 +2187,6 @@
         private ScottPlot.FormsPlot plotScalingMultiPlotCompressionByParameters;
         private ScottPlot.FormsPlot plotScalingMultiPlotSpeedByParameters;
         private CheckBox checkBoxShowIdealCPULoadLine;
+        private CheckBox checkBoxShowTooltips;
     }
 }

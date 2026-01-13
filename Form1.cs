@@ -204,7 +204,7 @@ namespace FLAC_Benchmark_H
                 await Task.Run(() =>
                 {
                     using ManagementObjectSearcher searcher = new("select * from Win32_Processor");
-                    foreach (ManagementObject obj in searcher.Get())
+                    foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
                     {
                         if (obj["NumberOfCores"] != null && obj["ThreadCount"] != null)
                         {
@@ -3168,6 +3168,7 @@ namespace FLAC_Benchmark_H
             {
                 var plt = plotScalingPlotSpeedByThreads.Plot;
                 plt.Clear();
+                allScatterSeriesSpeedByThreads.Clear();
 
                 if (series.Count == 0)
                 {
@@ -3175,7 +3176,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3193,6 +3194,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesSpeedByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3214,6 +3216,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesSpeedByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3239,7 +3242,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3257,6 +3260,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesSpeedByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3278,6 +3282,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesSpeedByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3306,6 +3311,7 @@ namespace FLAC_Benchmark_H
             {
                 var plt = plotScalingPlotCPULoadByThreads.Plot;
                 plt.Clear();
+                allScatterSeriesCPULoadByThreads.Clear();
 
                 if (series.Count == 0)
                 {
@@ -3334,6 +3340,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCPULoadByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3359,6 +3366,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCPULoadByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3377,11 +3385,6 @@ namespace FLAC_Benchmark_H
                         lineStyle: ScottPlot.LineStyle.Dash,
                         markerSize: 3
                     );
-
-                    if (checkBoxShowIdealCPULoadLine.Checked)
-                    {
-                        plt.AxisAuto();
-                    }
                 }
             }
 
@@ -3416,6 +3419,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCPULoadByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3441,6 +3445,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCPULoadByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3459,11 +3464,6 @@ namespace FLAC_Benchmark_H
                         lineStyle: ScottPlot.LineStyle.Dash,
                         markerSize: 3
                     );
-
-                    if (checkBoxShowIdealCPULoadLine.Checked)
-                    {
-                        plt.AxisAuto();
-                    }
                 }
             }
 
@@ -3480,6 +3480,7 @@ namespace FLAC_Benchmark_H
             {
                 var plt = plotScalingPlotCPUClockByThreads.Plot;
                 plt.Clear();
+                allScatterSeriesCPUClockByThreads.Clear();
 
                 if (series.Count == 0)
                 {
@@ -3487,7 +3488,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3505,6 +3506,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCPUClockByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3530,6 +3532,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCPUClockByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3554,7 +3557,7 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    int minThread = 1;
+                    int minThread = series.Values.SelectMany(v => v.Threads).Min();
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
@@ -3572,6 +3575,7 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCPUClockByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
@@ -3597,6 +3601,7 @@ namespace FLAC_Benchmark_H
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCPUClockByThreads.Add((scatter, label));
                         }
                     }
 
@@ -3639,10 +3644,11 @@ namespace FLAC_Benchmark_H
             {
                 var plt = plotScalingPlotSpeedByParameters.Plot;
                 plt.Clear();
+                allScatterSeriesSpeedByParameters.Clear();
 
                 if (series.Count == 0)
                 {
-                    plt.Title("No parameter data found");
+                    plt.Title("No parameters data found");
                 }
                 else
                 {
@@ -3663,13 +3669,14 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(sortedXs, sortedYs, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
                         foreach (var kvp in aggregatedSeries)
                         {
-                            string encoderName = kvp.Key;
+                            string label = $"Avg Speed: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
                             var groupedByParam = dataPoints
@@ -3688,8 +3695,9 @@ namespace FLAC_Benchmark_H
                             double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
                             double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
 
-                            var scatter = plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesSpeedByParameters.Add((scatter, label));
                         }
                     }
 
@@ -3730,13 +3738,14 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(sortedXs, sortedYs, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
                         foreach (var kvp in aggregatedSeries)
                         {
-                            string encoderName = kvp.Key;
+                            string label = $"Avg Speed: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
                             var groupedByParam = dataPoints
@@ -3755,8 +3764,9 @@ namespace FLAC_Benchmark_H
                             double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
                             double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
 
-                            var scatter = plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesSpeedByParameters.Add((scatter, label));
                         }
                     }
 
@@ -3769,6 +3779,8 @@ namespace FLAC_Benchmark_H
                     plt.AxisAuto();
                 }
             }
+
+            allParamsSpeedByParameters = allParams ?? [];
 
             plotScalingMultiPlotSpeedByParameters.Configuration.AddLinkedControl(
                 plotScalingMultiPlotCompressionByParameters, horizontal: true, vertical: false);
@@ -3796,6 +3808,7 @@ namespace FLAC_Benchmark_H
             {
                 var plt = plotScalingPlotCompressionByParameters.Plot;
                 plt.Clear();
+                allScatterSeriesCompressionByParameters.Clear();
 
                 if (series.Count == 0)
                 {
@@ -3818,13 +3831,14 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCompressionByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
                         foreach (var kvp in aggregatedSeries)
                         {
-                            string encoderName = kvp.Key;
+                            string label = $"Avg Compression: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
                             var groupedByParam = dataPoints
@@ -3843,8 +3857,9 @@ namespace FLAC_Benchmark_H
                             double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
                             double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
 
-                            var scatter = plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCompressionByParameters.Add((scatter, label));
                         }
                     }
 
@@ -3883,13 +3898,14 @@ namespace FLAC_Benchmark_H
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
+                        allScatterSeriesCompressionByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
                         foreach (var kvp in aggregatedSeries)
                         {
-                            string encoderName = kvp.Key;
+                            string label = $"Avg Compression: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
                             var groupedByParam = dataPoints
@@ -3908,8 +3924,9 @@ namespace FLAC_Benchmark_H
                             double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
                             double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
 
-                            var scatter = plt.AddScatter(xs, ys, label: $"Avg: {encoderName}", lineWidth: 3);
+                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
+                            allScatterSeriesCompressionByParameters.Add((scatter, label));
                         }
                     }
 
@@ -3923,8 +3940,362 @@ namespace FLAC_Benchmark_H
                 }
             }
 
+            allParamsCompressionByParameters = allParams ?? [];
+
             plotScalingMultiPlotCompressionByParameters.Configuration.AddLinkedControl(
                 plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
+        }
+
+        private void PlotScalingPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
+
+            if (found && dynamicTooltipSpeedByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nSpeed: {y:F3}x";
+                dynamicTooltipSpeedByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipSpeedByThreads != null)
+            {
+                plt.Remove(dynamicTooltipSpeedByThreads);
+                dynamicTooltipSpeedByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotSpeedByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipSpeedByThreads != null)
+            {
+                plotScalingPlotSpeedByThreads.Plot.Remove(dynamicTooltipSpeedByThreads);
+                dynamicTooltipSpeedByThreads = null;
+                plotScalingPlotSpeedByThreads.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
+
+            if (found && dynamicTooltipMultiplotSpeedByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nSpeed: {y:F3}x";
+                dynamicTooltipMultiplotSpeedByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotSpeedByThreads != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotSpeedByThreads);
+                dynamicTooltipMultiplotSpeedByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotSpeedByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotSpeedByThreads != null)
+            {
+                plotScalingMultiPlotSpeedByThreads.Plot.Remove(dynamicTooltipMultiplotSpeedByThreads);
+                dynamicTooltipMultiplotSpeedByThreads = null;
+                plotScalingMultiPlotSpeedByThreads.Refresh();
+            }
+        }
+        private void PlotScalingPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
+
+            if (found && dynamicTooltipCPULoadByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nCPU Load: {y:F1}%";
+                dynamicTooltipCPULoadByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipCPULoadByThreads != null)
+            {
+                plt.Remove(dynamicTooltipCPULoadByThreads);
+                dynamicTooltipCPULoadByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotCPULoadByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipCPULoadByThreads != null)
+            {
+                plotScalingPlotCPULoadByThreads.Plot.Remove(dynamicTooltipCPULoadByThreads);
+                dynamicTooltipCPULoadByThreads = null;
+                plotScalingPlotCPULoadByThreads.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
+
+            if (found && dynamicTooltipMultiplotCPULoadByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nCPU Load: {y:F1}%";
+                dynamicTooltipMultiplotCPULoadByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotCPULoadByThreads != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotCPULoadByThreads);
+                dynamicTooltipMultiplotCPULoadByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCPULoadByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotCPULoadByThreads != null)
+            {
+                plotScalingMultiPlotCPULoadByThreads.Plot.Remove(dynamicTooltipMultiplotCPULoadByThreads);
+                dynamicTooltipMultiplotCPULoadByThreads = null;
+                plotScalingMultiPlotCPULoadByThreads.Refresh();
+            }
+        }
+        private void PlotScalingPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
+
+            if (found && dynamicTooltipCPUClockByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nCPU Clock: {y:F0} MHz";
+                dynamicTooltipCPUClockByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipCPUClockByThreads != null)
+            {
+                plt.Remove(dynamicTooltipCPUClockByThreads);
+                dynamicTooltipCPUClockByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotCPUClockByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipCPUClockByThreads != null)
+            {
+                plotScalingPlotCPUClockByThreads.Plot.Remove(dynamicTooltipCPUClockByThreads);
+                dynamicTooltipCPUClockByThreads = null;
+                plotScalingPlotCPUClockByThreads.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
+
+            if (found && dynamicTooltipMultiplotCPUClockByThreads == null)
+            {
+                string tooltipText = $"{label}\nThreads: {x:F0}\nCPU Clock: {y:F0} MHz";
+                dynamicTooltipMultiplotCPUClockByThreads = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotCPUClockByThreads != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotCPUClockByThreads);
+                dynamicTooltipMultiplotCPUClockByThreads = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCPUClockByThreads_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotCPUClockByThreads != null)
+            {
+                plotScalingMultiPlotCPUClockByThreads.Plot.Remove(dynamicTooltipMultiplotCPUClockByThreads);
+                dynamicTooltipMultiplotCPUClockByThreads = null;
+                plotScalingMultiPlotCPUClockByThreads.Refresh();
+            }
+        }
+
+        private void PlotScalingPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
+
+            if (found && dynamicTooltipSpeedByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsSpeedByParameters.Count
+                    ? allParamsSpeedByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nSpeed: {y:F3}x";
+                dynamicTooltipSpeedByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipSpeedByParameters != null)
+            {
+                plt.Remove(dynamicTooltipSpeedByParameters);
+                dynamicTooltipSpeedByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotSpeedByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipSpeedByParameters != null)
+            {
+                plotScalingPlotSpeedByParameters.Plot.Remove(dynamicTooltipSpeedByParameters);
+                dynamicTooltipSpeedByParameters = null;
+                plotScalingPlotSpeedByParameters.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
+
+            if (found && dynamicTooltipMultiplotSpeedByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsSpeedByParameters.Count
+                    ? allParamsSpeedByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nSpeed: {y:F3}x";
+                dynamicTooltipMultiplotSpeedByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotSpeedByParameters != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotSpeedByParameters);
+                dynamicTooltipMultiplotSpeedByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotSpeedByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotSpeedByParameters != null)
+            {
+                plotScalingMultiPlotSpeedByParameters.Plot.Remove(dynamicTooltipMultiplotSpeedByParameters);
+                dynamicTooltipMultiplotSpeedByParameters = null;
+                plotScalingMultiPlotSpeedByParameters.Refresh();
+            }
+        }
+        private void PlotScalingPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
+
+            if (found && dynamicTooltipCompressionByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsCompressionByParameters.Count
+                    ? allParamsCompressionByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F2}%";
+                dynamicTooltipCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipCompressionByParameters != null)
+            {
+                plt.Remove(dynamicTooltipCompressionByParameters);
+                dynamicTooltipCompressionByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotCompressionByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipCompressionByParameters != null)
+            {
+                plotScalingPlotCompressionByParameters.Plot.Remove(dynamicTooltipCompressionByParameters);
+                dynamicTooltipCompressionByParameters = null;
+                plotScalingPlotCompressionByParameters.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            var formsPlot = (ScottPlot.FormsPlot)sender;
+            var plt = formsPlot.Plot;
+
+            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
+
+            if (found && dynamicTooltipMultiplotCompressionByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsCompressionByParameters.Count
+                    ? allParamsCompressionByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F2}%";
+                dynamicTooltipMultiplotCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotCompressionByParameters != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotCompressionByParameters);
+                dynamicTooltipMultiplotCompressionByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotCompressionByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotCompressionByParameters != null)
+            {
+                plotScalingMultiPlotCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotCompressionByParameters);
+                dynamicTooltipMultiplotCompressionByParameters = null;
+                plotScalingMultiPlotCompressionByParameters.Refresh();
+            }
+        }
+
+        private static (string seriesLabel, double x, double y, bool found) FindNearestPoint(
+            List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> seriesList,
+            ScottPlot.FormsPlot formsPlot)
+        {
+            if (seriesList.Count == 0)
+                return (string.Empty, 0, 0, false);
+
+            (double mouseX, double mouseY) = formsPlot.GetMouseCoordinates();
+
+            var limits = formsPlot.Plot.GetAxisLimits();
+            double xRange = limits.XSpan;
+            double yRange = limits.YSpan;
+
+            double bestDistance = double.MaxValue;
+            string bestLabel = string.Empty;
+            double bestX = 0, bestY = 0;
+            bool found = false;
+
+            foreach (var (scatter, label) in seriesList)
+            {
+                if (!scatter.IsVisible) continue;
+
+                (double pointX, double pointY, int pointIndex) = scatter.GetPointNearest(mouseX, mouseY, 1.0);
+
+                double normalizedDx = (pointX - mouseX) / xRange;
+                double normalizedDy = (pointY - mouseY) / yRange;
+                double distance = Math.Sqrt(normalizedDx * normalizedDx + normalizedDy * normalizedDy);
+
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestLabel = label;
+                    bestX = pointX;
+                    bestY = pointY;
+                    found = true;
+                }
+            }
+
+            if (bestDistance > 0.01)
+                return (string.Empty, 0, 0, false);
+
+            return (bestLabel, bestX, bestY, found);
         }
 
         // Log to Excel, copy, clear
@@ -7497,6 +7868,31 @@ namespace FLAC_Benchmark_H
         private readonly List<ScottPlot.Plottable.ScatterPlot> allAggregatedSeries = [];
         private ScottPlot.Plottable.ScatterPlot? idealCPULoadLineSingle;
         private ScottPlot.Plottable.ScatterPlot? idealCPULoadLineMultiplot;
+
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesSpeedByThreads = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipSpeedByThreads;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotSpeedByThreads;
+
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesCPULoadByThreads = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipCPULoadByThreads;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotCPULoadByThreads;
+
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesCPUClockByThreads = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipCPUClockByThreads;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotCPUClockByThreads;
+
+        private List<string> allParamsSpeedByParameters = [];
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesSpeedByParameters = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipSpeedByParameters;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotSpeedByParameters;
+
+        private List<string> allParamsCompressionByParameters = [];
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesCompressionByParameters = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipCompressionByParameters;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotCompressionByParameters;
+
+
+
         private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
@@ -7508,6 +7904,74 @@ namespace FLAC_Benchmark_H
         private void CheckBoxShowIdealCPULoadLine_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
+        }
+        private void CheckBoxShowTooltips_CheckedChanged(object? sender, EventArgs e)
+        {
+            if (checkBoxShowTooltips.Checked)
+            {
+                plotScalingPlotSpeedByThreads.MouseMove += PlotScalingPlotSpeedByThreads_MouseMove;
+                plotScalingPlotSpeedByThreads.MouseLeave += PlotScalingPlotSpeedByThreads_MouseLeave;
+                plotScalingMultiPlotSpeedByThreads.MouseMove += PlotScalingMultiPlotSpeedByThreads_MouseMove;
+                plotScalingMultiPlotSpeedByThreads.MouseLeave += PlotScalingMultiPlotSpeedByThreads_MouseLeave;
+                plotScalingPlotCPULoadByThreads.MouseMove += PlotScalingPlotCPULoadByThreads_MouseMove;
+                plotScalingPlotCPULoadByThreads.MouseLeave += PlotScalingPlotCPULoadByThreads_MouseLeave;
+                plotScalingMultiPlotCPULoadByThreads.MouseMove += PlotScalingMultiPlotCPULoadByThreads_MouseMove;
+                plotScalingMultiPlotCPULoadByThreads.MouseLeave += PlotScalingMultiPlotCPULoadByThreads_MouseLeave;
+                plotScalingPlotCPUClockByThreads.MouseMove += PlotScalingPlotCPUClockByThreads_MouseMove;
+                plotScalingPlotCPUClockByThreads.MouseLeave += PlotScalingPlotCPUClockByThreads_MouseLeave;
+                plotScalingMultiPlotCPUClockByThreads.MouseMove += PlotScalingMultiPlotCPUClockByThreads_MouseMove;
+                plotScalingMultiPlotCPUClockByThreads.MouseLeave += PlotScalingMultiPlotCPUClockByThreads_MouseLeave;
+                plotScalingPlotSpeedByParameters.MouseMove += PlotScalingPlotSpeedByParameters_MouseMove;
+                plotScalingPlotSpeedByParameters.MouseLeave += PlotScalingPlotSpeedByParameters_MouseLeave;
+                plotScalingMultiPlotSpeedByParameters.MouseMove += PlotScalingMultiPlotSpeedByParameters_MouseMove;
+                plotScalingMultiPlotSpeedByParameters.MouseLeave += PlotScalingMultiPlotSpeedByParameters_MouseLeave;
+                plotScalingPlotCompressionByParameters.MouseMove += PlotScalingPlotCompressionByParameters_MouseMove;
+                plotScalingPlotCompressionByParameters.MouseLeave += PlotScalingPlotCompressionByParameters_MouseLeave;
+                plotScalingMultiPlotCompressionByParameters.MouseMove += PlotScalingMultiPlotCompressionByParameters_MouseMove;
+                plotScalingMultiPlotCompressionByParameters.MouseLeave += PlotScalingMultiPlotCompressionByParameters_MouseLeave;
+            }
+            else
+            {
+                plotScalingPlotSpeedByThreads.MouseMove -= PlotScalingPlotSpeedByThreads_MouseMove;
+                plotScalingPlotSpeedByThreads.MouseLeave -= PlotScalingPlotSpeedByThreads_MouseLeave;
+                plotScalingMultiPlotSpeedByThreads.MouseMove -= PlotScalingMultiPlotSpeedByThreads_MouseMove;
+                plotScalingMultiPlotSpeedByThreads.MouseLeave -= PlotScalingMultiPlotSpeedByThreads_MouseLeave;
+                plotScalingPlotCPULoadByThreads.MouseMove -= PlotScalingPlotCPULoadByThreads_MouseMove;
+                plotScalingPlotCPULoadByThreads.MouseLeave -= PlotScalingPlotCPULoadByThreads_MouseLeave;
+                plotScalingMultiPlotCPULoadByThreads.MouseMove -= PlotScalingMultiPlotCPULoadByThreads_MouseMove;
+                plotScalingMultiPlotCPULoadByThreads.MouseLeave -= PlotScalingMultiPlotCPULoadByThreads_MouseLeave;
+                plotScalingPlotCPUClockByThreads.MouseMove -= PlotScalingPlotCPUClockByThreads_MouseMove;
+                plotScalingPlotCPUClockByThreads.MouseLeave -= PlotScalingPlotCPUClockByThreads_MouseLeave;
+                plotScalingMultiPlotCPUClockByThreads.MouseMove -= PlotScalingMultiPlotCPUClockByThreads_MouseMove;
+                plotScalingMultiPlotCPUClockByThreads.MouseLeave -= PlotScalingMultiPlotCPUClockByThreads_MouseLeave;
+                plotScalingPlotSpeedByParameters.MouseMove -= PlotScalingPlotSpeedByParameters_MouseMove;
+                plotScalingPlotSpeedByParameters.MouseLeave -= PlotScalingPlotSpeedByParameters_MouseLeave;
+                plotScalingMultiPlotSpeedByParameters.MouseMove -= PlotScalingMultiPlotSpeedByParameters_MouseMove;
+                plotScalingMultiPlotSpeedByParameters.MouseLeave -= PlotScalingMultiPlotSpeedByParameters_MouseLeave;
+                plotScalingPlotCompressionByParameters.MouseMove -= PlotScalingPlotCompressionByParameters_MouseMove;
+                plotScalingPlotCompressionByParameters.MouseLeave -= PlotScalingPlotCompressionByParameters_MouseLeave;
+                plotScalingMultiPlotCompressionByParameters.MouseMove -= PlotScalingMultiPlotCompressionByParameters_MouseMove;
+                plotScalingMultiPlotCompressionByParameters.MouseLeave -= PlotScalingMultiPlotCompressionByParameters_MouseLeave;
+
+                var plotsToRefresh = new List<ScottPlot.FormsPlot>();
+
+                if (dynamicTooltipSpeedByThreads != null) { plotScalingPlotSpeedByThreads.Plot.Remove(dynamicTooltipSpeedByThreads); dynamicTooltipSpeedByThreads = null; plotsToRefresh.Add(plotScalingPlotSpeedByThreads); }
+                if (dynamicTooltipMultiplotSpeedByThreads != null) { plotScalingMultiPlotSpeedByThreads.Plot.Remove(dynamicTooltipMultiplotSpeedByThreads); dynamicTooltipMultiplotSpeedByThreads = null; plotsToRefresh.Add(plotScalingMultiPlotSpeedByThreads); }
+
+                if (dynamicTooltipCPULoadByThreads != null) { plotScalingPlotCPULoadByThreads.Plot.Remove(dynamicTooltipCPULoadByThreads); dynamicTooltipCPULoadByThreads = null; plotsToRefresh.Add(plotScalingPlotCPULoadByThreads); }
+                if (dynamicTooltipMultiplotCPULoadByThreads != null) { plotScalingMultiPlotCPULoadByThreads.Plot.Remove(dynamicTooltipMultiplotCPULoadByThreads); dynamicTooltipMultiplotCPULoadByThreads = null; plotsToRefresh.Add(plotScalingMultiPlotCPULoadByThreads); }
+
+                if (dynamicTooltipCPUClockByThreads != null) { plotScalingPlotCPUClockByThreads.Plot.Remove(dynamicTooltipCPUClockByThreads); dynamicTooltipCPUClockByThreads = null; plotsToRefresh.Add(plotScalingPlotCPUClockByThreads); }
+                if (dynamicTooltipMultiplotCPUClockByThreads != null) { plotScalingMultiPlotCPUClockByThreads.Plot.Remove(dynamicTooltipMultiplotCPUClockByThreads); dynamicTooltipMultiplotCPUClockByThreads = null; plotsToRefresh.Add(plotScalingMultiPlotCPUClockByThreads); }
+
+                if (dynamicTooltipSpeedByParameters != null) { plotScalingPlotSpeedByParameters.Plot.Remove(dynamicTooltipSpeedByParameters); dynamicTooltipSpeedByParameters = null; plotsToRefresh.Add(plotScalingPlotSpeedByParameters); }
+                if (dynamicTooltipMultiplotSpeedByParameters != null) { plotScalingMultiPlotSpeedByParameters.Plot.Remove(dynamicTooltipMultiplotSpeedByParameters); dynamicTooltipMultiplotSpeedByParameters = null; plotsToRefresh.Add(plotScalingMultiPlotSpeedByParameters); }
+
+                if (dynamicTooltipCompressionByParameters != null) { plotScalingPlotCompressionByParameters.Plot.Remove(dynamicTooltipCompressionByParameters); dynamicTooltipCompressionByParameters = null; plotsToRefresh.Add(plotScalingPlotCompressionByParameters); }
+                if (dynamicTooltipMultiplotCompressionByParameters != null) { plotScalingMultiPlotCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotCompressionByParameters); dynamicTooltipMultiplotCompressionByParameters = null; plotsToRefresh.Add(plotScalingMultiPlotCompressionByParameters); }
+
+                foreach (var plot in plotsToRefresh) plot.Refresh();
+            }
         }
         private void UpdateSeriesVisibility()
         {
