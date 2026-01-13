@@ -1257,7 +1257,7 @@ namespace FLAC_Benchmark_H
             var item = new ListViewItem(Path.GetFileName(audioFilePath))
             {
                 Tag = audioFilePath,
-                Checked = true
+                Checked = isChecked
             };
 
             // Fill subitems
