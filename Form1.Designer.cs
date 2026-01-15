@@ -162,7 +162,7 @@
             checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
             checkBoxClearLogsOnExit = new CheckBox();
             tabPagePlotsSettings = new TabPage();
-            checkBoxShowTooltips = new CheckBox();
+            checkBoxShowTooltipsOnPlots = new CheckBox();
             checkBoxShowIdealCPULoadLine = new CheckBox();
             checkBoxDrawMultiplots = new CheckBox();
             checkBoxShowAggregatedByEncoderPlots = new CheckBox();
@@ -486,10 +486,10 @@
             // checkBoxWarmupPass
             // 
             checkBoxWarmupPass.AutoSize = true;
-            checkBoxWarmupPass.Location = new Point(3, 32);
+            checkBoxWarmupPass.Location = new Point(4, 32);
             checkBoxWarmupPass.Name = "checkBoxWarmupPass";
             checkBoxWarmupPass.Size = new Size(128, 19);
-            checkBoxWarmupPass.TabIndex = 2;
+            checkBoxWarmupPass.TabIndex = 1;
             checkBoxWarmupPass.Text = "Add Warm-up Pass";
             toolTip1.SetToolTip(checkBoxWarmupPass, resources.GetString("checkBoxWarmupPass.ToolTip"));
             checkBoxWarmupPass.UseVisualStyleBackColor = true;
@@ -1119,7 +1119,7 @@
             tabControlLog.Name = "tabControlLog";
             tabControlLog.SelectedIndex = 0;
             tabControlLog.Size = new Size(767, 340);
-            tabControlLog.TabIndex = 1;
+            tabControlLog.TabIndex = 0;
             // 
             // Benchmark
             // 
@@ -1129,7 +1129,7 @@
             Benchmark.Padding = new Padding(3);
             Benchmark.Size = new Size(759, 312);
             Benchmark.TabIndex = 0;
-            Benchmark.Tag = "0";
+            Benchmark.Tag = "";
             Benchmark.Text = "Benchmark";
             Benchmark.UseVisualStyleBackColor = true;
             // 
@@ -1165,7 +1165,7 @@
             dataGridViewLog.RowHeadersVisible = false;
             dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLog.Size = new Size(753, 305);
-            dataGridViewLog.TabIndex = 1;
+            dataGridViewLog.TabIndex = 0;
             // 
             // ScalingPlots
             // 
@@ -1174,6 +1174,7 @@
             ScalingPlots.Name = "ScalingPlots";
             ScalingPlots.Size = new Size(759, 312);
             ScalingPlots.TabIndex = 3;
+            ScalingPlots.Tag = "";
             ScalingPlots.Text = "Scaling Plots";
             ScalingPlots.UseVisualStyleBackColor = true;
             // 
@@ -1191,7 +1192,7 @@
             tabControlScalingPlots.Name = "tabControlScalingPlots";
             tabControlScalingPlots.SelectedIndex = 0;
             tabControlScalingPlots.Size = new Size(759, 312);
-            tabControlScalingPlots.TabIndex = 1;
+            tabControlScalingPlots.TabIndex = 0;
             // 
             // tabPageSpeedByThreads
             // 
@@ -1211,7 +1212,7 @@
             plotScalingPlotSpeedByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotSpeedByThreads.Name = "plotScalingPlotSpeedByThreads";
             plotScalingPlotSpeedByThreads.Size = new Size(751, 284);
-            plotScalingPlotSpeedByThreads.TabIndex = 2;
+            plotScalingPlotSpeedByThreads.TabIndex = 0;
             // 
             // tabPageCPULoadByThreads
             // 
@@ -1231,7 +1232,7 @@
             plotScalingPlotCPULoadByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotCPULoadByThreads.Name = "plotScalingPlotCPULoadByThreads";
             plotScalingPlotCPULoadByThreads.Size = new Size(751, 284);
-            plotScalingPlotCPULoadByThreads.TabIndex = 2;
+            plotScalingPlotCPULoadByThreads.TabIndex = 0;
             // 
             // tabPageCPUClockByThreads
             // 
@@ -1251,7 +1252,7 @@
             plotScalingPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotCPUClockByThreads.Name = "plotScalingPlotCPUClockByThreads";
             plotScalingPlotCPUClockByThreads.Size = new Size(751, 284);
-            plotScalingPlotCPUClockByThreads.TabIndex = 2;
+            plotScalingPlotCPUClockByThreads.TabIndex = 0;
             // 
             // tabPageMultiplotByThreads
             // 
@@ -1287,7 +1288,7 @@
             plotScalingMultiPlotCPUClockByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingMultiPlotCPUClockByThreads.Name = "plotScalingMultiPlotCPUClockByThreads";
             plotScalingMultiPlotCPUClockByThreads.Size = new Size(743, 90);
-            plotScalingMultiPlotCPUClockByThreads.TabIndex = 5;
+            plotScalingMultiPlotCPUClockByThreads.TabIndex = 2;
             // 
             // plotScalingMultiPlotCPULoadByThreads
             // 
@@ -1296,7 +1297,7 @@
             plotScalingMultiPlotCPULoadByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingMultiPlotCPULoadByThreads.Name = "plotScalingMultiPlotCPULoadByThreads";
             plotScalingMultiPlotCPULoadByThreads.Size = new Size(743, 88);
-            plotScalingMultiPlotCPULoadByThreads.TabIndex = 4;
+            plotScalingMultiPlotCPULoadByThreads.TabIndex = 1;
             // 
             // plotScalingMultiPlotSpeedByThreads
             // 
@@ -1305,7 +1306,7 @@
             plotScalingMultiPlotSpeedByThreads.Margin = new Padding(4, 3, 4, 3);
             plotScalingMultiPlotSpeedByThreads.Name = "plotScalingMultiPlotSpeedByThreads";
             plotScalingMultiPlotSpeedByThreads.Size = new Size(743, 88);
-            plotScalingMultiPlotSpeedByThreads.TabIndex = 3;
+            plotScalingMultiPlotSpeedByThreads.TabIndex = 0;
             // 
             // tabPageSpeedByParameters
             // 
@@ -1325,7 +1326,7 @@
             plotScalingPlotSpeedByParameters.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotSpeedByParameters.Name = "plotScalingPlotSpeedByParameters";
             plotScalingPlotSpeedByParameters.Size = new Size(751, 284);
-            plotScalingPlotSpeedByParameters.TabIndex = 3;
+            plotScalingPlotSpeedByParameters.TabIndex = 0;
             // 
             // tabPageCompressionByParameters
             // 
@@ -1345,7 +1346,7 @@
             plotScalingPlotCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
             plotScalingPlotCompressionByParameters.Name = "plotScalingPlotCompressionByParameters";
             plotScalingPlotCompressionByParameters.Size = new Size(751, 284);
-            plotScalingPlotCompressionByParameters.TabIndex = 4;
+            plotScalingPlotCompressionByParameters.TabIndex = 0;
             // 
             // tabPageMultiplotByParameters
             // 
@@ -1370,7 +1371,7 @@
             tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelMultiPlotByParameters.Size = new Size(751, 284);
-            tableLayoutPanelMultiPlotByParameters.TabIndex = 1;
+            tableLayoutPanelMultiPlotByParameters.TabIndex = 0;
             // 
             // plotScalingMultiPlotCompressionByParameters
             // 
@@ -1398,7 +1399,7 @@
             DetectDupes.Padding = new Padding(3);
             DetectDupes.Size = new Size(759, 312);
             DetectDupes.TabIndex = 1;
-            DetectDupes.Tag = "1";
+            DetectDupes.Tag = "";
             DetectDupes.Text = "Detect Dupes";
             DetectDupes.UseVisualStyleBackColor = true;
             // 
@@ -1434,7 +1435,7 @@
             dataGridViewLogDetectDupes.RowHeadersVisible = false;
             dataGridViewLogDetectDupes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLogDetectDupes.Size = new Size(753, 305);
-            dataGridViewLogDetectDupes.TabIndex = 1;
+            dataGridViewLogDetectDupes.TabIndex = 0;
             // 
             // TestForErrors
             // 
@@ -1443,7 +1444,7 @@
             TestForErrors.Name = "TestForErrors";
             TestForErrors.Size = new Size(759, 312);
             TestForErrors.TabIndex = 2;
-            TestForErrors.Tag = "2";
+            TestForErrors.Tag = "";
             TestForErrors.Text = "Test for Errors";
             TestForErrors.UseVisualStyleBackColor = true;
             // 
@@ -1479,7 +1480,7 @@
             dataGridViewLogTestForErrors.RowHeadersVisible = false;
             dataGridViewLogTestForErrors.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLogTestForErrors.Size = new Size(753, 305);
-            dataGridViewLogTestForErrors.TabIndex = 1;
+            dataGridViewLogTestForErrors.TabIndex = 0;
             // 
             // buttonCopyLogAsBBCode
             // 
@@ -1565,10 +1566,10 @@
             // buttonDataGridViewLogSettings
             // 
             buttonDataGridViewLogSettings.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonDataGridViewLogSettings.Location = new Point(3, 3);
+            buttonDataGridViewLogSettings.Location = new Point(3, 5);
             buttonDataGridViewLogSettings.Name = "buttonDataGridViewLogSettings";
             buttonDataGridViewLogSettings.Size = new Size(164, 23);
-            buttonDataGridViewLogSettings.TabIndex = 10;
+            buttonDataGridViewLogSettings.TabIndex = 0;
             buttonDataGridViewLogSettings.Text = "Log Columns Settings";
             buttonDataGridViewLogSettings.UseVisualStyleBackColor = true;
             buttonDataGridViewLogSettings.Click += ButtonDataGridViewLogSettings_Click;
@@ -1595,16 +1596,16 @@
             tabControlSettings.Name = "tabControlSettings";
             tabControlSettings.SelectedIndex = 0;
             tabControlSettings.Size = new Size(348, 149);
-            tabControlSettings.TabIndex = 11;
+            tabControlSettings.TabIndex = 0;
             // 
             // tabPageQuickSettings
             // 
             tabPageQuickSettings.Controls.Add(checkBoxRemoveMetadata);
+            tabPageQuickSettings.Controls.Add(checkBoxWarmupPass);
             tabPageQuickSettings.Controls.Add(checkBoxPreventSleep);
             tabPageQuickSettings.Controls.Add(checkBoxAutoAnalyzeLog);
             tabPageQuickSettings.Controls.Add(labelCPUPriority);
             tabPageQuickSettings.Controls.Add(comboBoxCPUPriority);
-            tabPageQuickSettings.Controls.Add(checkBoxWarmupPass);
             tabPageQuickSettings.Location = new Point(4, 24);
             tabPageQuickSettings.Name = "tabPageQuickSettings";
             tabPageQuickSettings.Size = new Size(340, 121);
@@ -1615,7 +1616,7 @@
             // checkBoxRemoveMetadata
             // 
             checkBoxRemoveMetadata.AutoSize = true;
-            checkBoxRemoveMetadata.Location = new Point(3, 8);
+            checkBoxRemoveMetadata.Location = new Point(4, 8);
             checkBoxRemoveMetadata.Name = "checkBoxRemoveMetadata";
             checkBoxRemoveMetadata.Size = new Size(122, 19);
             checkBoxRemoveMetadata.TabIndex = 0;
@@ -1626,10 +1627,10 @@
             // checkBoxPreventSleep
             // 
             checkBoxPreventSleep.AutoSize = true;
-            checkBoxPreventSleep.Location = new Point(3, 57);
+            checkBoxPreventSleep.Location = new Point(4, 56);
             checkBoxPreventSleep.Name = "checkBoxPreventSleep";
             checkBoxPreventSleep.Size = new Size(131, 19);
-            checkBoxPreventSleep.TabIndex = 8;
+            checkBoxPreventSleep.TabIndex = 2;
             checkBoxPreventSleep.Text = "Prevent Sleep mode";
             toolTip1.SetToolTip(checkBoxPreventSleep, "When enabled, prevents the computer from entering sleep or hibernation mode\r\n\r\nNote: This does not prevent the display from turning off.");
             checkBoxPreventSleep.UseVisualStyleBackColor = true;
@@ -1638,7 +1639,7 @@
             // checkBoxAutoAnalyzeLog
             // 
             checkBoxAutoAnalyzeLog.AutoSize = true;
-            checkBoxAutoAnalyzeLog.Location = new Point(3, 82);
+            checkBoxAutoAnalyzeLog.Location = new Point(4, 80);
             checkBoxAutoAnalyzeLog.Name = "checkBoxAutoAnalyzeLog";
             checkBoxAutoAnalyzeLog.Size = new Size(165, 19);
             checkBoxAutoAnalyzeLog.TabIndex = 3;
@@ -1673,11 +1674,11 @@
             // 
             // tabPageLogsSettings
             // 
-            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeLogTXT);
-            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeTestForErrors);
-            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeDetectDupes);
             tabPageLogsSettings.Controls.Add(buttonDataGridViewLogSettings);
             tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExit);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeDetectDupes);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeTestForErrors);
+            tabPageLogsSettings.Controls.Add(checkBoxClearLogsOnExitIncludeLogTXT);
             tabPageLogsSettings.Location = new Point(4, 24);
             tabPageLogsSettings.Name = "tabPageLogsSettings";
             tabPageLogsSettings.Size = new Size(340, 121);
@@ -1692,7 +1693,7 @@
             checkBoxClearLogsOnExitIncludeLogTXT.Location = new Point(197, 81);
             checkBoxClearLogsOnExitIncludeLogTXT.Name = "checkBoxClearLogsOnExitIncludeLogTXT";
             checkBoxClearLogsOnExitIncludeLogTXT.Size = new Size(63, 19);
-            checkBoxClearLogsOnExitIncludeLogTXT.TabIndex = 13;
+            checkBoxClearLogsOnExitIncludeLogTXT.TabIndex = 4;
             checkBoxClearLogsOnExitIncludeLogTXT.Text = "Log.txt";
             checkBoxClearLogsOnExitIncludeLogTXT.UseVisualStyleBackColor = true;
             checkBoxClearLogsOnExitIncludeLogTXT.Visible = false;
@@ -1704,7 +1705,7 @@
             checkBoxClearLogsOnExitIncludeTestForErrors.Location = new Point(197, 56);
             checkBoxClearLogsOnExitIncludeTestForErrors.Name = "checkBoxClearLogsOnExitIncludeTestForErrors";
             checkBoxClearLogsOnExitIncludeTestForErrors.Size = new Size(97, 19);
-            checkBoxClearLogsOnExitIncludeTestForErrors.TabIndex = 12;
+            checkBoxClearLogsOnExitIncludeTestForErrors.TabIndex = 3;
             checkBoxClearLogsOnExitIncludeTestForErrors.Text = "Test for Errors";
             checkBoxClearLogsOnExitIncludeTestForErrors.UseVisualStyleBackColor = true;
             checkBoxClearLogsOnExitIncludeTestForErrors.Visible = false;
@@ -1716,7 +1717,7 @@
             checkBoxClearLogsOnExitIncludeDetectDupes.Location = new Point(197, 31);
             checkBoxClearLogsOnExitIncludeDetectDupes.Name = "checkBoxClearLogsOnExitIncludeDetectDupes";
             checkBoxClearLogsOnExitIncludeDetectDupes.Size = new Size(96, 19);
-            checkBoxClearLogsOnExitIncludeDetectDupes.TabIndex = 11;
+            checkBoxClearLogsOnExitIncludeDetectDupes.TabIndex = 2;
             checkBoxClearLogsOnExitIncludeDetectDupes.Text = "Detect Dupes";
             checkBoxClearLogsOnExitIncludeDetectDupes.UseVisualStyleBackColor = true;
             checkBoxClearLogsOnExitIncludeDetectDupes.Visible = false;
@@ -1725,21 +1726,21 @@
             // 
             checkBoxClearLogsOnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkBoxClearLogsOnExit.AutoSize = true;
-            checkBoxClearLogsOnExit.Location = new Point(185, 6);
+            checkBoxClearLogsOnExit.Location = new Point(185, 8);
             checkBoxClearLogsOnExit.Name = "checkBoxClearLogsOnExit";
             checkBoxClearLogsOnExit.Size = new Size(120, 19);
-            checkBoxClearLogsOnExit.TabIndex = 7;
+            checkBoxClearLogsOnExit.TabIndex = 1;
             checkBoxClearLogsOnExit.Text = "Clear Logs on exit";
             checkBoxClearLogsOnExit.UseVisualStyleBackColor = true;
             checkBoxClearLogsOnExit.Visible = false;
             // 
             // tabPagePlotsSettings
             // 
-            tabPagePlotsSettings.Controls.Add(checkBoxShowTooltips);
-            tabPagePlotsSettings.Controls.Add(checkBoxShowIdealCPULoadLine);
             tabPagePlotsSettings.Controls.Add(checkBoxDrawMultiplots);
-            tabPagePlotsSettings.Controls.Add(checkBoxShowAggregatedByEncoderPlots);
             tabPagePlotsSettings.Controls.Add(checkBoxShowIndividualFilesPlots);
+            tabPagePlotsSettings.Controls.Add(checkBoxShowAggregatedByEncoderPlots);
+            tabPagePlotsSettings.Controls.Add(checkBoxShowIdealCPULoadLine);
+            tabPagePlotsSettings.Controls.Add(checkBoxShowTooltipsOnPlots);
             tabPagePlotsSettings.Location = new Point(4, 24);
             tabPagePlotsSettings.Name = "tabPagePlotsSettings";
             tabPagePlotsSettings.Size = new Size(340, 121);
@@ -1747,38 +1748,41 @@
             tabPagePlotsSettings.Text = "Plots";
             tabPagePlotsSettings.UseVisualStyleBackColor = true;
             // 
-            // checkBoxShowTooltips
+            // checkBoxShowTooltipsOnPlots
             // 
-            checkBoxShowTooltips.AutoSize = true;
-            checkBoxShowTooltips.Checked = true;
-            checkBoxShowTooltips.CheckState = CheckState.Checked;
-            checkBoxShowTooltips.Location = new Point(170, 8);
-            checkBoxShowTooltips.Name = "checkBoxShowTooltips";
-            checkBoxShowTooltips.Size = new Size(67, 19);
-            checkBoxShowTooltips.TabIndex = 4;
-            checkBoxShowTooltips.Text = "Tooltips";
-            checkBoxShowTooltips.UseVisualStyleBackColor = true;
-            checkBoxShowTooltips.CheckedChanged += CheckBoxShowTooltips_CheckedChanged;
+            checkBoxShowTooltipsOnPlots.AutoSize = true;
+            checkBoxShowTooltipsOnPlots.Checked = true;
+            checkBoxShowTooltipsOnPlots.CheckState = CheckState.Checked;
+            checkBoxShowTooltipsOnPlots.Location = new Point(185, 8);
+            checkBoxShowTooltipsOnPlots.Name = "checkBoxShowTooltipsOnPlots";
+            checkBoxShowTooltipsOnPlots.Size = new Size(67, 19);
+            checkBoxShowTooltipsOnPlots.TabIndex = 4;
+            checkBoxShowTooltipsOnPlots.Text = "Tooltips";
+            toolTip1.SetToolTip(checkBoxShowTooltipsOnPlots, "Enable/disable interactive tooltips showing series name and exact X/Y values when hovering over data points.");
+            checkBoxShowTooltipsOnPlots.UseVisualStyleBackColor = true;
+            checkBoxShowTooltipsOnPlots.CheckedChanged += CheckBoxShowTooltipsOnPlots_CheckedChanged;
             // 
             // checkBoxShowIdealCPULoadLine
             // 
             checkBoxShowIdealCPULoadLine.AutoSize = true;
-            checkBoxShowIdealCPULoadLine.Location = new Point(3, 56);
+            checkBoxShowIdealCPULoadLine.Location = new Point(4, 80);
             checkBoxShowIdealCPULoadLine.Name = "checkBoxShowIdealCPULoadLine";
             checkBoxShowIdealCPULoadLine.Size = new Size(131, 19);
             checkBoxShowIdealCPULoadLine.TabIndex = 3;
             checkBoxShowIdealCPULoadLine.Text = "Ideal CPU Load line ";
+            toolTip1.SetToolTip(checkBoxShowIdealCPULoadLine, "Show/hide ideal CPU load reference line (100% per thread, linear scaling).");
             checkBoxShowIdealCPULoadLine.UseVisualStyleBackColor = true;
             checkBoxShowIdealCPULoadLine.CheckedChanged += CheckBoxShowIdealCPULoadLine_CheckedChanged;
             // 
             // checkBoxDrawMultiplots
             // 
             checkBoxDrawMultiplots.AutoSize = true;
-            checkBoxDrawMultiplots.Location = new Point(3, 80);
+            checkBoxDrawMultiplots.Location = new Point(4, 8);
             checkBoxDrawMultiplots.Name = "checkBoxDrawMultiplots";
             checkBoxDrawMultiplots.Size = new Size(110, 19);
-            checkBoxDrawMultiplots.TabIndex = 2;
+            checkBoxDrawMultiplots.TabIndex = 0;
             checkBoxDrawMultiplots.Text = "Draw Multiplots";
+            toolTip1.SetToolTip(checkBoxDrawMultiplots, "Toggle between individual plots and consolidated multiplot view with shared axes.");
             checkBoxDrawMultiplots.UseVisualStyleBackColor = true;
             checkBoxDrawMultiplots.CheckedChanged += CheckBoxDrawMultiplots_CheckedChanged;
             // 
@@ -1787,11 +1791,12 @@
             checkBoxShowAggregatedByEncoderPlots.AutoSize = true;
             checkBoxShowAggregatedByEncoderPlots.Checked = true;
             checkBoxShowAggregatedByEncoderPlots.CheckState = CheckState.Checked;
-            checkBoxShowAggregatedByEncoderPlots.Location = new Point(3, 32);
+            checkBoxShowAggregatedByEncoderPlots.Location = new Point(4, 56);
             checkBoxShowAggregatedByEncoderPlots.Name = "checkBoxShowAggregatedByEncoderPlots";
             checkBoxShowAggregatedByEncoderPlots.Size = new Size(150, 19);
-            checkBoxShowAggregatedByEncoderPlots.TabIndex = 1;
+            checkBoxShowAggregatedByEncoderPlots.TabIndex = 2;
             checkBoxShowAggregatedByEncoderPlots.Text = "Aggregated by Encoder";
+            toolTip1.SetToolTip(checkBoxShowAggregatedByEncoderPlots, "Show/hide aggregated series (bold lines) representing average performance across all files for each encoder/parameter combination.");
             checkBoxShowAggregatedByEncoderPlots.UseVisualStyleBackColor = true;
             checkBoxShowAggregatedByEncoderPlots.CheckedChanged += CheckBoxShowAggregatedByEncoderPlots_CheckedChanged;
             // 
@@ -1800,20 +1805,21 @@
             checkBoxShowIndividualFilesPlots.AutoSize = true;
             checkBoxShowIndividualFilesPlots.Checked = true;
             checkBoxShowIndividualFilesPlots.CheckState = CheckState.Checked;
-            checkBoxShowIndividualFilesPlots.Location = new Point(3, 8);
+            checkBoxShowIndividualFilesPlots.Location = new Point(4, 32);
             checkBoxShowIndividualFilesPlots.Name = "checkBoxShowIndividualFilesPlots";
             checkBoxShowIndividualFilesPlots.Size = new Size(102, 19);
-            checkBoxShowIndividualFilesPlots.TabIndex = 0;
+            checkBoxShowIndividualFilesPlots.TabIndex = 1;
             checkBoxShowIndividualFilesPlots.Text = "Individual files";
+            toolTip1.SetToolTip(checkBoxShowIndividualFilesPlots, "Show/hide individual file series on scaling graphs");
             checkBoxShowIndividualFilesPlots.UseVisualStyleBackColor = true;
             checkBoxShowIndividualFilesPlots.CheckedChanged += CheckBoxShowIndividualFilesPlots_CheckedChanged;
             // 
             // tabPageMiscSettings
             // 
-            tabPageMiscSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
-            tabPageMiscSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
             tabPageMiscSettings.Controls.Add(buttonSelectTempFolder);
             tabPageMiscSettings.Controls.Add(checkBoxClearTempFolder);
+            tabPageMiscSettings.Controls.Add(checkBoxAddMD5OnLoadWav);
+            tabPageMiscSettings.Controls.Add(checkBoxCheckForUpdatesOnStartup);
             tabPageMiscSettings.Location = new Point(4, 24);
             tabPageMiscSettings.Name = "tabPageMiscSettings";
             tabPageMiscSettings.Size = new Size(340, 121);
@@ -1824,10 +1830,10 @@
             // checkBoxAddMD5OnLoadWav
             // 
             checkBoxAddMD5OnLoadWav.AutoSize = true;
-            checkBoxAddMD5OnLoadWav.Location = new Point(185, 6);
+            checkBoxAddMD5OnLoadWav.Location = new Point(185, 8);
             checkBoxAddMD5OnLoadWav.Name = "checkBoxAddMD5OnLoadWav";
             checkBoxAddMD5OnLoadWav.Size = new Size(150, 19);
-            checkBoxAddMD5OnLoadWav.TabIndex = 1;
+            checkBoxAddMD5OnLoadWav.TabIndex = 2;
             checkBoxAddMD5OnLoadWav.Text = "Add MD5 on .WAV load";
             toolTip1.SetToolTip(checkBoxAddMD5OnLoadWav, "Calculate MD5 when loading .wav files into the list.\r\nThis may significantly slow down the loading process.\r\nBut \"Detect dupes\" will work faster.\r\n\r\nDoes not affect encoding or decoding speed.");
             checkBoxAddMD5OnLoadWav.UseVisualStyleBackColor = true;
@@ -1838,7 +1844,7 @@
             checkBoxCheckForUpdatesOnStartup.Location = new Point(185, 32);
             checkBoxCheckForUpdatesOnStartup.Name = "checkBoxCheckForUpdatesOnStartup";
             checkBoxCheckForUpdatesOnStartup.Size = new Size(122, 19);
-            checkBoxCheckForUpdatesOnStartup.TabIndex = 9;
+            checkBoxCheckForUpdatesOnStartup.TabIndex = 3;
             checkBoxCheckForUpdatesOnStartup.Text = "Check for updates";
             toolTip1.SetToolTip(checkBoxCheckForUpdatesOnStartup, "Check for updates on startup.\r\n\r\nCheck for updates immediately when re-enabled.");
             checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
@@ -1847,10 +1853,10 @@
             // buttonSelectTempFolder
             // 
             buttonSelectTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSelectTempFolder.Location = new Point(3, 3);
+            buttonSelectTempFolder.Location = new Point(3, 5);
             buttonSelectTempFolder.Name = "buttonSelectTempFolder";
             buttonSelectTempFolder.Size = new Size(164, 23);
-            buttonSelectTempFolder.TabIndex = 6;
+            buttonSelectTempFolder.TabIndex = 0;
             buttonSelectTempFolder.Text = "Select Temp folder";
             buttonSelectTempFolder.UseVisualStyleBackColor = true;
             buttonSelectTempFolder.Click += ButtonSelectTempFolder_Click;
@@ -1859,10 +1865,10 @@
             // 
             checkBoxClearTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Location = new Point(3, 32);
+            checkBoxClearTempFolder.Location = new Point(4, 32);
             checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
             checkBoxClearTempFolder.Size = new Size(157, 19);
-            checkBoxClearTempFolder.TabIndex = 7;
+            checkBoxClearTempFolder.TabIndex = 1;
             checkBoxClearTempFolder.Text = "Clear temp folder on exit";
             checkBoxClearTempFolder.UseVisualStyleBackColor = true;
             // 
@@ -2187,6 +2193,6 @@
         private ScottPlot.FormsPlot plotScalingMultiPlotCompressionByParameters;
         private ScottPlot.FormsPlot plotScalingMultiPlotSpeedByParameters;
         private CheckBox checkBoxShowIdealCPULoadLine;
-        private CheckBox checkBoxShowTooltips;
+        private CheckBox checkBoxShowTooltipsOnPlots;
     }
 }

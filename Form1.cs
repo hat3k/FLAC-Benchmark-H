@@ -359,21 +359,28 @@ namespace FLAC_Benchmark_H
                     $"Threads={textBoxThreads.Text}",
                     $"CommandLineOptionsEncoder={textBoxCommandLineOptionsEncoder.Text}",
                     $"CommandLineOptionsDecoder={textBoxCommandLineOptionsDecoder.Text}",
-                    $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
-                    $"TempFolderPath={tempPathToSave}",
-                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
+
+                    // Quick
                     $"RemoveMetadata={checkBoxRemoveMetadata.Checked}",
-                    $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
                     $"AddWarmupPass={checkBoxWarmupPass.Checked}",
-                    $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
-                    $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
-                    $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
-                    $"IgnoredVersion={programVersionIgnored ?? ""}",
+                    $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
+                    $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
+                    
+                    //Plots
+                    $"DrawMultiplots={checkBoxDrawMultiplots.Checked}",
                     $"ShowIndividualFilesPlots={checkBoxShowIndividualFilesPlots.Checked}",
                     $"ShowAggregatedByEncoderPlots={checkBoxShowAggregatedByEncoderPlots.Checked}",
                     $"ShowIdealCPULoadLine={checkBoxShowIdealCPULoadLine.Checked}",
-                    $"DrawMultiplots={checkBoxDrawMultiplots.Checked}"
+                    $"ShowTooltipsOnPlots={checkBoxShowTooltipsOnPlots.Checked}",
+
+                    // Misc
+                    $"TempFolderPath={tempPathToSave}",
+                    $"ClearTempFolderOnExit={checkBoxClearTempFolder.Checked}",
+                    $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
+                    $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
+                    $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
+                    $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
 
                 foreach (DataGridViewColumn col in dataGridViewLog.Columns)
@@ -547,6 +554,9 @@ namespace FLAC_Benchmark_H
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
                             break;
+                        case "DrawMultiplots":
+                            checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool drawMultiplots) && drawMultiplots;
+                            break;
                         case "ShowIndividualFilesPlots":
                             checkBoxShowIndividualFilesPlots.Checked = bool.TryParse(value, out bool showIndividualFiles) && showIndividualFiles;
                             break;
@@ -556,8 +566,8 @@ namespace FLAC_Benchmark_H
                         case "ShowIdealCPULoadLine":
                             checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showIdealCPULoadLine) && showIdealCPULoadLine;
                             break;
-                        case "DrawMultiplots":
-                            checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool BoxDrawMultiplots) && BoxDrawMultiplots;
+                        case "ShowTooltipsOnPlots":
+                            checkBoxShowTooltipsOnPlots.Checked = bool.TryParse(value, out bool showTooltipsOnPlots) && showTooltipsOnPlots;
                             break;
                         case string s when s.StartsWith("LogColumnVisibility_"):
                             string columnNameVis = s.Substring("LogColumnVisibility_".Length);
@@ -7907,9 +7917,9 @@ namespace FLAC_Benchmark_H
         {
             UpdateSeriesVisibility();
         }
-        private void CheckBoxShowTooltips_CheckedChanged(object? sender, EventArgs e)
+        private void CheckBoxShowTooltipsOnPlots_CheckedChanged(object? sender, EventArgs e)
         {
-            if (checkBoxShowTooltips.Checked)
+            if (checkBoxShowTooltipsOnPlots.Checked)
             {
                 plotScalingPlotSpeedByThreads.MouseMove += PlotScalingPlotSpeedByThreads_MouseMove;
                 plotScalingPlotSpeedByThreads.MouseLeave += PlotScalingPlotSpeedByThreads_MouseLeave;
