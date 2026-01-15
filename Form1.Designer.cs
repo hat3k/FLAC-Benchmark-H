@@ -23,12 +23,12 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle61 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle62 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle63 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle64 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle65 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle66 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             buttonScriptConstructor = new Button();
             progressBarEncoder = new ProgressBarEx();
@@ -157,21 +157,21 @@
             labelCPUPriority = new Label();
             comboBoxCPUPriority = new ComboBox();
             tabPageLogsSettings = new TabPage();
-            checkBoxClearLogsOnExitIncludeLogTXT = new CheckBox();
-            checkBoxClearLogsOnExitIncludeTestForErrors = new CheckBox();
-            checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
             checkBoxClearLogsOnExit = new CheckBox();
+            checkBoxClearLogsOnExitIncludeDetectDupes = new CheckBox();
+            checkBoxClearLogsOnExitIncludeTestForErrors = new CheckBox();
+            checkBoxClearLogsOnExitIncludeLogTXT = new CheckBox();
             tabPagePlotsSettings = new TabPage();
-            checkBoxShowTooltipsOnPlots = new CheckBox();
-            checkBoxShowIdealCPULoadLine = new CheckBox();
             checkBoxDrawMultiplots = new CheckBox();
-            checkBoxShowAggregatedByEncoderPlots = new CheckBox();
             checkBoxShowIndividualFilesPlots = new CheckBox();
+            checkBoxShowAggregatedByEncoderPlots = new CheckBox();
+            checkBoxShowIdealCPULoadLine = new CheckBox();
+            checkBoxShowTooltipsOnPlots = new CheckBox();
             tabPageMiscSettings = new TabPage();
-            checkBoxAddMD5OnLoadWav = new CheckBox();
-            checkBoxCheckForUpdatesOnStartup = new CheckBox();
             buttonSelectTempFolder = new Button();
             checkBoxClearTempFolder = new CheckBox();
+            checkBoxAddMD5OnLoadWav = new CheckBox();
+            checkBoxCheckForUpdatesOnStartup = new CheckBox();
             groupBoxDecoderSettings = new GroupBox();
             progressBarDecoder = new ProgressBarEx();
             labelCommandLineDecoder = new Label();
@@ -218,30 +218,30 @@
             // 
             // groupBoxEncoderSettings
             // 
+            groupBoxEncoderSettings.Controls.Add(labelCompressionLevel);
+            groupBoxEncoderSettings.Controls.Add(textBoxCompressionLevel);
+            groupBoxEncoderSettings.Controls.Add(labelSetCompression);
+            groupBoxEncoderSettings.Controls.Add(button5CompressionLevel);
+            groupBoxEncoderSettings.Controls.Add(buttonMaxCompressionLevel);
+            groupBoxEncoderSettings.Controls.Add(labelThreads);
+            groupBoxEncoderSettings.Controls.Add(textBoxThreads);
+            groupBoxEncoderSettings.Controls.Add(labelSetCores);
+            groupBoxEncoderSettings.Controls.Add(buttonHalfCores);
+            groupBoxEncoderSettings.Controls.Add(buttonSetMaxCores);
+            groupBoxEncoderSettings.Controls.Add(labelSetThreads);
+            groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
+            groupBoxEncoderSettings.Controls.Add(buttonSetMaxThreads);
+            groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
+            groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
+            groupBoxEncoderSettings.Controls.Add(buttonClearCommandLineEncoder);
+            groupBoxEncoderSettings.Controls.Add(buttonEpr8);
+            groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
+            groupBoxEncoderSettings.Controls.Add(buttonNoPadding);
+            groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
+            groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
+            groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
             groupBoxEncoderSettings.Controls.Add(buttonScriptConstructor);
             groupBoxEncoderSettings.Controls.Add(progressBarEncoder);
-            groupBoxEncoderSettings.Controls.Add(labelCommandLineEncoder);
-            groupBoxEncoderSettings.Controls.Add(buttonAddJobToJobListEncoder);
-            groupBoxEncoderSettings.Controls.Add(buttonStartEncode);
-            groupBoxEncoderSettings.Controls.Add(labelSetThreads);
-            groupBoxEncoderSettings.Controls.Add(labelSetCores);
-            groupBoxEncoderSettings.Controls.Add(textBoxCommandLineOptionsEncoder);
-            groupBoxEncoderSettings.Controls.Add(labelSetCompression);
-            groupBoxEncoderSettings.Controls.Add(buttonEpr8);
-            groupBoxEncoderSettings.Controls.Add(buttonSetHalfThreads);
-            groupBoxEncoderSettings.Controls.Add(buttonAsubdividetukey5flattop);
-            groupBoxEncoderSettings.Controls.Add(buttonSetMaxThreads);
-            groupBoxEncoderSettings.Controls.Add(buttonNoPadding);
-            groupBoxEncoderSettings.Controls.Add(buttonHalfCores);
-            groupBoxEncoderSettings.Controls.Add(buttonNoSeektable);
-            groupBoxEncoderSettings.Controls.Add(buttonSetMaxCores);
-            groupBoxEncoderSettings.Controls.Add(buttonClearCommandLineEncoder);
-            groupBoxEncoderSettings.Controls.Add(buttonMaxCompressionLevel);
-            groupBoxEncoderSettings.Controls.Add(button5CompressionLevel);
-            groupBoxEncoderSettings.Controls.Add(labelThreads);
-            groupBoxEncoderSettings.Controls.Add(textBoxCompressionLevel);
-            groupBoxEncoderSettings.Controls.Add(labelCompressionLevel);
-            groupBoxEncoderSettings.Controls.Add(textBoxThreads);
             groupBoxEncoderSettings.Location = new Point(12, 278);
             groupBoxEncoderSettings.MinimumSize = new Size(630, 171);
             groupBoxEncoderSettings.Name = "groupBoxEncoderSettings";
@@ -558,11 +558,11 @@
             // 
             // groupBoxEncoders
             // 
-            groupBoxEncoders.Controls.Add(buttonDownEncoder);
-            groupBoxEncoders.Controls.Add(buttonUpEncoder);
-            groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
             groupBoxEncoders.Controls.Add(listViewEncoders);
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
+            groupBoxEncoders.Controls.Add(buttonUpEncoder);
+            groupBoxEncoders.Controls.Add(buttonDownEncoder);
+            groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
             groupBoxEncoders.MinimumSize = new Size(777, 0);
@@ -677,17 +677,17 @@
             // groupBoxAudioFiles
             // 
             groupBoxAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            groupBoxAudioFiles.Controls.Add(checkBoxWarningsAsErrors);
-            groupBoxAudioFiles.Controls.Add(labelAudioFileRemoved);
-            groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
-            groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
-            groupBoxAudioFiles.Controls.Add(buttonTestForErrors);
-            groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
-            groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(listViewAudioFiles);
-            groupBoxAudioFiles.Controls.Add(buttonRemoveAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
+            groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonRemoveAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
+            groupBoxAudioFiles.Controls.Add(buttonTestForErrors);
+            groupBoxAudioFiles.Controls.Add(checkBoxWarningsAsErrors);
+            groupBoxAudioFiles.Controls.Add(buttonClearUnchecked);
             groupBoxAudioFiles.Controls.Add(buttonClearAudioFiles);
+            groupBoxAudioFiles.Controls.Add(labelAudioFileRemoved);
             groupBoxAudioFiles.Location = new Point(795, 12);
             groupBoxAudioFiles.MinimumSize = new Size(777, 0);
             groupBoxAudioFiles.Name = "groupBoxAudioFiles";
@@ -880,17 +880,17 @@
             // 
             groupBoxJobsList.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBoxJobsList.Controls.Add(dataGridViewJobs);
-            groupBoxJobsList.Controls.Add(labelPasses);
-            groupBoxJobsList.Controls.Add(buttonMinusPass);
-            groupBoxJobsList.Controls.Add(buttonPlusPass);
-            groupBoxJobsList.Controls.Add(buttonDownJob);
-            groupBoxJobsList.Controls.Add(buttonUpJob);
-            groupBoxJobsList.Controls.Add(buttonRemoveJob);
-            groupBoxJobsList.Controls.Add(buttonCopyJobs);
-            groupBoxJobsList.Controls.Add(buttonPasteJobs);
             groupBoxJobsList.Controls.Add(buttonStartJobList);
+            groupBoxJobsList.Controls.Add(buttonUpJob);
+            groupBoxJobsList.Controls.Add(buttonDownJob);
+            groupBoxJobsList.Controls.Add(buttonRemoveJob);
+            groupBoxJobsList.Controls.Add(buttonMinusPass);
+            groupBoxJobsList.Controls.Add(labelPasses);
+            groupBoxJobsList.Controls.Add(buttonPlusPass);
             groupBoxJobsList.Controls.Add(buttonExportJobList);
             groupBoxJobsList.Controls.Add(buttonImportJobList);
+            groupBoxJobsList.Controls.Add(buttonCopyJobs);
+            groupBoxJobsList.Controls.Add(buttonPasteJobs);
             groupBoxJobsList.Controls.Add(buttonClearJobList);
             groupBoxJobsList.Location = new Point(12, 455);
             groupBoxJobsList.MinimumSize = new Size(777, 120);
@@ -1090,16 +1090,16 @@
             // 
             groupBoxLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxLog.Controls.Add(tabControlLog);
-            groupBoxLog.Controls.Add(buttonCopyLogAsBBCode);
-            groupBoxLog.Controls.Add(buttonLogColumnsAutoWidth);
-            groupBoxLog.Controls.Add(buttonPauseResume);
-            groupBoxLog.Controls.Add(buttonLogToExcel);
-            groupBoxLog.Controls.Add(buttonAnalyzeLog);
-            groupBoxLog.Controls.Add(labelStopped);
             groupBoxLog.Controls.Add(buttonStop);
-            groupBoxLog.Controls.Add(buttonClearLog);
-            groupBoxLog.Controls.Add(buttonCopyLog);
+            groupBoxLog.Controls.Add(buttonPauseResume);
+            groupBoxLog.Controls.Add(labelStopped);
+            groupBoxLog.Controls.Add(buttonAnalyzeLog);
+            groupBoxLog.Controls.Add(buttonLogToExcel);
+            groupBoxLog.Controls.Add(buttonCopyLogAsBBCode);
             groupBoxLog.Controls.Add(buttonOpenLogtxt);
+            groupBoxLog.Controls.Add(buttonCopyLog);
+            groupBoxLog.Controls.Add(buttonClearLog);
+            groupBoxLog.Controls.Add(buttonLogColumnsAutoWidth);
             groupBoxLog.Location = new Point(795, 455);
             groupBoxLog.MinimumSize = new Size(777, 120);
             groupBoxLog.Name = "groupBoxLog";
@@ -1141,23 +1141,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle61.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle61.BackColor = SystemColors.Control;
+            dataGridViewCellStyle61.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle61.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle61.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle61.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle61.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle61;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle62.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle62.BackColor = SystemColors.Control;
+            dataGridViewCellStyle62.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle62.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle62.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle62.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle62.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle62;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(2, 4);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1268,9 +1268,9 @@
             // 
             tableLayoutPanelMultiPlotByThreads.ColumnCount = 1;
             tableLayoutPanelMultiPlotByThreads.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPUClockByThreads, 0, 2);
-            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPULoadByThreads, 0, 1);
             tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotSpeedByThreads, 0, 0);
+            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPULoadByThreads, 0, 1);
+            tableLayoutPanelMultiPlotByThreads.Controls.Add(plotScalingMultiPlotCPUClockByThreads, 0, 2);
             tableLayoutPanelMultiPlotByThreads.Dock = DockStyle.Fill;
             tableLayoutPanelMultiPlotByThreads.Location = new Point(0, 0);
             tableLayoutPanelMultiPlotByThreads.Name = "tableLayoutPanelMultiPlotByThreads";
@@ -1362,8 +1362,8 @@
             // 
             tableLayoutPanelMultiPlotByParameters.ColumnCount = 1;
             tableLayoutPanelMultiPlotByParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotCompressionByParameters, 0, 1);
             tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotSpeedByParameters, 0, 0);
+            tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotCompressionByParameters, 0, 1);
             tableLayoutPanelMultiPlotByParameters.Dock = DockStyle.Fill;
             tableLayoutPanelMultiPlotByParameters.Location = new Point(0, 0);
             tableLayoutPanelMultiPlotByParameters.Name = "tableLayoutPanelMultiPlotByParameters";
@@ -1411,23 +1411,23 @@
             dataGridViewLogDetectDupes.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogDetectDupes.BackgroundColor = SystemColors.Control;
             dataGridViewLogDetectDupes.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle63.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle63.BackColor = SystemColors.Control;
+            dataGridViewCellStyle63.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle63.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle63.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle63.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle63.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle63;
             dataGridViewLogDetectDupes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = SystemColors.Control;
-            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle64.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle64.BackColor = SystemColors.Control;
+            dataGridViewCellStyle64.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle64.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle64.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle64.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle64.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle64;
             dataGridViewLogDetectDupes.GridColor = SystemColors.Control;
             dataGridViewLogDetectDupes.Location = new Point(2, 4);
             dataGridViewLogDetectDupes.Name = "dataGridViewLogDetectDupes";
@@ -1456,23 +1456,23 @@
             dataGridViewLogTestForErrors.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogTestForErrors.BackgroundColor = SystemColors.Control;
             dataGridViewLogTestForErrors.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = SystemColors.Control;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle65.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle65.BackColor = SystemColors.Control;
+            dataGridViewCellStyle65.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle65.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle65.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle65.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle65.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle65;
             dataGridViewLogTestForErrors.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = SystemColors.Control;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle66.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle66.BackColor = SystemColors.Control;
+            dataGridViewCellStyle66.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle66.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle66.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle66.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle66.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle66;
             dataGridViewLogTestForErrors.GridColor = SystemColors.Control;
             dataGridViewLogTestForErrors.Location = new Point(2, 4);
             dataGridViewLogTestForErrors.Name = "dataGridViewLogTestForErrors";
@@ -1686,29 +1686,16 @@
             tabPageLogsSettings.Text = "Logs";
             tabPageLogsSettings.UseVisualStyleBackColor = true;
             // 
-            // checkBoxClearLogsOnExitIncludeLogTXT
+            // checkBoxClearLogsOnExit
             // 
-            checkBoxClearLogsOnExitIncludeLogTXT.AutoSize = true;
-            checkBoxClearLogsOnExitIncludeLogTXT.Enabled = false;
-            checkBoxClearLogsOnExitIncludeLogTXT.Location = new Point(197, 81);
-            checkBoxClearLogsOnExitIncludeLogTXT.Name = "checkBoxClearLogsOnExitIncludeLogTXT";
-            checkBoxClearLogsOnExitIncludeLogTXT.Size = new Size(63, 19);
-            checkBoxClearLogsOnExitIncludeLogTXT.TabIndex = 4;
-            checkBoxClearLogsOnExitIncludeLogTXT.Text = "Log.txt";
-            checkBoxClearLogsOnExitIncludeLogTXT.UseVisualStyleBackColor = true;
-            checkBoxClearLogsOnExitIncludeLogTXT.Visible = false;
-            // 
-            // checkBoxClearLogsOnExitIncludeTestForErrors
-            // 
-            checkBoxClearLogsOnExitIncludeTestForErrors.AutoSize = true;
-            checkBoxClearLogsOnExitIncludeTestForErrors.Enabled = false;
-            checkBoxClearLogsOnExitIncludeTestForErrors.Location = new Point(197, 56);
-            checkBoxClearLogsOnExitIncludeTestForErrors.Name = "checkBoxClearLogsOnExitIncludeTestForErrors";
-            checkBoxClearLogsOnExitIncludeTestForErrors.Size = new Size(97, 19);
-            checkBoxClearLogsOnExitIncludeTestForErrors.TabIndex = 3;
-            checkBoxClearLogsOnExitIncludeTestForErrors.Text = "Test for Errors";
-            checkBoxClearLogsOnExitIncludeTestForErrors.UseVisualStyleBackColor = true;
-            checkBoxClearLogsOnExitIncludeTestForErrors.Visible = false;
+            checkBoxClearLogsOnExit.AutoSize = true;
+            checkBoxClearLogsOnExit.Location = new Point(185, 8);
+            checkBoxClearLogsOnExit.Name = "checkBoxClearLogsOnExit";
+            checkBoxClearLogsOnExit.Size = new Size(120, 19);
+            checkBoxClearLogsOnExit.TabIndex = 1;
+            checkBoxClearLogsOnExit.Text = "Clear Logs on exit";
+            checkBoxClearLogsOnExit.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExit.Visible = false;
             // 
             // checkBoxClearLogsOnExitIncludeDetectDupes
             // 
@@ -1722,17 +1709,29 @@
             checkBoxClearLogsOnExitIncludeDetectDupes.UseVisualStyleBackColor = true;
             checkBoxClearLogsOnExitIncludeDetectDupes.Visible = false;
             // 
-            // checkBoxClearLogsOnExit
+            // checkBoxClearLogsOnExitIncludeTestForErrors
             // 
-            checkBoxClearLogsOnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            checkBoxClearLogsOnExit.AutoSize = true;
-            checkBoxClearLogsOnExit.Location = new Point(185, 8);
-            checkBoxClearLogsOnExit.Name = "checkBoxClearLogsOnExit";
-            checkBoxClearLogsOnExit.Size = new Size(120, 19);
-            checkBoxClearLogsOnExit.TabIndex = 1;
-            checkBoxClearLogsOnExit.Text = "Clear Logs on exit";
-            checkBoxClearLogsOnExit.UseVisualStyleBackColor = true;
-            checkBoxClearLogsOnExit.Visible = false;
+            checkBoxClearLogsOnExitIncludeTestForErrors.AutoSize = true;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Enabled = false;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Location = new Point(197, 56);
+            checkBoxClearLogsOnExitIncludeTestForErrors.Name = "checkBoxClearLogsOnExitIncludeTestForErrors";
+            checkBoxClearLogsOnExitIncludeTestForErrors.Size = new Size(97, 19);
+            checkBoxClearLogsOnExitIncludeTestForErrors.TabIndex = 3;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Text = "Test for Errors";
+            checkBoxClearLogsOnExitIncludeTestForErrors.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExitIncludeTestForErrors.Visible = false;
+            // 
+            // checkBoxClearLogsOnExitIncludeLogTXT
+            // 
+            checkBoxClearLogsOnExitIncludeLogTXT.AutoSize = true;
+            checkBoxClearLogsOnExitIncludeLogTXT.Enabled = false;
+            checkBoxClearLogsOnExitIncludeLogTXT.Location = new Point(197, 81);
+            checkBoxClearLogsOnExitIncludeLogTXT.Name = "checkBoxClearLogsOnExitIncludeLogTXT";
+            checkBoxClearLogsOnExitIncludeLogTXT.Size = new Size(63, 19);
+            checkBoxClearLogsOnExitIncludeLogTXT.TabIndex = 4;
+            checkBoxClearLogsOnExitIncludeLogTXT.Text = "Log.txt";
+            checkBoxClearLogsOnExitIncludeLogTXT.UseVisualStyleBackColor = true;
+            checkBoxClearLogsOnExitIncludeLogTXT.Visible = false;
             // 
             // tabPagePlotsSettings
             // 
@@ -1748,32 +1747,6 @@
             tabPagePlotsSettings.Text = "Plots";
             tabPagePlotsSettings.UseVisualStyleBackColor = true;
             // 
-            // checkBoxShowTooltipsOnPlots
-            // 
-            checkBoxShowTooltipsOnPlots.AutoSize = true;
-            checkBoxShowTooltipsOnPlots.Checked = true;
-            checkBoxShowTooltipsOnPlots.CheckState = CheckState.Checked;
-            checkBoxShowTooltipsOnPlots.Location = new Point(185, 8);
-            checkBoxShowTooltipsOnPlots.Name = "checkBoxShowTooltipsOnPlots";
-            checkBoxShowTooltipsOnPlots.Size = new Size(67, 19);
-            checkBoxShowTooltipsOnPlots.TabIndex = 4;
-            checkBoxShowTooltipsOnPlots.Text = "Tooltips";
-            toolTip1.SetToolTip(checkBoxShowTooltipsOnPlots, "Enable/disable interactive tooltips showing series name and exact X/Y values when hovering over data points.");
-            checkBoxShowTooltipsOnPlots.UseVisualStyleBackColor = true;
-            checkBoxShowTooltipsOnPlots.CheckedChanged += CheckBoxShowTooltipsOnPlots_CheckedChanged;
-            // 
-            // checkBoxShowIdealCPULoadLine
-            // 
-            checkBoxShowIdealCPULoadLine.AutoSize = true;
-            checkBoxShowIdealCPULoadLine.Location = new Point(4, 80);
-            checkBoxShowIdealCPULoadLine.Name = "checkBoxShowIdealCPULoadLine";
-            checkBoxShowIdealCPULoadLine.Size = new Size(131, 19);
-            checkBoxShowIdealCPULoadLine.TabIndex = 3;
-            checkBoxShowIdealCPULoadLine.Text = "Ideal CPU Load line ";
-            toolTip1.SetToolTip(checkBoxShowIdealCPULoadLine, "Show/hide ideal CPU load reference line (100% per thread, linear scaling).");
-            checkBoxShowIdealCPULoadLine.UseVisualStyleBackColor = true;
-            checkBoxShowIdealCPULoadLine.CheckedChanged += CheckBoxShowIdealCPULoadLine_CheckedChanged;
-            // 
             // checkBoxDrawMultiplots
             // 
             checkBoxDrawMultiplots.AutoSize = true;
@@ -1785,20 +1758,6 @@
             toolTip1.SetToolTip(checkBoxDrawMultiplots, "Toggle between individual plots and consolidated multiplot view with shared axes.");
             checkBoxDrawMultiplots.UseVisualStyleBackColor = true;
             checkBoxDrawMultiplots.CheckedChanged += CheckBoxDrawMultiplots_CheckedChanged;
-            // 
-            // checkBoxShowAggregatedByEncoderPlots
-            // 
-            checkBoxShowAggregatedByEncoderPlots.AutoSize = true;
-            checkBoxShowAggregatedByEncoderPlots.Checked = true;
-            checkBoxShowAggregatedByEncoderPlots.CheckState = CheckState.Checked;
-            checkBoxShowAggregatedByEncoderPlots.Location = new Point(4, 56);
-            checkBoxShowAggregatedByEncoderPlots.Name = "checkBoxShowAggregatedByEncoderPlots";
-            checkBoxShowAggregatedByEncoderPlots.Size = new Size(150, 19);
-            checkBoxShowAggregatedByEncoderPlots.TabIndex = 2;
-            checkBoxShowAggregatedByEncoderPlots.Text = "Aggregated by Encoder";
-            toolTip1.SetToolTip(checkBoxShowAggregatedByEncoderPlots, "Show/hide aggregated series (bold lines) representing average performance across all files for each encoder/parameter combination.");
-            checkBoxShowAggregatedByEncoderPlots.UseVisualStyleBackColor = true;
-            checkBoxShowAggregatedByEncoderPlots.CheckedChanged += CheckBoxShowAggregatedByEncoderPlots_CheckedChanged;
             // 
             // checkBoxShowIndividualFilesPlots
             // 
@@ -1814,6 +1773,46 @@
             checkBoxShowIndividualFilesPlots.UseVisualStyleBackColor = true;
             checkBoxShowIndividualFilesPlots.CheckedChanged += CheckBoxShowIndividualFilesPlots_CheckedChanged;
             // 
+            // checkBoxShowAggregatedByEncoderPlots
+            // 
+            checkBoxShowAggregatedByEncoderPlots.AutoSize = true;
+            checkBoxShowAggregatedByEncoderPlots.Checked = true;
+            checkBoxShowAggregatedByEncoderPlots.CheckState = CheckState.Checked;
+            checkBoxShowAggregatedByEncoderPlots.Location = new Point(4, 56);
+            checkBoxShowAggregatedByEncoderPlots.Name = "checkBoxShowAggregatedByEncoderPlots";
+            checkBoxShowAggregatedByEncoderPlots.Size = new Size(150, 19);
+            checkBoxShowAggregatedByEncoderPlots.TabIndex = 2;
+            checkBoxShowAggregatedByEncoderPlots.Text = "Aggregated by Encoder";
+            toolTip1.SetToolTip(checkBoxShowAggregatedByEncoderPlots, "Show/hide aggregated series (bold lines) representing average performance across all files for each encoder/parameter combination.");
+            checkBoxShowAggregatedByEncoderPlots.UseVisualStyleBackColor = true;
+            checkBoxShowAggregatedByEncoderPlots.CheckedChanged += CheckBoxShowAggregatedByEncoderPlots_CheckedChanged;
+            // 
+            // checkBoxShowIdealCPULoadLine
+            // 
+            checkBoxShowIdealCPULoadLine.AutoSize = true;
+            checkBoxShowIdealCPULoadLine.Location = new Point(4, 80);
+            checkBoxShowIdealCPULoadLine.Name = "checkBoxShowIdealCPULoadLine";
+            checkBoxShowIdealCPULoadLine.Size = new Size(131, 19);
+            checkBoxShowIdealCPULoadLine.TabIndex = 3;
+            checkBoxShowIdealCPULoadLine.Text = "Ideal CPU Load line ";
+            toolTip1.SetToolTip(checkBoxShowIdealCPULoadLine, "Show/hide ideal CPU load reference line (100% per thread, linear scaling).");
+            checkBoxShowIdealCPULoadLine.UseVisualStyleBackColor = true;
+            checkBoxShowIdealCPULoadLine.CheckedChanged += CheckBoxShowIdealCPULoadLine_CheckedChanged;
+            // 
+            // checkBoxShowTooltipsOnPlots
+            // 
+            checkBoxShowTooltipsOnPlots.AutoSize = true;
+            checkBoxShowTooltipsOnPlots.Checked = true;
+            checkBoxShowTooltipsOnPlots.CheckState = CheckState.Checked;
+            checkBoxShowTooltipsOnPlots.Location = new Point(185, 8);
+            checkBoxShowTooltipsOnPlots.Name = "checkBoxShowTooltipsOnPlots";
+            checkBoxShowTooltipsOnPlots.Size = new Size(67, 19);
+            checkBoxShowTooltipsOnPlots.TabIndex = 4;
+            checkBoxShowTooltipsOnPlots.Text = "Tooltips";
+            toolTip1.SetToolTip(checkBoxShowTooltipsOnPlots, "Enable/disable interactive tooltips showing series name and exact X/Y values when hovering over data points.");
+            checkBoxShowTooltipsOnPlots.UseVisualStyleBackColor = true;
+            checkBoxShowTooltipsOnPlots.CheckedChanged += CheckBoxShowTooltipsOnPlots_CheckedChanged;
+            // 
             // tabPageMiscSettings
             // 
             tabPageMiscSettings.Controls.Add(buttonSelectTempFolder);
@@ -1826,6 +1825,26 @@
             tabPageMiscSettings.TabIndex = 1;
             tabPageMiscSettings.Text = "Misc";
             tabPageMiscSettings.UseVisualStyleBackColor = true;
+            // 
+            // buttonSelectTempFolder
+            // 
+            buttonSelectTempFolder.Location = new Point(3, 5);
+            buttonSelectTempFolder.Name = "buttonSelectTempFolder";
+            buttonSelectTempFolder.Size = new Size(164, 23);
+            buttonSelectTempFolder.TabIndex = 0;
+            buttonSelectTempFolder.Text = "Select Temp folder";
+            buttonSelectTempFolder.UseVisualStyleBackColor = true;
+            buttonSelectTempFolder.Click += ButtonSelectTempFolder_Click;
+            // 
+            // checkBoxClearTempFolder
+            // 
+            checkBoxClearTempFolder.AutoSize = true;
+            checkBoxClearTempFolder.Location = new Point(4, 32);
+            checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
+            checkBoxClearTempFolder.Size = new Size(157, 19);
+            checkBoxClearTempFolder.TabIndex = 1;
+            checkBoxClearTempFolder.Text = "Clear temp folder on exit";
+            checkBoxClearTempFolder.UseVisualStyleBackColor = true;
             // 
             // checkBoxAddMD5OnLoadWav
             // 
@@ -1850,36 +1869,14 @@
             checkBoxCheckForUpdatesOnStartup.UseVisualStyleBackColor = true;
             checkBoxCheckForUpdatesOnStartup.CheckedChanged += CheckBoxCheckForUpdatesOnStartup_CheckedChanged;
             // 
-            // buttonSelectTempFolder
-            // 
-            buttonSelectTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSelectTempFolder.Location = new Point(3, 5);
-            buttonSelectTempFolder.Name = "buttonSelectTempFolder";
-            buttonSelectTempFolder.Size = new Size(164, 23);
-            buttonSelectTempFolder.TabIndex = 0;
-            buttonSelectTempFolder.Text = "Select Temp folder";
-            buttonSelectTempFolder.UseVisualStyleBackColor = true;
-            buttonSelectTempFolder.Click += ButtonSelectTempFolder_Click;
-            // 
-            // checkBoxClearTempFolder
-            // 
-            checkBoxClearTempFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            checkBoxClearTempFolder.AutoSize = true;
-            checkBoxClearTempFolder.Location = new Point(4, 32);
-            checkBoxClearTempFolder.Name = "checkBoxClearTempFolder";
-            checkBoxClearTempFolder.Size = new Size(157, 19);
-            checkBoxClearTempFolder.TabIndex = 1;
-            checkBoxClearTempFolder.Text = "Clear temp folder on exit";
-            checkBoxClearTempFolder.UseVisualStyleBackColor = true;
-            // 
             // groupBoxDecoderSettings
             // 
-            groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
-            groupBoxDecoderSettings.Controls.Add(buttonStartDecode);
             groupBoxDecoderSettings.Controls.Add(labelCommandLineDecoder);
-            groupBoxDecoderSettings.Controls.Add(buttonAddJobToJobListDecoder);
             groupBoxDecoderSettings.Controls.Add(textBoxCommandLineOptionsDecoder);
             groupBoxDecoderSettings.Controls.Add(buttonClearCommandLineDecoder);
+            groupBoxDecoderSettings.Controls.Add(buttonStartDecode);
+            groupBoxDecoderSettings.Controls.Add(buttonAddJobToJobListDecoder);
+            groupBoxDecoderSettings.Controls.Add(progressBarDecoder);
             groupBoxDecoderSettings.Location = new Point(795, 278);
             groupBoxDecoderSettings.MinimumSize = new Size(417, 171);
             groupBoxDecoderSettings.Name = "groupBoxDecoderSettings";
@@ -1942,10 +1939,10 @@
             // 
             // groupBoxInformation
             // 
-            groupBoxInformation.Controls.Add(buttonAbout);
-            groupBoxInformation.Controls.Add(labelCpuUsageValue);
-            groupBoxInformation.Controls.Add(labelCpuUsageTitle);
             groupBoxInformation.Controls.Add(labelCpuInfo);
+            groupBoxInformation.Controls.Add(labelCpuUsageTitle);
+            groupBoxInformation.Controls.Add(labelCpuUsageValue);
+            groupBoxInformation.Controls.Add(buttonAbout);
             groupBoxInformation.Location = new Point(648, 278);
             groupBoxInformation.MinimumSize = new Size(141, 171);
             groupBoxInformation.Name = "groupBoxInformation";
@@ -1981,14 +1978,14 @@
             AutoScrollMinSize = new Size(0, 600);
             CancelButton = buttonStop;
             ClientSize = new Size(1584, 861);
+            Controls.Add(groupBoxEncoders);
+            Controls.Add(groupBoxAudioFiles);
+            Controls.Add(groupBoxEncoderSettings);
             Controls.Add(groupBoxInformation);
             Controls.Add(groupBoxDecoderSettings);
-            Controls.Add(groupBoxLog);
             Controls.Add(groupBoxSettings);
             Controls.Add(groupBoxJobsList);
-            Controls.Add(groupBoxAudioFiles);
-            Controls.Add(groupBoxEncoders);
-            Controls.Add(groupBoxEncoderSettings);
+            Controls.Add(groupBoxLog);
             DoubleBuffered = true;
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
