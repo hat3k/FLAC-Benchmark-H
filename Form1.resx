@@ -120,27 +120,12 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="checkBoxWarmupPass.ToolTip" xml:space="preserve">
     <value>Enables a short warm-up pass before benchmarking begins.
 
 When enabled: All encoders start under identical thermal and CPU frequency conditions, ensuring fair comparison.
 
 When disabled: The first test pass may show slower performance due to CPU frequency ramp-up (turbo boost not yet active).</value>
-  </data>
-  <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
-    <value>Tests all FLAC files in the list (both checked and unchecked) for integrity errors.
-If errors are found, they are displayed in the "Test for Errors" tab of the Log.
-Needs a FLAC binary loaded in the list.
-Uses first checked binary or first one if nothing is checked.
-
-Consider enabling the "Warnings as Errors" option to see additional diagnostic messages.
-
-Warnings:
-• There is no progress indicator - checking many files may take a long time.
-• The operation can be resource-intensive when processing a large number of files.</value>
   </data>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing MD5 hashes of their raw PCM data.
@@ -161,18 +146,18 @@ Warnings:
 • There is no progress indicator - processing many files may take a long time.
 • The operation can be resource-intensive when handling a large number of files.</value>
   </data>
-  <metadata name="Column1CheckBox.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="Column2JobType.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="Column3Passes.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="Column4Parameters.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
+  <data name="buttonTestForErrors.ToolTip" xml:space="preserve">
+    <value>Tests all FLAC files in the list (both checked and unchecked) for integrity errors.
+If errors are found, they are displayed in the "Test for Errors" tab of the Log.
+Needs a FLAC binary loaded in the list.
+Uses first checked binary or first one if nothing is checked.
+
+Consider enabling the "Warnings as Errors" option to see additional diagnostic messages.
+
+Warnings:
+• There is no progress indicator - checking many files may take a long time.
+• The operation can be resource-intensive when processing a large number of files.</value>
+  </data>
   <metadata name="Column1CheckBox.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -191,7 +176,7 @@ Warnings:
 Identifies the fastest en/de-coder and smallest output size for each file,
 and detects duplicate sizes across configurations.
 
-Perform this before exporting the log to Excel.</value>
+Perform this before exporting the log to Excel and to draw the Plots.</value>
   </data>
   <data name="checkBoxRemoveMetadata.ToolTip" xml:space="preserve">
     <value>Run "metaflac.exe --remove-all --dont-use-padding" after encoding.

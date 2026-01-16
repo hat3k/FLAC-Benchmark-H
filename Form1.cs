@@ -365,8 +365,7 @@ namespace FLAC_Benchmark_H
                     $"AddWarmupPass={checkBoxWarmupPass.Checked}",
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
-                    $"CPUPriority={comboBoxCPUPriority.SelectedItem}",
-                    
+                    $"CPUPriority={(comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")}",                    
                     //Plots
                     $"DrawMultiplots={checkBoxDrawMultiplots.Checked}",
                     $"ShowIndividualFilesPlots={checkBoxShowIndividualFilesPlots.Checked}",
@@ -383,17 +382,17 @@ namespace FLAC_Benchmark_H
                     $"IgnoredVersion={programVersionIgnored ?? ""}"
                 };
 
+                // Logs
+                foreach (DataGridViewColumn col in dataGridViewLog.Columns)
+                {
+                    settings.Add($"LogColumnHeaders_{col.Name}={col.HeaderText}");
+                }
                 foreach (DataGridViewColumn col in dataGridViewLog.Columns)
                 {
                     settings.Add($"LogColumnVisibility_{col.Name}={col.Visible}");
                 }
 
-                foreach (DataGridViewColumn col in dataGridViewLog.Columns)
-                {
-                    settings.Add($"LogColumnHeaders_{col.Name}={col.HeaderText}");
-                }
-
-                File.WriteAllLines(SettingsGeneralFilePath, settings);
+                File.WriteAllLines(SettingsGeneralFilePath, settings, Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -511,9 +510,42 @@ namespace FLAC_Benchmark_H
                         case "CommandLineOptionsDecoder":
                             textBoxCommandLineOptionsDecoder.Text = value;
                             break;
+
+                        // Quick
+                        case "RemoveMetadata":
+                            checkBoxRemoveMetadata.Checked = bool.TryParse(value, out bool remove) && remove;
+                            break;
+                        case "AddWarmupPass":
+                            checkBoxWarmupPass.Checked = bool.TryParse(value, out bool warmup) && warmup;
+                            break;
+                        case "PreventSleep":
+                            checkBoxPreventSleep.Checked = bool.TryParse(value, out bool prevent) && prevent;
+                            break;
+                        case "AutoAnalyzeLog":
+                            checkBoxAutoAnalyzeLog.Checked = bool.TryParse(value, out bool analyze) && analyze;
+                            break;
                         case "CPUPriority":
                             comboBoxCPUPriority.SelectedItem = value;
                             break;
+
+                        // Plots
+                        case "DrawMultiplots":
+                            checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool drawMultiplots) && drawMultiplots;
+                            break;
+                        case "ShowIndividualFilesPlots":
+                            checkBoxShowIndividualFilesPlots.Checked = bool.TryParse(value, out bool showIndividualFiles) && showIndividualFiles;
+                            break;
+                        case "ShowAggregatedByEncoderPlots":
+                            checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showAggregatedByEncoder) && showAggregatedByEncoder;
+                            break;
+                        case "ShowIdealCPULoadLine":
+                            checkBoxShowIdealCPULoadLine.Checked = bool.TryParse(value, out bool showIdealCPULoadLine) && showIdealCPULoadLine;
+                            break;
+                        case "ShowTooltipsOnPlots":
+                            checkBoxShowTooltipsOnPlots.Checked = bool.TryParse(value, out bool showTooltipsOnPlots) && showTooltipsOnPlots;
+                            break;
+
+                        // Misc
                         case "TempFolderPath":
                             // If path is relative - resolve it relative to application directory
                             if (value.StartsWith(".\\") || value.StartsWith("./"))
@@ -530,57 +562,32 @@ namespace FLAC_Benchmark_H
                         case "ClearTempFolderOnExit":
                             checkBoxClearTempFolder.Checked = bool.TryParse(value, out bool clear) && clear;
                             break;
-                        case "RemoveMetadata":
-                            checkBoxRemoveMetadata.Checked = bool.TryParse(value, out bool remove) && remove;
-                            break;
                         case "AddMD5OnLoadWav":
                             checkBoxAddMD5OnLoadWav.Checked = bool.TryParse(value, out bool addMd5) && addMd5;
-                            break;
-                        case "AddWarmupPass":
-                            checkBoxWarmupPass.Checked = bool.TryParse(value, out bool warmup) && warmup;
-                            break;
-                        case "WarningsAsErrors":
-                            checkBoxWarningsAsErrors.Checked = bool.TryParse(value, out bool warnings) && warnings;
-                            break;
-                        case "AutoAnalyzeLog":
-                            checkBoxAutoAnalyzeLog.Checked = bool.TryParse(value, out bool analyze) && analyze;
-                            break;
-                        case "PreventSleep":
-                            checkBoxPreventSleep.Checked = bool.TryParse(value, out bool prevent) && prevent;
                             break;
                         case "CheckForUpdatesOnStartup":
                             checkBoxCheckForUpdatesOnStartup.Checked = bool.TryParse(value, out bool check) && check;
                             break;
+                        case "WarningsAsErrors":
+                            checkBoxWarningsAsErrors.Checked = bool.TryParse(value, out bool warnings) && warnings;
+                            break;
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
                             break;
-                        case "DrawMultiplots":
-                            checkBoxDrawMultiplots.Checked = bool.TryParse(value, out bool drawMultiplots) && drawMultiplots;
-                            break;
-                        case "ShowIndividualFilesPlots":
-                            checkBoxShowIndividualFilesPlots.Checked = bool.TryParse(value, out bool showIndividualFiles) && showIndividualFiles;
-                            break;
-                        case "ShowAggregatedByEncoderPlots":
-                            checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showAggregatedByEncoder) && showAggregatedByEncoder;
-                            break;
-                        case "ShowIdealCPULoadLine":
-                            checkBoxShowAggregatedByEncoderPlots.Checked = bool.TryParse(value, out bool showIdealCPULoadLine) && showIdealCPULoadLine;
-                            break;
-                        case "ShowTooltipsOnPlots":
-                            checkBoxShowTooltipsOnPlots.Checked = bool.TryParse(value, out bool showTooltipsOnPlots) && showTooltipsOnPlots;
+
+                        // Logs
+                        case string s when s.StartsWith("LogColumnHeaders_"):
+                            string columnNameHdr = s.Substring("LogColumnHeaders_".Length);
+                            if (dataGridViewLog.Columns[columnNameHdr] is DataGridViewColumn colHdr)
+                            {
+                                colHdr.HeaderText = value;
+                            }
                             break;
                         case string s when s.StartsWith("LogColumnVisibility_"):
                             string columnNameVis = s.Substring("LogColumnVisibility_".Length);
                             if (bool.TryParse(value, out bool visible) && dataGridViewLog.Columns[columnNameVis] is DataGridViewColumn colVis)
                             {
                                 colVis.Visible = visible;
-                            }
-                            break;
-                        case string s when s.StartsWith("LogColumnHeaders_"):
-                            string columnNameHdr = s.Substring("LogColumnHeaders_".Length);
-                            if (dataGridViewLog.Columns[columnNameHdr] is DataGridViewColumn colHdr)
-                            {
-                                colHdr.HeaderText = value;
                             }
                             break;
                     }
@@ -3716,7 +3723,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3785,7 +3792,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3878,7 +3885,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3945,7 +3952,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -4659,39 +4666,40 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonClearLog_Click(object? sender, EventArgs e)
         {
-            // Check if Shift key is pressed
             bool clearAllTabs = ModifierKeys.HasFlag(Keys.Shift);
 
             if (clearAllTabs)
             {
-                // CLEAR ALL THREE TABS
+                // Clear all tabs
                 dataGridViewLog.Rows.Clear();
-                dataGridViewLogDetectDupes.Rows.Clear();
-                dataGridViewLogTestForErrors.Rows.Clear();
-
-                // Hide optional columns 
                 dataGridViewLog.Columns["Errors"]!.Visible = false;
-
-                // Clear internal benchmark cache (only relevant to Benchmark tab)
-                _benchmarkPasses.Clear();
-
-                // Clear selections
                 dataGridViewLog.ClearSelection();
+
+                dataGridViewLogDetectDupes.Rows.Clear();
                 dataGridViewLogDetectDupes.ClearSelection();
+
+                dataGridViewLogTestForErrors.Rows.Clear();
                 dataGridViewLogTestForErrors.ClearSelection();
 
-                // Switch to Benchmark tab after full clear
-                tabControlLog.SelectedTab = Benchmark;
+                _benchmarkPasses.Clear();
+                ClearAllPlots();
+                // tabControlLog.SelectedTab = Benchmark;
             }
             else
             {
-                // CLEAR ONLY THE CURRENTLY SELECTED TAB
+                // Clear only selected tab
                 if (tabControlLog.SelectedTab == Benchmark)
                 {
                     dataGridViewLog.Rows.Clear();
                     dataGridViewLog.Columns["Errors"]!.Visible = false;
                     _benchmarkPasses.Clear();
                     dataGridViewLog.ClearSelection();
+
+                    ClearAllPlots();
+                }
+                else if (tabControlLog.SelectedTab == ScalingPlots)
+                {
+                    ClearAllPlots();
                 }
                 else if (tabControlLog.SelectedTab == DetectDupes)
                 {
@@ -4704,6 +4712,55 @@ namespace FLAC_Benchmark_H
                     dataGridViewLogTestForErrors.ClearSelection();
                 }
             }
+        }
+        private void ClearAllPlots()
+        {
+            allIndividualSeries.Clear();
+            allAggregatedSeries.Clear();
+            allScatterSeriesSpeedByThreads.Clear();
+            allScatterSeriesCPULoadByThreads.Clear();
+            allScatterSeriesCPUClockByThreads.Clear();
+            allScatterSeriesSpeedByParameters.Clear();
+            allScatterSeriesCompressionByParameters.Clear();
+
+            dynamicTooltipSpeedByThreads = null;
+            dynamicTooltipMultiplotSpeedByThreads = null;
+            dynamicTooltipCPULoadByThreads = null;
+            dynamicTooltipMultiplotCPULoadByThreads = null;
+            dynamicTooltipCPUClockByThreads = null;
+            dynamicTooltipMultiplotCPUClockByThreads = null;
+            dynamicTooltipSpeedByParameters = null;
+            dynamicTooltipMultiplotSpeedByParameters = null;
+            dynamicTooltipCompressionByParameters = null;
+            dynamicTooltipMultiplotCompressionByParameters = null;
+
+            idealCPULoadLineSingle = null;
+            idealCPULoadLineMultiplot = null;
+
+            allParamsSpeedByParameters.Clear();
+            allParamsCompressionByParameters.Clear();
+
+            plotScalingPlotSpeedByThreads.Plot.Clear();
+            plotScalingMultiPlotSpeedByThreads.Plot.Clear();
+            plotScalingPlotCPULoadByThreads.Plot.Clear();
+            plotScalingMultiPlotCPULoadByThreads.Plot.Clear();
+            plotScalingPlotCPUClockByThreads.Plot.Clear();
+            plotScalingMultiPlotCPUClockByThreads.Plot.Clear();
+            plotScalingPlotSpeedByParameters.Plot.Clear();
+            plotScalingMultiPlotSpeedByParameters.Plot.Clear();
+            plotScalingPlotCompressionByParameters.Plot.Clear();
+            plotScalingMultiPlotCompressionByParameters.Plot.Clear();
+
+            plotScalingPlotSpeedByThreads.Refresh();
+            plotScalingMultiPlotSpeedByThreads.Refresh();
+            plotScalingPlotCPULoadByThreads.Refresh();
+            plotScalingMultiPlotCPULoadByThreads.Refresh();
+            plotScalingPlotCPUClockByThreads.Refresh();
+            plotScalingMultiPlotCPUClockByThreads.Refresh();
+            plotScalingPlotSpeedByParameters.Refresh();
+            plotScalingMultiPlotSpeedByParameters.Refresh();
+            plotScalingPlotCompressionByParameters.Refresh();
+            plotScalingMultiPlotCompressionByParameters.Refresh();
         }
 
         // Key actions
@@ -7903,8 +7960,6 @@ namespace FLAC_Benchmark_H
         private ScottPlot.Plottable.Tooltip? dynamicTooltipCompressionByParameters;
         private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotCompressionByParameters;
 
-
-
         private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
@@ -8091,11 +8146,11 @@ namespace FLAC_Benchmark_H
         {
             if (checkBoxPreventSleep.Checked)
             {
-                SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
+                _ = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
             }
             else
             {
-                SetThreadExecutionState(ES_CONTINUOUS);
+                _ = SetThreadExecutionState(ES_CONTINUOUS);
             }
         }
         private void CheckBoxCheckForUpdatesOnStartup_CheckedChanged(object? sender, EventArgs e)
@@ -8304,6 +8359,7 @@ namespace FLAC_Benchmark_H
             LoadJobs();
 
             CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
+            CheckBoxShowTooltipsOnPlots_CheckedChanged(null, EventArgs.Empty);
 
             this.ActiveControl = null; // Remove focus from all elements
         }
@@ -8318,7 +8374,9 @@ namespace FLAC_Benchmark_H
             // Clean up MediaInfo pool
             while (_mediaInfoPool.TryDequeue(out var mediaInfo))
             {
-                mediaInfo.Close();
+                mediaInfo?.Close();
+                if (mediaInfo is IDisposable disposable)
+                    disposable.Dispose();
             }
 
             // Stop and dispose UI timers and performance counters
