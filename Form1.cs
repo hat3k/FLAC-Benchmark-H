@@ -851,12 +851,12 @@ namespace FLAC_Benchmark_H
                         int secondBar = line.IndexOf('|', firstBar + 1);
                         int thirdBar = line.IndexOf('|', secondBar + 1);
 
-                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
+                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1)
                         {
                             bool isChecked = line.StartsWith("Checked");
                             string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
                             string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                            string parameters = line.Substring(thirdBar + 1);
+                            string parameters = thirdBar + 1 < line.Length ? line.Substring(thirdBar + 1) : "";
 
                             // Add the parsed job data as a new row to dataGridViewJobs
                             dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters)));
@@ -3644,7 +3644,7 @@ namespace FLAC_Benchmark_H
                 allParams = series.Values
                     .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
-                    .Where(p => !string.IsNullOrEmpty(p))
+                    .Select(p => string.IsNullOrEmpty(p) ? "[default]" : p)
                     .Distinct()
                     .OrderBy(p => p, new NaturalStringComparer())
                     .ToList();
@@ -3680,7 +3680,8 @@ namespace FLAC_Benchmark_H
                         var paramsList = kvp.Value.Params;
                         var speeds = kvp.Value.AvgSpeeds;
 
-                        double[] xs = paramsList.Select(p => (double)allParams.IndexOf(p)).ToArray();
+                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        double[] xs = normalizedParams.Select(p => (double)allParams.IndexOf(p)).ToArray();
                         double[] ys = speeds.ToArray();
 
                         var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
@@ -3701,7 +3702,10 @@ namespace FLAC_Benchmark_H
                             string label = $"Avg Speed: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
-                            var groupedByParam = dataPoints
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Speed });
+
+                            var groupedByParam = normalizedData
                                 .GroupBy(x => x.Param)
                                 .Select(g => new
                                 {
@@ -3728,7 +3732,6 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3749,7 +3752,8 @@ namespace FLAC_Benchmark_H
                         var paramsList = kvp.Value.Params;
                         var speeds = kvp.Value.AvgSpeeds;
 
-                        double[] xs = paramsList.Select(p => (double)allParams.IndexOf(p)).ToArray();
+                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        double[] xs = normalizedParams.Select(p => (double)allParams.IndexOf(p)).ToArray();
                         double[] ys = speeds.ToArray();
 
                         var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
@@ -3770,7 +3774,10 @@ namespace FLAC_Benchmark_H
                             string label = $"Avg Speed: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
-                            var groupedByParam = dataPoints
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Speed });
+
+                            var groupedByParam = normalizedData
                                 .GroupBy(x => x.Param)
                                 .Select(g => new
                                 {
@@ -3797,7 +3804,6 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3821,7 +3827,7 @@ namespace FLAC_Benchmark_H
                 allParams = series.Values
                     .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
-                    .Where(p => !string.IsNullOrEmpty(p))
+                    .Select(p => string.IsNullOrEmpty(p) ? "[default]" : p)
                     .Distinct()
                     .OrderBy(p => p, new NaturalStringComparer())
                     .ToList();
@@ -3857,10 +3863,11 @@ namespace FLAC_Benchmark_H
                         var paramsList = kvp.Value.Params;
                         var compressions = kvp.Value.Compressions;
 
-                        var points = paramsList.Select(p => (double)allParams.IndexOf(p))
-                                              .Zip(compressions, (x, y) => new { x, y })
-                                              .OrderBy(p => p.x)
-                                              .ToArray();
+                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(compressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
                         double[] xs = points.Select(p => p.x).ToArray();
                         double[] ys = points.Select(p => p.y).ToArray();
 
@@ -3876,7 +3883,10 @@ namespace FLAC_Benchmark_H
                             string label = $"Avg Compression: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
-                            var groupedByParam = dataPoints
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Compression });
+
+                            var groupedByParam = normalizedData
                                 .GroupBy(x => x.Param)
                                 .Select(g => new
                                 {
@@ -3903,7 +3913,6 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
@@ -3924,10 +3933,11 @@ namespace FLAC_Benchmark_H
                         var paramsList = kvp.Value.Params;
                         var compressions = kvp.Value.Compressions;
 
-                        var points = paramsList.Select(p => (double)allParams.IndexOf(p))
-                                              .Zip(compressions, (x, y) => new { x, y })
-                                              .OrderBy(p => p.x)
-                                              .ToArray();
+                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(compressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
                         double[] xs = points.Select(p => p.x).ToArray();
                         double[] ys = points.Select(p => p.y).ToArray();
 
@@ -3943,7 +3953,10 @@ namespace FLAC_Benchmark_H
                             string label = $"Avg Compression: {kvp.Key}";
                             var dataPoints = kvp.Value;
 
-                            var groupedByParam = dataPoints
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Compression });
+
+                            var groupedByParam = normalizedData
                                 .GroupBy(x => x.Param)
                                 .Select(g => new
                                 {
@@ -3970,7 +3983,6 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
                     plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
-                    // plt.XAxis.TickLabelStyle(rotation: 45);
                     plt.AxisAuto();
                 }
             }
