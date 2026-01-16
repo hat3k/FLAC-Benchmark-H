@@ -366,12 +366,15 @@ namespace FLAC_Benchmark_H
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
                     $"CPUPriority={(comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")}",                    
+ 
                     //Plots
                     $"DrawMultiplots={checkBoxDrawMultiplots.Checked}",
                     $"ShowIndividualFilesPlots={checkBoxShowIndividualFilesPlots.Checked}",
                     $"ShowAggregatedByEncoderPlots={checkBoxShowAggregatedByEncoderPlots.Checked}",
                     $"ShowIdealCPULoadLine={checkBoxShowIdealCPULoadLine.Checked}",
                     $"ShowTooltipsOnPlots={checkBoxShowTooltipsOnPlots.Checked}",
+                    $"WrapLongPlotLabels={checkBoxWrapLongPlotLabels.Checked}",
+                    $"WrapLongPlotLabelsLength={textBoxWrapLongPlotLabels.Text}",
 
                     // Misc
                     $"TempFolderPath={tempPathToSave}",
@@ -543,6 +546,12 @@ namespace FLAC_Benchmark_H
                             break;
                         case "ShowTooltipsOnPlots":
                             checkBoxShowTooltipsOnPlots.Checked = bool.TryParse(value, out bool showTooltipsOnPlots) && showTooltipsOnPlots;
+                            break;
+                        case "WrapLongPlotLabels":
+                            checkBoxWrapLongPlotLabels.Checked = bool.TryParse(value, out bool wrap) && wrap;
+                            break;
+                        case "WrapLongPlotLabelsLength":
+                            textBoxWrapLongPlotLabels.Text = value;
                             break;
 
                         // Misc
@@ -3650,12 +3659,25 @@ namespace FLAC_Benchmark_H
             if (series.Count > 0)
             {
                 allParams = series.Values
+                    .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
+                    .Where(p => !string.IsNullOrEmpty(p))
                     .Distinct()
                     .OrderBy(p => p, new NaturalStringComparer())
                     .ToList();
+
                 xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
-                xLabels = allParams.ToArray();
+
+                xLabels = allParams.Select(param =>
+                {
+                    if (checkBoxWrapLongPlotLabels.Checked &&
+                        int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
+                        maxLength > 0)
+                    {
+                        return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
+                    }
+                    return param;
+                }).ToArray();
             }
 
             {
@@ -3814,12 +3836,25 @@ namespace FLAC_Benchmark_H
             if (series.Count > 0)
             {
                 allParams = series.Values
+                    .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
+                    .Where(p => !string.IsNullOrEmpty(p))
                     .Distinct()
                     .OrderBy(p => p, new NaturalStringComparer())
                     .ToList();
+
                 xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
-                xLabels = allParams.ToArray();
+
+                xLabels = allParams.Select(param =>
+                {
+                    if (checkBoxWrapLongPlotLabels.Checked &&
+                        int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
+                        maxLength > 0)
+                    {
+                        return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
+                    }
+                    return param;
+                }).ToArray();
             }
 
             {
@@ -3961,6 +3996,32 @@ namespace FLAC_Benchmark_H
 
             plotScalingMultiPlotCompressionByParameters.Configuration.AddLinkedControl(
                 plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
+        }
+
+        private static string WrapTextLabelsOnPlots(string text, int maxLineLength)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= maxLineLength)
+                return text;
+
+            var lines = new List<string>();
+            int start = 0;
+
+            while (start < text.Length)
+            {
+                int end = Math.Min(start + maxLineLength, text.Length);
+                if (end < text.Length)
+                {
+                    int lastSpace = text.LastIndexOf(' ', end - 1, end - start);
+                    if (lastSpace > start)
+                        end = lastSpace;
+                }
+                lines.Add(text[start..end]);
+                start = end;
+                while (start < text.Length && text[start] == ' ')
+                    start++;
+            }
+
+            return string.Join("\n", lines);
         }
 
         private void PlotScalingPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
@@ -8132,6 +8193,10 @@ namespace FLAC_Benchmark_H
             }
 
             tabControlScalingPlots.SelectedTab?.Refresh();
+        }
+        private void CheckBoxWrapLongPlotLabels_CheckedChanged(object? sender, EventArgs e)
+        {
+            textBoxWrapLongPlotLabels.Enabled = checkBoxWrapLongPlotLabels.Checked;
         }
 
         private void CheckBoxAutoAnalyzeLog_CheckedChanged(object? sender, EventArgs e)
