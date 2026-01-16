@@ -2652,23 +2652,6 @@ namespace FLAC_Benchmark_H
                 speedList.Add((group.Parameters, group.AvgSpeed));
             }
 
-            // Compression distribution
-            var compressionByParamEncoder = new Dictionary<string, List<double>>();
-
-            foreach (var group in grouped)
-            {
-                string encoderName = Path.GetFileName(group.EncoderPath);
-                string fullParams = group.Parameters;
-
-                string key = $"{fullParams}|{encoderName}";
-
-                double compression = ((double)group.MinOutputSize / group.InputSize) * 100;
-
-                if (!compressionByParamEncoder.TryGetValue(key, out var list))
-                    compressionByParamEncoder[key] = list = new List<double>();
-                list.Add(compression);
-            }
-
             var resultEntries = new List<LogEntry>();
 
             foreach (var group in grouped)
@@ -4278,7 +4261,7 @@ namespace FLAC_Benchmark_H
                 string paramStr = paramIndex >= 0 && paramIndex < allParamsCompressionByParameters.Count
                     ? allParamsCompressionByParameters[paramIndex]
                     : "N/A";
-                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F2}%";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F3}%";
                 dynamicTooltipCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
                 formsPlot.Refresh();
             }
@@ -4311,7 +4294,7 @@ namespace FLAC_Benchmark_H
                 string paramStr = paramIndex >= 0 && paramIndex < allParamsCompressionByParameters.Count
                     ? allParamsCompressionByParameters[paramIndex]
                     : "N/A";
-                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F2}%";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nCompression: {y:F3}%";
                 dynamicTooltipMultiplotCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
                 formsPlot.Refresh();
             }
