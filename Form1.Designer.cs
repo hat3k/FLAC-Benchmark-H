@@ -1828,7 +1828,7 @@
             checkBoxWrapLongPlotLabels.Text = "Wrap long labels";
             toolTip1.SetToolTip(checkBoxWrapLongPlotLabels, "Enable line wrapping for long parameter labels on X-axis.\r\n\r\nClick 'Analyze Log' to refresh plots.");
             checkBoxWrapLongPlotLabels.UseVisualStyleBackColor = true;
-            checkBoxWrapLongPlotLabels.CheckedChanged += CheckBoxShowTooltipsOnPlots_CheckedChanged;
+            checkBoxWrapLongPlotLabels.CheckedChanged += CheckBoxWrapLongPlotLabels_CheckedChanged;
             // 
             // textBoxWrapLongPlotLabels
             // 
