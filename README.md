@@ -1,5 +1,8 @@
 <img width="2812" height="920" alt="FLAC Bechmark-H 1 5" src="https://github.com/user-attachments/assets/d0e04ac4-e620-4b3e-a36e-cd8b7dcfd37f" />
 
+Plots:
+<img width="3440" height="1400" alt="Speed distribution" src="https://github.com/user-attachments/assets/4c6ff47c-eebd-4b51-8531-105f2d72985e" />
+
 
 
 # FLAC Benchmark-H
