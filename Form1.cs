@@ -1110,6 +1110,7 @@ namespace FLAC_Benchmark_H
             {
                 FilePath = encoderPath,
                 DirectoryPath = directoryPath,
+                Extension = Path.GetExtension(encoderPath).ToLowerInvariant(),
                 FileName = fileName,
                 Version = version,
                 FileSize = fileSize,
@@ -1127,6 +1128,7 @@ namespace FLAC_Benchmark_H
             public string FilePath { get; set; }
             public string DirectoryPath { get; set; }
             public string FileName { get; set; }
+            public string Extension { get; set; }
             public string Version { get; set; }
             public long FileSize { get; set; }
             public DateTime LastModified { get; set; }
@@ -7487,9 +7489,9 @@ namespace FLAC_Benchmark_H
                         );
 
                         encoderPath = listViewEncoders.Items
-                        .Cast<ListViewItem>()
-                        .FirstOrDefault(item => Path.GetExtension(item.Text).Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                        ?.Tag?.ToString();
+                            .Cast<ListViewItem>()
+                            .FirstOrDefault(item => encoderInfoCache[item.Tag.ToString()].Extension == ".exe")
+                            ?.Tag?.ToString();
 
                         useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
                     });
