@@ -3216,7 +3216,11 @@ namespace FLAC_Benchmark_H
 
                             var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
                                                         .GroupBy(x => x.t)
-                                                        .Select(g => new { Thread = g.Key, AvgSpeedsForAllFiles = g.Average(x => x.s) })
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgSpeedsForAllFiles = g.Average(x => x.s)
+                                                        })
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
@@ -3282,7 +3286,11 @@ namespace FLAC_Benchmark_H
 
                             var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
                                                         .GroupBy(x => x.t)
-                                                        .Select(g => new { Thread = g.Key, AvgSpeedsForAllFiles = g.Average(x => x.s) })
+                                                        .Select(g => new
+                                                        {
+                                                            Thread = g.Key,
+                                                            AvgSpeedsForAllFiles = g.Average(x => x.s)
+                                                        })
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
