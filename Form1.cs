@@ -3074,11 +3074,11 @@ namespace FLAC_Benchmark_H
 
             // Perform multi-level sorting with natural sort for Parameters
             var sortedData = dataToSort
-            .OrderBy(x => x.AudioFileDirectory)
-            .ThenBy(x => x.Name)
+            .OrderBy(x => x.AudioFileDirectory, new NaturalStringComparer())
+            .ThenBy(x => x.Name, new NaturalStringComparer())
             .ThenBy(x => x.Parameters, new NaturalStringComparer())
-            .ThenBy(x => x.EncoderDirectory)
-            .ThenBy(x => x.Encoder)
+            .ThenBy(x => x.EncoderDirectory, new NaturalStringComparer())
+            .ThenBy(x => x.Encoder, new NaturalStringComparer())
             .ToList();
 
             // Clear DataGridView and add sorted data
@@ -3681,16 +3681,14 @@ namespace FLAC_Benchmark_H
                         var speeds = kvp.Value.AvgSpeeds;
 
                         var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
-                        double[] xs = normalizedParams.Select(p => (double)allParams.IndexOf(p)).ToArray();
-                        double[] ys = speeds.ToArray();
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                   .Zip(speeds, (x, y) => new { x, y })
+                                                   .OrderBy(p => p.x)
+                                                   .ToArray();
+                        double[] xs = points.Select(p => p.x).ToArray();
+                        double[] ys = points.Select(p => p.y).ToArray();
 
-                        var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
-                                             .OrderBy(p => p.x)
-                                             .ToArray();
-                        double[] sortedXs = sortedPoints.Select(p => p.x).ToArray();
-                        double[] sortedYs = sortedPoints.Select(p => p.y).ToArray();
-
-                        var scatter = plt.AddScatter(sortedXs, sortedYs, label: label);
+                        var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
@@ -3753,16 +3751,14 @@ namespace FLAC_Benchmark_H
                         var speeds = kvp.Value.AvgSpeeds;
 
                         var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
-                        double[] xs = normalizedParams.Select(p => (double)allParams.IndexOf(p)).ToArray();
-                        double[] ys = speeds.ToArray();
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                   .Zip(speeds, (x, y) => new { x, y })
+                                                   .OrderBy(p => p.x)
+                                                   .ToArray();
+                        double[] xs = points.Select(p => p.x).ToArray();
+                        double[] ys = points.Select(p => p.y).ToArray();
 
-                        var sortedPoints = xs.Zip(ys, (x, y) => new { x, y })
-                                             .OrderBy(p => p.x)
-                                             .ToArray();
-                        double[] sortedXs = sortedPoints.Select(p => p.x).ToArray();
-                        double[] sortedYs = sortedPoints.Select(p => p.y).ToArray();
-
-                        var scatter = plt.AddScatter(sortedXs, sortedYs, label: label);
+                        var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
