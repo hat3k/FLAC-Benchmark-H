@@ -5667,13 +5667,16 @@ namespace FLAC_Benchmark_H
                 .Select(item => item.Tag.ToString()) // Get full path from Tag
                 .ToList();
 
-                // Get all selected .wav and .flac audio files
+                // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked &&
-                (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag.ToString())
+                    .Where(filePath =>
+                    {
+                        string extension = audioInfoCache[filePath].Extension;
+                        return extension == ".wav" || extension == ".flac";
+                    })
+                    .ToList();
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
@@ -6066,12 +6069,12 @@ namespace FLAC_Benchmark_H
                 .Select(item => item.Tag.ToString()) // Get full path from Tag
                 .ToList();
 
-                // Get all selected .flac audio files
+                // Get all selected .flac audio files using cache
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked &&
-                (Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag.ToString())
+                    .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                    .ToList();
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
@@ -6420,18 +6423,21 @@ namespace FLAC_Benchmark_H
                 .Select(item => item.Tag.ToString()) // Get full path from Tag
                 .ToList();
 
-                // Get all selected .wav and .flac audio files
+                // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked &&
-                (Path.GetExtension(item.Tag.ToString()).Equals(".wav", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase)))
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag.ToString())
+                    .Where(filePath =>
+                    {
+                        string extension = audioInfoCache[filePath].Extension;
+                        return extension == ".wav" || extension == ".flac";
+                    })
+                    .ToList();
 
-                // Get all selected .flac audio files
+                // Get all selected .flac audio files using cache
                 var selectedFlacAudioFiles = selectedAudioFiles
-                .Where(file => Path.GetExtension(file).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                    .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                    .ToList();
 
                 // Create expanded Job List (Virtual Job List)
                 var dataGridViewJobsExpanded = new List<DataGridViewRow>();
@@ -7155,7 +7161,7 @@ namespace FLAC_Benchmark_H
                         md5Hash == "00000000000000000000000000000000" ||
                         md5Hash == "N/A")
                         {
-                            string fileExtension = Path.GetExtension(filePath).ToLowerInvariant();
+                            string fileExtension = audioInfoCache[filePath].Extension;
                             if (fileExtension == ".wav")
                             {
                                 md5Hash = await CalculateWavMD5Async(filePath);
@@ -7474,10 +7480,11 @@ namespace FLAC_Benchmark_H
                             ShowTemporaryAudioFileRemovedMessage($"{itemsToRemove.Count} file(s) removed");
                         }
 
-                        // Collect FLAC files and settings
+                        // Collect FLAC files and settings using cache
                         flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
-                        .Where(item => Path.GetExtension(item.Tag.ToString()).Equals(".flac", StringComparison.OrdinalIgnoreCase))
-                        .Select(item => item.Tag.ToString()));
+                            .Select(item => item.Tag.ToString())
+                            .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                        );
 
                         encoderPath = listViewEncoders.Items
                         .Cast<ListViewItem>()
