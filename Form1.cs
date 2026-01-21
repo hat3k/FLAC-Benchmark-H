@@ -1038,7 +1038,7 @@ namespace FLAC_Benchmark_H
                 MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async Task<ListViewItem> CreateListViewEncodersItem(string encoderPath, bool isChecked)
+        private async Task<ListViewItem?> CreateListViewEncodersItem(string encoderPath, bool isChecked)
         {
             if (!File.Exists(encoderPath))
             {
@@ -1056,7 +1056,7 @@ namespace FLAC_Benchmark_H
             };
 
             // Fill subitems
-            item.SubItems.Add(encoderInfo.Version);
+            item.SubItems.Add(encoderInfo.Version ?? "N/A");
             item.SubItems.Add(encoderInfo.DirectoryPath);
             item.SubItems.Add($"{encoderInfo.FileSize:n0} bytes");
             item.SubItems.Add(encoderInfo.LastModified.ToString("yyyy.MM.dd HH:mm"));
@@ -1071,17 +1071,8 @@ namespace FLAC_Benchmark_H
                 return cachedInfo; // Return cached information
             }
 
-            // Get file size and last modified date
-            long fileSize = new FileInfo(encoderPath).Length;
-            DateTime lastModified = new FileInfo(encoderPath).LastWriteTime;
-
-            // Get file name and directory path
-            string fileName = Path.GetFileName(encoderPath);
-            string directoryPath = Path.GetDirectoryName(encoderPath);
-
-            string version = "N/A"; // Default value for version
-
-            // Get encoder version information
+            // Get encoder version
+            string? version = null;
             try
             {
                 version = await Task.Run(() =>
@@ -1094,42 +1085,46 @@ namespace FLAC_Benchmark_H
                     process.StartInfo.CreateNoWindow = true;
 
                     process.Start();
-                    string result = process.StandardOutput.ReadLine(); // Read the first line of output
+                    string? result = process.StandardOutput.ReadLine(); // Read the first line of output
                     process.WaitForExit();
 
-                    return result ?? "N/A"; // Return "N/A" if the version is not found
+                    return result?.Trim();
                 });
             }
             catch (Exception)
             {
-                version = "N/A"; // Return "N/A" in case of an error
             }
+
+            // Get encoder file information
+            var fileInfo = new FileInfo(encoderPath);
 
             // Create an EncoderInfo object
             var encoderInfo = new EncoderInfo
             {
                 FilePath = encoderPath,
-                DirectoryPath = directoryPath,
-                Extension = Path.GetExtension(encoderPath).ToLowerInvariant(),
-                FileName = fileName,
+                DirectoryPath = fileInfo.DirectoryName!,
+                FileName = fileInfo.Name,
+                FileNameWithoutExtension = Path.GetFileNameWithoutExtension(encoderPath),
+                Extension = fileInfo.Extension.ToLowerInvariant(),
                 Version = version,
-                FileSize = fileSize,
-                LastModified = lastModified
+                FileSize = fileInfo.Length,
+                LastModified = fileInfo.LastWriteTime
             };
 
             // Add new information to the cache
-            encoderInfoCache[encoderPath] = encoderInfo; // Cache the information
+            encoderInfoCache[encoderPath] = encoderInfo;
             return encoderInfo;
         }
 
         // Class to store encoder information
         private class EncoderInfo
         {
-            public string FilePath { get; set; }
-            public string DirectoryPath { get; set; }
-            public string FileName { get; set; }
-            public string Extension { get; set; }
-            public string Version { get; set; }
+            public required string FilePath { get; set; }
+            public required string DirectoryPath { get; set; }
+            public required string FileName { get; set; }
+            public required string FileNameWithoutExtension { get; set; }
+            public required string Extension { get; set; }
+            public string? Version { get; set; } = null;
             public long FileSize { get; set; }
             public DateTime LastModified { get; set; }
         }
@@ -2342,7 +2337,7 @@ namespace FLAC_Benchmark_H
                 "1",                                    // 15 "Passes"
                 parameters,                             // 16 "Parameters"
                 encoderInfo.FileName,                   // 17 "Encoder"
-                encoderInfo.Version,                    // 18 "Version"
+                encoderInfo.Version ?? "N/A",           // 18 "Version"
                 encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
                 string.Empty,                           // 20 "FastestEncoder"
                 string.Empty,                           // 21 "BestSize"
@@ -2389,7 +2384,7 @@ namespace FLAC_Benchmark_H
                 $"CPU Clock: {avgClock:F0} MHz\t" +
                 $"Parameters: {parameters.Trim()}\t" +
                 $"Encoder: {encoderInfo.FileName}\t" +
-                $"Version: {encoderInfo.Version}\t" +
+                $"Version: {encoderInfo.Version ?? "N/A"}\t" +
                 $"Encoder Path: {encoderInfo.DirectoryPath}{Environment.NewLine}"
                 );
             }
@@ -2430,7 +2425,7 @@ namespace FLAC_Benchmark_H
                 "1",                                    // 15 "Passes"
                 parameters,                             // 16 "Parameters"
                 encoderInfo.FileName,                   // 17 "Encoder"
-                encoderInfo.Version,                    // 18 "Version"
+                encoderInfo.Version ?? "N/A",           // 18 "Version"
                 encoderInfo.DirectoryPath,              // 19 "EncoderDirectory"
                 string.Empty,                           // 20 "FastestEncoder"
                 string.Empty,                           // 21 "BestSize"
@@ -2456,7 +2451,7 @@ namespace FLAC_Benchmark_H
                 $"{audioFilePath}\t" +
                 $"Parameters: {parameters.Trim()}\t" +
                 $"Encoder: {encoderInfo.FileName}\t" +
-                $"Version: {encoderInfo.Version}\t" +
+                $"Version: {encoderInfo.Version ?? "N/A"}\t" +
                 $"Encoder Path: {encoderInfo.DirectoryPath}\t" +
                 $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
             }
