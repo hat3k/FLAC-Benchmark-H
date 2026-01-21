@@ -940,35 +940,52 @@ namespace FLAC_Benchmark_H
             {
                 groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
 
-                var tasks = files.Select(async file =>
+                var allItems = new List<ListViewItem>();
+
+                foreach (var file in files)
                 {
                     if (Directory.Exists(file))
                     {
-                        await AddEncoders(file); // Asynchronously add executable files from directory
+                        try
+                        {
+                            var exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
+                                .Where(f => !Path.GetFileName(f).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+
+                            var tasks = exeFiles.Select(async f =>
+                            {
+                                var item = await CreateListViewEncodersItem(f, true);
+                                return item;
+                            });
+
+                            var items = await Task.WhenAll(tasks);
+                            allItems.AddRange(items.Where(item => item != null)!);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                     else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                     {
                         // Skip metaflac.exe to prevent it from being added to the encoders list
                         if (Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            return null; // Return null for metaflac.exe
+                            continue; // Skip this file
                         }
 
-                        var item = await CreateListViewEncodersItem(file, true); // Create a list item
-                        return item; // Return the created item
+                        var item = await CreateListViewEncodersItem(file, true);
+                        if (item != null)
+                        {
+                            allItems.Add(item);
+                        }
                     }
-                    return null; // Return null if it's not a directory or .exe file
-                });
+                }
 
-                var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
-
-                // Add items to the ListView
-                foreach (var item in items)
+                // Add all collected items to the ListView
+                foreach (var item in allItems)
                 {
-                    if (item != null)
-                    {
-                        listViewEncoders.Items.Add(item); // Add the item to the ListView
-                    }
+                    listViewEncoders.Items.Add(item);
                 }
             }
             UpdateGroupBoxEncodersHeader();
@@ -1006,37 +1023,6 @@ namespace FLAC_Benchmark_H
                 }
             }
             UpdateGroupBoxEncodersHeader();
-        }
-        private async Task AddEncoders(string directory)
-        {
-            try
-            {
-                // Get all .exe files, but exclude metaflac.exe
-                var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories)
-                .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                .ToList(); // ToList() to execute the query and avoid issues if directory changes
-
-                var tasks = exeFiles.Select(async file =>
-                {
-                    var item = await CreateListViewEncodersItem(file, true); // Create an item and return it
-                    return item; // Return the created item
-                });
-
-                var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
-
-                foreach (var item in items)
-                {
-                    if (item != null)
-                    {
-                        listViewEncoders.Items.Add(item); // Add items to the ListView
-                    }
-                }
-                UpdateGroupBoxEncodersHeader();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
         private async Task<ListViewItem?> CreateListViewEncodersItem(string encoderPath, bool isChecked)
         {
