@@ -576,7 +576,6 @@
             // 
             // listViewEncoders
             // 
-            listViewEncoders.Activation = ItemActivation.OneClick;
             listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
             listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeExe, DateExe });
