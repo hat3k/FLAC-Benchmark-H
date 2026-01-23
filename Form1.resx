@@ -127,6 +127,9 @@ When enabled: All encoders start under identical thermal and CPU frequency condi
 
 When disabled: The first test pass may show slower performance due to CPU frequency ramp-up (turbo boost not yet active).</value>
   </data>
+  <metadata name="contextMenuStripEncoders.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>114, 17</value>
+  </metadata>
   <data name="buttonDetectDupesAudioFiles.ToolTip" xml:space="preserve">
     <value>Identifies duplicate audio files by comparing MD5 hashes of their raw PCM data.
 Scans all files in the list (both checked and unchecked).

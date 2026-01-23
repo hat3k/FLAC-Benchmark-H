@@ -23,12 +23,12 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle11 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle12 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             groupBoxEncoderSettings = new GroupBox();
             labelCompressionLevel = new Label();
             textBoxCompressionLevel = new TextBox();
@@ -68,6 +68,27 @@
             EncoderDirectory = new ColumnHeader();
             SizeExe = new ColumnHeader();
             DateExe = new ColumnHeader();
+            contextMenuStripEncoders = new ContextMenuStrip(components);
+            checkAllToolStripMenuItem = new ToolStripMenuItem();
+            uncheckAllToolStripMenuItem = new ToolStripMenuItem();
+            checkSelectedToolStripMenuItem = new ToolStripMenuItem();
+            uncheckSelectedToolStripMenuItem = new ToolStripMenuItem();
+            invertCheckToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            selectAllToolStripMenuItem = new ToolStripMenuItem();
+            clearSelectionToolStripMenuItem = new ToolStripMenuItem();
+            invertSelectionToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator2 = new ToolStripSeparator();
+            moveUpToolStripMenuItem = new ToolStripMenuItem();
+            moveDownToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
+            refreshAllToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator3 = new ToolStripSeparator();
+            openContainingFolderToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator5 = new ToolStripSeparator();
+            clearUncheckedToolStripMenuItem = new ToolStripMenuItem();
+            clearSelectedToolStripMenuItem = new ToolStripMenuItem();
+            clearAllEncodersToolStripMenuItem = new ToolStripMenuItem();
             buttonAddEncoders = new Button();
             buttonUpEncoder = new Button();
             buttonDownEncoder = new Button();
@@ -186,6 +207,7 @@
             buttonAbout = new Button();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
+            contextMenuStripEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).BeginInit();
@@ -579,6 +601,7 @@
             listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
             listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeExe, DateExe });
+            listViewEncoders.ContextMenuStrip = contextMenuStripEncoders;
             listViewEncoders.FullRowSelect = true;
             listViewEncoders.Location = new Point(6, 22);
             listViewEncoders.Name = "listViewEncoders";
@@ -616,6 +639,130 @@
             DateExe.Tag = "DateExe";
             DateExe.Text = "Date";
             DateExe.Width = 100;
+            // 
+            // contextMenuStripEncoders
+            // 
+            contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItem, uncheckAllToolStripMenuItem, checkSelectedToolStripMenuItem, uncheckSelectedToolStripMenuItem, invertCheckToolStripMenuItem, toolStripSeparator1, selectAllToolStripMenuItem, clearSelectionToolStripMenuItem, invertSelectionToolStripMenuItem, toolStripSeparator2, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator4, refreshAllToolStripMenuItem, toolStripSeparator3, openContainingFolderToolStripMenuItem, toolStripSeparator5, clearUncheckedToolStripMenuItem, clearSelectedToolStripMenuItem, clearAllEncodersToolStripMenuItem });
+            contextMenuStripEncoders.Name = "contextMenuStripEncoders";
+            contextMenuStripEncoders.Size = new Size(202, 386);
+            contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
+            // 
+            // checkAllToolStripMenuItem
+            // 
+            checkAllToolStripMenuItem.Name = "checkAllToolStripMenuItem";
+            checkAllToolStripMenuItem.Size = new Size(201, 22);
+            checkAllToolStripMenuItem.Text = "Check All";
+            // 
+            // uncheckAllToolStripMenuItem
+            // 
+            uncheckAllToolStripMenuItem.Name = "uncheckAllToolStripMenuItem";
+            uncheckAllToolStripMenuItem.Size = new Size(201, 22);
+            uncheckAllToolStripMenuItem.Text = "Uncheck All";
+            // 
+            // checkSelectedToolStripMenuItem
+            // 
+            checkSelectedToolStripMenuItem.Name = "checkSelectedToolStripMenuItem";
+            checkSelectedToolStripMenuItem.Size = new Size(201, 22);
+            checkSelectedToolStripMenuItem.Text = "Check Selected";
+            // 
+            // uncheckSelectedToolStripMenuItem
+            // 
+            uncheckSelectedToolStripMenuItem.Name = "uncheckSelectedToolStripMenuItem";
+            uncheckSelectedToolStripMenuItem.Size = new Size(201, 22);
+            uncheckSelectedToolStripMenuItem.Text = "Uncheck Selected";
+            // 
+            // invertCheckToolStripMenuItem
+            // 
+            invertCheckToolStripMenuItem.Name = "invertCheckToolStripMenuItem";
+            invertCheckToolStripMenuItem.Size = new Size(201, 22);
+            invertCheckToolStripMenuItem.Text = "Invert Check";
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(198, 6);
+            // 
+            // selectAllToolStripMenuItem
+            // 
+            selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            selectAllToolStripMenuItem.Size = new Size(201, 22);
+            selectAllToolStripMenuItem.Text = "Select All";
+            // 
+            // clearSelectionToolStripMenuItem
+            // 
+            clearSelectionToolStripMenuItem.Name = "clearSelectionToolStripMenuItem";
+            clearSelectionToolStripMenuItem.Size = new Size(201, 22);
+            clearSelectionToolStripMenuItem.Text = "Clear Selection";
+            // 
+            // invertSelectionToolStripMenuItem
+            // 
+            invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
+            invertSelectionToolStripMenuItem.Size = new Size(201, 22);
+            invertSelectionToolStripMenuItem.Text = "Invert Selection";
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(198, 6);
+            // 
+            // moveUpToolStripMenuItem
+            // 
+            moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
+            moveUpToolStripMenuItem.Size = new Size(201, 22);
+            moveUpToolStripMenuItem.Text = "↑ Move Up";
+            // 
+            // moveDownToolStripMenuItem
+            // 
+            moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
+            moveDownToolStripMenuItem.Size = new Size(201, 22);
+            moveDownToolStripMenuItem.Text = "↓ Move Down";
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(198, 6);
+            // 
+            // refreshAllToolStripMenuItem
+            // 
+            refreshAllToolStripMenuItem.Name = "refreshAllToolStripMenuItem";
+            refreshAllToolStripMenuItem.ShortcutKeys = Keys.F5;
+            refreshAllToolStripMenuItem.Size = new Size(201, 22);
+            refreshAllToolStripMenuItem.Text = "Refresh All";
+            refreshAllToolStripMenuItem.Click += RefreshAllToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(198, 6);
+            // 
+            // openContainingFolderToolStripMenuItem
+            // 
+            openContainingFolderToolStripMenuItem.Name = "openContainingFolderToolStripMenuItem";
+            openContainingFolderToolStripMenuItem.Size = new Size(201, 22);
+            openContainingFolderToolStripMenuItem.Text = "Open Containing Folder";
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(198, 6);
+            // 
+            // clearUncheckedToolStripMenuItem
+            // 
+            clearUncheckedToolStripMenuItem.Name = "clearUncheckedToolStripMenuItem";
+            clearUncheckedToolStripMenuItem.Size = new Size(201, 22);
+            clearUncheckedToolStripMenuItem.Text = "Clear Unchecked";
+            // 
+            // clearSelectedToolStripMenuItem
+            // 
+            clearSelectedToolStripMenuItem.Name = "clearSelectedToolStripMenuItem";
+            clearSelectedToolStripMenuItem.Size = new Size(201, 22);
+            clearSelectedToolStripMenuItem.Text = "Clear Selected";
+            // 
+            // clearAllEncodersToolStripMenuItem
+            // 
+            clearAllEncodersToolStripMenuItem.Name = "clearAllEncodersToolStripMenuItem";
+            clearAllEncodersToolStripMenuItem.Size = new Size(201, 22);
+            clearAllEncodersToolStripMenuItem.Text = "Clear All Encoders";
             // 
             // buttonAddEncoders
             // 
@@ -1142,23 +1289,23 @@
             dataGridViewLog.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLog.BackgroundColor = SystemColors.Control;
             dataGridViewLog.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = SystemColors.Control;
-            dataGridViewCellStyle7.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle7.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
-            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewLog.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewLog.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = SystemColors.Control;
-            dataGridViewCellStyle8.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle8.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.False;
-            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewLog.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewLog.GridColor = SystemColors.Control;
             dataGridViewLog.Location = new Point(2, 4);
             dataGridViewLog.Name = "dataGridViewLog";
@@ -1412,23 +1559,23 @@
             dataGridViewLogDetectDupes.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogDetectDupes.BackgroundColor = SystemColors.Control;
             dataGridViewLogDetectDupes.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.BackColor = SystemColors.Control;
-            dataGridViewCellStyle9.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle9.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogDetectDupes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridViewLogDetectDupes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = SystemColors.Control;
-            dataGridViewCellStyle10.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle10.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle10.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = SystemColors.Control;
+            dataGridViewCellStyle4.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogDetectDupes.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridViewLogDetectDupes.GridColor = SystemColors.Control;
             dataGridViewLogDetectDupes.Location = new Point(2, 4);
             dataGridViewLogDetectDupes.Name = "dataGridViewLogDetectDupes";
@@ -1457,23 +1604,23 @@
             dataGridViewLogTestForErrors.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridViewLogTestForErrors.BackgroundColor = SystemColors.Control;
             dataGridViewLogTestForErrors.BorderStyle = BorderStyle.Fixed3D;
-            dataGridViewCellStyle11.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle11.BackColor = SystemColors.Control;
-            dataGridViewCellStyle11.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle11.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle11.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = DataGridViewTriState.True;
-            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = SystemColors.Control;
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+            dataGridViewLogTestForErrors.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             dataGridViewLogTestForErrors.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle12.BackColor = SystemColors.Control;
-            dataGridViewCellStyle12.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle12.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle12.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle12.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle12.WrapMode = DataGridViewTriState.False;
-            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = SystemColors.Control;
+            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dataGridViewLogTestForErrors.DefaultCellStyle = dataGridViewCellStyle6;
             dataGridViewLogTestForErrors.GridColor = SystemColors.Control;
             dataGridViewLogTestForErrors.Location = new Point(2, 4);
             dataGridViewLogTestForErrors.Name = "dataGridViewLogTestForErrors";
@@ -2021,6 +2168,7 @@
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();
             groupBoxEncoders.ResumeLayout(false);
+            contextMenuStripEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxAudioFiles.PerformLayout();
             groupBoxJobsList.ResumeLayout(false);
@@ -2219,5 +2367,26 @@
         private CheckBox checkBoxShowTooltipsOnPlots;
         private TextBox textBoxWrapLongPlotLabels;
         private CheckBox checkBoxWrapLongPlotLabels;
+        private ContextMenuStrip contextMenuStripEncoders;
+        private ToolStripMenuItem checkAllToolStripMenuItem;
+        private ToolStripMenuItem uncheckAllToolStripMenuItem;
+        private ToolStripMenuItem checkSelectedToolStripMenuItem;
+        private ToolStripMenuItem invertCheckToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem selectAllToolStripMenuItem;
+        private ToolStripMenuItem clearSelectionToolStripMenuItem;
+        private ToolStripMenuItem invertSelectionToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripMenuItem openContainingFolderToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator3;
+        private ToolStripMenuItem moveUpToolStripMenuItem;
+        private ToolStripMenuItem moveDownToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripMenuItem refreshAllToolStripMenuItem;
+        private ToolStripMenuItem clearSelectedToolStripMenuItem;
+        private ToolStripMenuItem clearAllEncodersToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator5;
+        private ToolStripMenuItem uncheckSelectedToolStripMenuItem;
+        private ToolStripMenuItem clearUncheckedToolStripMenuItem;
     }
 }

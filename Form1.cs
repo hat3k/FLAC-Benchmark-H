@@ -48,6 +48,7 @@ namespace FLAC_Benchmark_H
         private readonly Lock _queueLock = new();
         private int _totalFilesInQueue = 0;
         private int _processedFilesCount = 0;
+        private bool _isRefreshing = false;
 
         // Cancellation Token
         private CancellationTokenSource? _encoderLoadCancellation;
@@ -894,6 +895,12 @@ namespace FLAC_Benchmark_H
         // Encoders
         private void ListViewEncoders_DragEnter(object? sender, DragEventArgs e)
         {
+            if (_isRefreshing)
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? [];
@@ -950,8 +957,16 @@ namespace FLAC_Benchmark_H
         }
         private async void ButtonAddEncoders_Click(object? sender, EventArgs e)
         {
+            if (_isRefreshing)
+            {
+                MessageBox.Show("Please wait until Refresh completes.",
+                               "Refresh in Progress",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Information);
+                return;
+            }
             using OpenFileDialog openFileDialog = new();
-           
+
             openFileDialog.Title = "Select Executable Files";
             openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
@@ -1025,10 +1040,11 @@ namespace FLAC_Benchmark_H
 
                         _processedFilesCount++;
 
-                        // Update progress after every "% 1" file for smooth UI feedback
+                        // Update progress after every "% N" file for smooth UI feedback
                         if (_processedFilesCount % 1 == 0)
                         {
                             UpdateEncoderProgress();
+                            //await Task.Yield();
                         }
                     }
                 }
@@ -1064,11 +1080,57 @@ namespace FLAC_Benchmark_H
 
                 if (allMissingFiles.Count > 0 && !(_encoderLoadCancellation?.IsCancellationRequested ?? false))
                 {
-                    string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
-                        string.Join("\n", allMissingFiles.Select(Path.GetFileName)) +
-                        "\n\nCheck if they still exist on your system.";
+                    string warningMessage = "The following encoders were missing and not loaded:" +
+                        Environment.NewLine + Environment.NewLine +
+                        string.Join(Environment.NewLine, allMissingFiles) +
+                        Environment.NewLine + Environment.NewLine +
+                        "Check if they still exist on your system.";
 
-                    MessageBox.Show(warningMessage, "Missing Encoders", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                    var dialog = new Form
+                    {
+                        Text = "Missing Encoders",
+                        Size = new Size(600, 400),
+                        TopMost = true,
+                        MinimizeBox = true,
+                        MaximizeBox = true,
+
+                        StartPosition = FormStartPosition.Manual
+                    };
+
+                    var mainForm = this;
+                    dialog.Location = new Point(
+                        mainForm.Location.X + (mainForm.Width - dialog.Width) / 2,
+                        mainForm.Location.Y + (mainForm.Height - dialog.Height) / 2
+                    );
+
+                    var textBox = new TextBox
+                    {
+                        Dock = DockStyle.Fill,
+                        Multiline = true,
+                        ScrollBars = ScrollBars.Both,
+                        ReadOnly = true,
+                        WordWrap = false,
+                        Font = new Font("Segoe UI", 9),
+                        AcceptsReturn = true,
+                        Text = warningMessage,
+                        SelectionLength = 0
+                    };
+
+                    dialog.Shown += (s, e) => textBox.SelectionLength = 0;
+
+                    var button = new Button
+                    {
+                        Text = "Close",
+                        Dock = DockStyle.Bottom,
+                        Height = 30
+                    };
+                    button.Click += (s, e) => dialog.Close();
+
+                    dialog.Controls.Add(textBox);
+                    dialog.Controls.Add(button);
+
+                    dialog.Show(mainForm);
                 }
 
                 _encoderLoadCancellation?.Dispose();
@@ -1077,6 +1139,9 @@ namespace FLAC_Benchmark_H
         }
         private void UpdateEncoderProgress()
         {
+            if (_isRefreshing)
+                return;
+
             string progressText;
 
             lock (_queueLock)
@@ -1199,7 +1264,8 @@ namespace FLAC_Benchmark_H
 
             return item;
         }
-        // Class to store encoder information
+
+        // Class to store Encoder information
         private class EncoderInfo
         {
             public required string FilePath { get; set; }
@@ -1260,6 +1326,85 @@ namespace FLAC_Benchmark_H
             else
             {
                 groupBoxEncoders.Text = baseText;
+            }
+        }
+
+        // Encoders Context Menu
+        private void ContextMenuStripEncoders_Opening(object sender, CancelEventArgs e)
+        {
+            refreshAllToolStripMenuItem.Enabled = !_isProcessingQueue;
+        }
+        private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
+        {
+            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+                return;
+
+            _isRefreshing = true;
+            groupBoxEncoders.Text = "Refreshing Encoder information...";
+            Application.DoEvents();
+
+            int topIndex = listViewEncoders.TopItem?.Index ?? 0;
+            var selectedIndices = new List<int>();
+            foreach (ListViewItem item in listViewEncoders.SelectedItems)
+            {
+                selectedIndices.Add(item.Index);
+            }
+
+            try
+            {
+                for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
+                {
+                    ListViewItem item = listViewEncoders.Items[i];
+                    string? encoderPath = item.Tag?.ToString();
+
+                    if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
+                    {
+                        listViewEncoders.Items.RemoveAt(i);
+                        continue;
+                    }
+
+                    bool currentChecked = item.Checked;
+
+                    var newItem = await CreateListViewEncodersItemInternal(encoderPath, currentChecked);
+                    if (newItem == null)
+                    {
+                        listViewEncoders.Items.RemoveAt(i);
+                        continue;
+                    }
+
+                    item.Text = newItem.Text;
+                    for (int j = 0; j < newItem.SubItems.Count - 1; j++)
+                    {
+                        if (j + 1 < item.SubItems.Count)
+                            item.SubItems[j + 1].Text = newItem.SubItems[j + 1].Text;
+                    }
+                }
+
+                SaveEncoders();
+            }
+            finally
+            {
+                if (listViewEncoders.Items.Count > 0 && topIndex < listViewEncoders.Items.Count)
+                {
+                    try
+                    {
+                        listViewEncoders.TopItem = listViewEncoders.Items[topIndex];
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                foreach (int index in selectedIndices)
+                {
+                    if (index < listViewEncoders.Items.Count)
+                    {
+                        listViewEncoders.Items[index].Selected = true;
+                    }
+                }
+
+                _isRefreshing = false;
+                UpdateGroupBoxEncodersHeader();
             }
         }
 
