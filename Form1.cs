@@ -42,6 +42,16 @@ namespace FLAC_Benchmark_H
         private bool isCpuInfoLoaded = false;
         private ScriptConstructorForm? _scriptForm = null;
 
+        // Encoder loading queue and progress
+        private readonly Queue<List<(string path, bool isChecked)>> _encoderLoadQueue = new();
+        private bool _isProcessingQueue = false;
+        private readonly Lock _queueLock = new();
+        private int _totalFilesInQueue = 0;
+        private int _processedFilesCount = 0;
+
+        // Cancellation Token
+        private CancellationTokenSource? _encoderLoadCancellation;
+
         // Static NumberFormatInfo for number formatting with spaces
         private static readonly NumberFormatInfo NumberFormatWithSpaces;
 
@@ -642,94 +652,60 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
-                listViewEncoders.Items.Clear();
 
-                groupBoxEncoders.Text = "Loading...";
-
+                // Collect all valid encoder paths with their checked state
+                var encoderPaths = new List<(string path, bool isChecked)>();
                 var missingFiles = new List<string>();
-                var tasks = lines.Select(async line =>
+
+                foreach (var line in lines)
                 {
-                    if (string.IsNullOrWhiteSpace(line))
-                        return null;
+                    if (string.IsNullOrWhiteSpace(line)) continue;
 
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
-                        // New format: Checked|path
+                        // New format: "Checked|C:\path\to\encoder.exe"
                         int separatorIndex = line.IndexOf('|');
-                        if (separatorIndex == -1 || separatorIndex == line.Length - 1)
-                            return null;
-
-                        bool isChecked = line.StartsWith("Checked");
-                        string encoderPath = line.Substring(separatorIndex + 1);
-
-                        if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
+                        if (separatorIndex > 0 && separatorIndex < line.Length - 1)
                         {
-                            var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
-                            if (item != null)
-                            {
-                                item.Checked = isChecked;
-                                return item;
-                            }
-                        }
-                        else
-                        {
-                            missingFiles.Add(encoderPath);
+                            bool isChecked = line.StartsWith("Checked");
+                            string encoderPath = line.Substring(separatorIndex + 1);
+                            if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
+                                encoderPaths.Add((encoderPath, isChecked));
+                            else
+                                missingFiles.Add(encoderPath);
                         }
                     }
                     else if (line.Contains('~'))
                     {
-                        // Old format: path~checked
+                        // Legacy format: "C:\path\to\encoder.exe~True"
                         var parts = line.Split('~');
                         if (parts.Length >= 2 && bool.TryParse(parts[^1], out bool isChecked))
                         {
                             string encoderPath = string.Join("~", parts.Take(parts.Length - 1));
-
                             if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
-                            {
-                                var item = await Task.Run(() => CreateListViewEncodersItem(encoderPath, isChecked));
-                                if (item != null)
-                                {
-                                    item.Checked = isChecked;
-                                    return item;
-                                }
-                            }
+                                encoderPaths.Add((encoderPath, isChecked));
                             else
-                            {
                                 missingFiles.Add(encoderPath);
-                            }
                         }
                     }
-                    return null;
-                });
-
-                var items = await Task.WhenAll(tasks);
-
-                foreach (var item in items)
-                {
-                    if (item != null)
-                    {
-                        listViewEncoders.Items.Add(item);
-                    }
                 }
 
-                SaveEncoders();
-
-                if (missingFiles.Count > 0)
+                if (encoderPaths.Count == 0)
                 {
-                    string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
-                    string.Join("\n", missingFiles.Select(Path.GetFileName)) +
-                    "\n\nCheck if they still exist on your system.";
-
-                    MessageBox.Show(warningMessage, "Missing Encoders",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Clear UI even if no valid encoders were found
+                    listViewEncoders.Items.Clear();
+                    UpdateGroupBoxEncodersHeader();
+                    return;
                 }
+
+                // Enqueue valid encoders for processing
+                AddEncoderBatchToQueue(encoderPaths, missingFiles);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading encoders: {ex.Message}", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateGroupBoxEncodersHeader();
             }
-            UpdateGroupBoxEncodersHeader();
         }
         private async void LoadAudioFiles()
         {
@@ -921,11 +897,11 @@ namespace FLAC_Benchmark_H
             if (e.Data?.GetDataPresent(DataFormats.FileDrop) == true)
             {
                 string[] files = (string[]?)e.Data.GetData(DataFormats.FileDrop) ?? [];
-                // Check if there's at least one .exe file that is NOT metaflac.exe
+                // Check if there's at least one valid .exe file (excluding metaflac.exe) or a directory
                 bool hasValidExeFiles = files.Any(file =>
-                Directory.Exists(file) ||
-                (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
-                !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase)));
+                    Directory.Exists(file) ||
+                    (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
+                     !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase)));
                 e.Effect = hasValidExeFiles ? DragDropEffects.Copy : DragDropEffects.None;
             }
             else
@@ -936,170 +912,282 @@ namespace FLAC_Benchmark_H
         private async void ListViewEncoders_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
-            if (files.Length > 0)
+            if (files.Length == 0) return;
+
+            var validPaths = new List<(string path, bool isChecked)>();
+
+            foreach (var file in files)
             {
-                groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
-
-                var allItems = new List<ListViewItem>();
-
-                foreach (var file in files)
+                if (Directory.Exists(file))
                 {
-                    if (Directory.Exists(file))
+                    try
                     {
-                        try
-                        {
-                            var exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
-                                .Where(f => !Path.GetFileName(f).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                                .ToList();
-
-                            var tasks = exeFiles.Select(async f =>
-                            {
-                                var item = await CreateListViewEncodersItem(f, true);
-                                return item;
-                            });
-
-                            var items = await Task.WhenAll(tasks);
-                            allItems.AddRange(items.Where(item => item != null)!);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
+                        // Recursively find all .exe files in the directory (excluding metaflac.exe)
+                        var exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
+                            .Where(f => !Path.GetFileName(f).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                            .Select(f => (f, true));
+                        validPaths.AddRange(exeFiles);
                     }
-                    else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                    catch (Exception ex)
                     {
-                        // Skip metaflac.exe to prevent it from being added to the encoders list
-                        if (Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue; // Skip this file
-                        }
-
-                        var item = await CreateListViewEncodersItem(file, true);
-                        if (item != null)
-                        {
-                            allItems.Add(item);
-                        }
+                        MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-
-                // Add all collected items to the ListView
-                foreach (var item in allItems)
+                else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    listViewEncoders.Items.Add(item);
+                    // Skip metaflac.exe as it's not an encoder
+                    if (!Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        validPaths.Add((file, true));
+                    }
                 }
             }
-            UpdateGroupBoxEncodersHeader();
+
+            if (validPaths.Count > 0)
+            {
+                AddEncoderBatchToQueue(validPaths, []);
+            }
         }
         private async void ButtonAddEncoders_Click(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new())
+            using OpenFileDialog openFileDialog = new();
+           
+            openFileDialog.Title = "Select Executable Files";
+            openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
+            openFileDialog.Multiselect = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                openFileDialog.Title = "Select Executable Files";
-                openFileDialog.Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*";
-                openFileDialog.Multiselect = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - loading...";
-
-                    var tasks = openFileDialog.FileNames
-                    // Filter out metaflac.exe to prevent adding it to the encoders list
+                var validPaths = openFileDialog.FileNames
                     .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
-                    .Select(async file =>
-                    {
-                        var item = await CreateListViewEncodersItem(file, true); // Create a list item
-                        return item; // Return the created item
-                    });
+                    .Select(file => (file, true))
+                    .ToList();
 
-                    var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
+                if (validPaths.Count > 0)
+                {
+                    AddEncoderBatchToQueue(validPaths, []);
+                }
+            }
+        }
+        private void AddEncoderBatchToQueue(List<(string path, bool isChecked)> batch, List<string> missingFiles)
+        {
+            using (_queueLock.EnterScope())
+            {
+                _encoderLoadQueue.Enqueue(batch);
+                _totalFilesInQueue += batch.Count;
+            }
 
-                    foreach (var item in items)
+            // Update progress immediately to reflect the new total
+            UpdateEncoderProgress();
+
+            // Start processing if not already running
+            if (!_isProcessingQueue)
+            {
+                _ = ProcessEncoderQueueAsync(missingFiles);
+            }
+        }
+        private async Task ProcessEncoderQueueAsync(List<string> initialMissingFiles)
+        {
+            _isProcessingQueue = true;
+            _processedFilesCount = 0;
+            var allMissingFiles = new List<string>(initialMissingFiles);
+
+            _encoderLoadCancellation = new CancellationTokenSource();
+
+            try
+            {
+                // listViewEncoders.BeginUpdate(); // Suspend UI updates for performance
+
+                while (true)
+                {
+                    if (_encoderLoadCancellation.Token.IsCancellationRequested)
+                        break;
+
+                    List<(string path, bool isChecked)> currentBatch;
+
+                    using (_queueLock.EnterScope())
                     {
-                        if (item != null)
+                        if (_encoderLoadQueue.Count == 0) break;
+                        currentBatch = _encoderLoadQueue.Dequeue();
+                    }
+
+                    // Process each encoder in the current batch
+                    foreach (var (path, isChecked) in currentBatch)
+                    {
+                        if (_encoderLoadCancellation.Token.IsCancellationRequested)
+                            break;
+
+                        var item = await CreateListViewEncodersItemInternal(path, isChecked, _encoderLoadCancellation.Token);
+                        if (item != null && !_encoderLoadCancellation.Token.IsCancellationRequested)
                         {
-                            listViewEncoders.Items.Add(item); // Add items to the ListView
+                            listViewEncoders.Items.Add(item);
+                        }
+
+                        _processedFilesCount++;
+
+                        // Update progress after every "% 1" file for smooth UI feedback
+                        if (_processedFilesCount % 1 == 0)
+                        {
+                            UpdateEncoderProgress();
                         }
                     }
                 }
             }
-            UpdateGroupBoxEncodersHeader();
-        }
-        private async Task<ListViewItem?> CreateListViewEncodersItem(string encoderPath, bool isChecked)
-        {
-            if (!File.Exists(encoderPath))
+            finally
             {
-                return null; // If the file is not found, return null
+                try
+                {
+                    // listViewEncoders.EndUpdate(); // Resume UI updates
+                }
+                catch { }
+
+                // Reset processing state
+                _isProcessingQueue = false;
+                _processedFilesCount = 0;
+                _totalFilesInQueue = 0;
+
+                if (_encoderLoadCancellation?.IsCancellationRequested ?? false)
+                {
+                    using (_queueLock.EnterScope())
+                    {
+                        _encoderLoadQueue.Clear();
+                    }
+                }
+
+                // Final UI update and persistence
+                UpdateGroupBoxEncodersHeader();
+
+                if (!(_encoderLoadCancellation?.IsCancellationRequested ?? false))
+                {
+                    SaveEncoders();
+                }
+
+                if (allMissingFiles.Count > 0 && !(_encoderLoadCancellation?.IsCancellationRequested ?? false))
+                {
+                    string warningMessage = $"The following encoders were missing and not loaded:\n\n" +
+                        string.Join("\n", allMissingFiles.Select(Path.GetFileName)) +
+                        "\n\nCheck if they still exist on your system.";
+
+                    MessageBox.Show(warningMessage, "Missing Encoders", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                _encoderLoadCancellation?.Dispose();
+                _encoderLoadCancellation = null;
+            }
+        }
+        private void UpdateEncoderProgress()
+        {
+            string progressText;
+
+            lock (_queueLock)
+            {
+                if (_totalFilesInQueue > 0)
+                {
+                    progressText = $"Choose Encoder (Drag'n'Drop of files and folders is available) - Loading... ({_processedFilesCount}/{_totalFilesInQueue})";
+                }
+                else
+                {
+                    progressText = "Choose Encoder (Drag'n'Drop of files and folders is available)";
+                }
             }
 
-            // Get encoder information
-            var encoderInfo = await GetEncoderInfo(encoderPath); // Asynchronously get information
+            // Ensure UI thread safety
+            if (groupBoxEncoders.InvokeRequired)
+            {
+                groupBoxEncoders.Invoke((MethodInvoker)(() => groupBoxEncoders.Text = progressText));
+            }
+            else
+            {
+                groupBoxEncoders.Text = progressText;
+            }
+        }
+        private async Task<ListViewItem?> CreateListViewEncodersItemInternal(string encoderPath, bool isChecked, CancellationToken cancellationToken = default)
+        {
+            if (!File.Exists(encoderPath))
+                return null;
 
-            // Create a ListViewItem
-            var item = new ListViewItem(Path.GetFileName(encoderPath))
+            // Use cached info if available, otherwise retrieve and cache it
+            if (!encoderInfoCache.TryGetValue(encoderPath, out var encoderInfo))
+            {
+                // Get encoder version by executing "--version"
+                string? version = null;
+                try
+                {
+                    version = await Task.Run(() =>
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            return null;
+
+                        using Process process = new();
+                        process.StartInfo.FileName = encoderPath;
+                        process.StartInfo.Arguments = "--version";
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.CreateNoWindow = true;
+
+                        process.Start();
+                        string? result = process.StandardOutput.ReadLine();
+
+                        while (!process.HasExited)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                try { process.Kill(); } catch { }
+                                return null;
+                            }
+                            process.WaitForExit(100);
+                        }
+
+                        return result?.Trim();
+                    }, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+                catch (Exception)
+                {
+                    // Ignore version retrieval errors; version will be "N/A"
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                    return null;
+
+                // Get file system information
+                var fileInfo = new FileInfo(encoderPath);
+
+                // Create and cache encoder metadata
+                encoderInfo = new EncoderInfo
+                {
+                    FilePath = encoderPath,
+                    DirectoryPath = fileInfo.DirectoryName!,
+                    FileName = fileInfo.Name,
+                    FileNameWithoutExtension = Path.GetFileNameWithoutExtension(encoderPath),
+                    Extension = fileInfo.Extension.ToLowerInvariant(),
+                    Version = version,
+                    FileSize = fileInfo.Length,
+                    LastModified = fileInfo.LastWriteTime
+                };
+
+                encoderInfoCache[encoderPath] = encoderInfo;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+                return null;
+
+            // Create ListViewItem with subitems
+            var item = new ListViewItem(encoderInfo.FileName)
             {
                 Tag = encoderPath,
                 Checked = isChecked
             };
 
-            // Fill subitems
             item.SubItems.Add(encoderInfo.Version ?? "N/A");
             item.SubItems.Add(encoderInfo.DirectoryPath);
             item.SubItems.Add($"{encoderInfo.FileSize:n0} bytes");
             item.SubItems.Add(encoderInfo.LastModified.ToString("yyyy.MM.dd HH:mm"));
 
             return item;
-        }
-        private async Task<EncoderInfo> GetEncoderInfo(string encoderPath)
-        {
-            // Check if the information is in the cache
-            if (encoderInfoCache.TryGetValue(encoderPath, out var cachedInfo))
-            {
-                return cachedInfo; // Return cached information
-            }
-
-            // Get encoder version
-            string? version = null;
-            try
-            {
-                version = await Task.Run(() =>
-                {
-                    using Process process = new();
-                    process.StartInfo.FileName = encoderPath;
-                    process.StartInfo.Arguments = "--version"; // Argument to get the version
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.RedirectStandardOutput = true; // Redirect standard output
-                    process.StartInfo.CreateNoWindow = true;
-
-                    process.Start();
-                    string? result = process.StandardOutput.ReadLine(); // Read the first line of output
-                    process.WaitForExit();
-
-                    return result?.Trim();
-                });
-            }
-            catch (Exception)
-            {
-            }
-
-            // Get encoder file information
-            var fileInfo = new FileInfo(encoderPath);
-
-            // Create an EncoderInfo object
-            var encoderInfo = new EncoderInfo
-            {
-                FilePath = encoderPath,
-                DirectoryPath = fileInfo.DirectoryName!,
-                FileName = fileInfo.Name,
-                FileNameWithoutExtension = Path.GetFileNameWithoutExtension(encoderPath),
-                Extension = fileInfo.Extension.ToLowerInvariant(),
-                Version = version,
-                FileSize = fileInfo.Length,
-                LastModified = fileInfo.LastWriteTime
-            };
-
-            // Add new information to the cache
-            encoderInfoCache[encoderPath] = encoderInfo;
-            return encoderInfo;
         }
 
         // Class to store encoder information
@@ -1138,7 +1226,16 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonClearEncoders_Click(object? sender, EventArgs e)
         {
+            _encoderLoadCancellation?.Cancel();
+
             listViewEncoders.Items.Clear();
+
+            using (_queueLock.EnterScope())
+            {
+                _encoderLoadQueue.Clear();
+                _totalFilesInQueue = 0;
+            }
+
             UpdateGroupBoxEncodersHeader();
         }
         private void UpdateGroupBoxEncodersHeader()
@@ -2276,7 +2373,7 @@ namespace FLAC_Benchmark_H
                 double encodingSpeed = (double)durationMs / elapsedTime.TotalMilliseconds;
 
                 // Get encoder information from cache
-                var encoderInfo = await GetEncoderInfo(encoder); // Get encoder info
+                var encoderInfo = encoderInfoCache[encoder];
 
                 // Calculate CPU Load
                 double totalCpuTime = (userProcessorTime + privilegedProcessorTime).TotalMilliseconds;
@@ -2379,7 +2476,7 @@ namespace FLAC_Benchmark_H
             {
                 // === ERROR CASE: minimal logging with empty cells ===
                 var audioFileInfo = await GetAudioInfo(audioFilePath);
-                var encoderInfo = await GetEncoderInfo(encoder);
+                var encoderInfo = encoderInfoCache[encoder];
 
                 // Determine error message
                 string finalError = errorOutput;
@@ -2641,7 +2738,7 @@ namespace FLAC_Benchmark_H
             {
                 // Get file and encoder info for display
                 var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
-                var encoderInfo = await GetEncoderInfo(group.EncoderPath);
+                var encoderInfo = encoderInfoCache[group.EncoderPath];
 
                 string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
 
