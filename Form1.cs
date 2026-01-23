@@ -1106,8 +1106,21 @@ namespace FLAC_Benchmark_H
             if (!File.Exists(encoderPath))
                 return null;
 
-            // Use cached info if available, otherwise retrieve and cache it
-            if (!encoderInfoCache.TryGetValue(encoderPath, out var encoderInfo))
+            var fileInfo = new FileInfo(encoderPath);
+            DateTime currentLastWriteTime = fileInfo.LastWriteTime;
+
+            // Check tha cache for existing info
+            if (encoderInfoCache.TryGetValue(encoderPath, out var encoderInfo))
+            {
+                // If the file was modified - invalidate the cache
+                if (encoderInfo.LastModified != currentLastWriteTime)
+                {
+                    encoderInfoCache.TryRemove(encoderPath, out _);
+                    encoderInfo = null;
+                }
+            }
+
+            if (encoderInfo == null)
             {
                 // Get encoder version by executing "--version"
                 string? version = null;
@@ -1153,10 +1166,7 @@ namespace FLAC_Benchmark_H
                 if (cancellationToken.IsCancellationRequested)
                     return null;
 
-                // Get file system information
-                var fileInfo = new FileInfo(encoderPath);
-
-                // Create and cache encoder metadata
+                // Create and cache fresh encoder metadata
                 encoderInfo = new EncoderInfo
                 {
                     FilePath = encoderPath,
@@ -1166,7 +1176,7 @@ namespace FLAC_Benchmark_H
                     Extension = fileInfo.Extension.ToLowerInvariant(),
                     Version = version,
                     FileSize = fileInfo.Length,
-                    LastModified = fileInfo.LastWriteTime
+                    LastModified = currentLastWriteTime
                 };
 
                 encoderInfoCache[encoderPath] = encoderInfo;
@@ -1189,7 +1199,6 @@ namespace FLAC_Benchmark_H
 
             return item;
         }
-
         // Class to store encoder information
         private class EncoderInfo
         {
