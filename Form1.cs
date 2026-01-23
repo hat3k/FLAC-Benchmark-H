@@ -4,12 +4,14 @@ using MediaInfoLib;
 using ScottPlot;
 using ScottPlot.Plottable;
 using ScottPlot.Statistics;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Management;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -201,6 +203,107 @@ namespace FLAC_Benchmark_H
         private static string NormalizeSpaces(string input)
         {
             return Regex.Replace(input.Trim(), @"\s+", " "); // Remove extra spaces inside the string
+        }
+        private sealed class NaturalStringComparer : IComparer<string?>
+        {
+            public int Compare(string? x, string? y)
+            {
+                if (ReferenceEquals(x, y)) return 0;
+                if (x is null) return -1;
+                if (y is null) return 1;
+
+                return CompareNatural(x.AsSpan(), y.AsSpan());
+            }
+
+            private static int CompareNatural(ReadOnlySpan<char> strA, ReadOnlySpan<char> strB)
+            {
+                int i1 = 0, i2 = 0;
+
+                while (i1 < strA.Length && i2 < strB.Length)
+                {
+                    if (strA[i1] == strB[i2])
+                    {
+                        i1++; i2++;
+                        continue;
+                    }
+
+                    if (IsDigit(strA[i1]) && IsDigit(strB[i2]))
+                    {
+                        int numEnd1 = FindNumberEnd(strA, i1);
+                        int numEnd2 = FindNumberEnd(strB, i2);
+
+                        int numberComparison = CompareNumbers(strA.Slice(i1, numEnd1 - i1),
+                                                           strB.Slice(i2, numEnd2 - i2));
+                        if (numberComparison != 0)
+                            return numberComparison;
+
+                        i1 = numEnd1;
+                        i2 = numEnd2;
+                    }
+                    else
+                    {
+                        char c1 = strA[i1];
+                        char c2 = strB[i2];
+
+                        if (c1 == c2)
+                        {
+                            i1++; i2++;
+                            continue;
+                        }
+
+                        int cmp = char.ToLowerInvariant(c1).CompareTo(char.ToLowerInvariant(c2));
+                        if (cmp != 0)
+                            return cmp;
+
+                        i1++; i2++;
+                    }
+                }
+
+                return (strA.Length - i1).CompareTo(strB.Length - i2);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static bool IsDigit(char c)
+            {
+                return (uint)(c - '0') <= 9;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int FindNumberEnd(ReadOnlySpan<char> str, int start)
+            {
+                int i = start;
+                while (i < str.Length && IsDigit(str[i]))
+                    i++;
+                return i;
+            }
+
+            private static int CompareNumbers(ReadOnlySpan<char> num1, ReadOnlySpan<char> num2)
+            {
+                if (num1.SequenceEqual(num2))
+                    return 0;
+
+                int start1 = 0, start2 = 0;
+
+                while (start1 < num1.Length - 1 && num1[start1] == '0') start1++;
+                while (start2 < num2.Length - 1 && num2[start2] == '0') start2++;
+
+                int len1 = num1.Length - start1;
+                int len2 = num2.Length - start2;
+
+                if (len1 != len2)
+                    return len1.CompareTo(len2);
+
+                for (int i = 0; i < len1; i++)
+                {
+                    char c1 = num1[start1 + i];
+                    char c2 = num2[start2 + i];
+
+                    if (c1 != c2)
+                        return c1.CompareTo(c2);
+                }
+
+                return 0;
+            }
         }
 
         // Method to load CPU information
@@ -1080,7 +1183,9 @@ namespace FLAC_Benchmark_H
 
                 if (allMissingFiles.Count > 0 && !(_encoderLoadCancellation?.IsCancellationRequested ?? false))
                 {
-                    var uniqueMissingFiles = new HashSet<string>(allMissingFiles).OrderBy(f => f, new NaturalStringComparer()).ToList();
+                    var uniqueMissingFiles = new HashSet<string>(allMissingFiles)
+                        .OrderBy(f => f, new NaturalStringComparer())
+                        .ToList();
 
                     string warningMessage = "The following Encoders were missing and not loaded:" +
                         Environment.NewLine + Environment.NewLine +
@@ -3399,44 +3504,6 @@ namespace FLAC_Benchmark_H
             }
 
             dataGridViewLog.ClearSelection();
-        }
-        private class NaturalStringComparer : IComparer<string?>
-        {
-            public int Compare(string? x, string? y)
-            {
-                if (x == null && y == null) return 0;
-                if (x == null) return -1;
-                if (y == null) return 1;
-                return CompareNatural(x, y);
-            }
-
-            private static int CompareNatural(string strA, string strB)
-            {
-                int i1 = 0, i2 = 0;
-                while (i1 < strA.Length && i2 < strB.Length)
-                {
-                    if (char.IsDigit(strA[i1]) && char.IsDigit(strB[i2]))
-                    {
-                        long n1 = 0, n2 = 0;
-                        while (i1 < strA.Length && char.IsDigit(strA[i1]))
-                            n1 = n1 * 10 + (strA[i1++] - '0');
-                        while (i2 < strB.Length && char.IsDigit(strB[i2]))
-                            n2 = n2 * 10 + (strB[i2++] - '0');
-
-                        if (n1 != n2)
-                            return n1.CompareTo(n2);
-                    }
-                    else
-                    {
-                        int cmp = char.ToLower(strA[i1]).CompareTo(char.ToLower(strB[i2]));
-                        if (cmp != 0)
-                            return cmp;
-                        i1++;
-                        i2++;
-                    }
-                }
-                return strA.Length.CompareTo(strB.Length);
-            }
         }
 
         private static string GetParametersWithoutJ(string parameters)
