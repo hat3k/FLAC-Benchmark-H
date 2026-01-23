@@ -644,7 +644,7 @@
             // 
             contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItem, uncheckAllToolStripMenuItem, checkSelectedToolStripMenuItem, uncheckSelectedToolStripMenuItem, invertCheckToolStripMenuItem, toolStripSeparator1, selectAllToolStripMenuItem, clearSelectionToolStripMenuItem, invertSelectionToolStripMenuItem, toolStripSeparator2, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator4, refreshAllToolStripMenuItem, toolStripSeparator3, openContainingFolderToolStripMenuItem, toolStripSeparator5, clearUncheckedToolStripMenuItem, clearSelectedToolStripMenuItem, clearAllEncodersToolStripMenuItem });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
-            contextMenuStripEncoders.Size = new Size(202, 386);
+            contextMenuStripEncoders.Size = new Size(202, 364);
             contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
             // 
             // checkAllToolStripMenuItem
@@ -740,6 +740,7 @@
             openContainingFolderToolStripMenuItem.Name = "openContainingFolderToolStripMenuItem";
             openContainingFolderToolStripMenuItem.Size = new Size(201, 22);
             openContainingFolderToolStripMenuItem.Text = "Open Containing Folder";
+            openContainingFolderToolStripMenuItem.Click += OpenContainingFolderToolStripMenuItem_Click;
             // 
             // toolStripSeparator5
             // 

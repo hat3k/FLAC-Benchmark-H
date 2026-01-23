@@ -1080,21 +1080,22 @@ namespace FLAC_Benchmark_H
 
                 if (allMissingFiles.Count > 0 && !(_encoderLoadCancellation?.IsCancellationRequested ?? false))
                 {
-                    string warningMessage = "The following encoders were missing and not loaded:" +
+                    var uniqueMissingFiles = new HashSet<string>(allMissingFiles).OrderBy(f => f, new NaturalStringComparer()).ToList();
+
+                    string warningMessage = "The following Encoders were missing and not loaded:" +
                         Environment.NewLine + Environment.NewLine +
-                        string.Join(Environment.NewLine, allMissingFiles) +
+                        string.Join(Environment.NewLine, uniqueMissingFiles) +
                         Environment.NewLine + Environment.NewLine +
                         "Check if they still exist on your system.";
-
 
                     var dialog = new Form
                     {
                         Text = "Missing Encoders",
                         Size = new Size(600, 400),
+                        MinimumSize = new Size(300, 200),
                         TopMost = true,
                         MinimizeBox = true,
                         MaximizeBox = true,
-
                         StartPosition = FormStartPosition.Manual
                     };
 
@@ -1104,35 +1105,37 @@ namespace FLAC_Benchmark_H
                         mainForm.Location.Y + (mainForm.Height - dialog.Height) / 2
                     );
 
-                    var textBox = new TextBox
+                    var textBoxMissingEncoders = new RichTextBox
                     {
-                        Dock = DockStyle.Fill,
+                        BorderStyle = BorderStyle.Fixed3D,
                         Multiline = true,
-                        ScrollBars = ScrollBars.Both,
+                        ScrollBars = RichTextBoxScrollBars.Both,
                         ReadOnly = true,
                         WordWrap = false,
                         Font = new Font("Segoe UI", 9),
-                        AcceptsReturn = true,
                         Text = warningMessage,
-                        SelectionLength = 0
+                        SelectionLength = 0,
+                        Location = new Point(12, 12),
+                        Size = new Size(dialog.ClientSize.Width - 24, dialog.ClientSize.Height - 50),
+                        Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
                     };
 
-                    dialog.Shown += (s, e) => textBox.SelectionLength = 0;
-
-                    var button = new Button
+                    var buttonCloseMissingEncoders = new Button
                     {
                         Text = "Close",
-                        Dock = DockStyle.Bottom,
-                        Height = 30
+                        Width = 55,
+                        Height = 23,
+                        Location = new Point((dialog.ClientSize.Width - 75) / 2, dialog.ClientSize.Height - 35),
+                        Anchor = AnchorStyles.Bottom
                     };
-                    button.Click += (s, e) => dialog.Close();
+                    dialog.Shown += (s, e) => buttonCloseMissingEncoders.Focus();
 
-                    dialog.Controls.Add(textBox);
-                    dialog.Controls.Add(button);
+                    dialog.Controls.Add(textBoxMissingEncoders);
+                    dialog.Controls.Add(buttonCloseMissingEncoders);
 
                     dialog.Show(mainForm);
+                    buttonCloseMissingEncoders.Click += (s, e) => dialog.Close();
                 }
-
                 _encoderLoadCancellation?.Dispose();
                 _encoderLoadCancellation = null;
             }
@@ -1332,7 +1335,48 @@ namespace FLAC_Benchmark_H
         // Encoders Context Menu
         private void ContextMenuStripEncoders_Opening(object sender, CancelEventArgs e)
         {
+            bool isRowSelected = listViewEncoders.SelectedItems.Count > 0;
+
+            openContainingFolderToolStripMenuItem.Enabled = isRowSelected;
             refreshAllToolStripMenuItem.Enabled = !_isProcessingQueue;
+        }
+        private void OpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listViewEncoders.SelectedItems.Count == 0)
+                return;
+
+            ListViewItem selectedItem = listViewEncoders.SelectedItems[0];
+            string? encoderPath = selectedItem.Tag?.ToString();
+
+            if (string.IsNullOrEmpty(encoderPath))
+                return;
+
+            if (!File.Exists(encoderPath))
+            {
+                MessageBox.Show("The selected encoder file no longer exists on disk.\n" +
+                               "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
+                               "File Not Found",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{encoderPath}\"",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to open folder: {ex.Message}",
+                               "Error",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Error);
+            }
         }
         private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
         {
@@ -1340,7 +1384,7 @@ namespace FLAC_Benchmark_H
                 return;
 
             _isRefreshing = true;
-            groupBoxEncoders.Text = "Refreshing Encoder information...";
+            groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - Refreshing...";
             Application.DoEvents();
 
             int topIndex = listViewEncoders.TopItem?.Index ?? 0;
