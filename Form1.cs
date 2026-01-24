@@ -757,6 +757,11 @@ namespace FLAC_Benchmark_H
             {
                 string[] lines = await File.ReadAllLinesAsync(SettingsEncodersFilePath);
 
+                if (lines.All(string.IsNullOrWhiteSpace))
+                {
+                    return;
+                }
+
                 // Collect all valid encoder paths with their checked state
                 var encoderPaths = new List<(string path, bool isChecked)>();
                 var missingFiles = new List<string>();
@@ -779,30 +784,9 @@ namespace FLAC_Benchmark_H
                                 missingFiles.Add(encoderPath);
                         }
                     }
-                    else if (line.Contains('~'))
-                    {
-                        // Legacy format: "C:\path\to\encoder.exe~True"
-                        var parts = line.Split('~');
-                        if (parts.Length >= 2 && bool.TryParse(parts[^1], out bool isChecked))
-                        {
-                            string encoderPath = string.Join("~", parts.Take(parts.Length - 1));
-                            if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
-                                encoderPaths.Add((encoderPath, isChecked));
-                            else
-                                missingFiles.Add(encoderPath);
-                        }
-                    }
                 }
 
-                if (encoderPaths.Count == 0)
-                {
-                    // Clear UI even if no valid encoders were found
-                    listViewEncoders.Items.Clear();
-                    UpdateGroupBoxEncodersHeader();
-                    return;
-                }
-
-                // Enqueue valid encoders for processing
+                // Enqueue encoders for processing
                 AddEncoderBatchToQueue(encoderPaths, missingFiles);
             }
             catch (Exception ex)
@@ -1147,7 +1131,10 @@ namespace FLAC_Benchmark_H
                         if (_processedFilesCount % 1 == 0)
                         {
                             UpdateEncoderProgress();
-                            //await Task.Yield();
+                        }
+                        if (_processedFilesCount % 5 == 0)
+                        {
+                            Application.DoEvents();
                         }
                     }
                 }
