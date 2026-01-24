@@ -1437,37 +1437,39 @@ namespace FLAC_Benchmark_H
             if (listViewEncoders.SelectedItems.Count == 0)
                 return;
 
-            ListViewItem selectedItem = listViewEncoders.SelectedItems[0];
-            string? encoderPath = selectedItem.Tag?.ToString();
-
-            if (string.IsNullOrEmpty(encoderPath))
-                return;
-
-            if (!File.Exists(encoderPath))
+            foreach (ListViewItem selectedItem in listViewEncoders.SelectedItems)
             {
-                MessageBox.Show("The selected encoder file no longer exists on disk.\n" +
-                               "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
-                               "File Not Found",
-                               MessageBoxButtons.OK,
-                               MessageBoxIcon.Warning);
-                return;
-            }
+                string? encoderPath = selectedItem.Tag?.ToString();
 
-            try
-            {
-                Process.Start(new ProcessStartInfo
+                if (string.IsNullOrEmpty(encoderPath))
+                    continue;
+
+                if (!File.Exists(encoderPath))
                 {
-                    FileName = "explorer.exe",
-                    Arguments = $"/select,\"{encoderPath}\"",
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to open folder: {ex.Message}",
-                               "Error",
-                               MessageBoxButtons.OK,
-                               MessageBoxIcon.Error);
+                    MessageBox.Show($"The selected encoder file no longer exists on disk:\n\n{encoderPath}\n\n" +
+                                   "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
+                                   "File Not Found",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                    continue;
+                }
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{encoderPath}\"",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(encoderPath)}:\n{ex.Message}",
+                                   "Error",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Error);
+                }
             }
         }
         private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
