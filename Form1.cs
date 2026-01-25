@@ -1376,11 +1376,11 @@ namespace FLAC_Benchmark_H
 
         private void ButtonUpEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewEncoders, -1); // Pass -1 to move up
+            MoveSelectedItemsForListview(listViewEncoders, -1); // Pass -1 to move up
         }
         private void ButtonDownEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewEncoders, 1); // Pass 1 to move down
+            MoveSelectedItemsForListview(listViewEncoders, 1); // Pass 1 to move down
         }
         private void ButtonRemoveEncoder_Click(object? sender, EventArgs e)
         {
@@ -1428,9 +1428,90 @@ namespace FLAC_Benchmark_H
         private void ContextMenuStripEncoders_Opening(object sender, CancelEventArgs e)
         {
             bool isRowSelected = listViewEncoders.SelectedItems.Count > 0;
+            bool hasItems = listViewEncoders.Items.Count > 0;
+            bool isBusy = _isProcessingQueue || _isRefreshing;
+
 
             openContainingFolderToolStripMenuItem.Enabled = isRowSelected;
             refreshAllToolStripMenuItem.Enabled = !_isProcessingQueue;
+
+            // Check/Uncheck operations
+            checkAllToolStripMenuItem.Enabled = hasItems;
+            uncheckAllToolStripMenuItem.Enabled = hasItems;
+            checkSelectedToolStripMenuItem.Enabled = isRowSelected;
+            uncheckSelectedToolStripMenuItem.Enabled = isRowSelected;
+            invertCheckToolStripMenuItem.Enabled = hasItems;
+
+            // Selection operations  
+            selectAllToolStripMenuItem.Enabled = hasItems;
+            clearSelectionToolStripMenuItem.Enabled = isRowSelected;
+            invertSelectionToolStripMenuItem.Enabled = hasItems;
+
+            // Move operations
+            moveUpToolStripMenuItem.Enabled = isRowSelected;
+            moveDownToolStripMenuItem.Enabled = isRowSelected;
+
+            // Other operations
+            openContainingFolderToolStripMenuItem.Enabled = isRowSelected;
+            refreshAllToolStripMenuItem.Enabled = hasItems && !isBusy;
+            clearSelectedToolStripMenuItem.Enabled = isRowSelected;
+
+        }
+        private void CheckAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                item.Checked = true;
+            }
+        }
+        private void UncheckAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                item.Checked = false;
+            }
+        }
+        private void CheckSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.SelectedItems)
+            {
+                item.Checked = true;
+            }
+        }
+        private void UncheckSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.SelectedItems)
+            {
+                item.Checked = false;
+            }
+        }
+        private void InvertCheckToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                item.Checked = !item.Checked;
+            }
+        }
+        private void SelectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                item.Selected = true;
+            }
+        }
+        private void ClearSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.SelectedItems)
+            {
+                item.Selected = false;
+            }
+        }
+        private void InvertSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                item.Selected = !item.Selected;
+            }
         }
         private void OpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1544,6 +1625,22 @@ namespace FLAC_Benchmark_H
                 _isRefreshing = false;
                 UpdateGroupBoxEncodersHeader();
             }
+        }
+        private void MoveUpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItemsForListview(listViewEncoders, -1);
+        }
+        private void MoveDownToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItemsForListview(listViewEncoders, 1);
+        }
+        private void ClearSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ButtonRemoveEncoder_Click(sender, e);
+        }
+        private void ClearAllEncodersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ButtonClearEncoders_Click(sender, e);
         }
 
         //Audio files
@@ -2023,11 +2120,11 @@ namespace FLAC_Benchmark_H
 
         private void ButtonUpAudioFile_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewAudioFiles, -1); // Pass -1 to move up
+            MoveSelectedItemsForListview(listViewAudioFiles, -1); // Pass -1 to move up
         }
         private void ButtonDownAudioFile_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItems(listViewAudioFiles, 1); // Pass 1 to move down
+            MoveSelectedItemsForListview(listViewAudioFiles, 1); // Pass 1 to move down
         }
         private void ButtonRemoveAudioFile_Click(object? sender, EventArgs e)
         {
@@ -8161,7 +8258,7 @@ namespace FLAC_Benchmark_H
         }
 
         // General methods
-        private static void MoveSelectedItems(ListView listView, int direction)
+        private static void MoveSelectedItemsForListview(ListView listView, int direction)
         {
             // Get selected items and sort them by indices
             var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
@@ -8771,10 +8868,15 @@ namespace FLAC_Benchmark_H
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Save user settings and lists
-            SaveSettings();        // General settings
-            SaveEncoders();        // Encoder list
-            SaveAudioFiles();      // Audio files list
-            SaveJobs();            // Job list
+            SaveSettings();     // General settings
+            
+            if (!_isProcessingQueue && !_isRefreshing)
+            {
+                SaveEncoders(); // Save encoders ONLY if loading is NOT in progress
+            }
+
+            SaveAudioFiles();   // Audio files list
+            SaveJobs();         // Job list
 
             // Clean up MediaInfo pool
             while (_mediaInfoPool.TryDequeue(out var mediaInfo))

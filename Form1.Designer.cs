@@ -652,30 +652,35 @@
             checkAllToolStripMenuItem.Name = "checkAllToolStripMenuItem";
             checkAllToolStripMenuItem.Size = new Size(201, 22);
             checkAllToolStripMenuItem.Text = "Check All";
+            checkAllToolStripMenuItem.Click += CheckAllToolStripMenuItem_Click;
             // 
             // uncheckAllToolStripMenuItem
             // 
             uncheckAllToolStripMenuItem.Name = "uncheckAllToolStripMenuItem";
             uncheckAllToolStripMenuItem.Size = new Size(201, 22);
             uncheckAllToolStripMenuItem.Text = "Uncheck All";
+            uncheckAllToolStripMenuItem.Click += UncheckAllToolStripMenuItem_Click;
             // 
             // checkSelectedToolStripMenuItem
             // 
             checkSelectedToolStripMenuItem.Name = "checkSelectedToolStripMenuItem";
             checkSelectedToolStripMenuItem.Size = new Size(201, 22);
             checkSelectedToolStripMenuItem.Text = "Check Selected";
+            checkSelectedToolStripMenuItem.Click += CheckSelectedToolStripMenuItem_Click;
             // 
             // uncheckSelectedToolStripMenuItem
             // 
             uncheckSelectedToolStripMenuItem.Name = "uncheckSelectedToolStripMenuItem";
             uncheckSelectedToolStripMenuItem.Size = new Size(201, 22);
             uncheckSelectedToolStripMenuItem.Text = "Uncheck Selected";
+            uncheckSelectedToolStripMenuItem.Click += UncheckSelectedToolStripMenuItem_Click;
             // 
             // invertCheckToolStripMenuItem
             // 
             invertCheckToolStripMenuItem.Name = "invertCheckToolStripMenuItem";
             invertCheckToolStripMenuItem.Size = new Size(201, 22);
             invertCheckToolStripMenuItem.Text = "Invert Check";
+            invertCheckToolStripMenuItem.Click += InvertCheckToolStripMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
@@ -687,18 +692,21 @@
             selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
             selectAllToolStripMenuItem.Size = new Size(201, 22);
             selectAllToolStripMenuItem.Text = "Select All";
+            selectAllToolStripMenuItem.Click += SelectAllToolStripMenuItem_Click;
             // 
             // clearSelectionToolStripMenuItem
             // 
             clearSelectionToolStripMenuItem.Name = "clearSelectionToolStripMenuItem";
             clearSelectionToolStripMenuItem.Size = new Size(201, 22);
             clearSelectionToolStripMenuItem.Text = "Clear Selection";
+            clearSelectionToolStripMenuItem.Click += ClearSelectionToolStripMenuItem_Click;
             // 
             // invertSelectionToolStripMenuItem
             // 
             invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
             invertSelectionToolStripMenuItem.Size = new Size(201, 22);
             invertSelectionToolStripMenuItem.Text = "Invert Selection";
+            invertSelectionToolStripMenuItem.Click += InvertSelectionToolStripMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
@@ -710,12 +718,14 @@
             moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
             moveUpToolStripMenuItem.Size = new Size(201, 22);
             moveUpToolStripMenuItem.Text = "↑ Move Up";
+            moveUpToolStripMenuItem.Click += MoveUpToolStripMenuItem_Click;
             // 
             // moveDownToolStripMenuItem
             // 
             moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
             moveDownToolStripMenuItem.Size = new Size(201, 22);
             moveDownToolStripMenuItem.Text = "↓ Move Down";
+            moveDownToolStripMenuItem.Click += MoveDownToolStripMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
@@ -758,12 +768,14 @@
             clearSelectedToolStripMenuItem.Name = "clearSelectedToolStripMenuItem";
             clearSelectedToolStripMenuItem.Size = new Size(201, 22);
             clearSelectedToolStripMenuItem.Text = "Clear Selected";
+            clearSelectedToolStripMenuItem.Click += ClearSelectedToolStripMenuItem_Click;
             // 
             // clearAllEncodersToolStripMenuItem
             // 
             clearAllEncodersToolStripMenuItem.Name = "clearAllEncodersToolStripMenuItem";
             clearAllEncodersToolStripMenuItem.Size = new Size(201, 22);
             clearAllEncodersToolStripMenuItem.Text = "Clear All Encoders";
+            clearAllEncodersToolStripMenuItem.Click += ClearAllEncodersToolStripMenuItem_Click;
             // 
             // buttonAddEncoders
             // 
