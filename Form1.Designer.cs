@@ -606,6 +606,7 @@
             listViewEncoders.FullRowSelect = true;
             listViewEncoders.Location = new Point(6, 22);
             listViewEncoders.Name = "listViewEncoders";
+            listViewEncoders.ShowItemToolTips = true;
             listViewEncoders.Size = new Size(765, 202);
             listViewEncoders.TabIndex = 0;
             listViewEncoders.UseCompatibleStateImageBehavior = false;
@@ -645,7 +646,7 @@
             // 
             contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItem, uncheckAllToolStripMenuItem, checkSelectedToolStripMenuItem, uncheckSelectedToolStripMenuItem, invertCheckToolStripMenuItem, toolStripSeparator1, selectAllToolStripMenuItem, clearSelectionToolStripMenuItem, invertSelectionToolStripMenuItem, toolStripSeparator2, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator4, refreshAllToolStripMenuItem, toolStripSeparator3, openContainingFolderToolStripMenuItem, toolStripSeparator5, clearUncheckedToolStripMenuItem, clearSelectedToolStripMenuItem, clearDuplicateEntriesToolStripMenuItem, clearAllEncodersToolStripMenuItem });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
-            contextMenuStripEncoders.Size = new Size(202, 408);
+            contextMenuStripEncoders.Size = new Size(202, 386);
             contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
             // 
             // checkAllToolStripMenuItem

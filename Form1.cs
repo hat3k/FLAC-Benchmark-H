@@ -1375,6 +1375,7 @@ namespace FLAC_Benchmark_H
             public long FileSize { get; set; }
             public DateTime CreationTime { get; set; }
             public DateTime LastWriteTime { get; set; }
+            public bool WasModifiedSinceLoad { get; set; } = false;
         }
         private readonly ConcurrentDictionary<string, EncoderInfo> encoderInfoCache = new();
 
@@ -1592,11 +1593,30 @@ namespace FLAC_Benchmark_H
 
                     bool currentChecked = item.Checked;
 
+                    var fileInfo = new FileInfo(encoderPath);
+                    DateTime currentCreationTime = fileInfo.CreationTimeUtc;
+                    DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
+
+                    bool wasModified = false;
+                    if (encoderInfoCache.TryGetValue(encoderPath, out var cachedInfo))
+                    {
+                        if (cachedInfo.CreationTime != currentCreationTime ||
+                            cachedInfo.LastWriteTime != currentLastWriteTime)
+                        {
+                            wasModified = true;
+                        }
+                    }
+
                     var newItem = await CreateListViewEncodersItemInternal(encoderPath, currentChecked);
                     if (newItem == null)
                     {
                         listViewEncoders.Items.RemoveAt(i);
                         continue;
+                    }
+
+                    if (encoderInfoCache.TryGetValue(encoderPath, out var updatedInfo))
+                    {
+                        updatedInfo.WasModifiedSinceLoad = wasModified;
                     }
 
                     item.Text = newItem.Text;
@@ -1605,6 +1625,11 @@ namespace FLAC_Benchmark_H
                         if (j + 1 < item.SubItems.Count)
                             item.SubItems[j + 1].Text = newItem.SubItems[j + 1].Text;
                     }
+
+                    item.ForeColor = wasModified ? Color.DarkOrange : SystemColors.WindowText;
+                    item.ToolTipText = wasModified
+                        ? "Encoder file was modified since it was loaded.\nRefresh again to decolorize."
+                        : "";
                 }
 
                 SaveEncoders();
@@ -2863,11 +2888,6 @@ namespace FLAC_Benchmark_H
                 long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Use duration from cache
                 string audioFileDirectory = audioFileInfo.DirectoryPath;
                 string Md5Hash = audioFileInfo.Md5Hash;
-
-                // Form short name for input file
-                //string audioFileNameShort = audioFileName.Length > 30
-                //    ? $"{audioFileName.Substring(0, 15)}...{audioFileName.Substring(audioFileName.Length - 15)}"
-                //    : audioFileName.PadRight(33);
 
                 // Get output audio file information
                 long outputSize = outputFile.Length;
