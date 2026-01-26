@@ -1267,20 +1267,22 @@ namespace FLAC_Benchmark_H
                 return null;
 
             var fileInfo = new FileInfo(encoderPath);
-            DateTime currentLastWriteTime = fileInfo.LastWriteTime;
+            DateTime currentCreationTime = fileInfo.CreationTimeUtc;
+            DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-            // Check tha cache for existing info
-            if (encoderInfoCache.TryGetValue(encoderPath, out var encoderInfo))
+            // Check the cache for existing info
+            if (encoderInfoCache.TryGetValue(encoderPath, out var cachedInfo))
             {
                 // If the file was modified - invalidate the cache
-                if (encoderInfo.LastModified != currentLastWriteTime)
+                if (cachedInfo.CreationTime != currentCreationTime ||
+                    cachedInfo.LastWriteTime != currentLastWriteTime)
                 {
                     encoderInfoCache.TryRemove(encoderPath, out _);
-                    encoderInfo = null;
+                    cachedInfo = null;
                 }
             }
 
-            if (encoderInfo == null)
+            if (cachedInfo == null)
             {
                 // Get encoder version by executing "--version"
                 string? version = null;
@@ -1327,7 +1329,7 @@ namespace FLAC_Benchmark_H
                     return null;
 
                 // Create and cache fresh encoder metadata
-                encoderInfo = new EncoderInfo
+                cachedInfo = new EncoderInfo
                 {
                     FilePath = encoderPath,
                     DirectoryPath = fileInfo.DirectoryName!,
@@ -1336,26 +1338,27 @@ namespace FLAC_Benchmark_H
                     Extension = fileInfo.Extension.ToLowerInvariant(),
                     Version = version,
                     FileSize = fileInfo.Length,
-                    LastModified = currentLastWriteTime
+                    CreationTime = currentCreationTime,
+                    LastWriteTime = currentLastWriteTime
                 };
 
-                encoderInfoCache[encoderPath] = encoderInfo;
+                encoderInfoCache[encoderPath] = cachedInfo;
             }
 
             if (cancellationToken.IsCancellationRequested)
                 return null;
 
             // Create ListViewItem with subitems
-            var item = new ListViewItem(encoderInfo.FileName)
+            var item = new ListViewItem(cachedInfo.FileName)
             {
                 Tag = encoderPath,
                 Checked = isChecked
             };
 
-            item.SubItems.Add(encoderInfo.Version ?? "N/A");
-            item.SubItems.Add(encoderInfo.DirectoryPath);
-            item.SubItems.Add($"{encoderInfo.FileSize:n0} bytes");
-            item.SubItems.Add(encoderInfo.LastModified.ToString("yyyy.MM.dd HH:mm"));
+            item.SubItems.Add(cachedInfo.Version ?? "N/A");
+            item.SubItems.Add(cachedInfo.DirectoryPath);
+            item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
+            item.SubItems.Add(cachedInfo.LastWriteTime.ToString("yyyy.MM.dd HH:mm"));
 
             return item;
         }
@@ -1370,7 +1373,8 @@ namespace FLAC_Benchmark_H
             public required string Extension { get; set; }
             public string? Version { get; set; } = null;
             public long FileSize { get; set; }
-            public DateTime LastModified { get; set; }
+            public DateTime CreationTime { get; set; }
+            public DateTime LastWriteTime { get; set; }
         }
         private readonly ConcurrentDictionary<string, EncoderInfo> encoderInfoCache = new();
 
@@ -1866,15 +1870,28 @@ namespace FLAC_Benchmark_H
         }
         private async Task<AudioFileInfo> GetAudioInfo(string audioFilePath)
         {
-            // Check if the information is in the cache
-            if (audioInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
+            var fileInfo = new FileInfo(audioFilePath);
+            DateTime currentCreationTime = fileInfo.CreationTimeUtc;
+            DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
+
+            // Check the cache for existing info
+            if (audioFileInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
             {
-                return cachedInfo; // Return cached information
+                // If the file was modified - invalidate the cache
+                if (cachedInfo.CreationTime != currentCreationTime ||
+                    cachedInfo.LastWriteTime != currentLastWriteTime)
+                {
+                    audioFileInfoCache.TryRemove(audioFilePath, out _);
+                    cachedInfo = null;
+                }
+                else
+                {
+                    return cachedInfo; // Return cached information
+                }
             }
 
-            // Get MediaInfo instance from pool
+            // If cache is not actual - get information (MediaInfo instance from pool)
             var mediaInfo = GetMediaInfoFromPool();
-
             try
             {
                 mediaInfo.Open(audioFilePath);
@@ -1885,11 +1902,10 @@ namespace FLAC_Benchmark_H
                 string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
                 string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";              // Number only (e.g. 44100)
                 string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A"; // Number + kHz (44.1 kHz)
-                FileInfo file = new(audioFilePath);
-                long fileSize = file.Length;
-                DateTime lastWriteTime = file.LastWriteTime;
+
+                long fileSize = fileInfo.Length;
                 string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
-                string md5Hash = "N/A"; // Default value for MD5
+                string md5Hash = "N/A";
 
                 // Determine the file type and get the corresponding MD5
                 if (extension == ".flac")
@@ -1901,8 +1917,8 @@ namespace FLAC_Benchmark_H
                     md5Hash = await CalculateWavMD5Async(audioFilePath);
                 }
 
-                // Add new information to the cache
-                var audioFileInfo = new AudioFileInfo
+                // Create and cache fresh audio file metadata
+                cachedInfo = new AudioFileInfo
                 {
                     FilePath = audioFilePath,
                     DirectoryPath = Path.GetDirectoryName(audioFilePath),
@@ -1916,21 +1932,21 @@ namespace FLAC_Benchmark_H
                     Duration = duration,
                     FileSize = fileSize,
                     Md5Hash = md5Hash,
-                    LastWriteTime = lastWriteTime
+                    CreationTime = currentCreationTime,
+                    LastWriteTime = currentLastWriteTime
                 };
 
-                audioInfoCache[audioFilePath] = audioFileInfo; // Cache the information
-                return audioFileInfo;
+                audioFileInfoCache[audioFilePath] = cachedInfo;
+                return cachedInfo;
             }
             finally
             {
-                // Ensure MediaInfo is closed and returned to pool
                 mediaInfo.Close();
                 ReturnMediaInfoToPool(mediaInfo);
             }
         }
 
-        // Class to store audio file information
+        // Class to store Audio File information
         private class AudioFileInfo
         {
             public string FilePath { get; set; }
@@ -1943,13 +1959,13 @@ namespace FLAC_Benchmark_H
             public string SamplingRate { get; set; }
             public string SamplingRateString { get; set; }
             public string Duration { get; set; }
-            public long FileSize { get; set; }
-            public DateTime LastWriteTime { get; set; }
-
             public string Md5Hash { get; set; }
             public string ErrorDetails { get; set; }
+            public long FileSize { get; set; }
+            public DateTime CreationTime { get; set; }
+            public DateTime LastWriteTime { get; set; }
         }
-        private readonly ConcurrentDictionary<string, AudioFileInfo> audioInfoCache = new();
+        private readonly ConcurrentDictionary<string, AudioFileInfo> audioFileInfoCache = new();
 
         /// <summary>
         /// Calculates the MD5 hash of the PCM audio data in a WAV file by reading only the "data" chunk.
@@ -2029,7 +2045,7 @@ namespace FLAC_Benchmark_H
                         string md5Hash = Convert.ToHexString(md5.Hash).ToUpperInvariant();
 
                         // Update cache with result
-                        if (audioInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
+                        if (audioFileInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
                         {
                             cachedInfo.Md5Hash = md5Hash;
                             cachedInfo.ErrorDetails = null;
@@ -2044,7 +2060,7 @@ namespace FLAC_Benchmark_H
                                 DirectoryPath = Path.GetDirectoryName(audioFilePath),
                                 ErrorDetails = null
                             };
-                            audioInfoCache.TryAdd(audioFilePath, newInfo);
+                            audioFileInfoCache.TryAdd(audioFilePath, newInfo);
                         }
 
                         return md5Hash;
@@ -2153,7 +2169,7 @@ namespace FLAC_Benchmark_H
                 if (wavMd5Result == "MD5 calculation failed")
                 {
                     string tempWavErrorDetails = "Unknown error during MD5 calculation of decoded WAV";
-                    if (audioInfoCache.TryGetValue(tempWavFile, out var tempInfo) && !string.IsNullOrEmpty(tempInfo.ErrorDetails))
+                    if (audioFileInfoCache.TryGetValue(tempWavFile, out var tempInfo) && !string.IsNullOrEmpty(tempInfo.ErrorDetails))
                     {
                         tempWavErrorDetails = tempInfo.ErrorDetails;
                     }
@@ -2162,7 +2178,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Update cache with result
-                if (audioInfoCache.TryGetValue(flacFilePath, out var cachedInfo))
+                if (audioFileInfoCache.TryGetValue(flacFilePath, out var cachedInfo))
                 {
                     cachedInfo.Md5Hash = wavMd5Result;
                     cachedInfo.ErrorDetails = null;
@@ -2177,7 +2193,7 @@ namespace FLAC_Benchmark_H
                         DirectoryPath = Path.GetDirectoryName(flacFilePath),
                         ErrorDetails = null
                     };
-                    audioInfoCache.TryAdd(flacFilePath, newInfo);
+                    audioFileInfoCache.TryAdd(flacFilePath, newInfo);
                 }
 
                 return wavMd5Result;
@@ -2198,7 +2214,7 @@ namespace FLAC_Benchmark_H
         /// <param name="errorDetails">Detailed error message to store.</param>
         private void UpdateCacheWithMD5Error(string filePath, string errorDetails)
         {
-            if (audioInfoCache.TryGetValue(filePath, out var cachedInfo))
+            if (audioFileInfoCache.TryGetValue(filePath, out var cachedInfo))
             {
                 cachedInfo.Md5Hash = "MD5 calculation failed";
                 cachedInfo.ErrorDetails = errorDetails;
@@ -2213,7 +2229,7 @@ namespace FLAC_Benchmark_H
                     DirectoryPath = Path.GetDirectoryName(filePath),
                     ErrorDetails = errorDetails
                 };
-                audioInfoCache.TryAdd(filePath, newInfo);
+                audioFileInfoCache.TryAdd(filePath, newInfo);
             }
         }
 
@@ -6203,7 +6219,7 @@ namespace FLAC_Benchmark_H
                     .Select(item => item.Tag.ToString())
                     .Where(filePath =>
                     {
-                        string extension = audioInfoCache[filePath].Extension;
+                        string extension = audioFileInfoCache[filePath].Extension;
                         return extension == ".wav" || extension == ".flac";
                     })
                     .ToList();
@@ -6603,7 +6619,7 @@ namespace FLAC_Benchmark_H
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
                     .Select(item => item.Tag.ToString())
-                    .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                    .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
                     .ToList();
 
                 // 1. Check if there is at least one encoder
@@ -6959,14 +6975,14 @@ namespace FLAC_Benchmark_H
                     .Select(item => item.Tag.ToString())
                     .Where(filePath =>
                     {
-                        string extension = audioInfoCache[filePath].Extension;
+                        string extension = audioFileInfoCache[filePath].Extension;
                         return extension == ".wav" || extension == ".flac";
                     })
                     .ToList();
 
                 // Get all selected .flac audio files using cache
                 var selectedFlacAudioFiles = selectedAudioFiles
-                    .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                    .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
                     .ToList();
 
                 // Create expanded Job List (Virtual Job List)
@@ -7684,14 +7700,14 @@ namespace FLAC_Benchmark_H
                         if (cts.Token.IsCancellationRequested)
                             return;
 
-                        string md5Hash = audioInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
+                        string md5Hash = audioFileInfoCache.TryGetValue(filePath, out var info) ? info.Md5Hash : null;
 
                         if (string.IsNullOrEmpty(md5Hash) ||
                         md5Hash == "MD5 calculation failed" ||
                         md5Hash == "00000000000000000000000000000000" ||
                         md5Hash == "N/A")
                         {
-                            string fileExtension = audioInfoCache[filePath].Extension;
+                            string fileExtension = audioFileInfoCache[filePath].Extension;
                             if (fileExtension == ".wav")
                             {
                                 md5Hash = await CalculateWavMD5Async(filePath);
@@ -7706,7 +7722,7 @@ namespace FLAC_Benchmark_H
                             }
 
                             // Update the cache with the new MD5 hash - preserve existing object
-                            if (audioInfoCache.TryGetValue(filePath, out var infoToUpdate))
+                            if (audioFileInfoCache.TryGetValue(filePath, out var infoToUpdate))
                             {
                                 infoToUpdate.Md5Hash = md5Hash;
                                 // Do NOT replace the object - preserve other properties (ErrorDetails, LastWriteTime, etc.)
@@ -7722,7 +7738,7 @@ namespace FLAC_Benchmark_H
                                     DirectoryPath = Path.GetDirectoryName(filePath),
                                     Extension = fileExtension
                                 };
-                                audioInfoCache.TryAdd(filePath, newInfo);
+                                audioFileInfoCache.TryAdd(filePath, newInfo);
                             }
                         }
 
@@ -7745,7 +7761,7 @@ namespace FLAC_Benchmark_H
                     foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                     {
                         var sortedPaths = kvp.Value
-                        .Select(path => new { Path = path, Info = audioInfoCache.TryGetValue(path, out var info) ? info : null })
+                        .Select(path => new { Path = path, Info = audioFileInfoCache.TryGetValue(path, out var info) ? info : null })
                         .Where(x => x.Info != null)
                         .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)          // FLAC > WAV
                         .ThenBy(x => x.Info.DirectoryPath?.Length ?? int.MaxValue)  // Shorter path first
@@ -7784,7 +7800,7 @@ namespace FLAC_Benchmark_H
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             string path = item.Tag.ToString();
-                            if (audioInfoCache.TryGetValue(path, out var info))
+                            if (audioFileInfoCache.TryGetValue(path, out var info))
                             {
                                 if (item.SubItems.Count > 6 && item.SubItems[6].Text != info.Md5Hash)
                                 {
@@ -7796,7 +7812,7 @@ namespace FLAC_Benchmark_H
                         // --- STAGE 2.4: LOG MD5 CALCULATION ERROR RESULTS ---
                         foreach (string filePath in filesWithMD5Errors)
                         {
-                            if (audioInfoCache.TryGetValue(filePath, out var info))
+                            if (audioFileInfoCache.TryGetValue(filePath, out var info))
                             {
                                 int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                 info.FileName, // 0 Name
@@ -7835,11 +7851,11 @@ namespace FLAC_Benchmark_H
                         foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
                             string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
-                            audioInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
+                            audioFileInfoCache.TryGetValue(path, out var i) ? i.FileName : Path.GetFileName(path)));
 
                             foreach (string path in kvp.Value)
                             {
-                                if (audioInfoCache.TryGetValue(path, out var info))
+                                if (audioFileInfoCache.TryGetValue(path, out var info))
                                 {
                                     int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                     info.FileName, // 0 Name
@@ -8013,7 +8029,7 @@ namespace FLAC_Benchmark_H
                         // Collect FLAC files and settings using cache
                         flacFilePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>()
                             .Select(item => item.Tag.ToString())
-                            .Where(filePath => audioInfoCache[filePath].Extension == ".flac")
+                            .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
                         );
 
                         encoderPath = listViewEncoders.Items
@@ -8051,7 +8067,7 @@ namespace FLAC_Benchmark_H
                     await semaphore.WaitAsync(cts.Token);
                     try
                     {
-                        string fileName = audioInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
+                        string fileName = audioFileInfoCache.TryGetValue(filePath, out var info) ? info.FileName : Path.GetFileName(filePath);
 
                         using var process = new Process();
                         process.StartInfo = new ProcessStartInfo
@@ -8118,7 +8134,7 @@ namespace FLAC_Benchmark_H
 
                         var rowsToAdd = sortedResults.Select(result =>
                         {
-                            string directoryPath = audioInfoCache.TryGetValue(result.FilePath, out var info)
+                            string directoryPath = audioFileInfoCache.TryGetValue(result.FilePath, out var info)
                             ? info.DirectoryPath : Path.GetDirectoryName(result.FilePath);
 
                             var row = new DataGridViewRow();
