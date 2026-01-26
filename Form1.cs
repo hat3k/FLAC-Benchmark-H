@@ -1427,35 +1427,71 @@ namespace FLAC_Benchmark_H
         // Encoders Context Menu
         private void ContextMenuStripEncoders_Opening(object sender, CancelEventArgs e)
         {
-            bool isRowSelected = listViewEncoders.SelectedItems.Count > 0;
-            bool hasItems = listViewEncoders.Items.Count > 0;
+            var items = listViewEncoders.Items;
+            int totalItemsCount = items.Count;
+            int selectedItemsCount = listViewEncoders.SelectedItems.Count;
+
+            bool hasItems = totalItemsCount > 0;
+            bool hasSelectedItems = selectedItemsCount > 0;
+            bool hasUnselectedItems = hasItems && selectedItemsCount < totalItemsCount;
             bool isBusy = _isProcessingQueue || _isRefreshing;
 
+            bool hasCheckedItems = false;
+            bool hasUncheckedItems = false;
+            bool hasSelectedCheckedItems = false;
+            bool hasSelectedUncheckedItems = false;
 
-            openContainingFolderToolStripMenuItem.Enabled = isRowSelected;
-            refreshAllToolStripMenuItem.Enabled = !_isProcessingQueue;
+            if (hasItems)
+            {
+                for (int i = 0; i < totalItemsCount; i++)
+                {
+                    var item = (ListViewItem)items[i];
+                    if (item.Checked)
+                        hasCheckedItems = true;
+                    else
+                        hasUncheckedItems = true;
+
+                    if (hasCheckedItems && hasUncheckedItems) break;
+                }
+            }
+
+            if (hasSelectedItems)
+            {
+                for (int i = 0; i < listViewEncoders.SelectedItems.Count; i++)
+                {
+                    var item = listViewEncoders.SelectedItems[i];
+                    if (item.Checked)
+                        hasSelectedCheckedItems = true;
+                    else
+                        hasSelectedUncheckedItems = true;
+
+                    if (hasSelectedCheckedItems && hasSelectedUncheckedItems) break;
+                }
+            }
 
             // Check/Uncheck operations
-            checkAllToolStripMenuItem.Enabled = hasItems;
-            uncheckAllToolStripMenuItem.Enabled = hasItems;
-            checkSelectedToolStripMenuItem.Enabled = isRowSelected;
-            uncheckSelectedToolStripMenuItem.Enabled = isRowSelected;
-            invertCheckToolStripMenuItem.Enabled = hasItems;
+            checkAllToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
+            uncheckAllToolStripMenuItem.Enabled = hasCheckedItems && !isBusy;
+            checkSelectedToolStripMenuItem.Enabled = hasSelectedUncheckedItems && !isBusy;
+            uncheckSelectedToolStripMenuItem.Enabled = hasSelectedCheckedItems && !isBusy;
+            invertCheckToolStripMenuItem.Enabled = hasItems && !isBusy;
 
             // Selection operations  
-            selectAllToolStripMenuItem.Enabled = hasItems;
-            clearSelectionToolStripMenuItem.Enabled = isRowSelected;
-            invertSelectionToolStripMenuItem.Enabled = hasItems;
+            selectAllToolStripMenuItem.Enabled = hasUnselectedItems && !isBusy;
+            clearSelectionToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            invertSelectionToolStripMenuItem.Enabled = hasItems && !isBusy;
 
             // Move operations
-            moveUpToolStripMenuItem.Enabled = isRowSelected;
-            moveDownToolStripMenuItem.Enabled = isRowSelected;
+            moveUpToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            moveDownToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
 
             // Other operations
-            openContainingFolderToolStripMenuItem.Enabled = isRowSelected;
             refreshAllToolStripMenuItem.Enabled = hasItems && !isBusy;
-            clearSelectedToolStripMenuItem.Enabled = isRowSelected;
-
+            openContainingFolderToolStripMenuItem.Enabled = hasSelectedItems;
+            clearUncheckedToolStripMenuItem.Enabled = hasUncheckedItems;
+            clearSelectedToolStripMenuItem.Enabled = hasSelectedItems;
+            clearDuplicateEntriesToolStripMenuItem.Enabled = hasItems && !isBusy;
+            clearAllEncodersToolStripMenuItem.Enabled = true;
         }
         private void CheckAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1513,45 +1549,13 @@ namespace FLAC_Benchmark_H
                 item.Selected = !item.Selected;
             }
         }
-        private void OpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveUpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listViewEncoders.SelectedItems.Count == 0)
-                return;
-
-            foreach (ListViewItem selectedItem in listViewEncoders.SelectedItems)
-            {
-                string? encoderPath = selectedItem.Tag?.ToString();
-
-                if (string.IsNullOrEmpty(encoderPath))
-                    continue;
-
-                if (!File.Exists(encoderPath))
-                {
-                    MessageBox.Show($"The selected encoder file no longer exists on disk:\n\n{encoderPath}\n\n" +
-                                   "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
-                                   "File Not Found",
-                                   MessageBoxButtons.OK,
-                                   MessageBoxIcon.Warning);
-                    continue;
-                }
-
-                try
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = $"/select,\"{encoderPath}\"",
-                        UseShellExecute = true
-                    });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(encoderPath)}:\n{ex.Message}",
-                                   "Error",
-                                   MessageBoxButtons.OK,
-                                   MessageBoxIcon.Error);
-                }
-            }
+            MoveSelectedItemsForListview(listViewEncoders, -1);
+        }
+        private void MoveDownToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItemsForListview(listViewEncoders, 1);
         }
         private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
         {
@@ -1626,17 +1630,112 @@ namespace FLAC_Benchmark_H
                 UpdateGroupBoxEncodersHeader();
             }
         }
-        private void MoveUpToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, -1);
+            if (listViewEncoders.SelectedItems.Count == 0)
+                return;
+
+            foreach (ListViewItem selectedItem in listViewEncoders.SelectedItems)
+            {
+                string? encoderPath = selectedItem.Tag?.ToString();
+
+                if (string.IsNullOrEmpty(encoderPath))
+                    continue;
+
+                if (!File.Exists(encoderPath))
+                {
+                    MessageBox.Show($"The selected encoder file no longer exists on disk:\n\n{encoderPath}\n\n" +
+                                   "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
+                                   "File Not Found",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                    continue;
+                }
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{encoderPath}\"",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(encoderPath)}:\n{ex.Message}",
+                                   "Error",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Error);
+                }
+            }
         }
-        private void MoveDownToolStripMenuItem_Click(object sender, EventArgs e)
+
+        private void ClearUncheckedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, 1);
+            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+                return;
+
+            var itemsToRemove = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                if (!item.Checked)
+                {
+                    itemsToRemove.Add(item);
+                }
+            }
+
+            if (itemsToRemove.Count > 0)
+            {
+                foreach (var item in itemsToRemove)
+                {
+                    listViewEncoders.Items.Remove(item);
+                }
+
+                UpdateGroupBoxEncodersHeader();
+            }
         }
         private void ClearSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ButtonRemoveEncoder_Click(sender, e);
+        }
+        private void ClearDuplicateEntriesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+                return;
+
+            var seenPaths = new HashSet<string>();
+            var itemsToRemove = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listViewEncoders.Items)
+            {
+                string? encoderPath = item.Tag?.ToString();
+
+                if (string.IsNullOrEmpty(encoderPath))
+                    continue;
+
+                if (!seenPaths.Add(encoderPath))
+                {
+                    itemsToRemove.Add(item);
+                }
+            }
+
+            if (itemsToRemove.Count > 0)
+            {
+                foreach (var item in itemsToRemove)
+                {
+                    listViewEncoders.Items.Remove(item);
+                }
+
+                UpdateGroupBoxEncodersHeader();
+
+                MessageBox.Show(
+                    $"Cleared {itemsToRemove.Count} duplicate entr{(itemsToRemove.Count == 1 ? "y" : "ies")}.",
+                    "Duplicates cleared",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
         private void ClearAllEncodersToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -8869,7 +8968,7 @@ namespace FLAC_Benchmark_H
         {
             // Save user settings and lists
             SaveSettings();     // General settings
-            
+
             if (!_isProcessingQueue && !_isRefreshing)
             {
                 SaveEncoders(); // Save encoders ONLY if loading is NOT in progress

@@ -88,6 +88,7 @@
             toolStripSeparator5 = new ToolStripSeparator();
             clearUncheckedToolStripMenuItem = new ToolStripMenuItem();
             clearSelectedToolStripMenuItem = new ToolStripMenuItem();
+            clearDuplicateEntriesToolStripMenuItem = new ToolStripMenuItem();
             clearAllEncodersToolStripMenuItem = new ToolStripMenuItem();
             buttonAddEncoders = new Button();
             buttonUpEncoder = new Button();
@@ -642,9 +643,9 @@
             // 
             // contextMenuStripEncoders
             // 
-            contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItem, uncheckAllToolStripMenuItem, checkSelectedToolStripMenuItem, uncheckSelectedToolStripMenuItem, invertCheckToolStripMenuItem, toolStripSeparator1, selectAllToolStripMenuItem, clearSelectionToolStripMenuItem, invertSelectionToolStripMenuItem, toolStripSeparator2, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator4, refreshAllToolStripMenuItem, toolStripSeparator3, openContainingFolderToolStripMenuItem, toolStripSeparator5, clearUncheckedToolStripMenuItem, clearSelectedToolStripMenuItem, clearAllEncodersToolStripMenuItem });
+            contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItem, uncheckAllToolStripMenuItem, checkSelectedToolStripMenuItem, uncheckSelectedToolStripMenuItem, invertCheckToolStripMenuItem, toolStripSeparator1, selectAllToolStripMenuItem, clearSelectionToolStripMenuItem, invertSelectionToolStripMenuItem, toolStripSeparator2, moveUpToolStripMenuItem, moveDownToolStripMenuItem, toolStripSeparator4, refreshAllToolStripMenuItem, toolStripSeparator3, openContainingFolderToolStripMenuItem, toolStripSeparator5, clearUncheckedToolStripMenuItem, clearSelectedToolStripMenuItem, clearDuplicateEntriesToolStripMenuItem, clearAllEncodersToolStripMenuItem });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
-            contextMenuStripEncoders.Size = new Size(202, 364);
+            contextMenuStripEncoders.Size = new Size(202, 408);
             contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
             // 
             // checkAllToolStripMenuItem
@@ -690,6 +691,7 @@
             // selectAllToolStripMenuItem
             // 
             selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            selectAllToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.A;
             selectAllToolStripMenuItem.Size = new Size(201, 22);
             selectAllToolStripMenuItem.Text = "Select All";
             selectAllToolStripMenuItem.Click += SelectAllToolStripMenuItem_Click;
@@ -738,6 +740,7 @@
             refreshAllToolStripMenuItem.ShortcutKeys = Keys.F5;
             refreshAllToolStripMenuItem.Size = new Size(201, 22);
             refreshAllToolStripMenuItem.Text = "Refresh All";
+            refreshAllToolStripMenuItem.ToolTipText = "Reload Encoder information and remove dead links.";
             refreshAllToolStripMenuItem.Click += RefreshAllToolStripMenuItem_Click;
             // 
             // toolStripSeparator3
@@ -762,19 +765,30 @@
             clearUncheckedToolStripMenuItem.Name = "clearUncheckedToolStripMenuItem";
             clearUncheckedToolStripMenuItem.Size = new Size(201, 22);
             clearUncheckedToolStripMenuItem.Text = "Clear Unchecked";
+            clearUncheckedToolStripMenuItem.Click += ClearUncheckedToolStripMenuItem_Click;
             // 
             // clearSelectedToolStripMenuItem
             // 
             clearSelectedToolStripMenuItem.Name = "clearSelectedToolStripMenuItem";
+            clearSelectedToolStripMenuItem.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItem.Size = new Size(201, 22);
             clearSelectedToolStripMenuItem.Text = "Clear Selected";
             clearSelectedToolStripMenuItem.Click += ClearSelectedToolStripMenuItem_Click;
+            // 
+            // clearDuplicateEntriesToolStripMenuItem
+            // 
+            clearDuplicateEntriesToolStripMenuItem.Name = "clearDuplicateEntriesToolStripMenuItem";
+            clearDuplicateEntriesToolStripMenuItem.Size = new Size(201, 22);
+            clearDuplicateEntriesToolStripMenuItem.Text = "Clear Duplicate Entries";
+            clearDuplicateEntriesToolStripMenuItem.ToolTipText = "Clear entries if the same Encoder is loaded more than once.";
+            clearDuplicateEntriesToolStripMenuItem.Click += ClearDuplicateEntriesToolStripMenuItem_Click;
             // 
             // clearAllEncodersToolStripMenuItem
             // 
             clearAllEncodersToolStripMenuItem.Name = "clearAllEncodersToolStripMenuItem";
             clearAllEncodersToolStripMenuItem.Size = new Size(201, 22);
             clearAllEncodersToolStripMenuItem.Text = "Clear All Encoders";
+            clearAllEncodersToolStripMenuItem.ToolTipText = "Clear all the list and stop loading.";
             clearAllEncodersToolStripMenuItem.Click += ClearAllEncodersToolStripMenuItem_Click;
             // 
             // buttonAddEncoders
@@ -2384,22 +2398,23 @@
         private ToolStripMenuItem checkAllToolStripMenuItem;
         private ToolStripMenuItem uncheckAllToolStripMenuItem;
         private ToolStripMenuItem checkSelectedToolStripMenuItem;
+        private ToolStripMenuItem uncheckSelectedToolStripMenuItem;
         private ToolStripMenuItem invertCheckToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem selectAllToolStripMenuItem;
         private ToolStripMenuItem clearSelectionToolStripMenuItem;
         private ToolStripMenuItem invertSelectionToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator2;
-        private ToolStripMenuItem openContainingFolderToolStripMenuItem;
-        private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem moveUpToolStripMenuItem;
         private ToolStripMenuItem moveDownToolStripMenuItem;
-        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem refreshAllToolStripMenuItem;
-        private ToolStripMenuItem clearSelectedToolStripMenuItem;
-        private ToolStripMenuItem clearAllEncodersToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripMenuItem openContainingFolderToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator5;
-        private ToolStripMenuItem uncheckSelectedToolStripMenuItem;
         private ToolStripMenuItem clearUncheckedToolStripMenuItem;
+        private ToolStripMenuItem clearSelectedToolStripMenuItem;
+        private ToolStripMenuItem clearDuplicateEntriesToolStripMenuItem;
+        private ToolStripMenuItem clearAllEncodersToolStripMenuItem;
     }
 }
