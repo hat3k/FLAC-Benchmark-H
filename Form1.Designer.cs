@@ -105,6 +105,28 @@
             InputAudioFileSize = new ColumnHeader();
             MD5Hash = new ColumnHeader();
             FilePath = new ColumnHeader();
+            contextMenuStripAudioFiles = new ContextMenuStrip(components);
+            toolStripMenuItem1 = new ToolStripMenuItem();
+            toolStripMenuItem2 = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripMenuItem();
+            toolStripMenuItem4 = new ToolStripMenuItem();
+            toolStripMenuItem5 = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
+            toolStripMenuItem6 = new ToolStripMenuItem();
+            toolStripMenuItem7 = new ToolStripMenuItem();
+            toolStripMenuItem8 = new ToolStripMenuItem();
+            toolStripSeparator7 = new ToolStripSeparator();
+            toolStripMenuItem9 = new ToolStripMenuItem();
+            toolStripMenuItem10 = new ToolStripMenuItem();
+            toolStripSeparator8 = new ToolStripSeparator();
+            toolStripMenuItem11 = new ToolStripMenuItem();
+            toolStripSeparator9 = new ToolStripSeparator();
+            toolStripMenuItem12 = new ToolStripMenuItem();
+            toolStripSeparator10 = new ToolStripSeparator();
+            toolStripMenuItem13 = new ToolStripMenuItem();
+            toolStripMenuItem14 = new ToolStripMenuItem();
+            toolStripMenuItem15 = new ToolStripMenuItem();
+            toolStripMenuItem16 = new ToolStripMenuItem();
             buttonAddAudioFiles = new Button();
             buttonUpAudioFile = new Button();
             buttonDownAudioFile = new Button();
@@ -210,6 +232,7 @@
             groupBoxEncoders.SuspendLayout();
             contextMenuStripEncoders.SuspendLayout();
             groupBoxAudioFiles.SuspendLayout();
+            contextMenuStripAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).BeginInit();
             groupBoxLog.SuspendLayout();
@@ -877,9 +900,11 @@
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
             listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, InputAudioFileSize, MD5Hash, FilePath });
+            listViewAudioFiles.ContextMenuStrip = contextMenuStripAudioFiles;
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
             listViewAudioFiles.Name = "listViewAudioFiles";
+            listViewAudioFiles.ShowItemToolTips = true;
             listViewAudioFiles.Size = new Size(765, 202);
             listViewAudioFiles.TabIndex = 0;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
@@ -937,6 +962,155 @@
             FilePath.Tag = "FilePath";
             FilePath.Text = "File Path";
             FilePath.Width = 250;
+            // 
+            // contextMenuStripAudioFiles
+            // 
+            contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1, toolStripMenuItem2, toolStripMenuItem3, toolStripMenuItem4, toolStripMenuItem5, toolStripSeparator6, toolStripMenuItem6, toolStripMenuItem7, toolStripMenuItem8, toolStripSeparator7, toolStripMenuItem9, toolStripMenuItem10, toolStripSeparator8, toolStripMenuItem11, toolStripSeparator9, toolStripMenuItem12, toolStripSeparator10, toolStripMenuItem13, toolStripMenuItem14, toolStripMenuItem15, toolStripMenuItem16 });
+            contextMenuStripAudioFiles.Name = "contextMenuStripEncoders";
+            contextMenuStripAudioFiles.Size = new Size(202, 408);
+            // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.Enabled = false;
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(201, 22);
+            toolStripMenuItem1.Text = "Check All";
+            // 
+            // toolStripMenuItem2
+            // 
+            toolStripMenuItem2.Enabled = false;
+            toolStripMenuItem2.Name = "toolStripMenuItem2";
+            toolStripMenuItem2.Size = new Size(201, 22);
+            toolStripMenuItem2.Text = "Uncheck All";
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.Enabled = false;
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(201, 22);
+            toolStripMenuItem3.Text = "Check Selected";
+            // 
+            // toolStripMenuItem4
+            // 
+            toolStripMenuItem4.Enabled = false;
+            toolStripMenuItem4.Name = "toolStripMenuItem4";
+            toolStripMenuItem4.Size = new Size(201, 22);
+            toolStripMenuItem4.Text = "Uncheck Selected";
+            // 
+            // toolStripMenuItem5
+            // 
+            toolStripMenuItem5.Enabled = false;
+            toolStripMenuItem5.Name = "toolStripMenuItem5";
+            toolStripMenuItem5.Size = new Size(201, 22);
+            toolStripMenuItem5.Text = "Invert Check";
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(198, 6);
+            // 
+            // toolStripMenuItem6
+            // 
+            toolStripMenuItem6.Enabled = false;
+            toolStripMenuItem6.Name = "toolStripMenuItem6";
+            toolStripMenuItem6.ShortcutKeys = Keys.Control | Keys.A;
+            toolStripMenuItem6.Size = new Size(201, 22);
+            toolStripMenuItem6.Text = "Select All";
+            // 
+            // toolStripMenuItem7
+            // 
+            toolStripMenuItem7.Enabled = false;
+            toolStripMenuItem7.Name = "toolStripMenuItem7";
+            toolStripMenuItem7.Size = new Size(201, 22);
+            toolStripMenuItem7.Text = "Clear Selection";
+            // 
+            // toolStripMenuItem8
+            // 
+            toolStripMenuItem8.Enabled = false;
+            toolStripMenuItem8.Name = "toolStripMenuItem8";
+            toolStripMenuItem8.Size = new Size(201, 22);
+            toolStripMenuItem8.Text = "Invert Selection";
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new Size(198, 6);
+            // 
+            // toolStripMenuItem9
+            // 
+            toolStripMenuItem9.Enabled = false;
+            toolStripMenuItem9.Name = "toolStripMenuItem9";
+            toolStripMenuItem9.Size = new Size(201, 22);
+            toolStripMenuItem9.Text = "↑ Move Up";
+            // 
+            // toolStripMenuItem10
+            // 
+            toolStripMenuItem10.Enabled = false;
+            toolStripMenuItem10.Name = "toolStripMenuItem10";
+            toolStripMenuItem10.Size = new Size(201, 22);
+            toolStripMenuItem10.Text = "↓ Move Down";
+            // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new Size(198, 6);
+            // 
+            // toolStripMenuItem11
+            // 
+            toolStripMenuItem11.Enabled = false;
+            toolStripMenuItem11.Name = "toolStripMenuItem11";
+            toolStripMenuItem11.ShortcutKeys = Keys.F5;
+            toolStripMenuItem11.Size = new Size(201, 22);
+            toolStripMenuItem11.Text = "Refresh All";
+            toolStripMenuItem11.ToolTipText = "Reload Encoder information and remove dead links.";
+            // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new Size(198, 6);
+            // 
+            // toolStripMenuItem12
+            // 
+            toolStripMenuItem12.Enabled = false;
+            toolStripMenuItem12.Name = "toolStripMenuItem12";
+            toolStripMenuItem12.Size = new Size(201, 22);
+            toolStripMenuItem12.Text = "Open Containing Folder";
+            // 
+            // toolStripSeparator10
+            // 
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new Size(198, 6);
+            // 
+            // toolStripMenuItem13
+            // 
+            toolStripMenuItem13.Enabled = false;
+            toolStripMenuItem13.Name = "toolStripMenuItem13";
+            toolStripMenuItem13.Size = new Size(201, 22);
+            toolStripMenuItem13.Text = "Clear Unchecked";
+            // 
+            // toolStripMenuItem14
+            // 
+            toolStripMenuItem14.Enabled = false;
+            toolStripMenuItem14.Name = "toolStripMenuItem14";
+            toolStripMenuItem14.ShortcutKeys = Keys.Delete;
+            toolStripMenuItem14.Size = new Size(201, 22);
+            toolStripMenuItem14.Text = "Clear Selected";
+            // 
+            // toolStripMenuItem15
+            // 
+            toolStripMenuItem15.Enabled = false;
+            toolStripMenuItem15.Name = "toolStripMenuItem15";
+            toolStripMenuItem15.Size = new Size(201, 22);
+            toolStripMenuItem15.Text = "Clear Duplicate Entries";
+            toolStripMenuItem15.ToolTipText = "Clear entries if the same Encoder is loaded more than once.";
+            // 
+            // toolStripMenuItem16
+            // 
+            toolStripMenuItem16.Enabled = false;
+            toolStripMenuItem16.Name = "toolStripMenuItem16";
+            toolStripMenuItem16.Size = new Size(201, 22);
+            toolStripMenuItem16.Text = "Clear All Encoders";
+            toolStripMenuItem16.ToolTipText = "Clear all the list and stop loading.";
             // 
             // buttonAddAudioFiles
             // 
@@ -2199,6 +2373,7 @@
             contextMenuStripEncoders.ResumeLayout(false);
             groupBoxAudioFiles.ResumeLayout(false);
             groupBoxAudioFiles.PerformLayout();
+            contextMenuStripAudioFiles.ResumeLayout(false);
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).EndInit();
@@ -2417,5 +2592,27 @@
         private ToolStripMenuItem clearSelectedToolStripMenuItem;
         private ToolStripMenuItem clearDuplicateEntriesToolStripMenuItem;
         private ToolStripMenuItem clearAllEncodersToolStripMenuItem;
+        private ContextMenuStrip contextMenuStripAudioFiles;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripMenuItem toolStripMenuItem3;
+        private ToolStripMenuItem toolStripMenuItem4;
+        private ToolStripMenuItem toolStripMenuItem5;
+        private ToolStripSeparator toolStripSeparator6;
+        private ToolStripMenuItem toolStripMenuItem6;
+        private ToolStripMenuItem toolStripMenuItem7;
+        private ToolStripMenuItem toolStripMenuItem8;
+        private ToolStripSeparator toolStripSeparator7;
+        private ToolStripMenuItem toolStripMenuItem9;
+        private ToolStripMenuItem toolStripMenuItem10;
+        private ToolStripSeparator toolStripSeparator8;
+        private ToolStripMenuItem toolStripMenuItem11;
+        private ToolStripSeparator toolStripSeparator9;
+        private ToolStripMenuItem toolStripMenuItem12;
+        private ToolStripSeparator toolStripSeparator10;
+        private ToolStripMenuItem toolStripMenuItem13;
+        private ToolStripMenuItem toolStripMenuItem14;
+        private ToolStripMenuItem toolStripMenuItem15;
+        private ToolStripMenuItem toolStripMenuItem16;
     }
 }

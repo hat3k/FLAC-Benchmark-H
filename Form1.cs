@@ -45,12 +45,12 @@ namespace FLAC_Benchmark_H
         private ScriptConstructorForm? _scriptForm = null;
 
         // Encoder loading queue and progress
-        private readonly Queue<List<(string path, bool isChecked)>> _encoderLoadQueue = new();
-        private bool _isProcessingQueue = false;
-        private readonly Lock _queueLock = new();
-        private int _totalFilesInQueue = 0;
-        private int _processedFilesCount = 0;
-        private bool _isRefreshing = false;
+        private readonly Queue<List<(string path, bool isChecked)>> _encodersLoadQueue = new();
+        private bool _isProcessingEncodersQueue = false;
+        private readonly Lock _encodersQueueLock = new();
+        private int _totalEncodersInQueue = 0;
+        private int _processedEncodersCount = 0;
+        private bool _isRefreshingEncoders = false;
 
         // Cancellation Token
         private CancellationTokenSource? _encoderLoadCancellation;
@@ -824,7 +824,7 @@ namespace FLAC_Benchmark_H
 
                         if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                         {
-                            var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
+                            var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
                             if (item != null)
                             {
                                 item.Checked = isChecked;
@@ -845,7 +845,7 @@ namespace FLAC_Benchmark_H
 
                             if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                             {
-                                var item = await Task.Run(() => CreateListViewAudioFilesItem(audioFilePath, isChecked));
+                                var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
                                 if (item != null)
                                 {
                                     item.Checked = isChecked;
@@ -982,7 +982,7 @@ namespace FLAC_Benchmark_H
         // Encoders
         private void ListViewEncoders_DragEnter(object? sender, DragEventArgs e)
         {
-            if (_isRefreshing)
+            if (_isRefreshingEncoders)
             {
                 e.Effect = DragDropEffects.None;
                 return;
@@ -1044,7 +1044,7 @@ namespace FLAC_Benchmark_H
         }
         private async void ButtonAddEncoders_Click(object? sender, EventArgs e)
         {
-            if (_isRefreshing)
+            if (_isRefreshingEncoders)
             {
                 MessageBox.Show("Please wait until Refresh completes.",
                                "Refresh in Progress",
@@ -1073,25 +1073,25 @@ namespace FLAC_Benchmark_H
         }
         private void AddEncoderBatchToQueue(List<(string path, bool isChecked)> batch, List<string> missingFiles)
         {
-            using (_queueLock.EnterScope())
+            using (_encodersQueueLock.EnterScope())
             {
-                _encoderLoadQueue.Enqueue(batch);
-                _totalFilesInQueue += batch.Count;
+                _encodersLoadQueue.Enqueue(batch);
+                _totalEncodersInQueue += batch.Count;
             }
 
             // Update progress immediately to reflect the new total
             UpdateEncoderProgress();
 
             // Start processing if not already running
-            if (!_isProcessingQueue)
+            if (!_isProcessingEncodersQueue)
             {
                 _ = ProcessEncoderQueueAsync(missingFiles);
             }
         }
         private async Task ProcessEncoderQueueAsync(List<string> initialMissingFiles)
         {
-            _isProcessingQueue = true;
-            _processedFilesCount = 0;
+            _isProcessingEncodersQueue = true;
+            _processedEncodersCount = 0;
             var allMissingFiles = new List<string>(initialMissingFiles);
 
             _encoderLoadCancellation = new CancellationTokenSource();
@@ -1107,10 +1107,10 @@ namespace FLAC_Benchmark_H
 
                     List<(string path, bool isChecked)> currentBatch;
 
-                    using (_queueLock.EnterScope())
+                    using (_encodersQueueLock.EnterScope())
                     {
-                        if (_encoderLoadQueue.Count == 0) break;
-                        currentBatch = _encoderLoadQueue.Dequeue();
+                        if (_encodersLoadQueue.Count == 0) break;
+                        currentBatch = _encodersLoadQueue.Dequeue();
                     }
 
                     // Process each encoder in the current batch
@@ -1125,14 +1125,14 @@ namespace FLAC_Benchmark_H
                             listViewEncoders.Items.Add(item);
                         }
 
-                        _processedFilesCount++;
+                        _processedEncodersCount++;
 
                         // Update progress after every "% N" file for smooth UI feedback
-                        if (_processedFilesCount % 1 == 0)
+                        if (_processedEncodersCount % 10 == 0)
                         {
                             UpdateEncoderProgress();
                         }
-                        if (_processedFilesCount % 5 == 0)
+                        if (_processedEncodersCount % 10 == 0)
                         {
                             Application.DoEvents();
                         }
@@ -1148,15 +1148,15 @@ namespace FLAC_Benchmark_H
                 catch { }
 
                 // Reset processing state
-                _isProcessingQueue = false;
-                _processedFilesCount = 0;
-                _totalFilesInQueue = 0;
+                _isProcessingEncodersQueue = false;
+                _processedEncodersCount = 0;
+                _totalEncodersInQueue = 0;
 
                 if (_encoderLoadCancellation?.IsCancellationRequested ?? false)
                 {
-                    using (_queueLock.EnterScope())
+                    using (_encodersQueueLock.EnterScope())
                     {
-                        _encoderLoadQueue.Clear();
+                        _encodersLoadQueue.Clear();
                     }
                 }
 
@@ -1234,16 +1234,16 @@ namespace FLAC_Benchmark_H
         }
         private void UpdateEncoderProgress()
         {
-            if (_isRefreshing)
+            if (_isRefreshingEncoders)
                 return;
 
             string progressText;
 
-            lock (_queueLock)
+            lock (_encodersQueueLock)
             {
-                if (_totalFilesInQueue > 0)
+                if (_totalEncodersInQueue > 0)
                 {
-                    progressText = $"Choose Encoder (Drag'n'Drop of files and folders is available) - Loading... ({_processedFilesCount}/{_totalFilesInQueue})";
+                    progressText = $"Choose Encoder (Drag'n'Drop of files and folders is available) - Loading... ({_processedEncodersCount}/{_totalEncodersInQueue})";
                 }
                 else
                 {
@@ -1405,10 +1405,10 @@ namespace FLAC_Benchmark_H
 
             listViewEncoders.Items.Clear();
 
-            using (_queueLock.EnterScope())
+            using (_encodersQueueLock.EnterScope())
             {
-                _encoderLoadQueue.Clear();
-                _totalFilesInQueue = 0;
+                _encodersLoadQueue.Clear();
+                _totalEncodersInQueue = 0;
             }
 
             UpdateGroupBoxEncodersHeader();
@@ -1439,7 +1439,7 @@ namespace FLAC_Benchmark_H
             bool hasItems = totalItemsCount > 0;
             bool hasSelectedItems = selectedItemsCount > 0;
             bool hasUnselectedItems = hasItems && selectedItemsCount < totalItemsCount;
-            bool isBusy = _isProcessingQueue || _isRefreshing;
+            bool isBusy = _isProcessingEncodersQueue || _isRefreshingEncoders;
 
             bool hasCheckedItems = false;
             bool hasUncheckedItems = false;
@@ -1483,7 +1483,7 @@ namespace FLAC_Benchmark_H
 
             // Selection operations  
             selectAllToolStripMenuItem.Enabled = hasUnselectedItems && !isBusy;
-            clearSelectionToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            clearSelectionToolStripMenuItem.Enabled = hasSelectedItems;
             invertSelectionToolStripMenuItem.Enabled = hasItems && !isBusy;
 
             // Move operations
@@ -1564,10 +1564,10 @@ namespace FLAC_Benchmark_H
         }
         private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
         {
-            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+            if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
 
-            _isRefreshing = true;
+            _isRefreshingEncoders = true;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - Refreshing...";
             Application.DoEvents();
 
@@ -1655,7 +1655,7 @@ namespace FLAC_Benchmark_H
                     }
                 }
 
-                _isRefreshing = false;
+                _isRefreshingEncoders = false;
                 UpdateGroupBoxEncodersHeader();
             }
         }
@@ -1702,7 +1702,7 @@ namespace FLAC_Benchmark_H
 
         private void ClearUncheckedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+            if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
 
             var itemsToRemove = new List<ListViewItem>();
@@ -1731,7 +1731,7 @@ namespace FLAC_Benchmark_H
         }
         private void ClearDuplicateEntriesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (_isProcessingQueue || _isRefreshing || listViewEncoders.Items.Count == 0)
+            if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
 
             var seenPaths = new HashSet<string>();
@@ -1804,12 +1804,12 @@ namespace FLAC_Benchmark_H
                         .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
 
                         // Create a ListViewItem for each found audio file
-                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItem(f, true))));
+                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItemInternal(f, true))));
                         return items; // Return an array of ListViewItem
                     }
                     else if (IsAudioFile(file) && File.Exists(file))
                     {
-                        var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Create a list item
+                        var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
                         return [item]; // Return an array with one item
                     }
 
@@ -1843,8 +1843,8 @@ namespace FLAC_Benchmark_H
 
                     var tasks = openFileDialog.FileNames.Select(async file =>
                     {
-                        var item = await Task.Run(() => CreateListViewAudioFilesItem(file, true)); // Create a list item
-                        item.Checked = true; // Set the "checked" status
+                        var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
+                        item.Checked = true;
                         return item;
                     });
 
@@ -1866,35 +1866,12 @@ namespace FLAC_Benchmark_H
             string extension = Path.GetExtension(audioFilePath);
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) || extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
-        private async Task<ListViewItem> CreateListViewAudioFilesItem(string audioFilePath, bool isChecked)
+
+        private async Task<ListViewItem?> CreateListViewAudioFilesItemInternal(string audioFilePath, bool isChecked)
         {
             if (!File.Exists(audioFilePath))
-            {
-                throw new FileNotFoundException("Audio file not found", audioFilePath);
-            }
+                return null;
 
-            // Use the GetAudioInfo method to get file information
-            var audioFileInfo = await GetAudioInfo(audioFilePath);
-
-            // Create a ListViewItem
-            var item = new ListViewItem(Path.GetFileName(audioFilePath))
-            {
-                Tag = audioFilePath,
-                Checked = isChecked
-            };
-
-            // Fill subitems
-            item.SubItems.Add(audioFileInfo.Channels);               // item.SubItems[1] -> Channels
-            item.SubItems.Add(audioFileInfo.BitDepthString);         // item.SubItems[2] -> BitDepth
-            item.SubItems.Add(audioFileInfo.SamplingRateString);     // item.SubItems[3] -> SamplingRate
-            item.SubItems.Add($"{audioFileInfo.Duration:n0} ms");    // item.SubItems[4] -> Duration
-            item.SubItems.Add($"{audioFileInfo.FileSize:n0} bytes"); // item.SubItems[5] -> Size
-            item.SubItems.Add(audioFileInfo.Md5Hash);                // item.SubItems[6] -> MD5Hash
-            item.SubItems.Add(audioFileInfo.DirectoryPath);          // item.SubItems[7] -> FilePath
-            return item;
-        }
-        private async Task<AudioFileInfo> GetAudioInfo(string audioFilePath)
-        {
             var fileInfo = new FileInfo(audioFilePath);
             DateTime currentCreationTime = fileInfo.CreationTimeUtc;
             DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
@@ -1909,66 +1886,82 @@ namespace FLAC_Benchmark_H
                     audioFileInfoCache.TryRemove(audioFilePath, out _);
                     cachedInfo = null;
                 }
-                else
-                {
-                    return cachedInfo; // Return cached information
-                }
             }
 
-            // If cache is not actual - get information (MediaInfo instance from pool)
-            var mediaInfo = GetMediaInfoFromPool();
-            try
+            if (cachedInfo == null)
             {
-                mediaInfo.Open(audioFilePath);
-
-                string channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
-                string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
-                string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";                      // Number only
-                string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";         // Number + bits
-                string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";              // Number only (e.g. 44100)
-                string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A"; // Number + kHz (44.1 kHz)
-
-                long fileSize = fileInfo.Length;
-                string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
-                string md5Hash = "N/A";
-
-                // Determine the file type and get the corresponding MD5
-                if (extension == ".flac")
+                // Get MediaInfo instance from pool
+                var mediaInfo = GetMediaInfoFromPool();
+                try
                 {
-                    md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                    mediaInfo.Open(audioFilePath);
+
+                    string channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
+                    string duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
+                    string bitDepth = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth") ?? "N/A";
+                    string bitDepthString = mediaInfo.Get(StreamKind.Audio, 0, "BitDepth/String") ?? "N/A";
+                    string samplingRate = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate") ?? "N/A";
+                    string samplingRateString = mediaInfo.Get(StreamKind.Audio, 0, "SamplingRate/String") ?? "N/A";
+
+                    long fileSize = fileInfo.Length;
+                    string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
+                    string md5Hash = "N/A";
+
+                    // Determine the file type and get the corresponding MD5
+                    if (extension == ".flac")
+                    {
+                        md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                    }
+                    else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
+                    {
+                        md5Hash = await CalculateWavMD5Async(audioFilePath);
+                    }
+
+                    // Create and cache fresh audio file metadata
+                    cachedInfo = new AudioFileInfo
+                    {
+                        FilePath = audioFilePath,
+                        DirectoryPath = fileInfo.DirectoryName,
+                        FileName = fileInfo.Name,
+                        Extension = extension,
+                        Channels = channels,
+                        BitDepth = bitDepth,
+                        BitDepthString = bitDepthString,
+                        SamplingRate = samplingRate,
+                        SamplingRateString = samplingRateString,
+                        Duration = duration,
+                        FileSize = fileSize,
+                        Md5Hash = md5Hash,
+                        CreationTime = currentCreationTime,
+                        LastWriteTime = currentLastWriteTime,
+                        ErrorDetails = string.Empty
+                    };
+
+                    audioFileInfoCache[audioFilePath] = cachedInfo;
                 }
-                else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
+                finally
                 {
-                    md5Hash = await CalculateWavMD5Async(audioFilePath);
+                    mediaInfo.Close();
+                    ReturnMediaInfoToPool(mediaInfo);
                 }
-
-                // Create and cache fresh audio file metadata
-                cachedInfo = new AudioFileInfo
-                {
-                    FilePath = audioFilePath,
-                    DirectoryPath = Path.GetDirectoryName(audioFilePath),
-                    FileName = Path.GetFileName(audioFilePath),
-                    Extension = extension,
-                    Channels = channels,
-                    BitDepth = bitDepth,
-                    BitDepthString = bitDepthString,
-                    SamplingRate = samplingRate,
-                    SamplingRateString = samplingRateString,
-                    Duration = duration,
-                    FileSize = fileSize,
-                    Md5Hash = md5Hash,
-                    CreationTime = currentCreationTime,
-                    LastWriteTime = currentLastWriteTime
-                };
-
-                audioFileInfoCache[audioFilePath] = cachedInfo;
-                return cachedInfo;
             }
-            finally
+
+            // Create ListViewItem with subitems
+            var item = new ListViewItem(cachedInfo.FileName)
             {
-                mediaInfo.Close();
-                ReturnMediaInfoToPool(mediaInfo);
-            }
+                Tag = audioFilePath,
+                Checked = isChecked
+            };
+
+            item.SubItems.Add(cachedInfo.Channels);
+            item.SubItems.Add(cachedInfo.BitDepthString);
+            item.SubItems.Add(cachedInfo.SamplingRateString);
+            item.SubItems.Add($"{cachedInfo.Duration:n0} ms");
+            item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
+            item.SubItems.Add(cachedInfo.Md5Hash);
+            item.SubItems.Add(cachedInfo.DirectoryPath);
+
+            return item;
         }
 
         // Class to store Audio File information
@@ -1984,11 +1977,12 @@ namespace FLAC_Benchmark_H
             public string SamplingRate { get; set; }
             public string SamplingRateString { get; set; }
             public string Duration { get; set; }
+            public long FileSize { get; set; }
             public string Md5Hash { get; set; }
             public string ErrorDetails { get; set; }
-            public long FileSize { get; set; }
             public DateTime CreationTime { get; set; }
             public DateTime LastWriteTime { get; set; }
+            public bool WasModifiedSinceLoad { get; set; } = false;
         }
         private readonly ConcurrentDictionary<string, AudioFileInfo> audioFileInfoCache = new();
 
@@ -2868,7 +2862,7 @@ namespace FLAC_Benchmark_H
         }
 
         //Log processing
-        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoder, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime, double avgClock, string errorOutput = "", int exitCode = 0)
+        private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoderPath, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime, double avgClock, string errorOutput = "", int exitCode = 0)
         {
             if (exitCode == 0)
             {
@@ -2877,7 +2871,7 @@ namespace FLAC_Benchmark_H
                     return;
 
                 // Get input audio file information from cache
-                var audioFileInfo = await GetAudioInfo(audioFilePath);
+                var audioFileInfo = audioFileInfoCache[audioFilePath];
 
                 // Extract data from cache
                 string audioFileName = audioFileInfo.FileName; // Use file name from cache
@@ -2897,7 +2891,7 @@ namespace FLAC_Benchmark_H
                 double encodingSpeed = (double)durationMs / elapsedTime.TotalMilliseconds;
 
                 // Get encoder information from cache
-                var encoderInfo = encoderInfoCache[encoder];
+                var encoderInfo = encoderInfoCache[encoderPath];
 
                 // Calculate CPU Load
                 double totalCpuTime = (userProcessorTime + privilegedProcessorTime).TotalMilliseconds;
@@ -2907,7 +2901,7 @@ namespace FLAC_Benchmark_H
                 var benchmarkPass = new BenchmarkPass
                 {
                     AudioFilePath = audioFilePath,
-                    EncoderPath = encoder,
+                    EncoderPath = encoderPath,
                     Parameters = parameters,
                     InputSize = inputSize,
                     OutputSize = outputSize,
@@ -2999,8 +2993,8 @@ namespace FLAC_Benchmark_H
             if (exitCode != 0)
             {
                 // === ERROR CASE: minimal logging with empty cells ===
-                var audioFileInfo = await GetAudioInfo(audioFilePath);
-                var encoderInfo = encoderInfoCache[encoder];
+                var audioFileInfo = audioFileInfoCache[audioFilePath];
+                var encoderInfo = encoderInfoCache[encoderPath];
 
                 // Determine error message
                 string finalError = errorOutput;
@@ -3260,8 +3254,8 @@ namespace FLAC_Benchmark_H
 
             foreach (var group in grouped)
             {
-                // Get file and encoder info for display
-                var audioFileInfo = await GetAudioInfo(group.AudioFilePath);
+                // Get Audio File and Encoder info for display
+                var audioFileInfo = audioFileInfoCache[group.AudioFilePath];
                 var encoderInfo = encoderInfoCache[group.EncoderPath];
 
                 string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
@@ -6247,7 +6241,7 @@ namespace FLAC_Benchmark_H
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -6255,7 +6249,7 @@ namespace FLAC_Benchmark_H
                 // 2. Check if there is at least one audio file
                 if (selectedAudioFiles.Count == 0)
                 {
-                    MessageBox.Show("Select at least one audio file (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -6365,7 +6359,7 @@ namespace FLAC_Benchmark_H
 
                 foreach (var audioFilePath in selectedAudioFiles)
                 {
-                    foreach (var encoder in selectedEncoders)
+                    foreach (var encoderPath in selectedEncoders)
                     {
                         if (_isEncodingStopped)
                         {
@@ -6436,7 +6430,7 @@ namespace FLAC_Benchmark_H
                                 {
                                     _process.StartInfo = new ProcessStartInfo
                                     {
-                                        FileName = encoder,
+                                        FileName = encoderPath,
                                         Arguments = arguments,
                                         UseShellExecute = false,
                                         CreateNoWindow = true,
@@ -6527,7 +6521,7 @@ namespace FLAC_Benchmark_H
 
                             if (!_isEncodingStopped)
                             {
-                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
+                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoderPath, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                             }
                         }
                         catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
@@ -6540,7 +6534,7 @@ namespace FLAC_Benchmark_H
                                 outputFilePath: "",
                                 audioFilePath: audioFilePath,
                                 parameters: parameters,
-                                encoder: encoder,
+                                encoderPath: encoderPath,
                                 elapsedTime: TimeSpan.Zero,
                                 userProcessorTime: TimeSpan.Zero,
                                 privilegedProcessorTime: TimeSpan.Zero,
@@ -6561,7 +6555,7 @@ namespace FLAC_Benchmark_H
                                 outputFilePath: "",
                                 audioFilePath: audioFilePath,
                                 parameters: parameters,
-                                encoder: encoder,
+                                encoderPath: encoderPath,
                                 elapsedTime: TimeSpan.Zero,
                                 userProcessorTime: TimeSpan.Zero,
                                 privilegedProcessorTime: TimeSpan.Zero,
@@ -6756,7 +6750,7 @@ namespace FLAC_Benchmark_H
 
                 foreach (var audioFilePath in selectedFlacAudioFiles)
                 {
-                    foreach (var encoder in selectedEncoders)
+                    foreach (var encoderPath in selectedEncoders)
                     {
                         if (_isEncodingStopped)
                         {
@@ -6819,7 +6813,7 @@ namespace FLAC_Benchmark_H
                                 {
                                     _process.StartInfo = new ProcessStartInfo
                                     {
-                                        FileName = encoder,
+                                        FileName = encoderPath,
                                         Arguments = arguments,
                                         UseShellExecute = false,
                                         CreateNoWindow = true,
@@ -6881,7 +6875,7 @@ namespace FLAC_Benchmark_H
 
                             if (!_isEncodingStopped)
                             {
-                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
+                                await LogProcessResults(outputFilePath, audioFilePath, parameters, encoderPath, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                             }
                         }
                         catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
@@ -6894,7 +6888,7 @@ namespace FLAC_Benchmark_H
                                 outputFilePath: "",
                                 audioFilePath: audioFilePath,
                                 parameters: parameters,
-                                encoder: encoder,
+                                encoderPath: encoderPath,
                                 elapsedTime: TimeSpan.Zero,
                                 userProcessorTime: TimeSpan.Zero,
                                 privilegedProcessorTime: TimeSpan.Zero,
@@ -6915,7 +6909,7 @@ namespace FLAC_Benchmark_H
                                 outputFilePath: "",
                                 audioFilePath: audioFilePath,
                                 parameters: parameters,
-                                encoder: encoder,
+                                encoderPath: encoderPath,
                                 elapsedTime: TimeSpan.Zero,
                                 userProcessorTime: TimeSpan.Zero,
                                 privilegedProcessorTime: TimeSpan.Zero,
@@ -7062,10 +7056,10 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // 2. Check if there is at least one encoder
+                // 2. Check if there is at least one Encoder
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -7076,7 +7070,7 @@ namespace FLAC_Benchmark_H
                     // For encoding: any WAV/FLAC files
                     if (selectedAudioFiles.Count == 0)
                     {
-                        MessageBox.Show("Select at least one audio file (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         isExecuting = false;
                         return;
                     }
@@ -7228,7 +7222,7 @@ namespace FLAC_Benchmark_H
                         {
                             foreach (var audioFilePath in selectedAudioFiles)
                             {
-                                foreach (var encoder in selectedEncoders)
+                                foreach (var encoderPath in selectedEncoders)
                                 {
                                     if (_isEncodingStopped)
                                     {
@@ -7290,7 +7284,7 @@ namespace FLAC_Benchmark_H
                                             {
                                                 _process.StartInfo = new ProcessStartInfo
                                                 {
-                                                    FileName = encoder,
+                                                    FileName = encoderPath,
                                                     Arguments = arguments,
                                                     UseShellExecute = false,
                                                     CreateNoWindow = true,
@@ -7381,7 +7375,7 @@ namespace FLAC_Benchmark_H
 
                                         if (!_isEncodingStopped)
                                         {
-                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
+                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoderPath, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                                         }
                                     }
                                     catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
@@ -7394,7 +7388,7 @@ namespace FLAC_Benchmark_H
                                             outputFilePath: "",
                                             audioFilePath: audioFilePath,
                                             parameters: parameters,
-                                            encoder: encoder,
+                                            encoderPath: encoderPath,
                                             elapsedTime: TimeSpan.Zero,
                                             userProcessorTime: TimeSpan.Zero,
                                             privilegedProcessorTime: TimeSpan.Zero,
@@ -7415,7 +7409,7 @@ namespace FLAC_Benchmark_H
                                             outputFilePath: "",
                                             audioFilePath: audioFilePath,
                                             parameters: parameters,
-                                            encoder: encoder,
+                                            encoderPath: encoderPath,
                                             elapsedTime: TimeSpan.Zero,
                                             userProcessorTime: TimeSpan.Zero,
                                             privilegedProcessorTime: TimeSpan.Zero,
@@ -7442,7 +7436,7 @@ namespace FLAC_Benchmark_H
                         {
                             foreach (var audioFilePath in selectedFlacAudioFiles)
                             {
-                                foreach (var encoder in selectedEncoders)
+                                foreach (var encoderPath in selectedEncoders)
                                 {
                                     if (_isEncodingStopped)
                                     {
@@ -7504,7 +7498,7 @@ namespace FLAC_Benchmark_H
                                             {
                                                 _process.StartInfo = new ProcessStartInfo
                                                 {
-                                                    FileName = encoder,
+                                                    FileName = encoderPath,
                                                     Arguments = arguments,
                                                     UseShellExecute = false,
                                                     CreateNoWindow = true,
@@ -7566,7 +7560,7 @@ namespace FLAC_Benchmark_H
 
                                         if (!_isEncodingStopped)
                                         {
-                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoder, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
+                                            await LogProcessResults(outputFilePath, audioFilePath, parameters, encoderPath, elapsedTime, userProcessorTime, privilegedProcessorTime, avgClock, errorOutput, exitCode);
                                         }
                                     }
                                     catch (Win32Exception winEx) when (unchecked((uint)winEx.NativeErrorCode) == 0xC000001D)
@@ -7579,7 +7573,7 @@ namespace FLAC_Benchmark_H
                                             outputFilePath: "",
                                             audioFilePath: audioFilePath,
                                             parameters: parameters,
-                                            encoder: encoder,
+                                            encoderPath: encoderPath,
                                             elapsedTime: TimeSpan.Zero,
                                             userProcessorTime: TimeSpan.Zero,
                                             privilegedProcessorTime: TimeSpan.Zero,
@@ -7600,7 +7594,7 @@ namespace FLAC_Benchmark_H
                                             outputFilePath: "",
                                             audioFilePath: audioFilePath,
                                             parameters: parameters,
-                                            encoder: encoder,
+                                            encoderPath: encoderPath,
                                             elapsedTime: TimeSpan.Zero,
                                             userProcessorTime: TimeSpan.Zero,
                                             privilegedProcessorTime: TimeSpan.Zero,
@@ -9005,7 +8999,7 @@ namespace FLAC_Benchmark_H
             // Save user settings and lists
             SaveSettings();     // General settings
 
-            if (!_isProcessingQueue && !_isRefreshing)
+            if (!_isProcessingEncodersQueue && !_isRefreshingEncoders)
             {
                 SaveEncoders(); // Save encoders ONLY if loading is NOT in progress
             }
