@@ -1328,7 +1328,7 @@ namespace FLAC_Benchmark_H
                 if (cancellationToken.IsCancellationRequested)
                     return null;
 
-                // Create and cache fresh encoder metadata
+                // Create and cache fresh Encoder metadata
                 cachedInfo = new EncoderInfo
                 {
                     FilePath = encoderPath,
@@ -1475,28 +1475,28 @@ namespace FLAC_Benchmark_H
             }
 
             // Check/Uncheck operations
-            checkAllToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
-            uncheckAllToolStripMenuItem.Enabled = hasCheckedItems && !isBusy;
-            checkSelectedToolStripMenuItem.Enabled = hasSelectedUncheckedItems && !isBusy;
-            uncheckSelectedToolStripMenuItem.Enabled = hasSelectedCheckedItems && !isBusy;
-            invertCheckToolStripMenuItem.Enabled = hasItems && !isBusy;
+            checkAllToolStripMenuEncodersItem.Enabled = hasUncheckedItems && !isBusy;
+            uncheckAllToolStripMenuEncodersItem.Enabled = hasCheckedItems && !isBusy;
+            checkSelectedToolStripMenuEncodersItem.Enabled = hasSelectedUncheckedItems && !isBusy;
+            uncheckSelectedToolStripMenuEncodersItem.Enabled = hasSelectedCheckedItems && !isBusy;
+            invertCheckToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
 
             // Selection operations  
-            selectAllToolStripMenuItem.Enabled = hasUnselectedItems && !isBusy;
-            clearSelectionToolStripMenuItem.Enabled = hasSelectedItems;
-            invertSelectionToolStripMenuItem.Enabled = hasItems && !isBusy;
+            selectAllToolStripMenuEncodersItem.Enabled = hasUnselectedItems && !isBusy;
+            clearSelectionToolStripMenuEncodersItem.Enabled = hasSelectedItems;
+            invertSelectionToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
 
             // Move operations
-            moveUpToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
-            moveDownToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            moveUpToolStripMenuEncodersItem.Enabled = hasSelectedItems && !isBusy;
+            moveDownToolStripMenuEncodersItem.Enabled = hasSelectedItems && !isBusy;
 
             // Other operations
-            refreshAllToolStripMenuItem.Enabled = hasItems && !isBusy;
-            openContainingFolderToolStripMenuItem.Enabled = hasSelectedItems;
-            clearUncheckedToolStripMenuItem.Enabled = hasUncheckedItems;
-            clearSelectedToolStripMenuItem.Enabled = hasSelectedItems;
-            clearDuplicateEntriesToolStripMenuItem.Enabled = hasItems && !isBusy;
-            clearAllEncodersToolStripMenuItem.Enabled = true;
+            refreshAllToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
+            openContainingFolderToolStripMenuEncodersItem.Enabled = hasSelectedItems;
+            clearUncheckedToolStripMenuEncodersItem.Enabled = hasUncheckedItems;
+            clearSelectedToolStripMenuEncodersItem.Enabled = hasSelectedItems;
+            clearDuplicateEntriesToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
+            clearAllEncodersToolStripMenuEncodersItem.Enabled = true;
         }
         private void CheckAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1632,7 +1632,7 @@ namespace FLAC_Benchmark_H
                         : "";
                 }
 
-                SaveEncoders();
+                //SaveEncoders();
             }
             finally
             {
@@ -1917,11 +1917,11 @@ namespace FLAC_Benchmark_H
                         md5Hash = await CalculateWavMD5Async(audioFilePath);
                     }
 
-                    // Create and cache fresh audio file metadata
+                    // Create and cache fresh Audio File metadata
                     cachedInfo = new AudioFileInfo
                     {
                         FilePath = audioFilePath,
-                        DirectoryPath = fileInfo.DirectoryName,
+                        DirectoryPath = fileInfo.DirectoryName!,
                         FileName = fileInfo.Name,
                         Extension = extension,
                         Channels = channels,
@@ -1943,6 +1943,16 @@ namespace FLAC_Benchmark_H
                 {
                     mediaInfo.Close();
                     ReturnMediaInfoToPool(mediaInfo);
+                }
+            }
+            else
+            {
+                if (cachedInfo.Extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
+                {
+                    if (string.IsNullOrEmpty(cachedInfo.Md5Hash) || cachedInfo.Md5Hash == "N/A")
+                    {
+                        cachedInfo.Md5Hash = await CalculateWavMD5Async(audioFilePath);
+                    }
                 }
             }
 
@@ -2364,6 +2374,350 @@ namespace FLAC_Benchmark_H
             {
                 groupBoxAudioFiles.Text = baseText;
             }
+        }
+
+        // Audio Files Context Menu
+        private void ContextMenuStripAudioFiles_Opening(object sender, CancelEventArgs e)
+        {
+            var items = listViewAudioFiles.Items;
+            int totalItemsCount = items.Count;
+            int selectedItemsCount = listViewAudioFiles.SelectedItems.Count;
+
+            bool hasItems = totalItemsCount > 0;
+            bool hasSelectedItems = selectedItemsCount > 0;
+            bool hasUnselectedItems = hasItems && selectedItemsCount < totalItemsCount;
+            // Note: We don't have _isProcessingAudioFilesQueue or _isRefreshingAudioFiles implemented yet
+            bool isBusy = false; // _isProcessingAudioFilesQueue || _isRefreshingAudioFiles;
+
+            bool hasCheckedItems = false;
+            bool hasUncheckedItems = false;
+            bool hasSelectedCheckedItems = false;
+            bool hasSelectedUncheckedItems = false;
+
+            if (hasItems)
+            {
+                for (int i = 0; i < totalItemsCount; i++)
+                {
+                    var item = (ListViewItem)items[i];
+                    if (item.Checked)
+                        hasCheckedItems = true;
+                    else
+                        hasUncheckedItems = true;
+
+                    if (hasCheckedItems && hasUncheckedItems) break;
+                }
+            }
+
+            if (hasSelectedItems)
+            {
+                for (int i = 0; i < listViewAudioFiles.SelectedItems.Count; i++)
+                {
+                    var item = listViewAudioFiles.SelectedItems[i];
+                    if (item.Checked)
+                        hasSelectedCheckedItems = true;
+                    else
+                        hasSelectedUncheckedItems = true;
+
+                    if (hasSelectedCheckedItems && hasSelectedUncheckedItems) break;
+                }
+            }
+
+            // Check/Uncheck operations
+            checkAllAudioFilesToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
+            uncheckAllAudioFilesToolStripMenuItem.Enabled = hasCheckedItems && !isBusy;
+            checkSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedUncheckedItems && !isBusy;
+            uncheckSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedCheckedItems && !isBusy;
+            invertCheckAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+
+            // Selection operations  
+            selectAllAudioFilesToolStripMenuItem.Enabled = hasUnselectedItems && !isBusy;
+            clearSelectionAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
+            invertSelectionAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+
+            // Move operations
+            moveUpAudioFilesToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            moveDownAudioFilesToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+
+            // Other operations
+            refreshAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+            openContainingFolderAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
+            clearUncheckedAudioFilesToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
+            clearSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
+            clearDuplicateEntriesAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+            clearAllAudioFilesToolStripMenuItem.Enabled = true;
+        }
+        private void CheckAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Checked = true;
+            }
+        }
+        private void UncheckAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Checked = false;
+            }
+        }
+        private void CheckSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
+            {
+                item.Checked = true;
+            }
+        }
+        private void UncheckSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
+            {
+                item.Checked = false;
+            }
+        }
+        private void InvertCheckAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Checked = !item.Checked;
+            }
+        }
+        private void SelectAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Selected = true;
+            }
+        }
+        private void ClearSelectionAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
+            {
+                item.Selected = false;
+            }
+        }
+        private void InvertSelectionAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Selected = !item.Selected;
+            }
+        }
+        private void MoveUpAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItemsForListview(listViewAudioFiles, -1);
+        }
+        private void MoveDownAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MoveSelectedItemsForListview(listViewAudioFiles, 1);
+        }
+        private async void RefreshAudioFilesToolStripMenuItem_Click(object? sender, EventArgs e)
+        {
+            if (/*_isProcessingAudioFilesQueue || _isRefreshingAudioFiles || */listViewAudioFiles.Items.Count == 0)
+                return;
+
+            //_isRefreshingAudioFiles = true;
+            groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - Refreshing...";
+            Application.DoEvents();
+
+            int topIndex = listViewAudioFiles.TopItem?.Index ?? 0;
+            var selectedIndices = new List<int>();
+            foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
+            {
+                selectedIndices.Add(item.Index);
+            }
+
+            try
+            {
+                for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
+                {
+                    ListViewItem item = listViewAudioFiles.Items[i];
+                    string? audioFilePath = item.Tag?.ToString();
+
+                    if (string.IsNullOrEmpty(audioFilePath) || !File.Exists(audioFilePath))
+                    {
+                        listViewAudioFiles.Items.RemoveAt(i);
+                        continue;
+                    }
+
+                    bool currentChecked = item.Checked;
+
+                    var fileInfo = new FileInfo(audioFilePath);
+                    DateTime currentCreationTime = fileInfo.CreationTimeUtc;
+                    DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
+
+                    bool wasModified = false;
+                    if (audioFileInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
+                    {
+                        if (cachedInfo.CreationTime != currentCreationTime ||
+                            cachedInfo.LastWriteTime != currentLastWriteTime)
+                        {
+                            wasModified = true;
+                        }
+                    }
+
+                    var newItem = await CreateListViewAudioFilesItemInternal(audioFilePath, currentChecked);
+                    if (newItem == null)
+                    {
+                        listViewAudioFiles.Items.RemoveAt(i);
+                        continue;
+                    }
+
+                    if (audioFileInfoCache.TryGetValue(audioFilePath, out var updatedInfo))
+                    {
+                        updatedInfo.WasModifiedSinceLoad = wasModified;
+                    }
+
+                    item.Text = newItem.Text;
+                    for (int j = 0; j < newItem.SubItems.Count - 1; j++)
+                    {
+                        if (j + 1 < item.SubItems.Count)
+                            item.SubItems[j + 1].Text = newItem.SubItems[j + 1].Text;
+                    }
+
+                    item.ForeColor = wasModified ? Color.DarkOrange : SystemColors.WindowText;
+                    item.ToolTipText = wasModified
+                        ? "Audio file was modified since it was loaded.\nRefresh again to decolorize."
+                        : "";
+                }
+
+                //SaveAudioFiles();
+            }
+            finally
+            {
+                if (listViewAudioFiles.Items.Count > 0 && topIndex < listViewAudioFiles.Items.Count)
+                {
+                    try
+                    {
+                        listViewAudioFiles.TopItem = listViewAudioFiles.Items[topIndex];
+                    }
+                    catch
+                    {
+                        // Ignore if index is invalid
+                    }
+                }
+
+                foreach (int index in selectedIndices)
+                {
+                    if (index < listViewAudioFiles.Items.Count)
+                    {
+                        listViewAudioFiles.Items[index].Selected = true;
+                    }
+                }
+
+                //_isRefreshingAudioFiles = false;
+                UpdateGroupBoxAudioFilesHeader();
+            }
+        }
+        private void OpenContainingFolderAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listViewAudioFiles.SelectedItems.Count == 0)
+                return;
+
+            foreach (ListViewItem selectedItem in listViewAudioFiles.SelectedItems)
+            {
+                string? audioFilePath = selectedItem.Tag?.ToString();
+
+                if (string.IsNullOrEmpty(audioFilePath))
+                    continue;
+
+                if (!File.Exists(audioFilePath))
+                {
+                    MessageBox.Show($"The selected audio file no longer exists on disk:\n\n{audioFilePath}\n\n" +
+                                   "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
+                                   "File Not Found",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning);
+                    continue;
+                }
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{audioFilePath}\"",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(audioFilePath)}:\n{ex.Message}",
+                                   "Error",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Error);
+                }
+            }
+        }
+        private void ClearUncheckedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if the Shift key is pressed
+            if (ModifierKeys == Keys.Shift)
+            {
+                MoveUncheckedToRecycleBin();
+            }
+            else
+            {
+                var itemsToRemove = new List<ListViewItem>();
+                foreach (ListViewItem item in listViewAudioFiles.Items)
+                {
+                    if (!item.Checked)
+                    {
+                        itemsToRemove.Add(item);
+                    }
+                }
+
+                if (itemsToRemove.Count > 0)
+                {
+                    foreach (var item in itemsToRemove)
+                    {
+                        listViewAudioFiles.Items.Remove(item);
+                    }
+                    UpdateGroupBoxAudioFilesHeader();
+                }
+            }
+        }
+        private void ClearSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ButtonRemoveAudioFile_Click(sender, e);
+        }
+        private void ClearDuplicateEntriesAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listViewAudioFiles.Items.Count == 0)
+                return;
+
+            var seenPaths = new HashSet<string>();
+            var itemsToRemove = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                string? audioFilePath = item.Tag?.ToString();
+                if (string.IsNullOrEmpty(audioFilePath))
+                    continue;
+
+                if (!seenPaths.Add(audioFilePath))
+                {
+                    itemsToRemove.Add(item);
+                }
+            }
+
+            if (itemsToRemove.Count > 0)
+            {
+                foreach (var item in itemsToRemove)
+                {
+                    listViewAudioFiles.Items.Remove(item);
+                }
+                UpdateGroupBoxAudioFilesHeader();
+
+                MessageBox.Show(
+                    $"Cleared {itemsToRemove.Count} duplicate entr{(itemsToRemove.Count == 1 ? "y" : "ies")}.",
+                    "Duplicates cleared",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+        private void ClearAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ButtonClearAudioFiles_Click(sender, e);
         }
 
         // Log Settings (now supports only "Benchmark" tab)
