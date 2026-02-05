@@ -1475,94 +1475,94 @@ namespace FLAC_Benchmark_H
             }
 
             // Check/Uncheck operations
-            checkAllToolStripMenuEncodersItem.Enabled = hasUncheckedItems && !isBusy;
-            uncheckAllToolStripMenuEncodersItem.Enabled = hasCheckedItems && !isBusy;
-            checkSelectedToolStripMenuEncodersItem.Enabled = hasSelectedUncheckedItems && !isBusy;
-            uncheckSelectedToolStripMenuEncodersItem.Enabled = hasSelectedCheckedItems && !isBusy;
-            invertCheckToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
+            checkAllToolStripMenuItemEncoders.Enabled = hasUncheckedItems && !isBusy;
+            uncheckAllToolStripMenuItemEncoders.Enabled = hasCheckedItems && !isBusy;
+            checkSelectedToolStripMenuItemEncoders.Enabled = hasSelectedUncheckedItems && !isBusy;
+            uncheckSelectedToolStripMenuItemEncoders.Enabled = hasSelectedCheckedItems && !isBusy;
+            invertCheckToolStripMenuItemEncoders.Enabled = hasItems && !isBusy;
 
             // Selection operations  
-            selectAllToolStripMenuEncodersItem.Enabled = hasUnselectedItems && !isBusy;
-            clearSelectionToolStripMenuEncodersItem.Enabled = hasSelectedItems;
-            invertSelectionToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
+            selectAllToolStripMenuItemEncoders.Enabled = hasUnselectedItems && !isBusy;
+            clearSelectionToolStripMenuItemEncoders.Enabled = hasSelectedItems;
+            invertSelectionToolStripMenuItemEncoders.Enabled = hasItems && !isBusy;
 
             // Move operations
-            moveUpToolStripMenuEncodersItem.Enabled = hasSelectedItems && !isBusy;
-            moveDownToolStripMenuEncodersItem.Enabled = hasSelectedItems && !isBusy;
+            moveUpToolStripMenuItemEncoders.Enabled = hasSelectedItems && !isBusy;
+            moveDownToolStripMenuItemEncoders.Enabled = hasSelectedItems && !isBusy;
 
             // Other operations
-            refreshAllToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
-            openContainingFolderToolStripMenuEncodersItem.Enabled = hasSelectedItems;
-            clearUncheckedToolStripMenuEncodersItem.Enabled = hasUncheckedItems;
-            clearSelectedToolStripMenuEncodersItem.Enabled = hasSelectedItems;
-            clearDuplicateEntriesToolStripMenuEncodersItem.Enabled = hasItems && !isBusy;
-            clearAllEncodersToolStripMenuEncodersItem.Enabled = true;
+            refreshAllToolStripMenuItemEncoders.Enabled = hasItems && !isBusy;
+            openContainingFolderToolStripMenuItemEncoders.Enabled = hasSelectedItems;
+            clearUncheckedToolStripMenuItemEncoders.Enabled = hasUncheckedItems;
+            clearSelectedToolStripMenuItemEncoders.Enabled = hasSelectedItems;
+            clearDuplicateEntriesToolStripMenuItemEncoders.Enabled = hasItems && !isBusy;
+            clearAllToolStripMenuItemEncoders.Enabled = true;
         }
-        private void CheckAllToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CheckAllToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 item.Checked = true;
             }
         }
-        private void UncheckAllToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UncheckAllToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 item.Checked = false;
             }
         }
-        private void CheckSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CheckSelectedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.SelectedItems)
             {
                 item.Checked = true;
             }
         }
-        private void UncheckSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UncheckSelectedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.SelectedItems)
             {
                 item.Checked = false;
             }
         }
-        private void InvertCheckToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InvertCheckToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 item.Checked = !item.Checked;
             }
         }
-        private void SelectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SelectAllToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 item.Selected = true;
             }
         }
-        private void ClearSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearSelectionToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.SelectedItems)
             {
                 item.Selected = false;
             }
         }
-        private void InvertSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InvertSelectionToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 item.Selected = !item.Selected;
             }
         }
-        private void MoveUpToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveUpToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             MoveSelectedItemsForListview(listViewEncoders, -1);
         }
-        private void MoveDownToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveDownToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             MoveSelectedItemsForListview(listViewEncoders, 1);
         }
-        private async void RefreshAllToolStripMenuItem_Click(object? sender, EventArgs e)
+        private async void RefreshAllToolStripMenuItemEncoders_Click(object? sender, EventArgs e)
         {
             if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
@@ -1659,7 +1659,7 @@ namespace FLAC_Benchmark_H
                 UpdateGroupBoxEncodersHeader();
             }
         }
-        private void OpenContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenContainingFolderToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             if (listViewEncoders.SelectedItems.Count == 0)
                 return;
@@ -1699,8 +1699,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-
-        private void ClearUncheckedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearUncheckedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
@@ -1725,11 +1724,11 @@ namespace FLAC_Benchmark_H
                 UpdateGroupBoxEncodersHeader();
             }
         }
-        private void ClearSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearSelectedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             ButtonRemoveEncoder_Click(sender, e);
         }
-        private void ClearDuplicateEntriesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearDuplicateEntriesToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
                 return;
@@ -1766,7 +1765,7 @@ namespace FLAC_Benchmark_H
                     MessageBoxIcon.Information);
             }
         }
-        private void ClearAllEncodersToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearAllToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             ButtonClearEncoders_Click(sender, e);
         }
@@ -2423,94 +2422,94 @@ namespace FLAC_Benchmark_H
             }
 
             // Check/Uncheck operations
-            checkAllAudioFilesToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
-            uncheckAllAudioFilesToolStripMenuItem.Enabled = hasCheckedItems && !isBusy;
-            checkSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedUncheckedItems && !isBusy;
-            uncheckSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedCheckedItems && !isBusy;
-            invertCheckAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+            checkAllToolStripMenuItemAudioFiles.Enabled = hasUncheckedItems && !isBusy;
+            uncheckAllToolStripMenuItemAudioFiles.Enabled = hasCheckedItems && !isBusy;
+            checkSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedUncheckedItems && !isBusy;
+            uncheckSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedCheckedItems && !isBusy;
+            invertCheckToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
             // Selection operations  
-            selectAllAudioFilesToolStripMenuItem.Enabled = hasUnselectedItems && !isBusy;
-            clearSelectionAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
-            invertSelectionAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
+            selectAllToolStripMenuItemAudioFiles.Enabled = hasUnselectedItems && !isBusy;
+            clearSelectionToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
+            invertSelectionToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
             // Move operations
-            moveUpAudioFilesToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
-            moveDownAudioFilesToolStripMenuItem.Enabled = hasSelectedItems && !isBusy;
+            moveUpToolStripMenuItemAudioFiles.Enabled = hasSelectedItems && !isBusy;
+            moveDownToolStripMenuItemAudioFiles.Enabled = hasSelectedItems && !isBusy;
 
             // Other operations
-            refreshAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
-            openContainingFolderAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
-            clearUncheckedAudioFilesToolStripMenuItem.Enabled = hasUncheckedItems && !isBusy;
-            clearSelectedAudioFilesToolStripMenuItem.Enabled = hasSelectedItems;
-            clearDuplicateEntriesAudioFilesToolStripMenuItem.Enabled = hasItems && !isBusy;
-            clearAllAudioFilesToolStripMenuItem.Enabled = true;
+            refreshAllToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            openContainingFolderToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
+            clearUncheckedToolStripMenuItemAudioFiles.Enabled = hasUncheckedItems && !isBusy;
+            clearSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
+            clearDuplicateEntriesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            clearAllToolStripMenuItemAudioFiles.Enabled = true;
         }
-        private void CheckAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 item.Checked = true;
             }
         }
-        private void UncheckAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UncheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 item.Checked = false;
             }
         }
-        private void CheckSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CheckSelectedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
             {
                 item.Checked = true;
             }
         }
-        private void UncheckSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void UncheckSelectedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
             {
                 item.Checked = false;
             }
         }
-        private void InvertCheckAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InvertCheckToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 item.Checked = !item.Checked;
             }
         }
-        private void SelectAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SelectAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 item.Selected = true;
             }
         }
-        private void ClearSelectionAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearSelectionToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
             {
                 item.Selected = false;
             }
         }
-        private void InvertSelectionAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void InvertSelectionToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 item.Selected = !item.Selected;
             }
         }
-        private void MoveUpAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveUpToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             MoveSelectedItemsForListview(listViewAudioFiles, -1);
         }
-        private void MoveDownAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveDownToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             MoveSelectedItemsForListview(listViewAudioFiles, 1);
         }
-        private async void RefreshAudioFilesToolStripMenuItem_Click(object? sender, EventArgs e)
+        private async void RefreshAllToolStripMenuItemAudioFiles_Click(object? sender, EventArgs e)
         {
             if (/*_isProcessingAudioFilesQueue || _isRefreshingAudioFiles || */listViewAudioFiles.Items.Count == 0)
                 return;
@@ -2608,7 +2607,7 @@ namespace FLAC_Benchmark_H
                 UpdateGroupBoxAudioFilesHeader();
             }
         }
-        private void OpenContainingFolderAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenContainingFolderToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             if (listViewAudioFiles.SelectedItems.Count == 0)
                 return;
@@ -2648,7 +2647,7 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ClearUncheckedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearUncheckedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             // Check if the Shift key is pressed
             if (ModifierKeys == Keys.Shift)
@@ -2676,11 +2675,11 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ClearSelectedAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearSelectedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             ButtonRemoveAudioFile_Click(sender, e);
         }
-        private void ClearDuplicateEntriesAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearDuplicateEntriesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             if (listViewAudioFiles.Items.Count == 0)
                 return;
@@ -2715,7 +2714,7 @@ namespace FLAC_Benchmark_H
                     MessageBoxIcon.Information);
             }
         }
-        private void ClearAllAudioFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClearAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             ButtonClearAudioFiles_Click(sender, e);
         }
