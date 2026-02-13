@@ -104,6 +104,7 @@
             Duration = new ColumnHeader();
             InputAudioFileSize = new ColumnHeader();
             MD5Hash = new ColumnHeader();
+            WritingLibrary = new ColumnHeader();
             FilePath = new ColumnHeader();
             contextMenuStripAudioFiles = new ContextMenuStrip(components);
             checkAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
@@ -899,7 +900,7 @@
             // 
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, InputAudioFileSize, MD5Hash, FilePath });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
             listViewAudioFiles.ContextMenuStrip = contextMenuStripAudioFiles;
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
@@ -957,6 +958,12 @@
             MD5Hash.Text = "MD5 Hash";
             MD5Hash.Width = 230;
             // 
+            // WritingLibrary
+            // 
+            WritingLibrary.Tag = "WritingLibrary";
+            WritingLibrary.Text = "Writing Library";
+            WritingLibrary.Width = 150;
+            // 
             // FilePath
             // 
             FilePath.Tag = "FilePath";
@@ -967,7 +974,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripEncoders";
-            contextMenuStripAudioFiles.Size = new Size(202, 408);
+            contextMenuStripAudioFiles.Size = new Size(202, 386);
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
             // checkAllToolStripMenuItemAudioFiles
@@ -2616,5 +2623,6 @@
         private ToolStripMenuItem clearSelectedToolStripMenuItemAudioFiles;
         private ToolStripMenuItem clearDuplicateEntriesToolStripMenuItemAudioFiles;
         private ToolStripMenuItem clearAllToolStripMenuItemAudioFiles;
+        private ColumnHeader WritingLibrary;
     }
 }

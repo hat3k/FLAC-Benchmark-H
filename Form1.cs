@@ -1905,11 +1905,14 @@ namespace FLAC_Benchmark_H
                     long fileSize = fileInfo.Length;
                     string extension = Path.GetExtension(audioFilePath).ToLowerInvariant();
                     string md5Hash = "N/A";
+                    string writingLibrary = string.Empty;
 
                     // Determine the file type and get the corresponding MD5
                     if (extension == ".flac")
                     {
                         md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                        writingLibrary = mediaInfo.Get(StreamKind.Audio, 0, "Encoded_Library/String") ?? string.Empty;
+
                     }
                     else if (extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
                     {
@@ -1933,7 +1936,8 @@ namespace FLAC_Benchmark_H
                         Md5Hash = md5Hash,
                         CreationTime = currentCreationTime,
                         LastWriteTime = currentLastWriteTime,
-                        ErrorDetails = string.Empty
+                        ErrorDetails = string.Empty,
+                        WritingLibrary = writingLibrary
                     };
 
                     audioFileInfoCache[audioFilePath] = cachedInfo;
@@ -1969,6 +1973,7 @@ namespace FLAC_Benchmark_H
             item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
             item.SubItems.Add(cachedInfo.Md5Hash);
             item.SubItems.Add(cachedInfo.DirectoryPath);
+            item.SubItems.Add(cachedInfo.WritingLibrary);
 
             return item;
         }
@@ -1989,6 +1994,7 @@ namespace FLAC_Benchmark_H
             public long FileSize { get; set; }
             public string Md5Hash { get; set; }
             public string ErrorDetails { get; set; }
+            public string WritingLibrary { get; set; } = string.Empty;
             public DateTime CreationTime { get; set; }
             public DateTime LastWriteTime { get; set; }
             public bool WasModifiedSinceLoad { get; set; } = false;
