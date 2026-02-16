@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Drawing;
 using MediaInfoLib;
 using ScottPlot;
 using ScottPlot.Plottable;
@@ -1370,7 +1371,7 @@ namespace FLAC_Benchmark_H
             public required string DirectoryPath { get; set; }
             public required string FileName { get; set; }
             public required string FileNameWithoutExtension { get; set; }
-            public required string Extension { get; set; }
+            public required string Extension { get; set; } = string.Empty;
             public string? Version { get; set; } = null;
             public long FileSize { get; set; }
             public DateTime CreationTime { get; set; }
@@ -1843,7 +1844,10 @@ namespace FLAC_Benchmark_H
                     var tasks = openFileDialog.FileNames.Select(async file =>
                     {
                         var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
-                        item.Checked = true;
+                        if (item != null)
+                        {
+                            item.Checked = true;
+                        }
                         return item;
                     });
 
@@ -1925,6 +1929,7 @@ namespace FLAC_Benchmark_H
                         FilePath = audioFilePath,
                         DirectoryPath = fileInfo.DirectoryName!,
                         FileName = fileInfo.Name,
+                        FileNameWithoutExtension = Path.GetFileNameWithoutExtension(audioFilePath),
                         Extension = extension,
                         Channels = channels,
                         BitDepth = bitDepth,
@@ -1981,19 +1986,20 @@ namespace FLAC_Benchmark_H
         // Class to store Audio File information
         private class AudioFileInfo
         {
-            public string FilePath { get; set; }
-            public string DirectoryPath { get; set; }
-            public string FileName { get; set; }
-            public string Extension { get; set; }
-            public string Channels { get; set; }
-            public string BitDepth { get; set; }
-            public string BitDepthString { get; set; }
-            public string SamplingRate { get; set; }
-            public string SamplingRateString { get; set; }
-            public string Duration { get; set; }
+            public required string FilePath { get; set; }
+            public required string DirectoryPath { get; set; }
+            public required string FileName { get; set; }
+            public required string FileNameWithoutExtension { get; set; }
+            public required string Extension { get; set; } = string.Empty;
+            public string Channels { get; set; } = "N/A";
+            public string BitDepth { get; set; } = "N/A";
+            public string BitDepthString { get; set; } = "N/A";
+            public string SamplingRate { get; set; } = "N/A";
+            public string SamplingRateString { get; set; } = "N/A";
+            public string Duration { get; set; } = "N/A";
             public long FileSize { get; set; }
-            public string Md5Hash { get; set; }
-            public string ErrorDetails { get; set; }
+            public string Md5Hash { get; set; } = "N/A";
+            public string ErrorDetails { get; set; } = string.Empty;
             public string WritingLibrary { get; set; } = string.Empty;
             public DateTime CreationTime { get; set; }
             public DateTime LastWriteTime { get; set; }
@@ -2083,18 +2089,6 @@ namespace FLAC_Benchmark_H
                         {
                             cachedInfo.Md5Hash = md5Hash;
                             cachedInfo.ErrorDetails = null;
-                        }
-                        else
-                        {
-                            var newInfo = new AudioFileInfo
-                            {
-                                FilePath = audioFilePath,
-                                Md5Hash = md5Hash,
-                                FileName = Path.GetFileName(audioFilePath),
-                                DirectoryPath = Path.GetDirectoryName(audioFilePath),
-                                ErrorDetails = null
-                            };
-                            audioFileInfoCache.TryAdd(audioFilePath, newInfo);
                         }
 
                         return md5Hash;
@@ -2217,18 +2211,6 @@ namespace FLAC_Benchmark_H
                     cachedInfo.Md5Hash = wavMd5Result;
                     cachedInfo.ErrorDetails = null;
                 }
-                else
-                {
-                    var newInfo = new AudioFileInfo
-                    {
-                        FilePath = flacFilePath,
-                        Md5Hash = wavMd5Result,
-                        FileName = Path.GetFileName(flacFilePath),
-                        DirectoryPath = Path.GetDirectoryName(flacFilePath),
-                        ErrorDetails = null
-                    };
-                    audioFileInfoCache.TryAdd(flacFilePath, newInfo);
-                }
 
                 return wavMd5Result;
             }
@@ -2252,18 +2234,6 @@ namespace FLAC_Benchmark_H
             {
                 cachedInfo.Md5Hash = "MD5 calculation failed";
                 cachedInfo.ErrorDetails = errorDetails;
-            }
-            else
-            {
-                var newInfo = new AudioFileInfo
-                {
-                    FilePath = filePath,
-                    Md5Hash = "MD5 calculation failed",
-                    FileName = Path.GetFileName(filePath),
-                    DirectoryPath = Path.GetDirectoryName(filePath),
-                    ErrorDetails = errorDetails
-                };
-                audioFileInfoCache.TryAdd(filePath, newInfo);
             }
         }
 
@@ -8099,19 +8069,6 @@ namespace FLAC_Benchmark_H
                             {
                                 infoToUpdate.Md5Hash = md5Hash;
                                 // Do NOT replace the object - preserve other properties (ErrorDetails, LastWriteTime, etc.)
-                            }
-                            else
-                            {
-                                // Create new cache entry if it doesn't exist
-                                var newInfo = new AudioFileInfo
-                                {
-                                    FilePath = filePath,
-                                    Md5Hash = md5Hash,
-                                    FileName = Path.GetFileName(filePath),
-                                    DirectoryPath = Path.GetDirectoryName(filePath),
-                                    Extension = fileExtension
-                                };
-                                audioFileInfoCache.TryAdd(filePath, newInfo);
                             }
                         }
 
