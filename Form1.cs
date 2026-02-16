@@ -863,13 +863,7 @@ namespace FLAC_Benchmark_H
 
                 var items = await Task.WhenAll(tasks);
 
-                foreach (var item in items)
-                {
-                    if (item != null)
-                    {
-                        listViewAudioFiles.Items.Add(item);
-                    }
-                }
+                listViewAudioFiles.Items.AddRange(items.OfType<ListViewItem>().ToArray());
 
                 SaveAudioFiles();
 
@@ -1336,7 +1330,7 @@ namespace FLAC_Benchmark_H
                     FileName = fileInfo.Name,
                     FileNameWithoutExtension = Path.GetFileNameWithoutExtension(encoderPath),
                     Extension = fileInfo.Extension.ToLowerInvariant(),
-                    Version = version,
+                    Version = version ?? "N/A",
                     FileSize = fileInfo.Length,
                     CreationTime = currentCreationTime,
                     LastWriteTime = currentLastWriteTime
@@ -1355,7 +1349,7 @@ namespace FLAC_Benchmark_H
                 Checked = isChecked
             };
 
-            item.SubItems.Add(cachedInfo.Version ?? "N/A");
+            item.SubItems.Add(cachedInfo.Version);
             item.SubItems.Add(cachedInfo.DirectoryPath);
             item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
             item.SubItems.Add(cachedInfo.LastWriteTime.ToString("yyyy.MM.dd HH:mm"));
@@ -1371,7 +1365,7 @@ namespace FLAC_Benchmark_H
             public required string FileName { get; set; }
             public required string FileNameWithoutExtension { get; set; }
             public required string Extension { get; set; } = string.Empty;
-            public string? Version { get; set; } = null;
+            public string Version { get; set; } = "N/A";
             public long FileSize { get; set; }
             public DateTime CreationTime { get; set; }
             public DateTime LastWriteTime { get; set; }
@@ -1583,9 +1577,9 @@ namespace FLAC_Benchmark_H
                 for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
                 {
                     ListViewItem item = listViewEncoders.Items[i];
-                    string? encoderPath = item.Tag?.ToString();
+                    string encoderPath = item.Tag!.ToString()!;
 
-                    if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
+                    if (!File.Exists(encoderPath))
                     {
                         listViewEncoders.Items.RemoveAt(i);
                         continue;
@@ -1597,15 +1591,10 @@ namespace FLAC_Benchmark_H
                     DateTime currentCreationTime = fileInfo.CreationTimeUtc;
                     DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-                    bool wasModified = false;
-                    if (encoderInfoCache.TryGetValue(encoderPath, out var cachedInfo))
-                    {
-                        if (cachedInfo.CreationTime != currentCreationTime ||
-                            cachedInfo.LastWriteTime != currentLastWriteTime)
-                        {
-                            wasModified = true;
-                        }
-                    }
+                    var cachedInfo = encoderInfoCache[encoderPath];
+
+                    bool wasModified = cachedInfo.CreationTime != currentCreationTime ||
+                                       cachedInfo.LastWriteTime != currentLastWriteTime;
 
                     var newItem = await CreateListViewEncodersItemInternal(encoderPath, currentChecked);
                     if (newItem == null)
@@ -1614,10 +1603,7 @@ namespace FLAC_Benchmark_H
                         continue;
                     }
 
-                    if (encoderInfoCache.TryGetValue(encoderPath, out var updatedInfo))
-                    {
-                        updatedInfo.WasModifiedSinceLoad = wasModified;
-                    }
+                    encoderInfoCache[encoderPath].WasModifiedSinceLoad = wasModified;
 
                     item.Text = newItem.Text;
                     for (int j = 0; j < newItem.SubItems.Count - 1; j++)
@@ -1875,7 +1861,6 @@ namespace FLAC_Benchmark_H
             string extension = Path.GetExtension(audioFilePath);
             return extension.Equals(".wav", StringComparison.OrdinalIgnoreCase) || extension.Equals(".flac", StringComparison.OrdinalIgnoreCase);
         }
-
         private async Task<ListViewItem?> CreateListViewAudioFilesItemInternal(string audioFilePath, bool isChecked)
         {
             if (!File.Exists(audioFilePath))
@@ -2292,7 +2277,7 @@ namespace FLAC_Benchmark_H
             {
                 if (!item.Checked)
                 {
-                    itemsToRemove.Add(item.Tag.ToString()); // Add the file path for removal
+                    itemsToRemove.Add(item.Tag!.ToString()!); // Add the file path for removal
                 }
             }
 
@@ -2317,7 +2302,7 @@ namespace FLAC_Benchmark_H
                 // Remove entries from ListView
                 foreach (string file in itemsToRemove)
                 {
-                    var itemToRemove = listViewAudioFiles.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Tag.ToString() == file);
+                    var itemToRemove = listViewAudioFiles.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Tag!.ToString() == file);
                     if (itemToRemove != null)
                     {
                         listViewAudioFiles.Items.Remove(itemToRemove);
@@ -2503,9 +2488,9 @@ namespace FLAC_Benchmark_H
                 for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
                 {
                     ListViewItem item = listViewAudioFiles.Items[i];
-                    string? audioFilePath = item.Tag?.ToString();
+                    string audioFilePath = item.Tag!.ToString()!;
 
-                    if (string.IsNullOrEmpty(audioFilePath) || !File.Exists(audioFilePath))
+                    if (!File.Exists(audioFilePath))
                     {
                         listViewAudioFiles.Items.RemoveAt(i);
                         continue;
@@ -2517,15 +2502,10 @@ namespace FLAC_Benchmark_H
                     DateTime currentCreationTime = fileInfo.CreationTimeUtc;
                     DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-                    bool wasModified = false;
-                    if (audioFileInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
-                    {
-                        if (cachedInfo.CreationTime != currentCreationTime ||
-                            cachedInfo.LastWriteTime != currentLastWriteTime)
-                        {
-                            wasModified = true;
-                        }
-                    }
+                    var cachedInfo = audioFileInfoCache[audioFilePath];
+
+                    bool wasModified = cachedInfo.CreationTime != currentCreationTime ||
+                                       cachedInfo.LastWriteTime != currentLastWriteTime;
 
                     var newItem = await CreateListViewAudioFilesItemInternal(audioFilePath, currentChecked);
                     if (newItem == null)
@@ -2534,10 +2514,8 @@ namespace FLAC_Benchmark_H
                         continue;
                     }
 
-                    if (audioFileInfoCache.TryGetValue(audioFilePath, out var updatedInfo))
-                    {
-                        updatedInfo.WasModifiedSinceLoad = wasModified;
-                    }
+                    audioFileInfoCache[audioFilePath].WasModifiedSinceLoad = wasModified;
+
 
                     item.Text = newItem.Text;
                     for (int j = 0; j < newItem.SubItems.Count - 1; j++)
@@ -2818,8 +2796,8 @@ namespace FLAC_Benchmark_H
             // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
             if (columnName == "AudioFileDirectory")
             {
-                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
-                string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString() ?? string.Empty;
+                string fileName = dataGridViewLog.Rows[e.RowIndex].Cells["Name"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
@@ -2840,8 +2818,8 @@ namespace FLAC_Benchmark_H
             // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
             else if (columnName == "EncoderDirectory")
             {
-                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
-                string encoderFileName = dataGridViewLog.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+                string directoryPath = dataGridViewLog.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString() ?? string.Empty;
+                string encoderFileName = dataGridViewLog.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) &&
                 !string.IsNullOrEmpty(encoderFileName))
@@ -2978,8 +2956,8 @@ namespace FLAC_Benchmark_H
             // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
             if (columnName == "AudioFileDirectory")
             {
-                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
-                string fileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString() ?? string.Empty;
+                string fileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Name"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
@@ -3000,8 +2978,8 @@ namespace FLAC_Benchmark_H
             // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
             else if (columnName == "EncoderDirectory")
             {
-                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
-                string encoderFileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+                string directoryPath = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString() ?? string.Empty;
+                string encoderFileName = dataGridViewLogDetectDupes.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(encoderFileName))
                 {
@@ -3137,8 +3115,8 @@ namespace FLAC_Benchmark_H
             // 1. Handle click on "AudioFileDirectory" column - path to the audio file directory
             if (columnName == "AudioFileDirectory")
             {
-                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString();
-                string fileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["AudioFileDirectory"].Value?.ToString() ?? string.Empty;
+                string fileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Name"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(fileName))
                 {
@@ -3159,8 +3137,8 @@ namespace FLAC_Benchmark_H
             // 2. Handle click on "EncoderDirectory" column - path to the encoder's folder
             else if (columnName == "EncoderDirectory")
             {
-                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString();
-                string encoderFileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString();
+                string directoryPath = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["EncoderDirectory"].Value?.ToString() ?? string.Empty;
+                string encoderFileName = dataGridViewLogTestForErrors.Rows[e.RowIndex].Cells["Encoder"].Value?.ToString() ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(directoryPath) && !string.IsNullOrEmpty(encoderFileName))
                 {
@@ -3200,12 +3178,12 @@ namespace FLAC_Benchmark_H
                 var audioFileInfo = audioFileInfoCache[audioFilePath];
 
                 // Extract data from cache
-                string audioFileName = audioFileInfo.FileName; // Use file name from cache
-                long samplingRate = long.TryParse(audioFileInfo.SamplingRate, out long temp) ? temp : 0;
+                string audioFileName = audioFileInfo.FileName;
+                long samplingRate = long.TryParse(audioFileInfo.SamplingRate, out long sr) ? sr : 0;
                 string samplingRateFormatted = samplingRate.ToString("N0", NumberFormatWithSpaces);
-                long inputSize = audioFileInfo.FileSize; // Get size from file info
+                long inputSize = audioFileInfo.FileSize;
                 string inputSizeFormatted = inputSize.ToString("N0", NumberFormatWithSpaces);
-                long durationMs = Convert.ToInt64(audioFileInfo.Duration); // Use duration from cache
+                long durationMs = long.TryParse(audioFileInfo.Duration, out long d) ? d : 0;
                 string audioFileDirectory = audioFileInfo.DirectoryPath;
                 string Md5Hash = audioFileInfo.Md5Hash;
 
@@ -3383,6 +3361,24 @@ namespace FLAC_Benchmark_H
                 $"Errors: {(!string.IsNullOrWhiteSpace(errorOutput) ? errorOutput.Trim() : "Unknown error (non-zero exit code).")}{Environment.NewLine}");
             }
         }
+        private class BenchmarkPass
+        {
+            public string AudioFilePath { get; set; } = string.Empty;
+            public string EncoderPath { get; set; } = string.Empty;
+            public string Parameters { get; set; } = string.Empty;
+            public long InputSize { get; set; }
+            public long OutputSize { get; set; }
+            public double Time { get; set; }
+            public double Speed { get; set; }
+            public double CPULoadEncoder { get; set; }
+            public double CPUClock { get; set; }
+            public string Channels { get; set; } = string.Empty;
+            public string BitDepth { get; set; } = string.Empty;
+            public string SamplingRate { get; set; } = string.Empty;
+            public DateTime Timestamp { get; set; }
+        }
+        private readonly List<BenchmarkPass> _benchmarkPasses = [];
+
         private void ButtonLogColumnsAutoWidth_Click(object? sender, EventArgs e)
         {
             if (ModifierKeys.HasFlag(Keys.Shift))
@@ -3899,57 +3895,41 @@ namespace FLAC_Benchmark_H
 
         private class LogEntry
         {
-            public string Name { get; set; }
-            public string Channels { get; set; }
-            public string BitDepth { get; set; }
-            public string SamplingRate { get; set; }
-            public string InputFileSize { get; set; }
-            public string OutputFileSize { get; set; }
-            public string Compression { get; set; }
-            public string Time { get; set; }
-            public string Speed { get; set; }
-            public string SpeedMin { get; set; }
-            public string SpeedMax { get; set; }
-            public string SpeedRange { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string Channels { get; set; } = string.Empty;
+            public string BitDepth { get; set; } = string.Empty;
+            public string SamplingRate { get; set; } = string.Empty;
+            public string InputFileSize { get; set; } = string.Empty;
+            public string OutputFileSize { get; set; } = string.Empty;
+            public string Compression { get; set; } = string.Empty;
+            public string Time { get; set; } = string.Empty;
+            public string Speed { get; set; } = string.Empty;
+            public string SpeedMin { get; set; } = string.Empty;
+            public string SpeedMax { get; set; } = string.Empty;
+            public string SpeedRange { get; set; } = string.Empty;
             public double SpeedP50 { get; set; }
             public double SpeedP90 { get; set; }
-            public string SpeedConsistency { get; set; }
-            public string CPULoadEncoder { get; set; }
-            public string CPUClock { get; set; }
-            public string Passes { get; set; }
-            public string Parameters { get; set; }
-            public string Encoder { get; set; }
-            public string Version { get; set; }
-            public string EncoderDirectory { get; set; }
-            public string FastestEncoder { get; set; }
-            public string BestSize { get; set; }
-            public string SameSize { get; set; }
-            public string AudioFileDirectory { get; set; }
-            public string MD5 { get; set; }
-            public string Duplicates { get; set; }
-            public string Errors { get; set; }
+            public string SpeedConsistency { get; set; } = string.Empty;
+            public string CPULoadEncoder { get; set; } = string.Empty;
+            public string CPUClock { get; set; } = string.Empty;
+            public string Passes { get; set; } = string.Empty;
+            public string Parameters { get; set; } = string.Empty;
+            public string Encoder { get; set; } = string.Empty;
+            public string Version { get; set; } = string.Empty;
+            public string EncoderDirectory { get; set; } = string.Empty;
+            public string FastestEncoder { get; set; } = string.Empty;
+            public string BestSize { get; set; } = string.Empty;
+            public string SameSize { get; set; } = string.Empty;
+            public string AudioFileDirectory { get; set; } = string.Empty;
+            public string MD5 { get; set; } = string.Empty;
+            public string Duplicates { get; set; } = string.Empty;
+            public string Errors { get; set; } = string.Empty;
 
             public Color OutputForeColor { get; set; } // Color for OutputFileSize
             public Color CompressionForeColor { get; set; } // Color for Compression
             public Color SpeedForeColor { get; set; } // Color for Speed
         }
-        private class BenchmarkPass
-        {
-            public string AudioFilePath { get; set; }
-            public string EncoderPath { get; set; }
-            public string Parameters { get; set; }
-            public long InputSize { get; set; }
-            public long OutputSize { get; set; }
-            public double Time { get; set; }
-            public double Speed { get; set; }
-            public double CPULoadEncoder { get; set; }
-            public double CPUClock { get; set; }
-            public string Channels { get; set; }
-            public string BitDepth { get; set; }
-            public string SamplingRate { get; set; }
-            public DateTime Timestamp { get; set; }
-        }
-        private readonly List<BenchmarkPass> _benchmarkPasses = [];
+
         private void SortDataGridView()
         {
             // Collect data from DataGridView into a list
@@ -3960,33 +3940,33 @@ namespace FLAC_Benchmark_H
 
                 var logEntry = new LogEntry
                 {
-                    Name = row.Cells["Name"].Value?.ToString(),
-                    Channels = row.Cells["Channels"].Value?.ToString(),
-                    BitDepth = row.Cells["BitDepth"].Value?.ToString(),
-                    SamplingRate = row.Cells["SamplingRate"].Value?.ToString(),
-                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString(),
-                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString(),
-                    Compression = row.Cells["Compression"].Value?.ToString(),
-                    Time = row.Cells["Time"].Value?.ToString(),
-                    Speed = row.Cells["Speed"].Value?.ToString(),
-                    SpeedMin = row.Cells["SpeedMin"].Value?.ToString(),
-                    SpeedMax = row.Cells["SpeedMax"].Value?.ToString(),
-                    SpeedRange = row.Cells["SpeedRange"].Value?.ToString(),
-                    SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString(),
-                    CPULoadEncoder = row.Cells["CPULoadEncoder"].Value?.ToString(),
-                    CPUClock = row.Cells["CPUClock"].Value?.ToString(),
-                    Passes = row.Cells["Passes"].Value?.ToString(),
-                    Parameters = row.Cells["Parameters"].Value?.ToString(),
-                    Encoder = row.Cells["Encoder"].Value?.ToString(),
-                    Version = row.Cells["Version"].Value?.ToString(),
-                    EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString(),
-                    FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString(),
-                    BestSize = row.Cells["BestSize"].Value?.ToString(),
-                    SameSize = row.Cells["SameSize"].Value?.ToString(),
-                    AudioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString(),
-                    MD5 = row.Cells["MD5"].Value?.ToString(),
-                    Duplicates = row.Cells["Duplicates"].Value?.ToString(),
-                    Errors = row.Cells["Errors"].Value?.ToString(),
+                    Name = row.Cells["Name"].Value?.ToString() ?? string.Empty,
+                    Channels = row.Cells["Channels"].Value?.ToString() ?? string.Empty,
+                    BitDepth = row.Cells["BitDepth"].Value?.ToString() ?? string.Empty,
+                    SamplingRate = row.Cells["SamplingRate"].Value?.ToString() ?? string.Empty,
+                    InputFileSize = row.Cells["InputFileSize"].Value?.ToString() ?? string.Empty,
+                    OutputFileSize = row.Cells["OutputFileSize"].Value?.ToString() ?? string.Empty,
+                    Compression = row.Cells["Compression"].Value?.ToString() ?? string.Empty,
+                    Time = row.Cells["Time"].Value?.ToString() ?? string.Empty,
+                    Speed = row.Cells["Speed"].Value?.ToString() ?? string.Empty,
+                    SpeedMin = row.Cells["SpeedMin"].Value?.ToString() ?? string.Empty,
+                    SpeedMax = row.Cells["SpeedMax"].Value?.ToString() ?? string.Empty,
+                    SpeedRange = row.Cells["SpeedRange"].Value?.ToString() ?? string.Empty,
+                    SpeedConsistency = row.Cells["SpeedConsistency"].Value?.ToString() ?? string.Empty,
+                    CPULoadEncoder = row.Cells["CPULoadEncoder"].Value?.ToString() ?? string.Empty,
+                    CPUClock = row.Cells["CPUClock"].Value?.ToString() ?? string.Empty,
+                    Passes = row.Cells["Passes"].Value?.ToString() ?? string.Empty,
+                    Parameters = row.Cells["Parameters"].Value?.ToString() ?? string.Empty,
+                    Encoder = row.Cells["Encoder"].Value?.ToString() ?? string.Empty,
+                    Version = row.Cells["Version"].Value?.ToString() ?? string.Empty,
+                    EncoderDirectory = row.Cells["EncoderDirectory"].Value?.ToString() ?? string.Empty,
+                    FastestEncoder = row.Cells["FastestEncoder"].Value?.ToString() ?? string.Empty,
+                    BestSize = row.Cells["BestSize"].Value?.ToString() ?? string.Empty,
+                    SameSize = row.Cells["SameSize"].Value?.ToString() ?? string.Empty,
+                    AudioFileDirectory = row.Cells["AudioFileDirectory"].Value?.ToString() ?? string.Empty,
+                    MD5 = row.Cells["MD5"].Value?.ToString() ?? string.Empty,
+                    Duplicates = row.Cells["Duplicates"].Value?.ToString() ?? string.Empty,
+                    Errors = row.Cells["Errors"].Value?.ToString() ?? string.Empty,
 
                     OutputForeColor = row.Cells["OutputFileSize"].Style.ForeColor, // Color for OutputFileSize
                     CompressionForeColor = row.Cells["Compression"].Style.ForeColor, // Color for Compression
