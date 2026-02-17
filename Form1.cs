@@ -4500,9 +4500,9 @@ namespace FLAC_Benchmark_H
             Dictionary<string, (List<string> Params, List<double> AvgSpeeds)> series,
             Dictionary<string, List<(string Param, double Speed)>>? aggregatedSeries = null)
         {
-            List<string> allParams = null;
-            double[] xPositions = null;
-            string[] xLabels = null;
+            List<string> allParams = [];
+            double[] xPositions = [];
+            string[] xLabels = [];
 
             if (series.Count > 0)
             {
@@ -4679,9 +4679,9 @@ namespace FLAC_Benchmark_H
             Dictionary<string, (List<string> Params, List<double> Compressions)> series,
             Dictionary<string, List<(string Param, double Compression)>>? aggregatedSeries = null)
         {
-            List<string> allParams = null;
-            double[] xPositions = null;
-            string[] xLabels = null;
+            List<string> allParams = [];
+            double[] xPositions = [];
+            string[] xLabels = [];
 
             if (series.Count > 0)
             {
@@ -4848,7 +4848,7 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            allParamsCompressionByParameters = allParams ?? [];
+            allParamsCompressionByParameters = allParams;
 
             plotScalingMultiPlotCompressionByParameters.Configuration.AddLinkedControl(
                 plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
@@ -4882,9 +4882,9 @@ namespace FLAC_Benchmark_H
 
         private void PlotScalingPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
 
             if (found && dynamicTooltipSpeedByThreads == null)
@@ -4911,9 +4911,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotSpeedByThreads == null)
@@ -4940,9 +4940,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
 
             if (found && dynamicTooltipCPULoadByThreads == null)
@@ -4969,9 +4969,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotCPULoadByThreads == null)
@@ -4998,9 +4998,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
 
             if (found && dynamicTooltipCPUClockByThreads == null)
@@ -5027,9 +5027,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotCPUClockByThreads == null)
@@ -5057,9 +5057,9 @@ namespace FLAC_Benchmark_H
 
         private void PlotScalingPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
 
             if (found && dynamicTooltipSpeedByParameters == null)
@@ -5090,9 +5090,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
 
             if (found && dynamicTooltipMultiplotSpeedByParameters == null)
@@ -5123,9 +5123,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
 
             if (found && dynamicTooltipCompressionByParameters == null)
@@ -5156,9 +5156,9 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            var formsPlot = (ScottPlot.FormsPlot)sender;
-            var plt = formsPlot.Plot;
+            if (sender is not ScottPlot.FormsPlot formsPlot) return;
 
+            var plt = formsPlot.Plot;
             var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
 
             if (found && dynamicTooltipMultiplotCompressionByParameters == null)
@@ -5296,44 +5296,45 @@ namespace FLAC_Benchmark_H
 
                     // Handle special formatting by column name
                     string colName = col.Name;
+                    string stringValue = cellValue?.ToString() ?? string.Empty;
+
                     if (colName == "InputFileSize" || colName == "OutputFileSize")
                     {
-                        if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long val))
+                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val))
                             sheetCell.Value = val;
                         else
-                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                            sheetCell.Value = stringValue;
                     }
                     else if (colName == "Channels")
                     {
-                        if (cellValue != null && long.TryParse(cellValue.ToString(), out long val))
+                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue, out long val))
                             sheetCell.Value = val;
                         else
-                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                            sheetCell.Value = stringValue;
                     }
                     else if (colName == "BitDepth" || colName == "SamplingRate")
                     {
-                        if (cellValue != null && long.TryParse(cellValue.ToString().Replace(" ", ""), out long val))
+                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val))
                             sheetCell.Value = val;
                         else
-                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                            sheetCell.Value = stringValue;
                     }
                     else if (colName == "Compression" || colName == "CPULoadEncoder" || colName == "SpeedConsistency")
                     {
-                        if (cellValue != null && double.TryParse(cellValue.ToString().Replace("%", "").Trim(), out double val))
+                        if (!string.IsNullOrEmpty(stringValue) && double.TryParse(stringValue.Replace("%", "").Trim(), out double val))
                             sheetCell.Value = val / 100.0;
                         else
-                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                            sheetCell.Value = stringValue;
                     }
                     else if (colName == "Time" || colName == "Speed" || colName == "SpeedMin" || colName == "SpeedMax" || colName == "SpeedRange" || colName == "CPUClock")
                     {
-                        if (cellValue != null)
+                        if (!string.IsNullOrEmpty(stringValue))
                         {
-                            string cleanValue = cellValue.ToString()
-                            .Replace("x", "").Replace("MHz", "").Trim();
+                            string cleanValue = stringValue.Replace("x", "").Replace("MHz", "").Trim();
                             if (double.TryParse(cleanValue, out double val))
                                 sheetCell.Value = val;
                             else
-                                sheetCell.Value = cellValue.ToString();
+                                sheetCell.Value = stringValue;
                         }
                         else
                         {
@@ -5342,21 +5343,20 @@ namespace FLAC_Benchmark_H
                     }
                     else if (colName == "Passes")
                     {
-                        if (cellValue != null && int.TryParse(cellValue.ToString(), out int val))
+                        if (!string.IsNullOrEmpty(stringValue) && int.TryParse(stringValue, out int val))
                             sheetCell.Value = val;
                         else
-                            sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                            sheetCell.Value = stringValue;
                     }
                     else if (colName == "EncoderDirectory" || colName == "AudioFileDirectory")
                     {
-                        string path = cellValue?.ToString() ?? string.Empty;
-                        sheetCell.Value = path;
-                        if (Directory.Exists(path))
-                            sheetCell.SetHyperlink(new XLHyperlink(path));
+                        sheetCell.Value = stringValue;
+                        if (Directory.Exists(stringValue))
+                            sheetCell.SetHyperlink(new XLHyperlink(stringValue));
                     }
                     else
                     {
-                        sheetCell.Value = cellValue?.ToString() ?? string.Empty;
+                        sheetCell.Value = stringValue;
                     }
 
                     // Copy text color
@@ -5408,7 +5408,7 @@ namespace FLAC_Benchmark_H
             }
 
             // Final touches
-            worksheet.RangeUsed().SetAutoFilter();
+            worksheet.RangeUsed()?.SetAutoFilter();
             worksheet.SheetView.FreezeRows(1);
             worksheet.Columns().AdjustToContents();
 
@@ -5512,7 +5512,7 @@ namespace FLAC_Benchmark_H
         private void ButtonCopyLog_Click(object? sender, EventArgs e)
         {
             // Determine which DataGridView corresponds to the currently selected tab
-            DataGridView activeGrid = tabControlLog.SelectedTab switch
+            DataGridView? activeGrid = tabControlLog.SelectedTab switch
             {
                 _ when tabControlLog.SelectedTab == Benchmark => dataGridViewLog,
                 _ when tabControlLog.SelectedTab == DetectDupes => dataGridViewLogDetectDupes,
@@ -6376,20 +6376,17 @@ namespace FLAC_Benchmark_H
         private void DataGridViewJobs_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1 or name "Column2JobType")
-            if (e.ColumnIndex == 1 && e.Value != null)
+            if (e.ColumnIndex == 1 && e.Value is string cellValue)
             {
-                string cellValue = e.Value.ToString();
-                if (cellValue != null)
+                if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        e.CellStyle.ForeColor = Color.Green;
-                    }
-                    else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        e.CellStyle.ForeColor = Color.Red;
-                    }
-                    e.FormattingApplied = true; // Indicate that formatting was applied
+                    e.CellStyle.ForeColor = Color.Green;
+                    e.FormattingApplied = true;
+                }
+                else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.CellStyle.ForeColor = Color.Red;
+                    e.FormattingApplied = true;
                 }
             }
         }
@@ -6412,7 +6409,7 @@ namespace FLAC_Benchmark_H
                 foreach (DataGridViewRow row in dataRows)
                 {
                     hasDataRows = true;
-                    object value = row.Cells["Column1CheckBox"].Value;
+                    object? value = row.Cells["Column1CheckBox"].Value;
                     if (value == null || !Convert.ToBoolean(value))
                     {
                         allChecked = false;
@@ -6521,13 +6518,13 @@ namespace FLAC_Benchmark_H
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
                 .Where(item => item.Checked)
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
                 .ToList();
 
                 // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString())
+                    .Select(item => item.Tag!.ToString()!)
                     .Where(filePath =>
                     {
                         string extension = audioFileInfoCache[filePath].Extension;
@@ -6923,13 +6920,13 @@ namespace FLAC_Benchmark_H
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
                 .Where(item => item.Checked)
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
                 .ToList();
 
                 // Get all selected .flac audio files using cache
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString())
+                    .Select(item => item.Tag!.ToString()!)
                     .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
                     .ToList();
 
@@ -6955,7 +6952,7 @@ namespace FLAC_Benchmark_H
                     var firstAudioFile = selectedFlacAudioFiles.FirstOrDefault();
                     var firstEncoder = selectedEncoders.FirstOrDefault();
 
-                    if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
+                    if (firstAudioFile is not null && firstEncoder is not null)
                     {
                         // Use current UI settings to form parameters
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
@@ -7277,13 +7274,13 @@ namespace FLAC_Benchmark_H
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
                 .Where(item => item.Checked)
-                .Select(item => item.Tag.ToString()) // Get full path from Tag
+                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
                 .ToList();
 
                 // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag.ToString())
+                    .Select(item => item.Tag!.ToString()!)
                     .Where(filePath =>
                     {
                         string extension = audioFileInfoCache[filePath].Extension;
@@ -7387,10 +7384,10 @@ namespace FLAC_Benchmark_H
                 if (checkBoxWarmupPass.Checked)
                 {
                     // Find the first job in dataGridViewJobsExpanded that will actually be executed
-                    DataGridViewRow firstExecutableJobRow = null;
-                    string jobType = null;
-                    string audioFilePath = null;
-                    string outputFilePath = null;
+                    DataGridViewRow? firstExecutableJobRow = null;
+                    string? jobType = null;
+                    string? audioFilePath = null;
+                    string? outputFilePath = null;
 
                     foreach (var jobRow in dataGridViewJobsExpanded)
                     {
@@ -7412,6 +7409,9 @@ namespace FLAC_Benchmark_H
                             break;
                         }
                     }
+
+                    if (firstExecutableJobRow == null || audioFilePath == null || outputFilePath == null)
+                        return;
 
                     string parameters = NormalizeSpaces((firstExecutableJobRow.Cells[3].Value?.ToString() ?? "").Trim());
                     var firstEncoder = selectedEncoders.FirstOrDefault();
@@ -7505,7 +7505,7 @@ namespace FLAC_Benchmark_H
                 foreach (DataGridViewRow row in dataGridViewJobsExpanded)
                 {
                     string jobType = NormalizeSpaces(row.Cells[1].Value?.ToString() ?? "");
-                    int passes = int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim());
+                    int passes = int.TryParse(row.Cells[2].Value?.ToString(), out int p) ? p : 1;
 
                     for (int i = 0; i < passes; i++) // Loop for the number of passes
                     {
@@ -7942,7 +7942,7 @@ namespace FLAC_Benchmark_H
 
         private async void ButtonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
-            var button = (Button)sender;
+            var button = (Button)sender!;
             var originalText = button.Text;
             var cts = new CancellationTokenSource();
 
@@ -8214,7 +8214,7 @@ namespace FLAC_Benchmark_H
                             // Add duplicate groups first (with primary item first in group)
                             foreach (var group in duplicateGroups)
                             {
-                                var groupItems = allItems.Where(item => group.Group.Contains(item.Tag!.ToString())).ToList();
+                                var groupItems = allItems.Where(item => item.Tag is string tag && group.Group.Contains(tag)).ToList();
                                 var primaryItem = groupItems.FirstOrDefault(item => item.Tag!.ToString() == group.Primary);
                                 var otherItems = groupItems.Where(item => item != primaryItem).ToList();
 
@@ -8226,7 +8226,8 @@ namespace FLAC_Benchmark_H
 
                             // Add non-duplicate items - only those NOT in any duplicate group
                             var duplicatePaths = duplicateGroups.SelectMany(g => g.Group).ToHashSet();
-                            var nonDuplicateItems = allItems.Where(item => !duplicatePaths.Contains(item.Tag!.ToString()));
+                            var nonDuplicateItems = allItems.Where(item => item.Tag is string tag && !duplicatePaths.Contains(tag));
+
                             foreach (var item in nonDuplicateItems)
                                 listViewAudioFiles.Items.Add(item);
                         }
@@ -8283,7 +8284,7 @@ namespace FLAC_Benchmark_H
         }
         private async void ButtonTestForErrors_Click(object? sender, EventArgs e)
         {
-            var button = (Button)sender;
+            var button = (Button)sender!;
             var originalText = button.Text;
             var cts = new CancellationTokenSource();
 
@@ -8337,7 +8338,7 @@ namespace FLAC_Benchmark_H
 
                                 return encoderInfoCache[path].Extension == ".exe";
                             })
-                            ?.Tag?.ToString();
+                            ?.Tag!.ToString();
 
                         useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
                     });
