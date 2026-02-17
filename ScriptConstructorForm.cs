@@ -1,11 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Text;
-using System.Windows.Forms;
 
 namespace FLAC_Benchmark_H
 {
@@ -30,8 +24,10 @@ namespace FLAC_Benchmark_H
             this.Shown += ScriptConstructorForm_Shown;
             this.MouseDown += ScriptConstructorForm_MouseDown;
 
-            _debounceTimer = new System.Windows.Forms.Timer();
-            _debounceTimer.Interval = 300; // 300 milliseconds delay
+            _debounceTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 300 // 300 milliseconds delay
+            };
             _debounceTimer.Tick += (s, e) =>
             {
                 _debounceTimer.Stop(); // Stop the timer
@@ -46,7 +42,7 @@ namespace FLAC_Benchmark_H
         /// Ensures help text is visible, preview is updated, and input field has focus.
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string InitialScriptText { get; set; }
+        public string InitialScriptText { get; set; } = string.Empty;
 
         private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
         {
@@ -61,19 +57,18 @@ namespace FLAC_Benchmark_H
             // 2. Update preview based on current script text
             PreviewJobs();
 
-            // 3. Set focus to the input combo box
-            comboBoxScript.Select();
-
+            // 3. Set text if provided
             if (!string.IsNullOrEmpty(InitialScriptText))
             {
                 comboBoxScript.Text = InitialScriptText;
-                comboBoxScript.SelectionStart = comboBoxScript.Text.Length;
-                comboBoxScript.SelectionLength = 0;
             }
 
-            // 4. Position cursor at the end of existing text
+            // 4. Position cursor at the end
             comboBoxScript.SelectionStart = comboBoxScript.Text.Length;
             comboBoxScript.SelectionLength = 0;
+
+            // 5. Set focus to the input combo box
+            comboBoxScript.Select();
         }
 
         private void LoadHelpText()
@@ -326,7 +321,7 @@ namespace FLAC_Benchmark_H
             OnJobsAdded?.Invoke(jobsToAdd);
         }
 
-        public event Action<List<ScriptJobData>> OnJobsAdded;
+        public event Action<List<ScriptJobData>> OnJobsAdded = delegate { };
 
         protected override void OnCreateControl()
         {
@@ -347,20 +342,17 @@ namespace FLAC_Benchmark_H
         private void DataGridViewPreviewJobsListMadeByScript_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1)
-            if (e.ColumnIndex == 1 && e.Value != null)
+            if (e.ColumnIndex == 1 && e.Value is string cellValue)
             {
-                string cellValue = e.Value.ToString();
-                if (cellValue != null)
+                if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (cellValue.Equals("Encode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        e.CellStyle.ForeColor = Color.Green;
-                    }
-                    else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        e.CellStyle.ForeColor = Color.Red;
-                    }
-                    e.FormattingApplied = true; // Indicate that formatting was applied
+                    e.CellStyle.ForeColor = Color.Green;
+                    e.FormattingApplied = true;
+                }
+                else if (cellValue.Equals("Decode", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.CellStyle.ForeColor = Color.Red;
+                    e.FormattingApplied = true;
                 }
             }
         }
