@@ -2,8 +2,6 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
 using ScottPlot;
-using ScottPlot.Plottable;
-using ScottPlot.Statistics;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -16,7 +14,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace FLAC_Benchmark_H
 {
@@ -1013,6 +1010,8 @@ namespace FLAC_Benchmark_H
                         // Recursively find all .exe files in the directory (excluding metaflac.exe)
                         var exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
                             .Where(f => !Path.GetFileName(f).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                            .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
+                            .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
                             .Select(f => (f, true));
                         validPaths.AddRange(exeFiles);
                     }
@@ -1030,6 +1029,11 @@ namespace FLAC_Benchmark_H
                     }
                 }
             }
+
+            validPaths = validPaths
+                .OrderBy(x => Path.GetDirectoryName(x.path) ?? string.Empty, new NaturalStringComparer())
+                .ThenBy(x => Path.GetFileName(x.path), new NaturalStringComparer())
+                .ToList();
 
             if (validPaths.Count > 0)
             {
@@ -1056,6 +1060,8 @@ namespace FLAC_Benchmark_H
             {
                 var validPaths = openFileDialog.FileNames
                     .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(f => Path.GetDirectoryName(f) ?? string.Empty, new NaturalStringComparer())
+                    .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
                     .Select(file => (file, true))
                     .ToList();
 
@@ -1786,7 +1792,10 @@ namespace FLAC_Benchmark_H
                     {
                         // Get all audio files in the directory
                         var directoryFiles = Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
-                        .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories));
+                            .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories))
+                            .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
+                            .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
+                            .ToList();
 
                         // Create a ListViewItem for each found audio file
                         var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItemInternal(f, true))));
@@ -1812,6 +1821,7 @@ namespace FLAC_Benchmark_H
                             .Where(item => item != null)
                             .Select(item => item!)
                             .ToArray();
+
                         if (nonNullItems.Length > 0)
                         {
                             listViewAudioFiles.Items.AddRange(nonNullItems);
@@ -1826,14 +1836,23 @@ namespace FLAC_Benchmark_H
             using (OpenFileDialog openFileDialog = new())
             {
                 openFileDialog.Title = "Select Audio Files";
-                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|FLAC Files (*.flac)|*.flac|WAV Files (*.wav)|*.wav|All Files (*.*)|*.*";
+                openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|" +
+                                        "FLAC Files (*.flac)|*.flac|" +
+                                        "WAV Files (*.wav)|*.wav|" +
+                                        "All Files (*.*)|*.*";
                 openFileDialog.Multiselect = true;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
 
-                    var tasks = openFileDialog.FileNames.Select(async file =>
+                    var sortedFileNames = openFileDialog.FileNames
+                        .Where(IsAudioFile)
+                        .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
+                        .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
+                        .ToList();
+
+                    var tasks = sortedFileNames.Select(async file =>
                     {
                         var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
                         if (item != null)
