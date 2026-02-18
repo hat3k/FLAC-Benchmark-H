@@ -961,11 +961,9 @@ namespace FLAC_Benchmark_H
         private void InitializeDragAndDrop()
         {
             // Enable file drag-and-drop for the encoders ListView
-            listViewEncoders.AllowDrop = true;
             listViewEncoders.DragEnter += ListViewEncoders_DragEnter;
             listViewEncoders.DragDrop += ListViewEncoders_DragDrop;
             // Enable file drag-and-drop for the audio files ListView
-            listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
         }

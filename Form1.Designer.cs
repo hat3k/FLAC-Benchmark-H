@@ -104,8 +104,8 @@
             Duration = new ColumnHeader();
             InputAudioFileSize = new ColumnHeader();
             MD5Hash = new ColumnHeader();
-            WritingLibrary = new ColumnHeader();
             FilePath = new ColumnHeader();
+            WritingLibrary = new ColumnHeader();
             contextMenuStripAudioFiles = new ContextMenuStrip(components);
             checkAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             uncheckAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
@@ -623,6 +623,7 @@
             // 
             // listViewEncoders
             // 
+            listViewEncoders.AllowDrop = true;
             listViewEncoders.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewEncoders.CheckBoxes = true;
             listViewEncoders.Columns.AddRange(new ColumnHeader[] { FileNameExe, VersionExe, EncoderDirectory, SizeExe, DateExe });
@@ -898,6 +899,7 @@
             // 
             // listViewAudioFiles
             // 
+            listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
             listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
@@ -958,17 +960,17 @@
             MD5Hash.Text = "MD5 Hash";
             MD5Hash.Width = 230;
             // 
-            // WritingLibrary
-            // 
-            WritingLibrary.Tag = "WritingLibrary";
-            WritingLibrary.Text = "Writing Library";
-            WritingLibrary.Width = 150;
-            // 
             // FilePath
             // 
             FilePath.Tag = "FilePath";
             FilePath.Text = "File Path";
             FilePath.Width = 250;
+            // 
+            // WritingLibrary
+            // 
+            WritingLibrary.Tag = "WritingLibrary";
+            WritingLibrary.Text = "Writing Library";
+            WritingLibrary.Width = 150;
             // 
             // contextMenuStripAudioFiles
             // 
