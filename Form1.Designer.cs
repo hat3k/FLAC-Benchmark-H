@@ -316,6 +316,7 @@
             textBoxCompressionLevel.TabIndex = 1;
             textBoxCompressionLevel.Text = "8";
             textBoxCompressionLevel.TextAlign = HorizontalAlignment.Center;
+            textBoxCompressionLevel.KeyDown += TextBoxCompressionLevel_KeyDown;
             // 
             // labelSetCompression
             // 
@@ -365,6 +366,7 @@
             textBoxThreads.Text = "1";
             textBoxThreads.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(textBoxThreads, "If you use FLAC 1.4.3 and earlier set this parameter to 1 or 0");
+            textBoxThreads.KeyDown += TextBoxThreads_KeyDown;
             // 
             // labelSetCores
             // 
@@ -439,6 +441,7 @@
             textBoxCommandLineOptionsEncoder.Name = "textBoxCommandLineOptionsEncoder";
             textBoxCommandLineOptionsEncoder.Size = new Size(440, 23);
             textBoxCommandLineOptionsEncoder.TabIndex = 14;
+            textBoxCommandLineOptionsEncoder.KeyDown += TextBoxCommandLineOptionsEncoder_KeyDown;
             // 
             // buttonClearCommandLineEncoder
             // 
@@ -636,6 +639,9 @@
             listViewEncoders.TabIndex = 0;
             listViewEncoders.UseCompatibleStateImageBehavior = false;
             listViewEncoders.View = View.Details;
+            listViewEncoders.DragDrop += ListViewEncoders_DragDrop;
+            listViewEncoders.DragEnter += ListViewEncoders_DragEnter;
+            listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
             // 
             // FileNameExe
             // 
@@ -912,6 +918,9 @@
             listViewAudioFiles.TabIndex = 0;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
             listViewAudioFiles.View = View.Details;
+            listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
+            listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
+            listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
             // 
             // FileName
             // 
@@ -975,7 +984,7 @@
             // contextMenuStripAudioFiles
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
-            contextMenuStripAudioFiles.Name = "contextMenuStripEncoders";
+            contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
             contextMenuStripAudioFiles.Size = new Size(202, 386);
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1279,6 +1288,11 @@
             dataGridViewJobs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewJobs.Size = new Size(765, 336);
             dataGridViewJobs.TabIndex = 0;
+            dataGridViewJobs.CellFormatting += DataGridViewJobs_CellFormatting;
+            dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
+            dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
+            dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
+            dataGridViewJobs.MouseDown += DataGridViewJobs_MouseDown;
             // 
             // Column1CheckBox
             // 
@@ -1527,6 +1541,9 @@
             dataGridViewLog.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLog.Size = new Size(753, 305);
             dataGridViewLog.TabIndex = 0;
+            dataGridViewLog.CellContentClick += DataGridViewLog_CellContentClick;
+            dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
+            dataGridViewLog.MouseDown += DataGridViewLog_MouseDown;
             // 
             // ScalingPlots
             // 
@@ -1797,6 +1814,9 @@
             dataGridViewLogDetectDupes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLogDetectDupes.Size = new Size(753, 305);
             dataGridViewLogDetectDupes.TabIndex = 0;
+            dataGridViewLogDetectDupes.CellContentClick += DataGridViewLogDetectDupes_CellContentClick;
+            dataGridViewLogDetectDupes.KeyDown += DataGridViewLogDetectDupes_KeyDown;
+            dataGridViewLogDetectDupes.MouseDown += DataGridViewLogDetectDupes_MouseDown;
             // 
             // TestForErrors
             // 
@@ -1842,6 +1862,9 @@
             dataGridViewLogTestForErrors.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewLogTestForErrors.Size = new Size(753, 305);
             dataGridViewLogTestForErrors.TabIndex = 0;
+            dataGridViewLogTestForErrors.CellContentClick += DataGridViewLogTestForErrors_CellContentClick;
+            dataGridViewLogTestForErrors.KeyDown += DataGridViewLogTestForErrors_KeyDown;
+            dataGridViewLogTestForErrors.MouseDown += DataGridViewLogTestForErrors_MouseDown;
             // 
             // buttonPauseResume
             // 
@@ -1854,6 +1877,7 @@
             buttonPauseResume.Text = "Pause";
             toolTip1.SetToolTip(buttonPauseResume, "Pause after processing current file");
             buttonPauseResume.UseVisualStyleBackColor = true;
+            buttonPauseResume.Click += ButtonPauseResume_Click;
             // 
             // labelStopped
             // 
@@ -2286,6 +2310,7 @@
             textBoxCommandLineOptionsDecoder.Name = "textBoxCommandLineOptionsDecoder";
             textBoxCommandLineOptionsDecoder.Size = new Size(228, 23);
             textBoxCommandLineOptionsDecoder.TabIndex = 1;
+            textBoxCommandLineOptionsDecoder.KeyDown += TextBoxCommandLineOptionsDecoder_KeyDown;
             // 
             // buttonClearCommandLineDecoder
             // 
@@ -2377,6 +2402,7 @@
             KeyPreview = true;
             Name = "Form1";
             Text = "FLAC Benchmark-H";
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             groupBoxEncoderSettings.ResumeLayout(false);
             groupBoxEncoderSettings.PerformLayout();

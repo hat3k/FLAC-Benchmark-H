@@ -91,36 +91,10 @@ namespace FLAC_Benchmark_H
         public Form1()
         {
             InitializeComponent();
-            InitializeDragAndDrop(); // Initialize drag-and-drop
-            this.FormClosing += Form1_FormClosing; // Register the form closing event handler
-            this.listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
-            this.listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
-            this.dataGridViewLog.KeyDown += DataGridViewLog_KeyDown;
-            this.dataGridViewLogDetectDupes.KeyDown += DataGridViewLogDetectDupes_KeyDown;
-            this.dataGridViewLogTestForErrors.KeyDown += DataGridViewLogTestForErrors_KeyDown;
-            this.textBoxCompressionLevel.KeyDown += new KeyEventHandler(this.TextBoxCompressionLevel_KeyDown);
-            this.textBoxThreads.KeyDown += new KeyEventHandler(this.TextBoxThreads_KeyDown);
-            this.textBoxCommandLineOptionsEncoder.KeyDown += new KeyEventHandler(this.TextBoxCommandLineOptionsEncoder_KeyDown);
-            this.textBoxCommandLineOptionsDecoder.KeyDown += new KeyEventHandler(this.TextBoxCommandLineOptionsDecoder_KeyDown);
-
-            dataGridViewLog.CellContentClick += DataGridViewLog_CellContentClick;
-            dataGridViewLog.MouseDown += DataGridViewLog_MouseDown;
-
-            dataGridViewLogDetectDupes.CellContentClick += DataGridViewLogDetectDupes_CellContentClick;
-            dataGridViewLogDetectDupes.MouseDown += DataGridViewLogDetectDupes_MouseDown;
-
-            dataGridViewLogTestForErrors.CellContentClick += DataGridViewLogTestForErrors_CellContentClick;
-            dataGridViewLogTestForErrors.MouseDown += DataGridViewLogTestForErrors_MouseDown;
-
-            dataGridViewJobs.CellFormatting += DataGridViewJobs_CellFormatting;
-            dataGridViewJobs.MouseDown += DataGridViewJobs_MouseDown;
-            dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
-            dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
-            dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
-
-            buttonPauseResume.Click += ButtonPauseResume_Click;
-
             LoadCPUInfoAsync();
+            InitializeDataGridViewLog();
+            InitializeDataGridViewLogDetectDupes();
+            InitializeDataGridViewLogTestForErrors();
 
             // Initialize CPU Usage counter (Current CPU Load in %)
             try
@@ -154,7 +128,7 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
-                    if (!this.IsDisposed && !this.Disposing)
+                    if (!IsDisposed && !Disposing)
                     {
                         if (labelStopped != null)
                             labelStopped.Visible = false;
@@ -187,15 +161,12 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            InitializeDataGridViewLog();
-            InitializeDataGridViewLogDetectDupes();
-            InitializeDataGridViewLogTestForErrors();
-
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp"); // Initialize the path to the temporary folder
             _process = new Process(); // Initialize _process to avoid nullability warning
 
             comboBoxCPUPriority.SelectedIndex = 3;
         }
+
 
         private static string NormalizeSpaces(string input)
         {
@@ -956,16 +927,6 @@ namespace FLAC_Benchmark_H
             {
                 MessageBox.Show(this, $"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void InitializeDragAndDrop()
-        {
-            // Enable file drag-and-drop for the encoders ListView
-            listViewEncoders.DragEnter += ListViewEncoders_DragEnter;
-            listViewEncoders.DragDrop += ListViewEncoders_DragDrop;
-            // Enable file drag-and-drop for the audio files ListView
-            listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
-            listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
         }
 
         // Encoders
@@ -2130,7 +2091,7 @@ namespace FLAC_Benchmark_H
                 string? encoderExePath = null;
 
                 // Get encoder path from UI (thread-safe)
-                await this.InvokeAsync(() =>
+                await InvokeAsync(() =>
                 {
                     var encoderItem = listViewEncoders.Items
                         .Cast<ListViewItem>()
@@ -3264,7 +3225,7 @@ namespace FLAC_Benchmark_H
                 _benchmarkPasses.Add(benchmarkPass);
 
                 // Add record to DataGridView log
-                await this.InvokeAsync(() =>
+                await InvokeAsync(() =>
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
                     audioFileInfo.FileName,                                 //  0 "Name"
@@ -3347,7 +3308,7 @@ namespace FLAC_Benchmark_H
                         ? "Unknown error (non-zero exit code)."
                         : errorOutput.Trim();
 
-                await this.InvokeAsync(() =>
+                await InvokeAsync(() =>
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
                     audioFileInfo.FileName,                 //  0 "Name"
@@ -3827,7 +3788,7 @@ namespace FLAC_Benchmark_H
             var finalEntries = finalSuccessEntries.Concat(errorEntries).ToList();
 
             // 7. Update UI
-            await this.InvokeAsync(() =>
+            await InvokeAsync(() =>
             {
                 dataGridViewLog.Rows.Clear();
                 foreach (var entry in finalEntries)
@@ -6550,7 +6511,7 @@ namespace FLAC_Benchmark_H
             _isPaused = false;
             _pauseEvent.Set();
 
-            this.Invoke((MethodInvoker)(() =>
+            Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -6617,7 +6578,7 @@ namespace FLAC_Benchmark_H
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        this.Invoke((MethodInvoker)(() =>
+                        Invoke((MethodInvoker)(() =>
                         {
                             progressBarEncoder.ManualText = "Warming up...";
                         }));
@@ -6682,7 +6643,7 @@ namespace FLAC_Benchmark_H
                                 warmupStopwatch.Stop();
                                 DeleteFileIfExists(outputFilePath);
 
-                                this.Invoke((MethodInvoker)(() =>
+                                Invoke((MethodInvoker)(() =>
                                 {
                                     progressBarEncoder.ManualText = "";
                                 }));
@@ -6930,7 +6891,7 @@ namespace FLAC_Benchmark_H
                 _isPaused = false;
                 _pauseEvent.Set();
 
-                this.Invoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -6952,7 +6913,7 @@ namespace FLAC_Benchmark_H
             _isPaused = false;
             _pauseEvent.Set();
 
-            this.Invoke((MethodInvoker)(() =>
+            Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -7008,7 +6969,7 @@ namespace FLAC_Benchmark_H
                         string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                        this.Invoke((MethodInvoker)(() =>
+                        Invoke((MethodInvoker)(() =>
                         {
                             progressBarDecoder.ManualText = "Warming up...";
                         }));
@@ -7073,7 +7034,7 @@ namespace FLAC_Benchmark_H
                                 warmupStopwatch.Stop();
                                 DeleteFileIfExists(outputFilePath);
 
-                                this.Invoke((MethodInvoker)(() =>
+                                Invoke((MethodInvoker)(() =>
                                 {
                                     progressBarDecoder.ManualText = "";
                                 }));
@@ -7284,7 +7245,7 @@ namespace FLAC_Benchmark_H
                 _isPaused = false;
                 _pauseEvent.Set();
 
-                this.Invoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -7306,7 +7267,7 @@ namespace FLAC_Benchmark_H
             _isPaused = false;
             _pauseEvent.Set();
 
-            this.Invoke((MethodInvoker)(() =>
+            Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -7466,7 +7427,7 @@ namespace FLAC_Benchmark_H
 
                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
 
-                    this.Invoke((MethodInvoker)(() =>
+                    Invoke((MethodInvoker)(() =>
                     {
                         progressBarEncoder.ManualText = "Warming up...";
                         progressBarDecoder.ManualText = "Warming up...";
@@ -7531,7 +7492,7 @@ namespace FLAC_Benchmark_H
                             warmupStopwatch.Stop();
                             DeleteFileIfExists(outputFilePath);
 
-                            this.Invoke((MethodInvoker)(() =>
+                            Invoke((MethodInvoker)(() =>
                             {
                                 progressBarEncoder.ManualText = "";
                                 progressBarDecoder.ManualText = "";
@@ -7975,7 +7936,7 @@ namespace FLAC_Benchmark_H
                 _isPaused = false;
                 _pauseEvent.Set();
 
-                this.Invoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -8008,7 +7969,7 @@ namespace FLAC_Benchmark_H
 
                 // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
                 var itemsToRemove = new List<ListViewItem>();
-                this.Invoke((MethodInvoker)delegate
+                Invoke((MethodInvoker)delegate
                 {
                     foreach (ListViewItem item in listViewAudioFiles.Items)
                     {
@@ -8043,7 +8004,7 @@ namespace FLAC_Benchmark_H
 
                 // --- STAGE 0.2: COLLECT FILE PATHS (on UI thread) ---
                 var filePaths = new List<string>();
-                this.Invoke((MethodInvoker)delegate
+                Invoke((MethodInvoker)delegate
                 {
                     filePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>().Select(item => item.Tag!.ToString()!));
                 });
@@ -8126,7 +8087,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // --- STAGE 2: UPDATE USER INTERFACE (on UI thread) ---
-                    this.Invoke((MethodInvoker)delegate
+                    Invoke((MethodInvoker)delegate
                     {
                         // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
                         for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
@@ -8311,7 +8272,7 @@ namespace FLAC_Benchmark_H
                 // Show summary message to user
                 if (!cts.IsCancellationRequested && hashDict != null && filesWithMD5Errors != null)
                 {
-                    this.Invoke((MethodInvoker)(() =>
+                    Invoke((MethodInvoker)(() =>
                     {
                         int totalFiles = listViewAudioFiles.Items.Count;
                         int duplicateGroups = hashDict.Count(g => g.Value.Count > 1);
@@ -8351,7 +8312,7 @@ namespace FLAC_Benchmark_H
                     string? encoderPath = null;
                     bool useWarningsAsErrors = false;
 
-                    this.Invoke((MethodInvoker)delegate
+                    Invoke((MethodInvoker)delegate
                     {
                         // Clear previous results
                         for (int i = dataGridViewLogTestForErrors.Rows.Count - 1; i >= 0; i--)
@@ -8480,7 +8441,7 @@ namespace FLAC_Benchmark_H
                 if (cts.Token.IsCancellationRequested) return;
 
                 // --- STAGE 3: UPDATE UI ---
-                await this.InvokeAsync(() =>
+                await InvokeAsync(() =>
                 {
                     dataGridViewLogTestForErrors.SuspendLayout();
                     try
@@ -9154,7 +9115,7 @@ namespace FLAC_Benchmark_H
                     if (programVersionIgnored == programVersionOnline)
                         return;
 
-                    this.Invoke((MethodInvoker)delegate
+                    Invoke((MethodInvoker)delegate
                     {
                         ShowDialogUpdateAvailable(programVersionOnline);
                     });
@@ -9171,8 +9132,8 @@ namespace FLAC_Benchmark_H
                         MessageBoxIcon.Error);
                 }
 
-                if (this.InvokeRequired)
-                    this.Invoke((MethodInvoker)ShowDialogUpdateError);
+                if (InvokeRequired)
+                    Invoke((MethodInvoker)ShowDialogUpdateError);
                 else
                     ShowDialogUpdateError();
             }
@@ -9286,7 +9247,7 @@ namespace FLAC_Benchmark_H
         // FORM LOAD
         private async void Form1_Load(object? sender, EventArgs e)
         {
-            this.Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
+            Text = $"FLAC Benchmark-H [{programVersionCurrent}]";
             progressBarEncoder.ManualText = string.Empty;
             progressBarDecoder.ManualText = string.Empty;
             labelStopped.Text = string.Empty;
@@ -9332,7 +9293,7 @@ namespace FLAC_Benchmark_H
             CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
             CheckBoxShowTooltipsOnPlots_CheckedChanged(null, EventArgs.Empty);
 
-            this.ActiveControl = null; // Remove focus from all elements
+            ActiveControl = null; // Remove focus from all elements
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
         {
