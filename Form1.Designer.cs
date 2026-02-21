@@ -677,7 +677,8 @@
             // 
             contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemEncoders, uncheckAllToolStripMenuItemEncoders, checkSelectedToolStripMenuItemEncoders, uncheckSelectedToolStripMenuItemEncoders, invertCheckToolStripMenuItemEncoders, toolStripEncodersSeparator1, selectAllToolStripMenuItemEncoders, clearSelectionToolStripMenuItemEncoders, invertSelectionToolStripMenuItemEncoders, toolStripEncodersSeparator2, moveUpToolStripMenuItemEncoders, moveDownToolStripMenuItemEncoders, toolStripEncodersSeparator4, refreshAllToolStripMenuItemEncoders, toolStripEncodersSeparator3, openContainingFolderToolStripMenuItemEncoders, toolStripEncodersSeparator5, clearUncheckedToolStripMenuItemEncoders, clearSelectedToolStripMenuItemEncoders, clearDuplicateEntriesToolStripMenuItemEncoders, clearAllToolStripMenuItemEncoders });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
-            contextMenuStripEncoders.Size = new Size(202, 386);
+            contextMenuStripEncoders.Size = new Size(202, 408);
+            contextMenuStripEncoders.Closing += ContextMenu_Closing;
             contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
             // 
             // checkAllToolStripMenuItemEncoders
@@ -751,6 +752,7 @@
             // 
             moveUpToolStripMenuItemEncoders.Name = "moveUpToolStripMenuItemEncoders";
             moveUpToolStripMenuItemEncoders.Size = new Size(201, 22);
+            moveUpToolStripMenuItemEncoders.Tag = "KeepOpened";
             moveUpToolStripMenuItemEncoders.Text = "↑ Move Up";
             moveUpToolStripMenuItemEncoders.Click += MoveUpToolStripMenuItemEncoders_Click;
             // 
@@ -758,6 +760,7 @@
             // 
             moveDownToolStripMenuItemEncoders.Name = "moveDownToolStripMenuItemEncoders";
             moveDownToolStripMenuItemEncoders.Size = new Size(201, 22);
+            moveDownToolStripMenuItemEncoders.Tag = "KeepOpened";
             moveDownToolStripMenuItemEncoders.Text = "↓ Move Down";
             moveDownToolStripMenuItemEncoders.Click += MoveDownToolStripMenuItemEncoders_Click;
             // 
@@ -986,6 +989,7 @@
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
             contextMenuStripAudioFiles.Size = new Size(202, 386);
+            contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
             // checkAllToolStripMenuItemAudioFiles
@@ -1059,6 +1063,7 @@
             // 
             moveUpToolStripMenuItemAudioFiles.Name = "moveUpToolStripMenuItemAudioFiles";
             moveUpToolStripMenuItemAudioFiles.Size = new Size(201, 22);
+            moveUpToolStripMenuItemAudioFiles.Tag = "KeepOpened";
             moveUpToolStripMenuItemAudioFiles.Text = "↑ Move Up";
             moveUpToolStripMenuItemAudioFiles.Click += MoveUpToolStripMenuItemAudioFiles_Click;
             // 
@@ -1066,6 +1071,7 @@
             // 
             moveDownToolStripMenuItemAudioFiles.Name = "moveDownToolStripMenuItemAudioFiles";
             moveDownToolStripMenuItemAudioFiles.Size = new Size(201, 22);
+            moveDownToolStripMenuItemAudioFiles.Tag = "KeepOpened";
             moveDownToolStripMenuItemAudioFiles.Text = "↓ Move Down";
             moveDownToolStripMenuItemAudioFiles.Click += MoveDownToolStripMenuItemAudioFiles_Click;
             // 

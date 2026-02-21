@@ -8804,6 +8804,14 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+        private void ContextMenu_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            e.Cancel = e.CloseReason == ToolStripDropDownCloseReason.ItemClicked &&
+                       ((ContextMenuStrip)sender).Items
+                           .OfType<ToolStripMenuItem>()
+                           .Where(item => item.Tag?.ToString() == "KeepOpened")
+                           .Any(item => item.Selected || item.Pressed);
+        }
 
         // Temporary labels
         private void ShowTemporaryStoppedMessage(string message)
