@@ -808,14 +808,15 @@
             clearUncheckedToolStripMenuItemEncoders.Name = "clearUncheckedToolStripMenuItemEncoders";
             clearUncheckedToolStripMenuItemEncoders.Size = new Size(201, 22);
             clearUncheckedToolStripMenuItemEncoders.Text = "Clear Unchecked";
+            clearUncheckedToolStripMenuItemEncoders.ToolTipText = "Hold 'Shift' to move files to the Recycle Bin.";
             clearUncheckedToolStripMenuItemEncoders.Click += ClearUncheckedToolStripMenuItemEncoders_Click;
             // 
             // clearSelectedToolStripMenuItemEncoders
             // 
             clearSelectedToolStripMenuItemEncoders.Name = "clearSelectedToolStripMenuItemEncoders";
-            clearSelectedToolStripMenuItemEncoders.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItemEncoders.Size = new Size(201, 22);
             clearSelectedToolStripMenuItemEncoders.Text = "Clear Selected";
+            clearSelectedToolStripMenuItemEncoders.ToolTipText = "Hold 'Shift' to move files to the Recycle Bin.";
             clearSelectedToolStripMenuItemEncoders.Click += ClearSelectedToolStripMenuItemEncoders_Click;
             // 
             // clearDuplicateEntriesToolStripMenuItemEncoders
@@ -877,6 +878,7 @@
             buttonRemoveEncoder.Size = new Size(24, 23);
             buttonRemoveEncoder.TabIndex = 4;
             buttonRemoveEncoder.Text = "❌";
+            toolTip1.SetToolTip(buttonRemoveEncoder, "Hold 'Shift' to move files to the Recycle Bin.");
             buttonRemoveEncoder.UseVisualStyleBackColor = true;
             buttonRemoveEncoder.Click += ButtonRemoveEncoder_Click;
             // 
@@ -996,7 +998,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 408);
+            contextMenuStripAudioFiles.Size = new Size(202, 386);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1191,9 +1193,9 @@
             // clearSelectedToolStripMenuItemAudioFiles
             // 
             clearSelectedToolStripMenuItemAudioFiles.Name = "clearSelectedToolStripMenuItemAudioFiles";
-            clearSelectedToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             clearSelectedToolStripMenuItemAudioFiles.Text = "Clear Selected";
+            clearSelectedToolStripMenuItemAudioFiles.ToolTipText = "Hold 'Shift' to move files to the Recycle Bin.";
             clearSelectedToolStripMenuItemAudioFiles.Click += ClearSelectedToolStripMenuItemAudioFiles_Click;
             // 
             // clearDuplicateEntriesToolStripMenuItemAudioFiles
@@ -1253,6 +1255,7 @@
             buttonRemoveAudioFile.Size = new Size(24, 23);
             buttonRemoveAudioFile.TabIndex = 4;
             buttonRemoveAudioFile.Text = "❌";
+            toolTip1.SetToolTip(buttonRemoveAudioFile, "Hold 'Shift' to move files to the Recycle Bin.");
             buttonRemoveAudioFile.UseVisualStyleBackColor = true;
             buttonRemoveAudioFile.Click += ButtonRemoveAudioFile_Click;
             // 

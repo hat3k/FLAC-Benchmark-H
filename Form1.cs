@@ -1347,12 +1347,17 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonRemoveEncoder_Click(object? sender, EventArgs e)
         {
-            // Remove selected items from listViewEncoders
+            if (ModifierKeys == Keys.Shift)
+            {
+                MoveListViewItemToRecycleBin(listViewEncoders, item => item.Selected, "selected encoders", UpdateGroupBoxEncodersHeader);
+                return;
+            }
+
             for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
             {
-                if (listViewEncoders.Items[i].Selected) // Check if the item is selected
+                if (listViewEncoders.Items[i].Selected)
                 {
-                    listViewEncoders.Items.RemoveAt(i); // Remove the item
+                    listViewEncoders.Items.RemoveAt(i);
                 }
             }
             UpdateGroupBoxEncodersHeader();
@@ -1651,28 +1656,20 @@ namespace FLAC_Benchmark_H
         }
         private void ClearUncheckedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
-            if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
+            if (ModifierKeys == Keys.Shift)
+            {
+                MoveListViewItemToRecycleBin(listViewEncoders, item => !item.Checked, "unchecked encoders", UpdateGroupBoxEncodersHeader);
                 return;
-
-            var itemsToRemove = new List<ListViewItem>();
-
-            foreach (ListViewItem item in listViewEncoders.Items)
-            {
-                if (!item.Checked)
-                {
-                    itemsToRemove.Add(item);
-                }
             }
 
-            if (itemsToRemove.Count > 0)
+            for (int i = listViewEncoders.Items.Count - 1; i >= 0; i--)
             {
-                foreach (var item in itemsToRemove)
+                if (!listViewEncoders.Items[i].Checked)
                 {
-                    listViewEncoders.Items.Remove(item);
+                    listViewEncoders.Items.RemoveAt(i);
                 }
-
-                UpdateGroupBoxEncodersHeader();
             }
+            UpdateGroupBoxEncodersHeader();
         }
         private void ClearSelectedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
@@ -1689,7 +1686,6 @@ namespace FLAC_Benchmark_H
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 string? encoderPath = item.Tag?.ToString();
-
                 if (string.IsNullOrEmpty(encoderPath))
                     continue;
 
@@ -1705,7 +1701,6 @@ namespace FLAC_Benchmark_H
                 {
                     listViewEncoders.Items.Remove(item);
                 }
-
                 UpdateGroupBoxEncodersHeader();
 
                 MessageBox.Show(
@@ -2236,88 +2231,37 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonRemoveAudioFile_Click(object? sender, EventArgs e)
         {
-            // Remove selected items from listViewAudioFiles
+            if (ModifierKeys == Keys.Shift)
+            {
+                MoveListViewItemToRecycleBin(listViewAudioFiles, item => item.Selected, "selected audio files", UpdateGroupBoxAudioFilesHeader);
+                return;
+            }
+
             for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
             {
-                if (listViewAudioFiles.Items[i].Selected) // Check if the item is selected
+                if (listViewAudioFiles.Items[i].Selected)
                 {
-                    listViewAudioFiles.Items.RemoveAt(i); // Remove the item
+                    listViewAudioFiles.Items.RemoveAt(i);
                 }
             }
             UpdateGroupBoxAudioFilesHeader();
         }
         private void ButtonClearUnchecked_Click(object? sender, EventArgs e)
         {
-            // Check if the Shift key is pressed
             if (ModifierKeys == Keys.Shift)
             {
-                MoveUncheckedToRecycleBin();
-            }
-            else
-            {
-                // Create a list to remember the indices of unchecked items
-                List<int> itemsToRemove = [];
-
-                // Iterate through the list items and add unchecked items to the removal list
-                for (int i = 0; i < listViewAudioFiles.Items.Count; i++)
-                {
-                    if (!listViewAudioFiles.Items[i].Checked)
-                    {
-                        itemsToRemove.Add(i); // Store the index of the unchecked item
-                    }
-                }
-
-                // Remove items starting from the end of the list to avoid index shifting
-                for (int i = itemsToRemove.Count - 1; i >= 0; i--)
-                {
-                    listViewAudioFiles.Items.RemoveAt(itemsToRemove[i]); // Remove the item
-                }
-            }
-            UpdateGroupBoxAudioFilesHeader();
-        }
-        private void MoveUncheckedToRecycleBin()
-        {
-            var itemsToRemove = new List<string>();
-
-            // Gather the paths of unchecked items
-            foreach (ListViewItem item in listViewAudioFiles.Items)
-            {
-                if (!item.Checked)
-                {
-                    itemsToRemove.Add(item.Tag!.ToString()!); // Add the file path for removal
-                }
-            }
-
-            // If there are no unchecked items, show a message and return
-            if (itemsToRemove.Count == 0)
-            {
-                MessageBox.Show("There are no unchecked audio files to delete.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MoveListViewItemToRecycleBin(listViewAudioFiles, item => !item.Checked, "unchecked audio files", UpdateGroupBoxAudioFilesHeader);
                 return;
             }
 
-            // Ask for user confirmation
-            var result = MessageBox.Show("Are you sure you want to move all unchecked files to the recycle bin?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-            if (result == DialogResult.Yes)
+            for (int i = listViewAudioFiles.Items.Count - 1; i >= 0; i--)
             {
-                // Move the files to the recycle bin
-                foreach (var file in itemsToRemove)
+                if (!listViewAudioFiles.Items[i].Checked)
                 {
-                    Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                    listViewAudioFiles.Items.RemoveAt(i);
                 }
-
-                // Remove entries from ListView
-                foreach (string file in itemsToRemove)
-                {
-                    var itemToRemove = listViewAudioFiles.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Tag!.ToString() == file);
-                    if (itemToRemove != null)
-                    {
-                        listViewAudioFiles.Items.Remove(itemToRemove);
-                    }
-                }
-                UpdateGroupBoxAudioFilesHeader();
-                MessageBox.Show("Unchecked audio files have been moved to the recycle bin.", "Deletion", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            UpdateGroupBoxAudioFilesHeader();
         }
         private void ButtonClearAudioFiles_Click(object? sender, EventArgs e)
         {
@@ -2738,31 +2682,7 @@ namespace FLAC_Benchmark_H
         }
         private void ClearUncheckedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            // Check if the Shift key is pressed
-            if (ModifierKeys == Keys.Shift)
-            {
-                MoveUncheckedToRecycleBin();
-            }
-            else
-            {
-                var itemsToRemove = new List<ListViewItem>();
-                foreach (ListViewItem item in listViewAudioFiles.Items)
-                {
-                    if (!item.Checked)
-                    {
-                        itemsToRemove.Add(item);
-                    }
-                }
-
-                if (itemsToRemove.Count > 0)
-                {
-                    foreach (var item in itemsToRemove)
-                    {
-                        listViewAudioFiles.Items.Remove(item);
-                    }
-                    UpdateGroupBoxAudioFilesHeader();
-                }
-            }
+            ButtonClearUnchecked_Click(sender, e);
         }
         private void ClearSelectedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -8857,6 +8777,56 @@ namespace FLAC_Benchmark_H
             {
                 // Resume ListView updates
                 listView.EndUpdate();
+            }
+        }
+        private static void MoveListViewItemToRecycleBin(ListView listView, Func<ListViewItem, bool> predicate, string itemType, Action updateHeaderCallback)
+        {
+            var filesToRemove = new List<string>();
+
+            foreach (ListViewItem item in listView.Items)
+            {
+                if (predicate(item))
+                {
+                    filesToRemove.Add(item.Tag!.ToString()!);
+                }
+            }
+
+            if (filesToRemove.Count == 0)
+            {
+                MessageBox.Show($"There are no {itemType} to delete.", "Information",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Are you sure you want to move all {itemType} to the Recycle Bin?",
+                "Confirmation",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (result == DialogResult.Yes)
+            {
+                foreach (var file in filesToRemove)
+                {
+                    Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file,
+                        Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
+                        Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+                }
+
+                foreach (var file in filesToRemove)
+                {
+                    var itemToRemove = listView.Items.Cast<ListViewItem>()
+                        .FirstOrDefault(i => i.Tag?.ToString() == file);
+                    if (itemToRemove != null)
+                    {
+                        listView.Items.Remove(itemToRemove);
+                    }
+                }
+
+                updateHeaderCallback();
+
+                MessageBox.Show($"{itemType} have been moved to the Recycle Bin.", "Deletion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         private static void UpdateSelection(List<ListViewItem> selectedItems, ListView listView)
