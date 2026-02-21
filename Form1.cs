@@ -167,7 +167,6 @@ namespace FLAC_Benchmark_H
             comboBoxCPUPriority.SelectedIndex = 3;
         }
 
-
         private static string NormalizeSpaces(string input)
         {
             return Regex.Replace(input.Trim(), @"\s+", " "); // Remove extra spaces inside the string
@@ -2344,72 +2343,106 @@ namespace FLAC_Benchmark_H
         // Audio Files Context Menu
         private void ContextMenuStripAudioFiles_Opening(object sender, CancelEventArgs e)
         {
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void UpdateMenuItemCheckAndSelectState()
+        {
             var items = listViewAudioFiles.Items;
             int totalItemsCount = items.Count;
             int selectedItemsCount = listViewAudioFiles.SelectedItems.Count;
 
             bool hasItems = totalItemsCount > 0;
             bool hasSelectedItems = selectedItemsCount > 0;
-            bool hasUnselectedItems = hasItems && selectedItemsCount < totalItemsCount;
-            // Note: We don't have _isProcessingAudioFilesQueue or _isRefreshingAudioFiles implemented yet
-            bool isBusy = false; // _isProcessingAudioFilesQueue || _isRefreshingAudioFiles;
+            bool isBusy = false;
 
             bool hasCheckedItems = false;
             bool hasUncheckedItems = false;
             bool hasSelectedCheckedItems = false;
             bool hasSelectedUncheckedItems = false;
+            bool hasFLAC = false;
+            bool hasWAV = false;
 
-            if (hasItems)
+            int flacTotal = 0, flacChecked = 0, flacSelected = 0;
+            int wavTotal = 0, wavChecked = 0, wavSelected = 0;
+            int allChecked = 0, allSelected = 0;
+
+            foreach (ListViewItem item in items)
             {
-                for (int i = 0; i < totalItemsCount; i++)
-                {
-                    var item = (ListViewItem)items[i];
-                    if (item.Checked)
-                        hasCheckedItems = true;
-                    else
-                        hasUncheckedItems = true;
+                string filePath = item.Tag!.ToString()!;
+                string extension = audioFileInfoCache[filePath].Extension;
 
-                    if (hasCheckedItems && hasUncheckedItems) break;
+                if (item.Checked) hasCheckedItems = true; else hasUncheckedItems = true;
+                if (item.Checked) allChecked++;
+                if (item.Selected) allSelected++;
+
+                if (item.Selected)
+                {
+                    if (item.Checked) hasSelectedCheckedItems = true; else hasSelectedUncheckedItems = true;
+                }
+
+                if (extension == ".flac")
+                {
+                    hasFLAC = true;
+                    flacTotal++;
+                    if (item.Checked) flacChecked++;
+                    if (item.Selected) flacSelected++;
+                }
+                else if (extension == ".wav")
+                {
+                    hasWAV = true;
+                    wavTotal++;
+                    if (item.Checked) wavChecked++;
+                    if (item.Selected) wavSelected++;
+                }
+
+                if (hasCheckedItems && hasUncheckedItems && hasSelectedCheckedItems &&
+                    hasSelectedUncheckedItems && hasFLAC && hasWAV &&
+                    flacChecked > 0 && flacChecked < flacTotal &&
+                    wavChecked > 0 && wavChecked < wavTotal)
+                {
+                    break;
                 }
             }
 
-            if (hasSelectedItems)
-            {
-                for (int i = 0; i < listViewAudioFiles.SelectedItems.Count; i++)
-                {
-                    var item = listViewAudioFiles.SelectedItems[i];
-                    if (item.Checked)
-                        hasSelectedCheckedItems = true;
-                    else
-                        hasSelectedUncheckedItems = true;
-
-                    if (hasSelectedCheckedItems && hasSelectedUncheckedItems) break;
-                }
-            }
-
-            // Check/Uncheck operations
-            checkAllToolStripMenuItemAudioFiles.Enabled = hasUncheckedItems && !isBusy;
+            // Enabled
+            checkAllToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            checkAllFLACToolStripMenuItemAudioFiles.Enabled = hasFLAC && !isBusy;
+            checkAllWAVToolStripMenuItemAudioFiles.Enabled = hasWAV && !isBusy;
             uncheckAllToolStripMenuItemAudioFiles.Enabled = hasCheckedItems && !isBusy;
             checkSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedUncheckedItems && !isBusy;
             uncheckSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedCheckedItems && !isBusy;
             invertCheckToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
-            // Selection operations  
-            selectAllToolStripMenuItemAudioFiles.Enabled = hasUnselectedItems && !isBusy;
+            selectAllToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            selectAllFLACToolStripMenuItemAudioFiles.Enabled = hasFLAC && !isBusy;
+            selectAllWAVToolStripMenuItemAudioFiles.Enabled = hasWAV && !isBusy;
             clearSelectionToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
             invertSelectionToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
-            // Move operations
             moveUpToolStripMenuItemAudioFiles.Enabled = hasSelectedItems && !isBusy;
             moveDownToolStripMenuItemAudioFiles.Enabled = hasSelectedItems && !isBusy;
 
-            // Other operations
             refreshAllToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
             openContainingFolderToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
             clearUncheckedToolStripMenuItemAudioFiles.Enabled = hasUncheckedItems && !isBusy;
             clearSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
             clearAllToolStripMenuItemAudioFiles.Enabled = true;
+
+            // CheckState
+            checkAllFLACToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(flacChecked, flacTotal);
+            checkAllWAVToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(wavChecked, wavTotal);
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(allChecked, totalItemsCount);
+
+            selectAllFLACToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(flacSelected, flacTotal);
+            selectAllWAVToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(wavSelected, wavTotal);
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.CheckState = GetCheckStateForContextMenuItem(allSelected, totalItemsCount);
+
+            // Update menu items
+            checkAllToolStripMenuItemAudioFiles.DropDown.Invalidate();
+            selectAllToolStripMenuItemAudioFiles.DropDown.Invalidate();
         }
         private void CheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2417,6 +2450,56 @@ namespace FLAC_Benchmark_H
             {
                 item.Checked = true;
             }
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void CheckAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            if (listViewAudioFiles.Items.Count == 0) return;
+
+            bool allChecked = listViewAudioFiles.Items.Cast<ListViewItem>().All(item => item.Checked);
+
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Checked = !allChecked;
+            }
+
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void CheckAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            var flacItems = listViewAudioFiles.Items
+                .Cast<ListViewItem>()
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")
+                .ToList();
+
+            if (flacItems.Count == 0) return;
+
+            bool allChecked = flacItems.All(item => item.Checked);
+
+            foreach (var item in flacItems)
+            {
+                item.Checked = !allChecked;
+            }
+
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void CheckAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            var wavItems = listViewAudioFiles.Items
+                .Cast<ListViewItem>()
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")
+                .ToList();
+
+            if (wavItems.Count == 0) return;
+
+            bool allChecked = wavItems.All(item => item.Checked);
+
+            foreach (var item in wavItems)
+            {
+                item.Checked = !allChecked;
+            }
+
+            UpdateMenuItemCheckAndSelectState();
         }
         private void UncheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2452,6 +2535,53 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = true;
             }
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void SelectAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            if (listViewAudioFiles.Items.Count == 0) return;
+
+            bool allSelected = listViewAudioFiles.Items.Cast<ListViewItem>().All(item => item.Selected);
+
+            foreach (ListViewItem item in listViewAudioFiles.Items)
+            {
+                item.Selected = !allSelected;
+            }
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void SelectAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            var flacItems = listViewAudioFiles.Items
+                .Cast<ListViewItem>()
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")
+                .ToList();
+
+            if (flacItems.Count == 0) return;
+
+            bool allSelected = flacItems.All(item => item.Selected);
+
+            foreach (var item in flacItems)
+            {
+                item.Selected = !allSelected;
+            }
+            UpdateMenuItemCheckAndSelectState();
+        }
+        private void SelectAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            var wavItems = listViewAudioFiles.Items
+                .Cast<ListViewItem>()
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")
+                .ToList();
+
+            if (wavItems.Count == 0) return;
+
+            bool allSelected = wavItems.All(item => item.Selected);
+
+            foreach (var item in wavItems)
+            {
+                item.Selected = !allSelected;
+            }
+            UpdateMenuItemCheckAndSelectState();
         }
         private void ClearSelectionToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -3830,7 +3960,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Resort after analysis
-                SortDataGridView();
+                SortDataGridViewLog();
 
                 // Apply red color to all text in error rows
                 foreach (DataGridViewRow row in dataGridViewLog.Rows)
@@ -3929,7 +4059,7 @@ namespace FLAC_Benchmark_H
             public Color SpeedForeColor { get; set; } // Color for Speed
         }
 
-        private void SortDataGridView()
+        private void SortDataGridViewLog()
         {
             // Collect data from DataGridView into a list
             var dataToSort = new List<LogEntry>();
@@ -8804,10 +8934,17 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
-        private void ContextMenu_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        private static CheckState GetCheckStateForContextMenuItem(int count, int total)
+        {
+            if (total == 0) return CheckState.Unchecked;
+            if (count == 0) return CheckState.Unchecked;
+            if (count == total) return CheckState.Checked;
+            return CheckState.Indeterminate;
+        }
+        private void ContextMenu_Closing(object? sender, ToolStripDropDownClosingEventArgs e)
         {
             e.Cancel = e.CloseReason == ToolStripDropDownCloseReason.ItemClicked &&
-                       ((ContextMenuStrip)sender).Items
+                       ((ToolStripDropDown)sender!).Items
                            .OfType<ToolStripMenuItem>()
                            .Where(item => item.Tag?.ToString() == "KeepOpened")
                            .Any(item => item.Selected || item.Pressed);
@@ -9301,6 +9438,9 @@ namespace FLAC_Benchmark_H
             CheckBoxDrawMultiplots_CheckedChanged(null, EventArgs.Empty);
             CheckBoxShowTooltipsOnPlots_CheckedChanged(null, EventArgs.Empty);
 
+            checkAllToolStripMenuItemAudioFiles.DropDown.Closing += ContextMenu_Closing;
+            selectAllToolStripMenuItemAudioFiles.DropDown.Closing += ContextMenu_Closing;
+
             ActiveControl = null; // Remove focus from all elements
         }
         private void Form1_FormClosing(object? sender, FormClosingEventArgs e)
@@ -9333,6 +9473,9 @@ namespace FLAC_Benchmark_H
 
             // Dispose pause/resume synchronization object
             _pauseEvent?.Dispose();
+
+            checkAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
+            selectAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
 
             // Optionally clean up temporary folder
             if (checkBoxClearTempFolder.Checked)

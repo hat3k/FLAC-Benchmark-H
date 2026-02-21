@@ -108,12 +108,20 @@
             WritingLibrary = new ColumnHeader();
             contextMenuStripAudioFiles = new ContextMenuStrip(components);
             checkAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            toolStripAudioFilesSeparator6 = new ToolStripSeparator();
+            checkAllFLACToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            checkAllWAVToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             uncheckAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             checkSelectedToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             uncheckSelectedToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             invertCheckToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             toolStripAudioFilesSeparator1 = new ToolStripSeparator();
             selectAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            toolStripAudioFilesSeparator7 = new ToolStripSeparator();
+            selectAllFLACToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            selectAllWAVToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             clearSelectionToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             invertSelectionToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             toolStripAudioFilesSeparator2 = new ToolStripSeparator();
@@ -677,7 +685,7 @@
             // 
             contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemEncoders, uncheckAllToolStripMenuItemEncoders, checkSelectedToolStripMenuItemEncoders, uncheckSelectedToolStripMenuItemEncoders, invertCheckToolStripMenuItemEncoders, toolStripEncodersSeparator1, selectAllToolStripMenuItemEncoders, clearSelectionToolStripMenuItemEncoders, invertSelectionToolStripMenuItemEncoders, toolStripEncodersSeparator2, moveUpToolStripMenuItemEncoders, moveDownToolStripMenuItemEncoders, toolStripEncodersSeparator4, refreshAllToolStripMenuItemEncoders, toolStripEncodersSeparator3, openContainingFolderToolStripMenuItemEncoders, toolStripEncodersSeparator5, clearUncheckedToolStripMenuItemEncoders, clearSelectedToolStripMenuItemEncoders, clearDuplicateEntriesToolStripMenuItemEncoders, clearAllToolStripMenuItemEncoders });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
-            contextMenuStripEncoders.Size = new Size(202, 408);
+            contextMenuStripEncoders.Size = new Size(202, 386);
             contextMenuStripEncoders.Closing += ContextMenu_Closing;
             contextMenuStripEncoders.Opening += ContextMenuStripEncoders_Opening;
             // 
@@ -988,16 +996,49 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 386);
+            contextMenuStripAudioFiles.Size = new Size(202, 408);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
             // checkAllToolStripMenuItemAudioFiles
             // 
+            checkAllToolStripMenuItemAudioFiles.DropDownItems.AddRange(new ToolStripItem[] { checkAllAllAudioFilesToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, checkAllFLACToolStripMenuItemAudioFiles, checkAllWAVToolStripMenuItemAudioFiles });
             checkAllToolStripMenuItemAudioFiles.Name = "checkAllToolStripMenuItemAudioFiles";
             checkAllToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             checkAllToolStripMenuItemAudioFiles.Text = "Check All";
             checkAllToolStripMenuItemAudioFiles.Click += CheckAllToolStripMenuItemAudioFiles_Click;
+            // 
+            // checkAllAllAudioFilesToolStripMenuItemAudioFiles
+            // 
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.CheckOnClick = true;
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Name = "checkAllAllAudioFilesToolStripMenuItemAudioFiles";
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Text = "All Audio Files";
+            checkAllAllAudioFilesToolStripMenuItemAudioFiles.Click += CheckAllAllAudioFilesToolStripMenuItemAudioFiles_Click;
+            // 
+            // toolStripAudioFilesSeparator6
+            // 
+            toolStripAudioFilesSeparator6.Name = "toolStripAudioFilesSeparator6";
+            toolStripAudioFilesSeparator6.Size = new Size(146, 6);
+            // 
+            // checkAllFLACToolStripMenuItemAudioFiles
+            // 
+            checkAllFLACToolStripMenuItemAudioFiles.CheckOnClick = true;
+            checkAllFLACToolStripMenuItemAudioFiles.Name = "checkAllFLACToolStripMenuItemAudioFiles";
+            checkAllFLACToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            checkAllFLACToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            checkAllFLACToolStripMenuItemAudioFiles.Text = "FLAC";
+            checkAllFLACToolStripMenuItemAudioFiles.Click += CheckAllFLACToolStripMenuItemAudioFiles_Click;
+            // 
+            // checkAllWAVToolStripMenuItemAudioFiles
+            // 
+            checkAllWAVToolStripMenuItemAudioFiles.CheckOnClick = true;
+            checkAllWAVToolStripMenuItemAudioFiles.Name = "checkAllWAVToolStripMenuItemAudioFiles";
+            checkAllWAVToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            checkAllWAVToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            checkAllWAVToolStripMenuItemAudioFiles.Text = "WAV";
+            checkAllWAVToolStripMenuItemAudioFiles.Click += CheckAllWAVToolStripMenuItemAudioFiles_Click;
             // 
             // uncheckAllToolStripMenuItemAudioFiles
             // 
@@ -1034,11 +1075,44 @@
             // 
             // selectAllToolStripMenuItemAudioFiles
             // 
+            selectAllToolStripMenuItemAudioFiles.DropDownItems.AddRange(new ToolStripItem[] { selectAllAllAudioFilesToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator7, selectAllFLACToolStripMenuItemAudioFiles, selectAllWAVToolStripMenuItemAudioFiles });
             selectAllToolStripMenuItemAudioFiles.Name = "selectAllToolStripMenuItemAudioFiles";
             selectAllToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Control | Keys.A;
             selectAllToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             selectAllToolStripMenuItemAudioFiles.Text = "Select All";
             selectAllToolStripMenuItemAudioFiles.Click += SelectAllToolStripMenuItemAudioFiles_Click;
+            // 
+            // selectAllAllAudioFilesToolStripMenuItemAudioFiles
+            // 
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.CheckOnClick = true;
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Name = "selectAllAllAudioFilesToolStripMenuItemAudioFiles";
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Text = "All Audio Files";
+            selectAllAllAudioFilesToolStripMenuItemAudioFiles.Click += SelectAllAllAudioFilesToolStripMenuItemAudioFiles_Click;
+            // 
+            // toolStripAudioFilesSeparator7
+            // 
+            toolStripAudioFilesSeparator7.Name = "toolStripAudioFilesSeparator7";
+            toolStripAudioFilesSeparator7.Size = new Size(146, 6);
+            // 
+            // selectAllFLACToolStripMenuItemAudioFiles
+            // 
+            selectAllFLACToolStripMenuItemAudioFiles.CheckOnClick = true;
+            selectAllFLACToolStripMenuItemAudioFiles.Name = "selectAllFLACToolStripMenuItemAudioFiles";
+            selectAllFLACToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            selectAllFLACToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            selectAllFLACToolStripMenuItemAudioFiles.Text = "FLAC";
+            selectAllFLACToolStripMenuItemAudioFiles.Click += SelectAllFLACToolStripMenuItemAudioFiles_Click;
+            // 
+            // selectAllWAVToolStripMenuItemAudioFiles
+            // 
+            selectAllWAVToolStripMenuItemAudioFiles.CheckOnClick = true;
+            selectAllWAVToolStripMenuItemAudioFiles.Name = "selectAllWAVToolStripMenuItemAudioFiles";
+            selectAllWAVToolStripMenuItemAudioFiles.Size = new Size(149, 22);
+            selectAllWAVToolStripMenuItemAudioFiles.Tag = "KeepOpened";
+            selectAllWAVToolStripMenuItemAudioFiles.Text = "WAV";
+            selectAllWAVToolStripMenuItemAudioFiles.Click += SelectAllWAVToolStripMenuItemAudioFiles_Click;
             // 
             // clearSelectionToolStripMenuItemAudioFiles
             // 
@@ -1510,7 +1584,6 @@
             Benchmark.Padding = new Padding(3);
             Benchmark.Size = new Size(759, 312);
             Benchmark.TabIndex = 0;
-            Benchmark.Tag = "";
             Benchmark.Text = "Benchmark";
             Benchmark.UseVisualStyleBackColor = true;
             // 
@@ -1558,7 +1631,6 @@
             ScalingPlots.Name = "ScalingPlots";
             ScalingPlots.Size = new Size(759, 312);
             ScalingPlots.TabIndex = 3;
-            ScalingPlots.Tag = "";
             ScalingPlots.Text = "Scaling Plots";
             ScalingPlots.UseVisualStyleBackColor = true;
             // 
@@ -1783,7 +1855,6 @@
             DetectDupes.Padding = new Padding(3);
             DetectDupes.Size = new Size(759, 312);
             DetectDupes.TabIndex = 1;
-            DetectDupes.Tag = "";
             DetectDupes.Text = "Detect Dupes";
             DetectDupes.UseVisualStyleBackColor = true;
             // 
@@ -1831,7 +1902,6 @@
             TestForErrors.Name = "TestForErrors";
             TestForErrors.Size = new Size(759, 312);
             TestForErrors.TabIndex = 2;
-            TestForErrors.Tag = "";
             TestForErrors.Text = "Test for Errors";
             TestForErrors.UseVisualStyleBackColor = true;
             // 
@@ -2658,5 +2728,13 @@
         private ToolStripMenuItem clearDuplicateEntriesToolStripMenuItemAudioFiles;
         private ToolStripMenuItem clearAllToolStripMenuItemAudioFiles;
         private ColumnHeader WritingLibrary;
+        private ToolStripMenuItem checkAllAllAudioFilesToolStripMenuItemAudioFiles;
+        private ToolStripSeparator toolStripAudioFilesSeparator6;
+        private ToolStripMenuItem checkAllFLACToolStripMenuItemAudioFiles;
+        private ToolStripMenuItem checkAllWAVToolStripMenuItemAudioFiles;
+        private ToolStripMenuItem selectAllAllAudioFilesToolStripMenuItemAudioFiles;
+        private ToolStripSeparator toolStripAudioFilesSeparator7;
+        private ToolStripMenuItem selectAllFLACToolStripMenuItemAudioFiles;
+        private ToolStripMenuItem selectAllWAVToolStripMenuItemAudioFiles;
     }
 }
