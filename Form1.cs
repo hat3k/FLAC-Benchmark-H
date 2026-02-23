@@ -6575,9 +6575,9 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked)
-                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
+                    .ToList();
 
                 // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
@@ -6625,8 +6625,8 @@ namespace FLAC_Benchmark_H
                             parameters += $" -j{threads}";
                         }
 
-                        string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
-                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                        string warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.flac");
+                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
                         Invoke((MethodInvoker)(() =>
                         {
@@ -6644,7 +6644,7 @@ namespace FLAC_Benchmark_H
                                 while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                                 {
                                     iteration++;
-                                    DeleteFileIfExists(outputFilePath);
+                                    DeleteFileIfExists(warmupOutputFilePath);
 
                                     using var warmupProcess = new Process();
                                     warmupProcess.StartInfo = new ProcessStartInfo
@@ -6691,7 +6691,24 @@ namespace FLAC_Benchmark_H
                             finally
                             {
                                 warmupStopwatch.Stop();
-                                DeleteFileIfExists(outputFilePath);
+
+                                // Delete warm-up file silently (fire-and-forget, no MessageBox)
+                                _ = Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        if (File.Exists(warmupOutputFilePath))
+                                        {
+                                            File.SetAttributes(warmupOutputFilePath, FileAttributes.Normal);
+                                            File.Delete(warmupOutputFilePath);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Silent ignore: temp file deletion errors don't affect main process
+                                        Debug.WriteLine($"Warning: Could not delete warm-up file: {warmupOutputFilePath}");
+                                    }
+                                });
 
                                 Invoke((MethodInvoker)(() =>
                                 {
@@ -6883,16 +6900,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                outputFilePath: "",
-                                audioFilePath: audioFilePath,
-                                parameters: parameters,
-                                encoderPath: encoderPath,
-                                elapsedTime: TimeSpan.Zero,
-                                userProcessorTime: TimeSpan.Zero,
-                                privilegedProcessorTime: TimeSpan.Zero,
-                                avgClock: 0,
-                                errorOutput: specificError,
-                                exitCode: -1
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoderPath: encoderPath,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: specificError,
+                                    exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -6904,16 +6921,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                outputFilePath: "",
-                                audioFilePath: audioFilePath,
-                                parameters: parameters,
-                                encoderPath: encoderPath,
-                                elapsedTime: TimeSpan.Zero,
-                                userProcessorTime: TimeSpan.Zero,
-                                privilegedProcessorTime: TimeSpan.Zero,
-                                avgClock: 0,
-                                errorOutput: ex.Message,
-                                exitCode: -1
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoderPath: encoderPath,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: ex.Message,
+                                    exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -6977,9 +6994,9 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked)
-                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
+                    .ToList();
 
                 // Get all selected .flac audio files using cache
                 var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
@@ -7016,8 +7033,9 @@ namespace FLAC_Benchmark_H
                         string commandLine = NormalizeSpaces(textBoxCommandLineOptionsDecoder.Text);
                         string parameters = $"-d {commandLine}".Trim();
 
-                        string outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
-                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                        // Use unique filename for warm-up to avoid conflicts (interpolated string with $)
+                        string warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.wav");
+                        string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
                         Invoke((MethodInvoker)(() =>
                         {
@@ -7035,7 +7053,7 @@ namespace FLAC_Benchmark_H
                                 while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                                 {
                                     iteration++;
-                                    DeleteFileIfExists(outputFilePath);
+                                    DeleteFileIfExists(warmupOutputFilePath);
 
                                     using var warmupProcess = new Process();
                                     warmupProcess.StartInfo = new ProcessStartInfo
@@ -7082,7 +7100,24 @@ namespace FLAC_Benchmark_H
                             finally
                             {
                                 warmupStopwatch.Stop();
-                                DeleteFileIfExists(outputFilePath);
+
+                                // Delete warm-up file silently (fire-and-forget, no MessageBox)
+                                _ = Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        if (File.Exists(warmupOutputFilePath))
+                                        {
+                                            File.SetAttributes(warmupOutputFilePath, FileAttributes.Normal);
+                                            File.Delete(warmupOutputFilePath);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Silent ignore: temp file deletion errors don't affect main process
+                                        Debug.WriteLine($"Warning: Could not delete warm-up file: {warmupOutputFilePath}");
+                                    }
+                                });
 
                                 Invoke((MethodInvoker)(() =>
                                 {
@@ -7237,16 +7272,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                outputFilePath: "",
-                                audioFilePath: audioFilePath,
-                                parameters: parameters,
-                                encoderPath: encoderPath,
-                                elapsedTime: TimeSpan.Zero,
-                                userProcessorTime: TimeSpan.Zero,
-                                privilegedProcessorTime: TimeSpan.Zero,
-                                avgClock: 0,
-                                errorOutput: specificError,
-                                exitCode: -1
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoderPath: encoderPath,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: specificError,
+                                    exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -7258,16 +7293,16 @@ namespace FLAC_Benchmark_H
                             if (!_isEncodingStopped)
                             {
                                 await LogProcessResults(
-                                outputFilePath: "",
-                                audioFilePath: audioFilePath,
-                                parameters: parameters,
-                                encoderPath: encoderPath,
-                                elapsedTime: TimeSpan.Zero,
-                                userProcessorTime: TimeSpan.Zero,
-                                privilegedProcessorTime: TimeSpan.Zero,
-                                avgClock: 0,
-                                errorOutput: ex.Message,
-                                exitCode: -1
+                                    outputFilePath: "",
+                                    audioFilePath: audioFilePath,
+                                    parameters: parameters,
+                                    encoderPath: encoderPath,
+                                    elapsedTime: TimeSpan.Zero,
+                                    userProcessorTime: TimeSpan.Zero,
+                                    privilegedProcessorTime: TimeSpan.Zero,
+                                    avgClock: 0,
+                                    errorOutput: ex.Message,
+                                    exitCode: -1
                                 );
                             }
                             isExecuting = false;
@@ -7331,9 +7366,9 @@ namespace FLAC_Benchmark_H
             {
                 // Get selected encoders
                 var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
-                .Where(item => item.Checked)
-                .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                .ToList();
+                    .Where(item => item.Checked)
+                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
+                    .ToList();
 
                 // Get all selected .wav and .flac audio files using cache
                 var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
@@ -7392,13 +7427,13 @@ namespace FLAC_Benchmark_H
 
                 // Count the number of tasks and passes for Encode
                 int totalEncodeTasks = dataGridViewJobsExpanded
-                .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Encode", StringComparison.OrdinalIgnoreCase))
-                .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
+                    .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Encode", StringComparison.OrdinalIgnoreCase))
+                    .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
 
                 // Count the number of tasks and passes for Decode
                 int totalDecodeTasks = dataGridViewJobsExpanded
-                .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Decode", StringComparison.OrdinalIgnoreCase))
-                .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
+                    .Where(row => string.Equals(NormalizeSpaces(row.Cells[1].Value?.ToString() ?? ""), "Decode", StringComparison.OrdinalIgnoreCase))
+                    .Sum(row => int.Parse((row.Cells[2].Value?.ToString() ?? "").Trim()));
 
                 // 1. Check if there is at least one job
                 if (totalEncodeTasks == 0 && totalDecodeTasks == 0)
@@ -7445,7 +7480,7 @@ namespace FLAC_Benchmark_H
                     DataGridViewRow? firstExecutableJobRow = null;
                     string? jobType = null;
                     string? audioFilePath = null;
-                    string? outputFilePath = null;
+                    string? warmupOutputFilePath = null;
 
                     foreach (var jobRow in dataGridViewJobsExpanded)
                     {
@@ -7455,7 +7490,8 @@ namespace FLAC_Benchmark_H
                             firstExecutableJobRow = jobRow;
                             jobType = type;
                             audioFilePath = selectedAudioFiles.First();
-                            outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.flac");
+                            // Use unique filename for warm-up with interpolated string ($)
+                            warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.flac");
                             break;
                         }
                         else if (string.Equals(type, "Decode", StringComparison.OrdinalIgnoreCase) && selectedFlacAudioFiles.Count > 0)
@@ -7463,19 +7499,20 @@ namespace FLAC_Benchmark_H
                             firstExecutableJobRow = jobRow;
                             jobType = type;
                             audioFilePath = selectedFlacAudioFiles.First();
-                            outputFilePath = Path.Combine(tempFolderPath, "temp_warmup.wav");
+                            // Use unique filename for warm-up with interpolated string ($)
+                            warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.wav");
                             break;
                         }
                     }
 
-                    if (firstExecutableJobRow == null || audioFilePath == null || outputFilePath == null)
+                    if (firstExecutableJobRow == null || audioFilePath == null || warmupOutputFilePath == null)
                         return;
 
                     string parameters = NormalizeSpaces((firstExecutableJobRow.Cells[3].Value?.ToString() ?? "").Trim());
                     var firstEncoder = selectedEncoders.FirstOrDefault();
                     if (string.IsNullOrEmpty(firstEncoder)) return;
 
-                    string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{outputFilePath}\"";
+                    string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
                     Invoke((MethodInvoker)(() =>
                     {
@@ -7493,7 +7530,7 @@ namespace FLAC_Benchmark_H
                             while (warmupStopwatch.Elapsed < TimeSpan.FromSeconds(5) && !_isEncodingStopped)
                             {
                                 iteration++;
-                                DeleteFileIfExists(outputFilePath);
+                                DeleteFileIfExists(warmupOutputFilePath);
 
                                 using var warmupProcess = new Process();
                                 warmupProcess.StartInfo = new ProcessStartInfo
@@ -7540,7 +7577,24 @@ namespace FLAC_Benchmark_H
                         finally
                         {
                             warmupStopwatch.Stop();
-                            DeleteFileIfExists(outputFilePath);
+
+                            // Delete warm-up file silently (fire-and-forget, no MessageBox)
+                            _ = Task.Run(() =>
+                            {
+                                try
+                                {
+                                    if (File.Exists(warmupOutputFilePath))
+                                    {
+                                        File.SetAttributes(warmupOutputFilePath, FileAttributes.Normal);
+                                        File.Delete(warmupOutputFilePath);
+                                    }
+                                }
+                                catch
+                                {
+                                    // Silent ignore: temp file deletion errors don't affect main process
+                                    Debug.WriteLine($"Warning: Could not delete warm-up file: {warmupOutputFilePath}");
+                                }
+                            });
 
                             Invoke((MethodInvoker)(() =>
                             {
@@ -7740,16 +7794,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                            outputFilePath: "",
-                                            audioFilePath: audioFilePath,
-                                            parameters: parameters,
-                                            encoderPath: encoderPath,
-                                            elapsedTime: TimeSpan.Zero,
-                                            userProcessorTime: TimeSpan.Zero,
-                                            privilegedProcessorTime: TimeSpan.Zero,
-                                            avgClock: 0,
-                                            errorOutput: specificError,
-                                            exitCode: -1
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoderPath: encoderPath,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: specificError,
+                                                exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -7761,16 +7815,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                            outputFilePath: "",
-                                            audioFilePath: audioFilePath,
-                                            parameters: parameters,
-                                            encoderPath: encoderPath,
-                                            elapsedTime: TimeSpan.Zero,
-                                            userProcessorTime: TimeSpan.Zero,
-                                            privilegedProcessorTime: TimeSpan.Zero,
-                                            avgClock: 0,
-                                            errorOutput: ex.Message,
-                                            exitCode: -1
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoderPath: encoderPath,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: ex.Message,
+                                                exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -7925,16 +7979,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                            outputFilePath: "",
-                                            audioFilePath: audioFilePath,
-                                            parameters: parameters,
-                                            encoderPath: encoderPath,
-                                            elapsedTime: TimeSpan.Zero,
-                                            userProcessorTime: TimeSpan.Zero,
-                                            privilegedProcessorTime: TimeSpan.Zero,
-                                            avgClock: 0,
-                                            errorOutput: specificError,
-                                            exitCode: -1
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoderPath: encoderPath,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: specificError,
+                                                exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -7946,16 +8000,16 @@ namespace FLAC_Benchmark_H
                                         if (!_isEncodingStopped)
                                         {
                                             await LogProcessResults(
-                                            outputFilePath: "",
-                                            audioFilePath: audioFilePath,
-                                            parameters: parameters,
-                                            encoderPath: encoderPath,
-                                            elapsedTime: TimeSpan.Zero,
-                                            userProcessorTime: TimeSpan.Zero,
-                                            privilegedProcessorTime: TimeSpan.Zero,
-                                            avgClock: 0,
-                                            errorOutput: ex.Message,
-                                            exitCode: -1
+                                                outputFilePath: "",
+                                                audioFilePath: audioFilePath,
+                                                parameters: parameters,
+                                                encoderPath: encoderPath,
+                                                elapsedTime: TimeSpan.Zero,
+                                                userProcessorTime: TimeSpan.Zero,
+                                                privilegedProcessorTime: TimeSpan.Zero,
+                                                avgClock: 0,
+                                                errorOutput: ex.Message,
+                                                exitCode: -1
                                             );
                                         }
                                         isExecuting = false;
@@ -9444,25 +9498,34 @@ namespace FLAC_Benchmark_H
             // Dispose pause/resume synchronization object
             _pauseEvent?.Dispose();
 
+            // Unsubscribe from context menu events
             checkAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
             selectAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
 
-            // Optionally clean up temporary folder
-            if (checkBoxClearTempFolder.Checked)
+            // Clean up temporary files based on user preference
+            try
             {
-                try
+                if (Directory.Exists(tempFolderPath))
                 {
-                    if (Directory.Exists(tempFolderPath))
+                    if (checkBoxClearTempFolder.Checked)
                     {
-                        // Delete entire folder with all contents
+                        // Option 1: Delete entire temp folder (user requested full cleanup)
                         Directory.Delete(tempFolderPath, true);
                     }
+                    else
+                    {
+                        // Option 2: Delete only warm-up files (preserve other temp files for debugging)
+                        foreach (var file in Directory.GetFiles(tempFolderPath, "temp_warmup_*.*"))
+                        {
+                            try { File.Delete(file); } catch { }
+                        }
+                    }
                 }
-                catch (Exception ex)
-                {
-                    // Log or silently ignore - app is closing anyway
-                    Debug.WriteLine($"Failed to delete temp folder: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                // Log but don't block app exit
+                Debug.WriteLine($"Failed to clean temp folder: {ex.Message}");
             }
         }
     }
