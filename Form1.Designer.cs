@@ -93,7 +93,7 @@
             buttonAddEncoders = new Button();
             buttonUpEncoder = new Button();
             buttonDownEncoder = new Button();
-            buttonRemoveEncoder = new Button();
+            buttonClearSelectedEncoder = new Button();
             buttonClearEncoders = new Button();
             groupBoxAudioFiles = new GroupBox();
             listViewAudioFiles = new ListView();
@@ -139,7 +139,7 @@
             buttonAddAudioFiles = new Button();
             buttonUpAudioFile = new Button();
             buttonDownAudioFile = new Button();
-            buttonRemoveAudioFile = new Button();
+            buttonClearSelectedAudioFile = new Button();
             buttonDetectDupesAudioFiles = new Button();
             buttonTestForErrors = new Button();
             checkBoxWarningsAsErrors = new CheckBox();
@@ -622,7 +622,7 @@
             groupBoxEncoders.Controls.Add(buttonAddEncoders);
             groupBoxEncoders.Controls.Add(buttonUpEncoder);
             groupBoxEncoders.Controls.Add(buttonDownEncoder);
-            groupBoxEncoders.Controls.Add(buttonRemoveEncoder);
+            groupBoxEncoders.Controls.Add(buttonClearSelectedEncoder);
             groupBoxEncoders.Controls.Add(buttonClearEncoders);
             groupBoxEncoders.Location = new Point(12, 12);
             groupBoxEncoders.MinimumSize = new Size(777, 0);
@@ -869,18 +869,18 @@
             buttonDownEncoder.UseVisualStyleBackColor = true;
             buttonDownEncoder.Click += ButtonDownEncoder_Click;
             // 
-            // buttonRemoveEncoder
+            // buttonClearSelectedEncoder
             // 
-            buttonRemoveEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonRemoveEncoder.Font = new Font("Segoe UI", 9F);
-            buttonRemoveEncoder.Location = new Point(182, 230);
-            buttonRemoveEncoder.Name = "buttonRemoveEncoder";
-            buttonRemoveEncoder.Size = new Size(24, 23);
-            buttonRemoveEncoder.TabIndex = 4;
-            buttonRemoveEncoder.Text = "❌";
-            toolTip1.SetToolTip(buttonRemoveEncoder, "Hold 'Shift' to move files to the Recycle Bin.");
-            buttonRemoveEncoder.UseVisualStyleBackColor = true;
-            buttonRemoveEncoder.Click += ButtonRemoveEncoder_Click;
+            buttonClearSelectedEncoder.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonClearSelectedEncoder.Font = new Font("Segoe UI", 9F);
+            buttonClearSelectedEncoder.Location = new Point(182, 230);
+            buttonClearSelectedEncoder.Name = "buttonClearSelectedEncoder";
+            buttonClearSelectedEncoder.Size = new Size(24, 23);
+            buttonClearSelectedEncoder.TabIndex = 4;
+            buttonClearSelectedEncoder.Text = "❌";
+            toolTip1.SetToolTip(buttonClearSelectedEncoder, "Clear selected Encoder.\r\n\r\nHold 'Shift' to move files to the Recycle Bin.");
+            buttonClearSelectedEncoder.UseVisualStyleBackColor = true;
+            buttonClearSelectedEncoder.Click += ButtonClearSelectedEncoder_Click;
             // 
             // buttonClearEncoders
             // 
@@ -891,6 +891,7 @@
             buttonClearEncoders.Size = new Size(55, 23);
             buttonClearEncoders.TabIndex = 5;
             buttonClearEncoders.Text = "Clear";
+            toolTip1.SetToolTip(buttonClearEncoders, "Clear all Encoders and stop loading.");
             buttonClearEncoders.UseVisualStyleBackColor = true;
             buttonClearEncoders.Click += ButtonClearEncoders_Click;
             // 
@@ -901,7 +902,7 @@
             groupBoxAudioFiles.Controls.Add(buttonAddAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonUpAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonDownAudioFile);
-            groupBoxAudioFiles.Controls.Add(buttonRemoveAudioFile);
+            groupBoxAudioFiles.Controls.Add(buttonClearSelectedAudioFile);
             groupBoxAudioFiles.Controls.Add(buttonDetectDupesAudioFiles);
             groupBoxAudioFiles.Controls.Add(buttonTestForErrors);
             groupBoxAudioFiles.Controls.Add(checkBoxWarningsAsErrors);
@@ -1247,17 +1248,17 @@
             buttonDownAudioFile.UseVisualStyleBackColor = true;
             buttonDownAudioFile.Click += ButtonDownAudioFile_Click;
             // 
-            // buttonRemoveAudioFile
+            // buttonClearSelectedAudioFile
             // 
-            buttonRemoveAudioFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonRemoveAudioFile.Location = new Point(182, 230);
-            buttonRemoveAudioFile.Name = "buttonRemoveAudioFile";
-            buttonRemoveAudioFile.Size = new Size(24, 23);
-            buttonRemoveAudioFile.TabIndex = 4;
-            buttonRemoveAudioFile.Text = "❌";
-            toolTip1.SetToolTip(buttonRemoveAudioFile, "Hold 'Shift' to move files to the Recycle Bin.");
-            buttonRemoveAudioFile.UseVisualStyleBackColor = true;
-            buttonRemoveAudioFile.Click += ButtonRemoveAudioFile_Click;
+            buttonClearSelectedAudioFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonClearSelectedAudioFile.Location = new Point(182, 230);
+            buttonClearSelectedAudioFile.Name = "buttonClearSelectedAudioFile";
+            buttonClearSelectedAudioFile.Size = new Size(24, 23);
+            buttonClearSelectedAudioFile.TabIndex = 4;
+            buttonClearSelectedAudioFile.Text = "❌";
+            toolTip1.SetToolTip(buttonClearSelectedAudioFile, "Clear selected Audio File.\r\n\r\nHold 'Shift' to move files to the Recycle Bin.");
+            buttonClearSelectedAudioFile.UseVisualStyleBackColor = true;
+            buttonClearSelectedAudioFile.Click += ButtonClearSelectedAudioFile_Click;
             // 
             // buttonDetectDupesAudioFiles
             // 
@@ -1316,6 +1317,7 @@
             buttonClearAudioFiles.Size = new Size(55, 23);
             buttonClearAudioFiles.TabIndex = 9;
             buttonClearAudioFiles.Text = "Clear";
+            toolTip1.SetToolTip(buttonClearAudioFiles, "Clear all Audio Files.");
             buttonClearAudioFiles.UseVisualStyleBackColor = true;
             buttonClearAudioFiles.Click += ButtonClearAudioFiles_Click;
             // 
@@ -2567,8 +2569,8 @@
         private Button buttonClearEncoders;
         private Button buttonAddAudioFiles;
         private Button buttonClearAudioFiles;
-        private Button buttonRemoveEncoder;
-        private Button buttonRemoveAudioFile;
+        private Button buttonClearSelectedEncoder;
+        private Button buttonClearSelectedAudioFile;
         private GroupBox groupBoxSettings;
         private Button buttonStartJobList;
         private Button buttonAddJobToJobListEncoder;

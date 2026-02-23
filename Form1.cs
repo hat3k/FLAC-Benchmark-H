@@ -1345,7 +1345,7 @@ namespace FLAC_Benchmark_H
         {
             MoveSelectedItemsForListview(listViewEncoders, 1); // Pass 1 to move down
         }
-        private void ButtonRemoveEncoder_Click(object? sender, EventArgs e)
+        private void ButtonClearSelectedEncoder_Click(object? sender, EventArgs e)
         {
             if (ModifierKeys == Keys.Shift)
             {
@@ -1673,7 +1673,7 @@ namespace FLAC_Benchmark_H
         }
         private void ClearSelectedToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
-            ButtonRemoveEncoder_Click(sender, e);
+            ButtonClearSelectedEncoder_Click(sender, e);
         }
         private void ClearDuplicateEntriesToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
@@ -2229,7 +2229,7 @@ namespace FLAC_Benchmark_H
         {
             MoveSelectedItemsForListview(listViewAudioFiles, 1); // Pass 1 to move down
         }
-        private void ButtonRemoveAudioFile_Click(object? sender, EventArgs e)
+        private void ButtonClearSelectedAudioFile_Click(object? sender, EventArgs e)
         {
             if (ModifierKeys == Keys.Shift)
             {
@@ -2686,7 +2686,7 @@ namespace FLAC_Benchmark_H
         }
         private void ClearSelectedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            ButtonRemoveAudioFile_Click(sender, e);
+            ButtonClearSelectedAudioFile_Click(sender, e);
         }
         private void ClearDuplicateEntriesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -5744,7 +5744,7 @@ namespace FLAC_Benchmark_H
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveEncoder.PerformClick();
+                buttonClearSelectedEncoder.PerformClick();
             }
 
             // Check if Ctrl and A are pressed simultaneously
@@ -5764,7 +5764,7 @@ namespace FLAC_Benchmark_H
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveAudioFile.PerformClick();
+                buttonClearSelectedAudioFile.PerformClick();
             }
 
             // Check if Ctrl and A are pressed simultaneously
