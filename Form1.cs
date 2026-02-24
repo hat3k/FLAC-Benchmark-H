@@ -2370,6 +2370,13 @@ namespace FLAC_Benchmark_H
 
             refreshAllToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
             openContainingFolderToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
+
+            toolsToolStripMenuItemAudioFiles.Enabled = true;
+            detectDupesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+            testForErrorsToolStripMenuItemAudioFIles.Enabled = hasFLAC && !isBusy;
+            warningsAsErrorsToolStripMenuItemAudioFiles.Enabled = true;
+            summaryToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
+
             clearUncheckedToolStripMenuItemAudioFiles.Enabled = hasUncheckedItems && !isBusy;
             clearSelectedToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
@@ -2387,6 +2394,7 @@ namespace FLAC_Benchmark_H
             // Update menu items
             checkAllToolStripMenuItemAudioFiles.DropDown.Invalidate();
             selectAllToolStripMenuItemAudioFiles.DropDown.Invalidate();
+            toolsToolStripMenuItemAudioFiles.DropDown.Invalidate();
         }
         private void CheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2679,6 +2687,94 @@ namespace FLAC_Benchmark_H
                                    MessageBoxIcon.Error);
                 }
             }
+        }
+        private void DetectDupesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            ButtonDetectDupesAudioFiles_Click(sender, e);
+        }
+        private void TestForErrorsToolStripMenuItemAudioFIles_Click(object sender, EventArgs e)
+        {
+            ButtonTestForErrors_Click(sender, e);
+        }
+        private void WarningsAsErrorsToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            checkBoxWarningsAsErrors.Checked = !checkBoxWarningsAsErrors.Checked;
+        }
+        private void SummaryToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        {
+            var items = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+            int totalFiles = items.Count;
+
+            long totalSize = items.Sum(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) ? info.FileSize : 0;
+            });
+
+            long totalDuration = items.Sum(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) &&
+                       long.TryParse(info.Duration, out var d) ? d : 0;
+            });
+
+            int flacCount = items.Count(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) && info.Extension == ".flac";
+            });
+
+            int wavCount = items.Count(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) && info.Extension == ".wav";
+            });
+
+            int filesOnDisk = items.Count(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return !string.IsNullOrEmpty(path) && File.Exists(path);
+            });
+
+            int filesMissing = totalFiles - filesOnDisk;
+
+            int filesWithMd5 = items.Count(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) &&
+                       !string.IsNullOrEmpty(info.Md5Hash) &&
+                       info.Md5Hash == "N/A" &&
+                       info.Md5Hash == "00000000000000000000000000000000" &&
+                       info.Md5Hash == "MD5 calculation failed";
+            });
+
+            string totalDurationFormatted = TimeSpan.FromMilliseconds(totalDuration).ToString(@"hh\:mm\:ss");
+
+            string summary = $@"
+
+GENERAL
+───────────────────────────────────────
+Total Files:          {totalFiles}
+Total Size:           {totalSize / (1024.0 * 1024.0 * 1024.0):F2} GB
+Total Duration:       {totalDurationFormatted}
+
+FORMATS
+───────────────────────────────────────
+FLAC Files:           {flacCount}
+WAV Files:            {wavCount}
+
+FILE STATUS
+───────────────────────────────────────
+Files on Disk:        {filesOnDisk}
+Files Missing:        {filesMissing}
+
+MD5 STATUS
+───────────────────────────────────────
+Files without MD5:    {filesWithMd5}
+";
+
+            MessageBox.Show(summary, "Audio Files Summary",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private void ClearUncheckedToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -9241,7 +9337,7 @@ namespace FLAC_Benchmark_H
         }
         private void CheckBoxWarningsAsErrors_CheckedChanged(object? sender, EventArgs e)
         {
-
+            warningsAsErrorsToolStripMenuItemAudioFiles.Checked = checkBoxWarningsAsErrors.Checked;
         }
         private void CheckBoxPreventSleep_CheckedChanged(object? sender, EventArgs e)
         {
@@ -9464,6 +9560,7 @@ namespace FLAC_Benchmark_H
 
             checkAllToolStripMenuItemAudioFiles.DropDown.Closing += ContextMenu_Closing;
             selectAllToolStripMenuItemAudioFiles.DropDown.Closing += ContextMenu_Closing;
+            toolsToolStripMenuItemAudioFiles.DropDown.Closing += ContextMenu_Closing;
 
             ActiveControl = null; // Remove focus from all elements
         }
@@ -9501,6 +9598,7 @@ namespace FLAC_Benchmark_H
             // Unsubscribe from context menu events
             checkAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
             selectAllToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
+            toolsToolStripMenuItemAudioFiles.DropDown.Closing -= ContextMenu_Closing;
 
             // Clean up temporary files based on user preference
             try
