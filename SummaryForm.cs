@@ -307,7 +307,7 @@ namespace FLAC_Benchmark_H
 
                     if (_filesWithoutMd5Expanded)
                     {
-                        AppendExpandableLink("▼ Hide files", 1);
+                        AppendExpandableLink("[-] Hide files", 1);
                         AppendNormal("\n");
                         foreach (string path in _flacFilesWithoutMd5Data)
                         {
@@ -318,7 +318,7 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        AppendExpandableLink("▶ Show files", 1);
+                        AppendExpandableLink("[+] Show files", 1);
                         AppendNormal("\n");
                     }
                     AppendNormal("\n");
@@ -337,7 +337,7 @@ namespace FLAC_Benchmark_H
 
                     if (_longPathsExpanded)
                     {
-                        AppendExpandableLink("▼ Hide files", 3);
+                        AppendExpandableLink("[-] Hide files", 3);
                         AppendNormal("\n");
                         foreach (string path in _longPathsData)
                         {
@@ -349,7 +349,7 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        AppendExpandableLink("▶ Show files", 3);
+                        AppendExpandableLink("[+] Show files", 3);
                         AppendNormal("\n");
                     }
                     AppendNormal("\n");
@@ -364,7 +364,7 @@ namespace FLAC_Benchmark_H
 
                     if (_filesWithMd5ErrorsExpanded)
                     {
-                        AppendExpandableLink("▼ Hide files", 2);
+                        AppendExpandableLink("[-] Hide files", 2);
                         AppendNormal("\n");
                         foreach (string path in _filesWithMd5ErrorsData)
                         {
@@ -375,7 +375,7 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        AppendExpandableLink("▶ Show files", 2);
+                        AppendExpandableLink("[+] Show files", 2);
                         AppendNormal("\n");
                     }
                     AppendNormal("\n");
@@ -390,7 +390,7 @@ namespace FLAC_Benchmark_H
 
                     if (_filesWithoutChannelsExpanded)
                     {
-                        AppendExpandableLink("▼ Hide files", 4);
+                        AppendExpandableLink("[-] Hide files", 4);
                         AppendNormal("\n");
                         foreach (string path in _filesWithoutChannelsData)
                         {
@@ -401,7 +401,7 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        AppendExpandableLink("▶ Show files", 4);
+                        AppendExpandableLink("[+] Show files", 4);
                         AppendNormal("\n");
                     }
                 }
