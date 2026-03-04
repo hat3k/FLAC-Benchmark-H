@@ -158,7 +158,10 @@ namespace FLAC_Benchmark_H
                 List<(int position, LinkInfo info)> linkInfos = [];
 
                 // Local helper: appends plain text to the StringBuilder
-                void AppendNormal(string text) => _ = sb.Append(text);
+                void AppendNormal(string text)
+                {
+                    _ = sb.Append(text);
+                }
 
                 // Local helper: appends a clickable file path and records its metadata for link handling
                 void AppendPathLink(string path)
@@ -197,7 +200,7 @@ namespace FLAC_Benchmark_H
                         ? $"{label,-labelWidth}{value1,-value1Width}{value2,value2Width}\n"
                         : $"{label,-labelWidth}{value1,-value1Width}\n";
                 }
-                
+
                 // Local helper: renders a property list with consistent formatting
                 void AppendPropertyList(string label, List<string> items)
                 {
@@ -224,7 +227,7 @@ namespace FLAC_Benchmark_H
                 {
                     return percent == Math.Truncate(percent)
                         ? $"{percent:F0}%"
-                        : $"{percent:F3}%"; 
+                        : $"{percent:F3}%";
                 }
 
                 // === GENERAL STATISTICS ===
