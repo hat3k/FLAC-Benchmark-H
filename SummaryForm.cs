@@ -60,10 +60,6 @@ namespace FLAC_Benchmark_H
         {
             InitializeComponent();
 
-
-            // Tabstops in pixels
-            richTextBoxSummary.SelectionTabs = [130, 290, 340, 390];
-
             // Enable double-buffering for RichTextBox via reflection (reduces flicker)
             _ = typeof(RichTextBox).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.NonPublic |
@@ -146,31 +142,25 @@ namespace FLAC_Benchmark_H
             RefreshSummary();
         }
 
-        /// <summary>
-        /// Renders the complete summary text with proper formatting and clickable links.
-        /// Uses WM_SETREDRAW to prevent flickering during bulk updates.
-        /// </summary>
+        // Renders the summary with formatted text, clickable links, and collapsible sections.
         private void RefreshSummary()
         {
-            // Disable redrawing during bulk text operations (prevents flicker)
+            // Disable control redrawing to prevent flicker during bulk text operations
             _ = SendMessage(richTextBoxSummary.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
 
             try
             {
-                // Save current scroll position to restore after redraw
+                // Preserve scroll position to restore after content update
                 int firstVisibleIndex = GetFirstVisibleCharIndex();
 
-                // Build entire text content in memory before applying to control
+                // Build content in memory before applying to control (improves performance)
                 StringBuilder sb = new();
                 List<(int position, LinkInfo info)> linkInfos = [];
 
-                // Appends normal (non-link) text to the StringBuilder
-                void AppendNormal(string text)
-                {
-                    _ = sb.Append(text);
-                }
+                // Local helper: appends plain text to the StringBuilder
+                void AppendNormal(string text) => _ = sb.Append(text);
 
-                // Appends a file path as a clickable link and records its metadata
+                // Local helper: appends a clickable file path and records its metadata for link handling
                 void AppendPathLink(string path)
                 {
                     int linkStart = sb.Length;
@@ -178,12 +168,12 @@ namespace FLAC_Benchmark_H
                     linkInfos.Add((linkStart, new LinkInfo
                     {
                         Length = path.Length,
-                        LinkId = -1,        // -1 indicates a file path link
+                        LinkId = -1,        // -1 identifies file path links
                         FilePath = path
                     }));
                 }
 
-                // Appends a section toggle link ("Show/Hide files") and records its metadata
+                // Local helper: appends a collapsible section toggle link ("Show/Hide files")
                 void AppendExpandableLink(string linkText, int linkId)
                 {
                     int linkStart = sb.Length;
@@ -196,38 +186,31 @@ namespace FLAC_Benchmark_H
                     }));
                 }
 
-                // SECTION: General statistics
-                AppendNormal("GENERAL\n");
-                AppendNormal($"──────────────────────────────────────────────────────────\n");
-                AppendNormal($"Total Files:\t{_totalFiles}\n");
-                AppendNormal($"Total Size:\t{_totalSize / (1024.0 * 1024.0 * 1024.0):F3} GB\n");
-                AppendNormal($"Total Duration:\t{_totalDuration}\n\n");
+                // Formats a row with fixed-width columns for consistent alignment when copied
+                string FormatRow(string label, string value1, string? value2 = null)
+                {
+                    const int labelWidth = 20;
+                    const int value1Width = 21;
+                    const int value2Width = 10;
 
-                // FLAC statistics
-                if (_flacFiles > 0)
-                {
-                    AppendNormal($"FLAC Files:\t{_flacFiles}\t{_flacFilesPercent:F3}%\n");
-                    AppendNormal($"FLAC Size:\t{_flacSize / (1024.0 * 1024.0 * 1024.0):F3} GB\t{_flacSizePercent:F3}%\n");
-                    AppendNormal($"FLAC Duration:\t{_flacDuration}\t{_flacDurationPercent:F3}%\n\n");
+                    return value2 != null
+                        ? $"{label,-labelWidth}{value1,-value1Width}{value2,value2Width}\n"
+                        : $"{label,-labelWidth}{value1,-value1Width}\n";
                 }
-                if (_wavFiles > 0)
-                {
-                    // WAV statistics
-                    AppendNormal($"WAV Files:\t{_wavFiles}\t{_wavFilesPercent:F3}%\n");
-                    AppendNormal($"WAV Size:\t{_wavSize / (1024.0 * 1024.0 * 1024.0):F3} GB\t{_wavSizePercent:F3}%\n");
-                    AppendNormal($"WAV Duration:\t{_wavDuration}\t{_wavDurationPercent:F3}%\n\n");
-                }
+                
+                // Local helper: renders a property list with consistent formatting
                 void AppendPropertyList(string label, List<string> items)
                 {
                     AppendNormal($"{label}\n");
                     foreach (string item in items)
                     {
                         int lastParen = item.LastIndexOf(" (");
-                        if (lastParen > 0 && item.EndsWith(")"))
+
+                        if (lastParen > 0 && item.EndsWith(')'))
                         {
                             string value = item[..lastParen];
                             string count = item.Substring(lastParen + 2, item.Length - lastParen - 3);
-                            AppendNormal($"  • {value}:\t{count}\n");
+                            AppendNormal(FormatRow($"  • {value}:", count));
                         }
                         else
                         {
@@ -236,9 +219,43 @@ namespace FLAC_Benchmark_H
                     }
                 }
 
+                // Formats percentage: whole numbers show as "100%", decimals as "95,545%"
+                string FormatPercent(double percent)
+                {
+                    return percent == Math.Truncate(percent)
+                        ? $"{percent:F0}%"
+                        : $"{percent:F3}%"; 
+                }
+
+                // === GENERAL STATISTICS ===
+                AppendNormal("GENERAL\n");
+                AppendNormal($"────────────────────────────────────────────────────────────\n");
+                AppendNormal(FormatRow("Total Files:", $"{_totalFiles}"));
+                AppendNormal(FormatRow("Total Size:", $"{_totalSize / (1024.0 * 1024.0 * 1024.0):F3} GB"));
+                AppendNormal(FormatRow("Total Duration:", _totalDuration));
+                AppendNormal("\n");
+
+                // === FLAC STATISTICS ===
+                if (_flacFiles > 0)
+                {
+                    AppendNormal(FormatRow("FLAC Files:", $"{_flacFiles}", FormatPercent(_flacFilesPercent)));
+                    AppendNormal(FormatRow("FLAC Size:", $"{_flacSize / (1024.0 * 1024.0 * 1024.0):F3} GB", FormatPercent(_flacSizePercent)));
+                    AppendNormal(FormatRow("FLAC Duration:", _flacDuration, FormatPercent(_flacDurationPercent)));
+                    AppendNormal("\n");
+                }
+
+                // === WAV STATISTICS ===
+                if (_wavFiles > 0)
+                {
+                    AppendNormal(FormatRow("WAV Files:", $"{_wavFiles}", FormatPercent(_wavFilesPercent)));
+                    AppendNormal(FormatRow("WAV Size:", $"{_wavSize / (1024.0 * 1024.0 * 1024.0):F3} GB", FormatPercent(_wavSizePercent)));
+                    AppendNormal(FormatRow("WAV Duration:", _wavDuration, FormatPercent(_wavDurationPercent)));
+                    AppendNormal("\n");
+                }
+
                 // === AUDIO PROPERTIES ===
                 AppendNormal("AUDIO PROPERTIES\n");
-                AppendNormal($"──────────────────────────────────────────────────────────\n");
+                AppendNormal($"────────────────────────────────────────────────────────────\n");
                 AppendPropertyList("Sampling Rates", _samplingRates);
                 AppendNormal("\n");
                 AppendPropertyList("Bit Depths", _bitDepths);
@@ -246,22 +263,44 @@ namespace FLAC_Benchmark_H
                 AppendPropertyList("Channels", _channels);
                 AppendNormal("\n");
 
-                // === WRITING LIBRARY ===
+                // === WRITING LIBRARY (FLAC encoders) ===
                 if (_writingLibraries.Count > 0)
                 {
-                    AppendPropertyList("Writing library (FLAC files only)", _writingLibraries);
+                    AppendNormal("Writing library (FLAC files only)\n");
+
+                    foreach (string item in _writingLibraries)
+                    {
+                        int lastParen = item.LastIndexOf(" (");
+
+                        if (lastParen > 0 && item.EndsWith(')'))
+                        {
+                            string value = item[..lastParen];
+                            string count = item.Substring(lastParen + 2, item.Length - lastParen - 3);
+
+                            // 41 = labelWidth (20) + value1Width (21), 10 = value2Width
+                            string libraryLabel = $"  • {value}:";
+                            AppendNormal($"{libraryLabel,-41}{count,10}\n");
+                        }
+                        else
+                        {
+                            AppendNormal($"  • {item}\n");
+                        }
+                    }
                     AppendNormal("\n");
                 }
 
-                // SECTION: MD5 status summary
+                // === POTENTIAL PROBLEMS ===
                 AppendNormal($"POTENTIAL PROBLEMS\n");
-                AppendNormal($"──────────────────────────────────────────────────────────\n");
-                if (_flacFilesWithoutMd5Data.Count == 0) { AppendNormal($"FLAC without MD5:\t0\n"); }
+                AppendNormal($"────────────────────────────────────────────────────────────\n");
 
-                // SECTION: Files without MD5 (collapsible)
-                if (_flacFilesWithoutMd5Data.Count > 0)
+                // FLAC files without MD5 (collapsible section)
+                if (_flacFilesWithoutMd5Data.Count == 0)
                 {
-                    AppendNormal($"FLAC without MD5:\t{_flacFilesWithoutMd5Data.Count}\n");
+                    AppendNormal(FormatRow("FLAC without MD5:", "0"));
+                }
+                else
+                {
+                    AppendNormal(FormatRow("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}"));
 
                     if (_filesWithoutMd5Expanded)
                     {
@@ -281,15 +320,17 @@ namespace FLAC_Benchmark_H
                     }
                     AppendNormal("\n");
                 }
-                AppendNormal($"MD5 errors:\t{_md5Errors}\n");
-                AppendNormal("\n");
 
-                // SECTION: Long paths (≥260 chars) - Windows MAX_PATH limit warning
-                if (_longPathsData.Count > 0)
+                // === LONG PATHS WARNING (≥260 characters) ===
+                if (_longPathsData.Count == 0)
+                {
+                    AppendNormal(FormatRow("Long paths:", "0"));
+                }
+                else
                 {
                     AppendNormal($"Long paths (≥260 characters - Windows MAX_PATH limit)\n");
-                    AppendNormal($"──────────────────────────────────────────────────────────\n");
-                    AppendNormal($"⚠️ Warning:\t{_longPathsData.Count} file(s) may have compatibility issues!\n");
+                    AppendNormal($"────────────────────────────────────────────────────────────\n");
+                    AppendNormal(FormatRow("⚠️ Warning:", $"{_longPathsData.Count} file(s) may have compatibility issues!"));
 
                     if (_longPathsExpanded)
                     {
@@ -297,6 +338,7 @@ namespace FLAC_Benchmark_H
                         AppendNormal("\n");
                         foreach (string path in _longPathsData)
                         {
+                            // Paths are too long for column formatting — display as-is with clickable link
                             AppendNormal($"  • {path.Length} characters: ");
                             AppendPathLink(path);
                             AppendNormal("\n");
@@ -310,12 +352,12 @@ namespace FLAC_Benchmark_H
                     AppendNormal("\n");
                 }
 
-                // SECTION: Files with MD5 errors (collapsible)
+                // === FILES WITH MD5 ERRORS (collapsible) ===
                 if (_filesWithMd5ErrorsData.Count > 0)
                 {
                     AppendNormal($"Files with MD5 Errors\n");
-                    AppendNormal($"──────────────────────────────────────────────────────────\n");
-                    AppendNormal($"Total:\t{_filesWithMd5ErrorsData.Count} file(s)\n");
+                    AppendNormal($"────────────────────────────────────────────────────────────\n");
+                    AppendNormal(FormatRow("Total:", $"{_filesWithMd5ErrorsData.Count} file(s)"));
 
                     if (_filesWithMd5ErrorsExpanded)
                     {
@@ -336,16 +378,15 @@ namespace FLAC_Benchmark_H
                     AppendNormal("\n");
                 }
 
-                // SECTION: Files without channel information (collapsible)
+                // === FILES WITHOUT CHANNEL INFO (collapsible) ===
                 if (_filesWithoutChannelsData.Count > 0)
                 {
                     AppendNormal($"Files without Channel information\n");
-                    AppendNormal($"──────────────────────────────────────────────────────────\n");
-                    AppendNormal($"Total:\t{_filesWithoutChannelsData.Count} file(s)\n");
+                    AppendNormal($"────────────────────────────────────────────────────────────\n");
+                    AppendNormal(FormatRow("Total:", $"{_filesWithoutChannelsData.Count} file(s)"));
 
                     if (_filesWithoutChannelsExpanded)
                     {
-                        // Section expanded: show toggle link + file list
                         AppendExpandableLink("▼ Hide files", 4);
                         AppendNormal("\n");
                         foreach (string path in _filesWithoutChannelsData)
@@ -357,17 +398,16 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        // Section collapsed: show toggle link only
                         AppendExpandableLink("▶ Show files", 4);
                         AppendNormal("\n");
                     }
                 }
 
-                // Apply constructed text to RichTextBox in single operation
+                // Apply constructed content to RichTextBox in single operation
                 richTextBoxSummary.Clear();
                 richTextBoxSummary.AppendText(sb.ToString());
 
-                // Populate link map with position - metadata mappings
+                // Register link positions for click handling
                 _linkMap.Clear();
                 foreach ((int pos, LinkInfo? info) in linkInfos)
                 {
@@ -377,6 +417,12 @@ namespace FLAC_Benchmark_H
                 // Apply visual styles (colors, underlines) to all registered links
                 ApplyLinkStyles();
 
+                // Remove trailing newline for clean output (optional) but in this case links are not stylized
+                //if (richTextBoxSummary.Text.EndsWith('\n'))
+                //{
+                //    richTextBoxSummary.Text = richTextBoxSummary.Text.TrimEnd('\n');
+                //}
+
                 // Restore scroll position to maintain user context after redraw
                 RestoreScrollPosition(firstVisibleIndex);
             }
@@ -384,7 +430,7 @@ namespace FLAC_Benchmark_H
             {
                 // Re-enable redrawing and force immediate refresh
                 _ = SendMessage(richTextBoxSummary.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
-                richTextBoxSummary.Invalidate();    // Mark control area as dirty (needs redraw)
+                richTextBoxSummary.Invalidate();    // Mark control as needing repaint
                 richTextBoxSummary.Update();        // Force immediate repaint
                 richTextBoxSummary.Refresh();       // Additional refresh guarantee
                 // Application.DoEvents();          // Optional: process pending messages
