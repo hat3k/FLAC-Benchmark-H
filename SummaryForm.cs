@@ -24,20 +24,29 @@ namespace FLAC_Benchmark_H
         private bool _filesWithoutChannelsExpanded = false;
 
         // Data storage for collapsible sections (populated on initial load)
-        private List<string> _filesWithoutMd5Data = [];
+        private List<string> _flacFilesWithoutMd5Data = [];
         private List<string> _filesWithMd5ErrorsData = [];
         private List<string> _longPathsData = [];
         private List<string> _filesWithoutChannelsData = [];
 
         // Original summary data (stored for redrawing when sections toggle)
-        private int _totalFiles, _checkedFiles, _uncheckedFiles;
+        private int _totalFiles;
         private long _totalSize;
         private string _totalDuration = string.Empty;
-        private int _flacCount, _wavCount;
+        private int _flacFiles, _wavFiles;
         private long _flacSize, _wavSize;
-        private double _flacPercent, _wavPercent;
+        private string _flacDuration = string.Empty;
+        private string _wavDuration = string.Empty;
         private List<string> _samplingRates = [], _bitDepths = [], _channels = [], _writingLibraries = [];
-        private int _filesWithMd5, _filesWithoutMd5, _md5Errors;
+        private int _md5Errors;
+
+        // Percents
+        private double _flacFilesPercent;
+        private double _flacSizePercent;
+        private double _flacDurationPercent;
+        private double _wavFilesPercent;
+        private double _wavSizePercent;
+        private double _wavDurationPercent;
 
         // Inner class: Stores metadata about clickable links in the RichTextBox
         private class LinkInfo
@@ -51,6 +60,10 @@ namespace FLAC_Benchmark_H
         {
             InitializeComponent();
 
+
+            // Tabstops in pixels
+            richTextBoxSummary.SelectionTabs = [130, 290, 340, 390];
+
             // Enable double-buffering for RichTextBox via reflection (reduces flicker)
             _ = typeof(RichTextBox).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.NonPublic |
@@ -62,21 +75,28 @@ namespace FLAC_Benchmark_H
         // Initializes the summary form with structured data.
         public void SetSummaryData(
             int totalFiles,
-            int checkedFiles,
-            int uncheckedFiles,
             long totalSize,
             string totalDuration,
-            int flacCount,
+
+            // FLAC
+            int flacFiles,
             long flacSize,
-            double flacPercent,
-            int wavCount,
+            double flacFilesPercent,
+            double flacSizePercent,
+            string flacDuration,
+            double flacDurationPercent,
+
+            // WAV
+            int wavFiles,
             long wavSize,
-            double wavPercent,
+            double wavFilesPercent,
+            double wavSizePercent,
+            string wavDuration,
+            double wavDurationPercent,
+
             List<string> samplingRates,
             List<string> bitDepths,
             List<string> channels,
-            int filesWithMd5,
-            int filesWithoutMd5,
             int md5Errors,
             List<string> filesWithoutMd5List,
             List<string> filesWithMd5Errors,
@@ -85,16 +105,34 @@ namespace FLAC_Benchmark_H
             List<string> filesWithoutChannels)
         {
             // Store all summary data for redrawing
-            _totalFiles = totalFiles; _checkedFiles = checkedFiles; _uncheckedFiles = uncheckedFiles;
-            _totalSize = totalSize; _totalDuration = totalDuration;
-            _flacCount = flacCount; _flacSize = flacSize; _flacPercent = flacPercent;
-            _wavCount = wavCount; _wavSize = wavSize; _wavPercent = wavPercent;
-            _samplingRates = samplingRates; _bitDepths = bitDepths; _channels = channels;
-            _filesWithMd5 = filesWithMd5; _filesWithoutMd5 = filesWithoutMd5; _md5Errors = md5Errors;
+            _totalFiles = totalFiles;
+            _totalSize = totalSize;
+            _totalDuration = totalDuration;
+
+            // FLAC
+            _flacFiles = flacFiles;
+            _flacSize = flacSize;
+            _flacFilesPercent = flacFilesPercent;
+            _flacSizePercent = flacSizePercent;
+            _flacDuration = flacDuration;
+            _flacDurationPercent = flacDurationPercent;
+
+            // WAV
+            _wavFiles = wavFiles;
+            _wavSize = wavSize;
+            _wavFilesPercent = wavFilesPercent;
+            _wavSizePercent = wavSizePercent;
+            _wavDuration = wavDuration;
+            _wavDurationPercent = wavDurationPercent;
+
+            _samplingRates = samplingRates;
+            _bitDepths = bitDepths;
+            _channels = channels;
+            _md5Errors = md5Errors;
             _writingLibraries = writingLibraries;
 
             // Store data for collapsible sections
-            _filesWithoutMd5Data = filesWithoutMd5List;
+            _flacFilesWithoutMd5Data = filesWithoutMd5List;
             _filesWithMd5ErrorsData = filesWithMd5Errors;
             _longPathsData = longPathItems;
             _filesWithoutChannelsData = filesWithoutChannels;
@@ -160,34 +198,150 @@ namespace FLAC_Benchmark_H
 
                 // SECTION: General statistics
                 AppendNormal("GENERAL\n");
-                AppendNormal("───────────────────────────────────────\n");
-                AppendNormal($"Total Files:          {_totalFiles}\n");
-                AppendNormal($"Checked:              {_checkedFiles}\n");
-                AppendNormal($"Unchecked:            {_uncheckedFiles}\n\n");
-                AppendNormal($"Total Size:           {_totalSize / (1024.0 * 1024.0 * 1024.0):F2} GB\n");
-                AppendNormal($"Total Duration:       {_totalDuration}\n\n");
+                AppendNormal($"──────────────────────────────────────────────────────────\n");
+                AppendNormal($"Total Files:\t{_totalFiles}\n");
+                AppendNormal($"Total Size:\t{_totalSize / (1024.0 * 1024.0 * 1024.0):F3} GB\n");
+                AppendNormal($"Total Duration:\t{_totalDuration}\n\n");
 
-                // SECTION: Format distribution (FLAC/WAV)
-                AppendNormal("FORMAT\n");
-                AppendNormal("───────────────────────────────────────\n");
-                AppendNormal("Format    Files    Size      %\n");
-                AppendNormal("───────────────────────────────────────\n");
-                AppendNormal($"FLAC      {_flacCount,-7}{_flacSize / (1024.0 * 1024.0 * 1024.0),6:F1} GB   {_flacPercent:F1}%\n");
-                AppendNormal($"WAV       {_wavCount,-7}{_wavSize / (1024.0 * 1024.0 * 1024.0),6:F1} GB   {_wavPercent:F1}%\n\n");
+                // FLAC statistics
+                if (_flacFiles > 0)
+                {
+                    AppendNormal($"FLAC Files:\t{_flacFiles}\t{_flacFilesPercent:F3}%\n");
+                    AppendNormal($"FLAC Size:\t{_flacSize / (1024.0 * 1024.0 * 1024.0):F3} GB\t{_flacSizePercent:F3}%\n");
+                    AppendNormal($"FLAC Duration:\t{_flacDuration}\t{_flacDurationPercent:F3}%\n\n");
+                }
+                if (_wavFiles > 0)
+                {
+                    // WAV statistics
+                    AppendNormal($"WAV Files:\t{_wavFiles}\t{_wavFilesPercent:F3}%\n");
+                    AppendNormal($"WAV Size:\t{_wavSize / (1024.0 * 1024.0 * 1024.0):F3} GB\t{_wavSizePercent:F3}%\n");
+                    AppendNormal($"WAV Duration:\t{_wavDuration}\t{_wavDurationPercent:F3}%\n\n");
+                }
+                void AppendPropertyList(string label, List<string> items)
+                {
+                    AppendNormal($"{label}\n");
+                    foreach (string item in items)
+                    {
+                        int lastParen = item.LastIndexOf(" (");
+                        if (lastParen > 0 && item.EndsWith(")"))
+                        {
+                            string value = item[..lastParen];
+                            string count = item.Substring(lastParen + 2, item.Length - lastParen - 3);
+                            AppendNormal($"  • {value}:\t{count}\n");
+                        }
+                        else
+                        {
+                            AppendNormal($"  • {item}\n");
+                        }
+                    }
+                }
 
-                // SECTION: Audio properties summary
+                // === AUDIO PROPERTIES ===
                 AppendNormal("AUDIO PROPERTIES\n");
-                AppendNormal("───────────────────────────────────────\n");
-                AppendNormal($"Sampling Rates:  {string.Join(", ", _samplingRates)}\n");
-                AppendNormal($"Bit Depths:      {string.Join(", ", _bitDepths)}\n");
-                AppendNormal($"Channels:        {string.Join(", ", _channels)}\n");
+                AppendNormal($"──────────────────────────────────────────────────────────\n");
+                AppendPropertyList("Sampling Rates", _samplingRates);
+                AppendNormal("\n");
+                AppendPropertyList("Bit Depths", _bitDepths);
+                AppendNormal("\n");
+                AppendPropertyList("Channels", _channels);
+                AppendNormal("\n");
+
+                // === WRITING LIBRARY ===
+                if (_writingLibraries.Count > 0)
+                {
+                    AppendPropertyList("Writing library (FLAC files only)", _writingLibraries);
+                    AppendNormal("\n");
+                }
+
+                // SECTION: MD5 status summary
+                AppendNormal($"POTENTIAL PROBLEMS\n");
+                AppendNormal($"──────────────────────────────────────────────────────────\n");
+                if (_flacFilesWithoutMd5Data.Count == 0) { AppendNormal($"FLAC without MD5:\t0\n"); }
+
+                // SECTION: Files without MD5 (collapsible)
+                if (_flacFilesWithoutMd5Data.Count > 0)
+                {
+                    AppendNormal($"FLAC without MD5:\t{_flacFilesWithoutMd5Data.Count}\n");
+
+                    if (_filesWithoutMd5Expanded)
+                    {
+                        AppendExpandableLink("▼ Hide files", 1);
+                        AppendNormal("\n");
+                        foreach (string path in _flacFilesWithoutMd5Data)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                    }
+                    else
+                    {
+                        AppendExpandableLink("▶ Show files", 1);
+                        AppendNormal("\n");
+                    }
+                    AppendNormal("\n");
+                }
+                AppendNormal($"MD5 errors:\t{_md5Errors}\n");
+                AppendNormal("\n");
+
+                // SECTION: Long paths (≥260 chars) - Windows MAX_PATH limit warning
+                if (_longPathsData.Count > 0)
+                {
+                    AppendNormal($"Long paths (≥260 characters - Windows MAX_PATH limit)\n");
+                    AppendNormal($"──────────────────────────────────────────────────────────\n");
+                    AppendNormal($"⚠️ Warning:\t{_longPathsData.Count} file(s) may have compatibility issues!\n");
+
+                    if (_longPathsExpanded)
+                    {
+                        AppendExpandableLink("▼ Hide files", 3);
+                        AppendNormal("\n");
+                        foreach (string path in _longPathsData)
+                        {
+                            AppendNormal($"  • {path.Length} characters: ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                    }
+                    else
+                    {
+                        AppendExpandableLink("▶ Show files", 3);
+                        AppendNormal("\n");
+                    }
+                    AppendNormal("\n");
+                }
+
+                // SECTION: Files with MD5 errors (collapsible)
+                if (_filesWithMd5ErrorsData.Count > 0)
+                {
+                    AppendNormal($"Files with MD5 Errors\n");
+                    AppendNormal($"──────────────────────────────────────────────────────────\n");
+                    AppendNormal($"Total:\t{_filesWithMd5ErrorsData.Count} file(s)\n");
+
+                    if (_filesWithMd5ErrorsExpanded)
+                    {
+                        AppendExpandableLink("▼ Hide files", 2);
+                        AppendNormal("\n");
+                        foreach (string path in _filesWithMd5ErrorsData)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                    }
+                    else
+                    {
+                        AppendExpandableLink("▶ Show files", 2);
+                        AppendNormal("\n");
+                    }
+                    AppendNormal("\n");
+                }
 
                 // SECTION: Files without channel information (collapsible)
                 if (_filesWithoutChannelsData.Count > 0)
                 {
-                    AppendNormal($"\nFILES WITHOUT CHANNEL INFORMATION\n");
-                    AppendNormal($"───────────────────────────────────────\n");
-                    AppendNormal($"Total: {_filesWithoutChannelsData.Count} file(s)\n");
+                    AppendNormal($"Files without Channel information\n");
+                    AppendNormal($"──────────────────────────────────────────────────────────\n");
+                    AppendNormal($"Total:\t{_filesWithoutChannelsData.Count} file(s)\n");
 
                     if (_filesWithoutChannelsExpanded)
                     {
@@ -206,99 +360,6 @@ namespace FLAC_Benchmark_H
                         // Section collapsed: show toggle link only
                         AppendExpandableLink("▶ Show files", 4);
                         AppendNormal("\n");
-                    }
-                }
-
-                // SECTION: MD5 status summary
-                AppendNormal($"\nMD5 STATUS\n");
-                AppendNormal($"───────────────────────────────────────\n");
-                AppendNormal($"Files with MD5:     {_filesWithMd5}\n");
-                AppendNormal($"Files without MD5:  {_filesWithoutMd5}\n");
-                AppendNormal($"MD5 errors:         {_md5Errors}\n");
-
-                // SECTION: Files without MD5 (collapsible)
-                if (_filesWithoutMd5Data.Count > 0)
-                {
-                    AppendNormal($"\nFILES WITHOUT MD5\n");
-                    AppendNormal($"───────────────────────────────────────\n");
-                    AppendNormal($"Total: {_filesWithoutMd5Data.Count} file(s)\n");
-
-                    if (_filesWithoutMd5Expanded)
-                    {
-                        AppendExpandableLink("▼ Hide files", 1);
-                        AppendNormal("\n");
-                        foreach (string path in _filesWithoutMd5Data)
-                        {
-                            AppendNormal("  • ");
-                            AppendPathLink(path);
-                            AppendNormal("\n");
-                        }
-                    }
-                    else
-                    {
-                        AppendExpandableLink("▶ Show files", 1);
-                        AppendNormal("\n");
-                    }
-                }
-
-                // SECTION: Files with MD5 errors (collapsible)
-                if (_filesWithMd5ErrorsData.Count > 0)
-                {
-                    AppendNormal($"\nFILES WITH MD5 ERRORS\n");
-                    AppendNormal($"───────────────────────────────────────\n");
-                    AppendNormal($"Total: {_filesWithMd5ErrorsData.Count} file(s)\n");
-
-                    if (_filesWithMd5ErrorsExpanded)
-                    {
-                        AppendExpandableLink("▼ Hide files", 2);
-                        AppendNormal("\n");
-                        foreach (string path in _filesWithMd5ErrorsData)
-                        {
-                            AppendNormal("  • ");
-                            AppendPathLink(path);
-                            AppendNormal("\n");
-                        }
-                    }
-                    else
-                    {
-                        AppendExpandableLink("▶ Show files", 2);
-                        AppendNormal("\n");
-                    }
-                }
-
-                // SECTION: Long paths (≥260 chars) - Windows MAX_PATH limit warning
-                if (_longPathsData.Count > 0)
-                {
-                    AppendNormal($"\nLONG PATHS (≥260 characters - Windows MAX_PATH limit)\n");
-                    AppendNormal($"───────────────────────────────────────\n");
-                    AppendNormal($"⚠️ Warning: {_longPathsData.Count} file(s) may have compatibility issues!\n");
-
-                    if (_longPathsExpanded)
-                    {
-                        AppendExpandableLink("▼ Hide files", 3);
-                        AppendNormal("\n");
-                        foreach (string path in _longPathsData)
-                        {
-                            AppendNormal($"  • {path.Length} characters: ");
-                            AppendPathLink(path);
-                            AppendNormal("\n");
-                        }
-                    }
-                    else
-                    {
-                        AppendExpandableLink("▶ Show files", 3);
-                        AppendNormal("\n");
-                    }
-                }
-
-                // SECTION: Writing library statistics (FLAC encoder info)
-                if (_writingLibraries.Count > 0)
-                {
-                    AppendNormal($"\nWRITING LIBRARY (FLAC files only)\n");
-                    AppendNormal($"───────────────────────────────────────\n");
-                    foreach (string lib in _writingLibraries)
-                    {
-                        AppendNormal($"  • {lib}\n");
                     }
                 }
 

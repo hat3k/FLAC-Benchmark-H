@@ -1891,8 +1891,12 @@ namespace FLAC_Benchmark_H
 
                     if (cachedInfo.Extension == ".flac")
                     {
-                        cachedInfo.Md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
                         cachedInfo.WritingLibrary = mediaInfo.Get(StreamKind.Audio, 0, "Encoded_Library/String") ?? "N/A";
+                        
+                        cachedInfo.Md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
+                        cachedInfo.Md5HashMissing = string.IsNullOrEmpty(cachedInfo.Md5Hash) ||
+                                 cachedInfo.Md5Hash == "N/A" ||
+                                 cachedInfo.Md5Hash == "00000000000000000000000000000000";
                     }
                     else if (cachedInfo.Extension == ".wav" && checkBoxAddMD5OnLoadWav.Checked)
                     {
@@ -1950,6 +1954,7 @@ namespace FLAC_Benchmark_H
             public string Duration { get; set; } = string.Empty;
             public long FileSize { get; set; }
             public string Md5Hash { get; set; } = string.Empty;
+            public bool Md5HashMissing { get; set; }
             public string ErrorDetails { get; set; } = string.Empty;
             public string WritingLibrary { get; set; } = string.Empty;
             public DateTime CreationTime { get; set; }
@@ -2700,24 +2705,18 @@ namespace FLAC_Benchmark_H
         {
             checkBoxWarningsAsErrors.Checked = !checkBoxWarningsAsErrors.Checked;
         }
-        private void SummaryToolStripMenuItemAudioFiles_Click(object? sender, EventArgs e)
+        private void SummaryToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            // Get all items from the ListView
             var items = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
 
-            // SECTION: General statistics
             int totalFiles = items.Count;
-            int checkedFiles = items.Count(i => i.Checked);
-            int uncheckedFiles = totalFiles - checkedFiles;
 
-            // Calculate total size in bytes
             long totalSize = items.Sum(i =>
             {
                 string path = i.Tag?.ToString() ?? "";
                 return audioFileInfoCache.TryGetValue(path, out var info) ? info.FileSize : 0;
             });
 
-            // Calculate total duration in milliseconds
             long totalDurationMs = items.Sum(i =>
             {
                 string path = i.Tag?.ToString() ?? "";
@@ -2725,28 +2724,26 @@ namespace FLAC_Benchmark_H
                        long.TryParse(info.Duration, out var d) ? d : 0;
             });
 
-            // Format duration for display (handles days if > 24 hours)
-            string totalDurationFormatted;
-            if (totalDurationMs <= 0)
+            static string FormatDuration(long totalMilliseconds)
             {
-                totalDurationFormatted = "0:00:00";
-            }
-            else
-            {
-                var duration = TimeSpan.FromMilliseconds(totalDurationMs);
+                if (totalMilliseconds <= 0)
+                    return "0:00:00";
+
+                var duration = TimeSpan.FromMilliseconds(totalMilliseconds);
                 if (duration.TotalDays < 1)
                 {
-                    totalDurationFormatted = duration.ToString(@"hh\:mm\:ss");
+                    return duration.ToString(@"hh\:mm\:ss\.fff");
                 }
                 else
                 {
                     int days = (int)duration.TotalDays;
                     string dayWord = days == 1 ? "day" : "days";
-                    totalDurationFormatted = $"{days} {dayWord} {duration.ToString(@"hh\:mm\:ss")}";
+                    return $"{days} {dayWord} {duration.ToString(@"hh\:mm\:ss\.fff")}";
                 }
             }
 
-            // SECTION: Format distribution (FLAC vs WAV)
+            string totalDurationFormatted = FormatDuration(totalDurationMs);
+
             var flacItems = items.Where(i =>
             {
                 string path = i.Tag?.ToString() ?? "";
@@ -2759,15 +2756,34 @@ namespace FLAC_Benchmark_H
                 return audioFileInfoCache.TryGetValue(path, out var info) && info.Extension == ".wav";
             }).ToList();
 
-            int flacCount = flacItems.Count;
-            int wavCount = wavItems.Count;
+            int flacFiles = flacItems.Count;
             long flacSize = flacItems.Sum(i => audioFileInfoCache[i.Tag!.ToString()!].FileSize);
+            long flacDurationMs = flacItems.Sum(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) &&
+                       long.TryParse(info.Duration, out var d) ? d : 0;
+            });
+            string flacDurationFormatted = FormatDuration(flacDurationMs);
+
+            int wavFiles = wavItems.Count;
             long wavSize = wavItems.Sum(i => audioFileInfoCache[i.Tag!.ToString()!].FileSize);
+            long wavDurationMs = wavItems.Sum(i =>
+            {
+                string path = i.Tag?.ToString() ?? "";
+                return audioFileInfoCache.TryGetValue(path, out var info) &&
+                       long.TryParse(info.Duration, out var d) ? d : 0;
+            });
+            string wavDurationFormatted = FormatDuration(wavDurationMs);
 
-            double flacPercent = totalFiles > 0 ? (double)flacCount / totalFiles * 100 : 0;
-            double wavPercent = totalFiles > 0 ? (double)wavCount / totalFiles * 100 : 0;
+            double flacFilesPercent = totalFiles > 0 ? (double)flacFiles / totalFiles * 100 : 0;
+            double flacSizePercent = totalSize > 0 ? (double)flacSize / totalSize * 100 : 0;
+            double flacDurationPercent = totalDurationMs > 0 ? (double)flacDurationMs / totalDurationMs * 100 : 0;
 
-            // SECTION: Audio properties summary (sampling rate, bit depth, channels)
+            double wavFilesPercent = totalFiles > 0 ? (double)wavFiles / totalFiles * 100 : 0;
+            double wavSizePercent = totalSize > 0 ? (double)wavSize / totalSize * 100 : 0;
+            double wavDurationPercent = totalDurationMs > 0 ? (double)wavDurationMs / totalDurationMs * 100 : 0;
+
             var samplingRates = items
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].SamplingRateString)
                 .Where(sr => !string.IsNullOrEmpty(sr) && sr != "N/A")
@@ -2789,31 +2805,6 @@ namespace FLAC_Benchmark_H
                 .OrderByDescending(g => g.Count())
                 .Select(g => $"{g.Key} ({g.Count()})");
 
-            // Files without channel information
-            var filesWithoutChannels = items
-                .Where(i =>
-                {
-                    string path = i.Tag?.ToString() ?? "";
-                    return audioFileInfoCache.TryGetValue(path, out var info) &&
-                           (string.IsNullOrEmpty(info.Channels) || info.Channels == "N/A");
-                })
-                .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path)
-                .ToList();
-
-            // SECTION: MD5 status summary
-            int filesWithMd5 = items.Count(i =>
-            {
-                string path = i.Tag?.ToString() ?? "";
-                return audioFileInfoCache.TryGetValue(path, out var info) &&
-                       !string.IsNullOrEmpty(info.Md5Hash) &&
-                       info.Md5Hash != "N/A" &&
-                       info.Md5Hash != "00000000000000000000000000000000" &&
-                       info.Md5Hash != "MD5 calculation failed";
-            });
-
-            int filesWithoutMd5 = totalFiles - filesWithMd5;
-
             int md5Errors = items.Count(i =>
             {
                 string path = i.Tag?.ToString() ?? "";
@@ -2821,29 +2812,24 @@ namespace FLAC_Benchmark_H
                        info.Md5Hash == "MD5 calculation failed";
             });
 
-            // SECTION: Files with long paths (≥260 chars - Windows MAX_PATH limit)
             const int MaxPathLength = 260;
             var longPathItems = items
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
                 .Where(path => path.Length >= MaxPathLength)
-                .OrderByDescending(path => path.Length)
+                .OrderBy(path => path, new NaturalStringComparer())
                 .ToList();
 
-            // SECTION: Files without MD5 hash
             var filesWithoutMd5List = items
                 .Where(i =>
                 {
                     string path = i.Tag?.ToString() ?? "";
                     return audioFileInfoCache.TryGetValue(path, out var info) &&
-                           (string.IsNullOrEmpty(info.Md5Hash) ||
-                            info.Md5Hash == "N/A" ||
-                            info.Md5Hash == "00000000000000000000000000000000");
+                           info.Md5HashMissing;
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path)
+                .OrderBy(path => path, new NaturalStringComparer())
                 .ToList();
 
-            // SECTION: Files with MD5 calculation errors (limited to 10 for display)
             var filesWithMd5Errors = items
                 .Where(i =>
                 {
@@ -2852,11 +2838,20 @@ namespace FLAC_Benchmark_H
                            info.Md5Hash == "MD5 calculation failed";
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path)
-                .Take(10)
+                .OrderBy(path => path, new NaturalStringComparer())
                 .ToList();
 
-            // SECTION: Writing library statistics (FLAC encoder info)
+            var filesWithoutChannels = items
+                .Where(i =>
+                {
+                    string path = i.Tag?.ToString() ?? "";
+                    return audioFileInfoCache.TryGetValue(path, out var info) &&
+                           (string.IsNullOrEmpty(info.Channels) || info.Channels == "N/A");
+                })
+                .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
+                .OrderBy(path => path, new NaturalStringComparer())
+                .ToList();
+
             var writingLibraries = flacItems
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].WritingLibrary)
                 .Where(wl => !string.IsNullOrEmpty(wl) && wl != "N/A")
@@ -2865,18 +2860,39 @@ namespace FLAC_Benchmark_H
                 .Select(g => $"{g.Key} ({g.Count()})")
                 .ToList();
 
-            // DISPLAY: Show SummaryForm with all collected data
             var summaryForm = new SummaryForm();
             summaryForm.SetSummaryData(
-                totalFiles, checkedFiles, uncheckedFiles,                       // General counts
-                totalSize, totalDurationFormatted,                              // Size and duration
-                flacCount, flacSize, flacPercent,                               // FLAC stats
-                wavCount, wavSize, wavPercent,                                  // WAV stats
-                samplingRates.ToList(), bitDepths.ToList(), channels.ToList(),  // Audio properties
-                filesWithMd5, filesWithoutMd5, md5Errors,                       // MD5 status
-                filesWithoutMd5List, filesWithMd5Errors, longPathItems,         // File lists
-                writingLibraries,                                               // Encoder info
-                filesWithoutChannels                                            // Files without channel info
+                // === TOTAL ===
+                totalFiles,
+                totalSize,
+                totalDurationFormatted,
+
+                // === FLAC ===
+                flacFiles,
+                flacSize,
+                flacFilesPercent,
+                flacSizePercent,
+                flacDurationFormatted,
+                flacDurationPercent,
+
+                // === WAV ===
+                wavFiles,
+                wavSize,
+                wavFilesPercent,
+                wavSizePercent,
+                wavDurationFormatted,
+                wavDurationPercent,
+
+                // === METADATA ===
+                samplingRates.ToList(),
+                bitDepths.ToList(),
+                channels.ToList(),
+                md5Errors,
+                filesWithoutMd5List,
+                filesWithMd5Errors,
+                longPathItems,
+                writingLibraries,
+                filesWithoutChannels
             );
             summaryForm.Show(this);
         }
