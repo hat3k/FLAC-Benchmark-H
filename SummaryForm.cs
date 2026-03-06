@@ -163,6 +163,27 @@ namespace FLAC_Benchmark_H
                     _ = sb.Append(text);
                 }
 
+                // Appends a formatted row with an inline toggle link ("[+] Show files")
+                void AppendRowWithToggle(string label, string value, string toggleText, int linkId)
+                {
+                    // Format base row without trailing \n
+                    string baseRow = FormatRow(label, value).TrimEnd('\n');
+                    AppendNormal(baseRow);
+
+                    // Append and register the toggle link
+                    int linkStart = sb.Length;
+                    _ = sb.Append(toggleText);
+                    linkInfos.Add((linkStart, new LinkInfo
+                    {
+                        Length = toggleText.Length,
+                        LinkId = linkId,
+                        FilePath = null
+                    }));
+
+                    // Finish the line
+                    AppendNormal("\n");
+                }
+
                 // Local helper: appends a clickable file path and records its metadata for link handling
                 void AppendPathLink(string path)
                 {
@@ -304,12 +325,11 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    AppendNormal(FormatRow("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}"));
+                    string toggleText = _filesWithoutMd5Expanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}", toggleText, 1);
 
                     if (_filesWithoutMd5Expanded)
                     {
-                        AppendExpandableLink("[-] Hide files", 1);
-                        AppendNormal("\n");
                         foreach (string path in _flacFilesWithoutMd5Data)
                         {
                             AppendNormal("  • ");
@@ -317,12 +337,6 @@ namespace FLAC_Benchmark_H
                             AppendNormal("\n");
                         }
                     }
-                    else
-                    {
-                        AppendExpandableLink("[+] Show files", 1);
-                        AppendNormal("\n");
-                    }
-                    AppendNormal("\n");
                 }
 
                 // === LONG PATHS WARNING (≥260 characters) ===
@@ -337,24 +351,18 @@ namespace FLAC_Benchmark_H
                     AppendNormal($"────────────────────────────────────────────────────────────\n");
                     AppendNormal(FormatRow("⚠️ Warning:", $"{_longPathsData.Count} file(s) may have compatibility issues!"));
 
+                    string toggleText = _longPathsExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Files:", $"{_longPathsData.Count}", toggleText, 3);
+
                     if (_longPathsExpanded)
                     {
-                        AppendExpandableLink("[-] Hide files", 3);
-                        AppendNormal("\n");
                         foreach (string path in _longPathsData)
                         {
-                            // Paths are too long for column formatting — display as-is with clickable link
                             AppendNormal($"  • {path.Length} characters: ");
                             AppendPathLink(path);
                             AppendNormal("\n");
                         }
                     }
-                    else
-                    {
-                        AppendExpandableLink("[+] Show files", 3);
-                        AppendNormal("\n");
-                    }
-                    AppendNormal("\n");
                 }
 
                 // === FILES WITH MD5 ERRORS (collapsible) ===
@@ -362,12 +370,12 @@ namespace FLAC_Benchmark_H
                 {
                     AppendNormal($"Files with MD5 Errors\n");
                     AppendNormal($"────────────────────────────────────────────────────────────\n");
-                    AppendNormal(FormatRow("Total:", $"{_filesWithMd5ErrorsData.Count} file(s)"));
+
+                    string toggleText = _filesWithMd5ErrorsExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Total:", $"{_filesWithMd5ErrorsData.Count} file(s)", toggleText, 2);
 
                     if (_filesWithMd5ErrorsExpanded)
                     {
-                        AppendExpandableLink("[-] Hide files", 2);
-                        AppendNormal("\n");
                         foreach (string path in _filesWithMd5ErrorsData)
                         {
                             AppendNormal("  • ");
@@ -375,12 +383,6 @@ namespace FLAC_Benchmark_H
                             AppendNormal("\n");
                         }
                     }
-                    else
-                    {
-                        AppendExpandableLink("[+] Show files", 2);
-                        AppendNormal("\n");
-                    }
-                    AppendNormal("\n");
                 }
 
                 // === FILES WITHOUT CHANNEL INFO (collapsible) ===
@@ -388,23 +390,18 @@ namespace FLAC_Benchmark_H
                 {
                     AppendNormal($"Files without Channel information\n");
                     AppendNormal($"────────────────────────────────────────────────────────────\n");
-                    AppendNormal(FormatRow("Total:", $"{_filesWithoutChannelsData.Count} file(s)"));
+
+                    string toggleText = _filesWithoutChannelsExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Total:", $"{_filesWithoutChannelsData.Count} file(s)", toggleText, 4);
 
                     if (_filesWithoutChannelsExpanded)
                     {
-                        AppendExpandableLink("[-] Hide files", 4);
-                        AppendNormal("\n");
                         foreach (string path in _filesWithoutChannelsData)
                         {
                             AppendNormal("  • ");
                             AppendPathLink(path);
                             AppendNormal("\n");
                         }
-                    }
-                    else
-                    {
-                        AppendExpandableLink("[+] Show files", 4);
-                        AppendNormal("\n");
                     }
                 }
 
