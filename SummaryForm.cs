@@ -197,19 +197,6 @@ namespace FLAC_Benchmark_H
                     }));
                 }
 
-                // Local helper: appends a collapsible section toggle link ("Show/Hide files")
-                void AppendExpandableLink(string linkText, int linkId)
-                {
-                    int linkStart = sb.Length;
-                    _ = sb.Append(linkText);
-                    linkInfos.Add((linkStart, new LinkInfo
-                    {
-                        Length = linkText.Length,
-                        LinkId = linkId,    // 1-4 identifies which section to toggle
-                        FilePath = null
-                    }));
-                }
-
                 // Formats a row with fixed-width columns for consistent alignment when copied
                 string FormatRow(string label, string value1, string? value2 = null)
                 {
