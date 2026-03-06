@@ -300,6 +300,7 @@ namespace FLAC_Benchmark_H
                 if (_flacFilesWithoutMd5Data.Count == 0)
                 {
                     AppendNormal(FormatRow("FLAC without MD5:", "0"));
+                    AppendNormal("\n");
                 }
                 else
                 {
@@ -328,6 +329,7 @@ namespace FLAC_Benchmark_H
                 if (_longPathsData.Count == 0)
                 {
                     AppendNormal(FormatRow("Long paths:", "0"));
+                    AppendNormal("\n");
                 }
                 else
                 {
@@ -405,6 +407,15 @@ namespace FLAC_Benchmark_H
                         AppendNormal("\n");
                     }
                 }
+
+                // Remove trailing newlines for clean output (optional)
+                while (sb.Length > 0 && sb[^1] == '\n')
+                {
+                    sb.Length--;
+                }
+
+                // Add trailing newline for clean output (optional)
+                _ = sb.Append('\n');
 
                 // Apply constructed content to RichTextBox in single operation
                 richTextBoxSummary.Clear();
