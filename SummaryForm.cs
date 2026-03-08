@@ -14,6 +14,9 @@ namespace FLAC_Benchmark_H
         // Map of link start positions to link information
         private readonly Dictionary<int, LinkInfo> _linkMap = [];
 
+        // Track visited file paths with O(1) lookup
+        private readonly Dictionary<string, bool> _visitedFilePaths = [];
+
         // Tracks whether mouse is currently over a link (for cursor optimization)
         private bool _isOverLink = false;
 
@@ -22,12 +25,18 @@ namespace FLAC_Benchmark_H
         private bool _filesWithMd5ErrorsExpanded = false;
         private bool _longPathsExpanded = false;
         private bool _filesWithoutChannelsExpanded = false;
+        private bool _filesWithoutSamplingRateExpanded = false;
+        private bool _filesWithoutBitDepthExpanded = false;
+        private bool _filesWithoutDurationExpanded = false;
 
         // Data storage for collapsible sections (populated on initial load)
         private List<string> _flacFilesWithoutMd5Data = [];
         private List<string> _filesWithMd5ErrorsData = [];
         private List<string> _longPathsData = [];
         private List<string> _filesWithoutChannelsData = [];
+        private List<string> _filesWithoutSamplingRate = [];
+        private List<string> _filesWithoutBitDepth = [];
+        private List<string> _filesWithoutDuration = [];
 
         // Original summary data (stored for redrawing when sections toggle)
         private int _totalFiles;
@@ -38,7 +47,6 @@ namespace FLAC_Benchmark_H
         private string _flacDuration = string.Empty;
         private string _wavDuration = string.Empty;
         private List<string> _samplingRates = [], _bitDepths = [], _channels = [], _writingLibraries = [];
-        private int _md5Errors;
 
         // Percents
         private double _flacFilesPercent;
@@ -54,6 +62,7 @@ namespace FLAC_Benchmark_H
             public int Length { get; set; }       // Length of the link text
             public int LinkId { get; set; }       // Section ID (-1 for file path links)
             public string? FilePath { get; set; } // File path (null for section toggle links)
+            public bool Visited { get; set; }     // Whether this link has been clicked
         }
 
         public SummaryForm()
@@ -93,12 +102,14 @@ namespace FLAC_Benchmark_H
             List<string> samplingRates,
             List<string> bitDepths,
             List<string> channels,
-            int md5Errors,
             List<string> filesWithoutMd5List,
             List<string> filesWithMd5Errors,
             List<string> longPathItems,
             List<string> writingLibraries,
-            List<string> filesWithoutChannels)
+            List<string> filesWithoutChannels,
+            List<string> filesWithoutSamplingRate,
+            List<string> filesWithoutBitDepth,
+            List<string> filesWithoutDuration)
         {
             // Store all summary data for redrawing
             _totalFiles = totalFiles;
@@ -124,7 +135,6 @@ namespace FLAC_Benchmark_H
             _samplingRates = samplingRates;
             _bitDepths = bitDepths;
             _channels = channels;
-            _md5Errors = md5Errors;
             _writingLibraries = writingLibraries;
 
             // Store data for collapsible sections
@@ -132,12 +142,21 @@ namespace FLAC_Benchmark_H
             _filesWithMd5ErrorsData = filesWithMd5Errors;
             _longPathsData = longPathItems;
             _filesWithoutChannelsData = filesWithoutChannels;
+            _filesWithoutSamplingRate = filesWithoutSamplingRate;
+            _filesWithoutBitDepth = filesWithoutBitDepth;
+            _filesWithoutDuration = filesWithoutDuration;
+
+            // Clear visited state when new data is loaded
+            _visitedFilePaths.Clear();
 
             // Reset all section states to collapsed and trigger initial render
             _filesWithoutMd5Expanded = false;
             _filesWithMd5ErrorsExpanded = false;
             _longPathsExpanded = false;
             _filesWithoutChannelsExpanded = false;
+            _filesWithoutSamplingRateExpanded = false;
+            _filesWithoutBitDepthExpanded = false;
+            _filesWithoutDurationExpanded = false;
 
             RefreshSummary();
         }
@@ -177,7 +196,8 @@ namespace FLAC_Benchmark_H
                     {
                         Length = toggleText.Length,
                         LinkId = linkId,
-                        FilePath = null
+                        FilePath = null,
+                        Visited = false
                     }));
 
                     // Finish the line
@@ -189,11 +209,16 @@ namespace FLAC_Benchmark_H
                 {
                     int linkStart = sb.Length;
                     _ = sb.Append(path);
+
+                    // O(1) lookup in dictionary instead of O(n) foreach
+                    bool wasVisited = _visitedFilePaths.ContainsKey(path);
+
                     linkInfos.Add((linkStart, new LinkInfo
                     {
                         Length = path.Length,
                         LinkId = -1,        // -1 identifies file path links
-                        FilePath = path
+                        FilePath = path,
+                        Visited = wasVisited
                     }));
                 }
 
@@ -323,43 +348,20 @@ namespace FLAC_Benchmark_H
                             AppendPathLink(path);
                             AppendNormal("\n");
                         }
-                    }
-                }
-
-                // === LONG PATHS WARNING (≥260 characters) ===
-                if (_longPathsData.Count == 0)
-                {
-                    AppendNormal(FormatRow("Long paths:", "0"));
-                    AppendNormal("\n");
-                }
-                else
-                {
-                    AppendNormal($"Long paths (≥260 characters - Windows MAX_PATH limit)\n");
-                    AppendNormal($"────────────────────────────────────────────────────────────\n");
-                    AppendNormal(FormatRow("⚠️ Warning:", $"{_longPathsData.Count} file(s) may have compatibility issues!"));
-
-                    string toggleText = _longPathsExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Files:", $"{_longPathsData.Count}", toggleText, 3);
-
-                    if (_longPathsExpanded)
-                    {
-                        foreach (string path in _longPathsData)
-                        {
-                            AppendNormal($"  • {path.Length} characters: ");
-                            AppendPathLink(path);
-                            AppendNormal("\n");
-                        }
+                        AppendNormal("\n");
                     }
                 }
 
                 // === FILES WITH MD5 ERRORS (collapsible) ===
-                if (_filesWithMd5ErrorsData.Count > 0)
+                if (_filesWithMd5ErrorsData.Count == 0)
                 {
-                    AppendNormal($"Files with MD5 Errors\n");
-                    AppendNormal($"────────────────────────────────────────────────────────────\n");
-
+                    AppendNormal(FormatRow("MD5 Errors:", "0"));
+                    AppendNormal("\n");
+                }
+                else
+                {
                     string toggleText = _filesWithMd5ErrorsExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Total:", $"{_filesWithMd5ErrorsData.Count} file(s)", toggleText, 2);
+                    AppendRowWithToggle("MD5 Errors:", $"{_filesWithMd5ErrorsData.Count}", toggleText, 2);
 
                     if (_filesWithMd5ErrorsExpanded)
                     {
@@ -369,17 +371,38 @@ namespace FLAC_Benchmark_H
                             AppendPathLink(path);
                             AppendNormal("\n");
                         }
+                        AppendNormal("\n");
                     }
                 }
 
-                // === FILES WITHOUT CHANNEL INFO (collapsible) ===
+                // === LONG PATHS WARNING (≥260 characters) ===
+                if (_longPathsData.Count == 0)
+                {
+                    AppendNormal(FormatRow("Long path (>259):", "0"));
+                    AppendNormal("\n");
+                }
+                else
+                {
+                    string toggleText = _longPathsExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Long path (>259):", $"{_longPathsData.Count}", toggleText, 3);
+
+                    if (_longPathsExpanded)
+                    {
+                        foreach (string path in _longPathsData)
+                        {
+                            AppendNormal($"  • {path.Length} characters: ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+                }
+
+                // === FILES WITHOUT CHANNEL INFO ===
                 if (_filesWithoutChannelsData.Count > 0)
                 {
-                    AppendNormal($"Files without Channel information\n");
-                    AppendNormal($"────────────────────────────────────────────────────────────\n");
-
                     string toggleText = _filesWithoutChannelsExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Total:", $"{_filesWithoutChannelsData.Count} file(s)", toggleText, 4);
+                    AppendRowWithToggle("No 'Channel' info:", $"{_filesWithoutChannelsData.Count}", toggleText, 4);
 
                     if (_filesWithoutChannelsExpanded)
                     {
@@ -389,6 +412,61 @@ namespace FLAC_Benchmark_H
                             AppendPathLink(path);
                             AppendNormal("\n");
                         }
+                        AppendNormal("\n");
+                    }
+                }
+
+                // === FILES WITHOUT SAMPLING RATE ===
+                if (_filesWithoutSamplingRate.Count > 0)
+                {
+                    string toggleText = _filesWithoutSamplingRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("No 'Sampling Rate':", $"{_filesWithoutSamplingRate.Count}", toggleText, 5);
+
+                    if (_filesWithoutSamplingRateExpanded)
+                    {
+                        foreach (string path in _filesWithoutSamplingRate)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+                }
+
+                // === FILES WITHOUT BIT DEPTH ===
+                if (_filesWithoutBitDepth.Count > 0)
+                {
+                    string toggleText = _filesWithoutBitDepthExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("No 'Bit Depth':", $"{_filesWithoutBitDepth.Count}", toggleText, 6);
+
+                    if (_filesWithoutBitDepthExpanded)
+                    {
+                        foreach (string path in _filesWithoutBitDepth)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+                }
+
+                // === FILES WITHOUT DURATION ===
+                if (_filesWithoutDuration.Count > 0)
+                {
+                    string toggleText = _filesWithoutDurationExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("No 'Duration':", $"{_filesWithoutDuration.Count}", toggleText, 7);
+
+                    if (_filesWithoutDurationExpanded)
+                    {
+                        foreach (string path in _filesWithoutDuration)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
                     }
                 }
 
@@ -414,12 +492,6 @@ namespace FLAC_Benchmark_H
 
                 // Apply visual styles (colors, underlines) to all registered links
                 ApplyLinkStyles();
-
-                // Remove trailing newline for clean output (optional) but in this case links are not stylized
-                //if (richTextBoxSummary.Text.EndsWith('\n'))
-                //{
-                //    richTextBoxSummary.Text = richTextBoxSummary.Text.TrimEnd('\n');
-                //}
 
                 // Restore scroll position to maintain user context after redraw
                 RestoreScrollPosition(firstVisibleIndex);
@@ -486,7 +558,7 @@ namespace FLAC_Benchmark_H
 
         /// <summary>
         /// Applies visual styling (color, underline) to all registered links.
-        /// Section links: dark green; File links: blue.
+        /// Section links: dark green; Unvisited file links: blue; Visited file links: purple.
         /// </summary>
         private void ApplyLinkStyles()
         {
@@ -510,9 +582,11 @@ namespace FLAC_Benchmark_H
                     }
                     else
                     {
-                        // File path link: blue, underlined
+                        // File path link: underlined
                         richTextBoxSummary.SelectionFont = new Font(normalFont, FontStyle.Underline);
-                        richTextBoxSummary.SelectionColor = Color.Blue;
+
+                        // Use the Visited property from LinkInfo
+                        richTextBoxSummary.SelectionColor = kvp.Value.Visited ? Color.Purple : Color.Blue;
                     }
                 }
             }
@@ -547,11 +621,36 @@ namespace FLAC_Benchmark_H
                     }
                     else if (linkInfo.FilePath != null && File.Exists(linkInfo.FilePath))
                     {
-                        // File path link: open file/folder in Explorer
+                        // Mark as visited in both LinkInfo and dictionary
+                        linkInfo.Visited = true;
+                        _visitedFilePaths[linkInfo.FilePath] = true;
+
+                        // Update color immediately without full redraw
+                        UpdateLinkColor(linkStart, linkInfo.Length, Color.Purple);
+
+                        // Open file/folder in Explorer
                         OpenFileInExplorer(linkInfo.FilePath);
                         return;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Updates the color of a specific link without redrawing everything.
+        /// </summary>
+        private void UpdateLinkColor(int start, int length, Color color)
+        {
+            try
+            {
+                richTextBoxSummary.Select(start, length);
+                richTextBoxSummary.SelectionColor = color;
+                richTextBoxSummary.DeselectAll();
+            }
+            catch
+            {
+                // Fallback to full redraw if partial update fails
+                RefreshSummary();
             }
         }
 
@@ -567,6 +666,9 @@ namespace FLAC_Benchmark_H
                 case 2: _filesWithMd5ErrorsExpanded = !_filesWithMd5ErrorsExpanded; break;
                 case 3: _longPathsExpanded = !_longPathsExpanded; break;
                 case 4: _filesWithoutChannelsExpanded = !_filesWithoutChannelsExpanded; break;
+                case 5: _filesWithoutSamplingRateExpanded = !_filesWithoutSamplingRateExpanded; break;
+                case 6: _filesWithoutBitDepthExpanded = !_filesWithoutBitDepthExpanded; break;
+                case 7: _filesWithoutDurationExpanded = !_filesWithoutDurationExpanded; break;
                 default: return;
             }
 

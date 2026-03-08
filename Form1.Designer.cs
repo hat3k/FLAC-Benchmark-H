@@ -1007,7 +1007,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 414);
+            contextMenuStripAudioFiles.Size = new Size(202, 436);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1203,19 +1203,20 @@
             // detectDupesToolStripMenuItemAudioFiles
             // 
             detectDupesToolStripMenuItemAudioFiles.Name = "detectDupesToolStripMenuItemAudioFiles";
-            detectDupesToolStripMenuItemAudioFiles.Size = new Size(171, 22);
+            detectDupesToolStripMenuItemAudioFiles.Size = new Size(180, 22);
             detectDupesToolStripMenuItemAudioFiles.Text = "Detect Dupes";
             detectDupesToolStripMenuItemAudioFiles.Click += DetectDupesToolStripMenuItemAudioFiles_Click;
             // 
             // toolStripAudioFilesSeparator9
             // 
             toolStripAudioFilesSeparator9.Name = "toolStripAudioFilesSeparator9";
-            toolStripAudioFilesSeparator9.Size = new Size(168, 6);
+            toolStripAudioFilesSeparator9.Size = new Size(177, 6);
+            toolStripAudioFilesSeparator9.Tag = "KeepOpened";
             // 
             // testForErrorsToolStripMenuItemAudioFIles
             // 
             testForErrorsToolStripMenuItemAudioFIles.Name = "testForErrorsToolStripMenuItemAudioFIles";
-            testForErrorsToolStripMenuItemAudioFIles.Size = new Size(171, 22);
+            testForErrorsToolStripMenuItemAudioFIles.Size = new Size(180, 22);
             testForErrorsToolStripMenuItemAudioFIles.Text = "Test for Errors";
             testForErrorsToolStripMenuItemAudioFIles.Click += TestForErrorsToolStripMenuItemAudioFIles_Click;
             // 
@@ -1223,7 +1224,7 @@
             // 
             warningsAsErrorsToolStripMenuItemAudioFiles.CheckOnClick = true;
             warningsAsErrorsToolStripMenuItemAudioFiles.Name = "warningsAsErrorsToolStripMenuItemAudioFiles";
-            warningsAsErrorsToolStripMenuItemAudioFiles.Size = new Size(171, 22);
+            warningsAsErrorsToolStripMenuItemAudioFiles.Size = new Size(180, 22);
             warningsAsErrorsToolStripMenuItemAudioFiles.Tag = "KeepOpened";
             warningsAsErrorsToolStripMenuItemAudioFiles.Text = "Warnings as Errors";
             warningsAsErrorsToolStripMenuItemAudioFiles.Click += WarningsAsErrorsToolStripMenuItemAudioFiles_Click;
@@ -1231,13 +1232,15 @@
             // toolStripAudioFilesSeparator10
             // 
             toolStripAudioFilesSeparator10.Name = "toolStripAudioFilesSeparator10";
-            toolStripAudioFilesSeparator10.Size = new Size(168, 6);
+            toolStripAudioFilesSeparator10.Size = new Size(177, 6);
+            toolStripAudioFilesSeparator10.Tag = "KeepOpened";
             // 
             // summaryToolStripMenuItemAudioFiles
             // 
             summaryToolStripMenuItemAudioFiles.Name = "summaryToolStripMenuItemAudioFiles";
-            summaryToolStripMenuItemAudioFiles.Size = new Size(171, 22);
+            summaryToolStripMenuItemAudioFiles.Size = new Size(180, 22);
             summaryToolStripMenuItemAudioFiles.Text = "Summary";
+            summaryToolStripMenuItemAudioFiles.ToolTipText = "Show detailed statistics for loaded audio files";
             summaryToolStripMenuItemAudioFiles.Click += SummaryToolStripMenuItemAudioFiles_Click;
             // 
             // toolStripAudioFilesSeparator6
