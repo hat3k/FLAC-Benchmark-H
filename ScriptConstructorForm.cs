@@ -21,8 +21,8 @@ namespace FLAC_Benchmark_H
         {
             InitializeComponent();
             // Use Shown event for reliable focus and layout setup
-            this.Shown += ScriptConstructorForm_Shown;
-            this.MouseDown += ScriptConstructorForm_MouseDown;
+            Shown += ScriptConstructorForm_Shown;
+            MouseDown += ScriptConstructorForm_MouseDown;
 
             _debounceTimer = new System.Windows.Forms.Timer
             {
@@ -262,7 +262,7 @@ namespace FLAC_Benchmark_H
             labelPreviewJobsListMadeByScript.Refresh(); // Force UI update before heavy operation
 
             // --- Attempt to expand the script ---
-            var expanded = ScriptParser.ExpandScriptLine(scriptLine);
+            List<string> expanded = ScriptParser.ExpandScriptLine(scriptLine);
 
             if (expanded.Count == 0)
             {
@@ -277,7 +277,7 @@ namespace FLAC_Benchmark_H
                 foreach (string param in expanded)
                 {
                     // Add row to DataGridView for preview
-                    dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
+                    _ = dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
                 }
                 labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
                 labelPreviewJobsListMadeByScript.ForeColor = SystemColors.ControlText; // Default color
@@ -298,14 +298,14 @@ namespace FLAC_Benchmark_H
             string scriptText = comboBoxScript.Text.Trim();
             if (string.IsNullOrWhiteSpace(scriptText))
             {
-                MessageBox.Show("Script is empty.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("Script is empty.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var expanded = ScriptParser.ExpandScriptLine(scriptText);
+            List<string> expanded = ScriptParser.ExpandScriptLine(scriptText);
             if (expanded.Count == 0)
             {
-                MessageBox.Show(
+                _ = MessageBox.Show(
                     "Script produced no valid jobs. Check syntax (e.g. [min..max]).",
                     "Invalid Script",
                     MessageBoxButtons.OK,
@@ -313,10 +313,10 @@ namespace FLAC_Benchmark_H
                 return;
             }
 
-            var jobsToAdd = new List<ScriptJobData>
-            {
+            List<ScriptJobData> jobsToAdd =
+            [
                 new(true, "Encode", "1", scriptText) // Pass the script text as the 'parameter'
-            };
+            ];
 
             OnJobsAdded?.Invoke(jobsToAdd);
         }
@@ -359,7 +359,7 @@ namespace FLAC_Benchmark_H
         private void ScriptConstructorForm_MouseDown(object? sender, MouseEventArgs e)
         {
             // Get the location of the mouse click relative to the DataGridView
-            Point clickPoint = dataGridViewPreviewJobsListMadeByScript.PointToClient(this.PointToScreen(e.Location));
+            Point clickPoint = dataGridViewPreviewJobsListMadeByScript.PointToClient(PointToScreen(e.Location));
 
             // Check if the click point is outside the bounds of the DataGridView
             if (!dataGridViewPreviewJobsListMadeByScript.ClientRectangle.Contains(clickPoint))
@@ -371,7 +371,7 @@ namespace FLAC_Benchmark_H
         }
         private void DataGridViewPreviewJobsListMadeByScript_MouseDown(object? sender, MouseEventArgs e)
         {
-            var hitTest = dataGridViewPreviewJobsListMadeByScript.HitTest(e.X, e.Y);
+            DataGridView.HitTestInfo hitTest = dataGridViewPreviewJobsListMadeByScript.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewPreviewJobsListMadeByScript.ClearSelection();
@@ -405,7 +405,7 @@ namespace FLAC_Benchmark_H
             {
                 // --- LOGIC FOR SELECTED ROWS ---
                 // Get the indices of the selected rows
-                var selectedIndices = dataGridViewPreviewJobsListMadeByScript.SelectedRows.Cast<DataGridViewRow>()
+                List<int> selectedIndices = dataGridViewPreviewJobsListMadeByScript.SelectedRows.Cast<DataGridViewRow>()
                                                                  .Select(row => row.Index)
                                                                  .OrderBy(index => index) // Sort indices in ascending order (top -> down)
                                                                  .ToList();
@@ -416,7 +416,7 @@ namespace FLAC_Benchmark_H
                     // Verify the index is valid (just in case)
                     if (index >= 0 && index < dataGridViewPreviewJobsListMadeByScript.Rows.Count)
                     {
-                        var row = dataGridViewPreviewJobsListMadeByScript.Rows[index];
+                        DataGridViewRow row = dataGridViewPreviewJobsListMadeByScript.Rows[index];
 
                         // Get values from the respective cells
                         // Assuming columns are: Column1CheckBox (0), Column2JobType (1), Column3Passes (2), Column4Parameters (3)
@@ -427,7 +427,7 @@ namespace FLAC_Benchmark_H
 
                         // Format the row data as a single line
                         string status = isChecked ? "Checked" : "Unchecked";
-                        jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                        _ = jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
                     }
                 }
             }
@@ -437,7 +437,10 @@ namespace FLAC_Benchmark_H
                 // Iterate through all rows (excluding the potential new row)
                 foreach (DataGridViewRow row in dataGridViewPreviewJobsListMadeByScript.Rows)
                 {
-                    if (row.IsNewRow) continue; // Skip the new row
+                    if (row.IsNewRow)
+                    {
+                        continue; // Skip the new row
+                    }
 
                     // Get values from the respective cells
                     bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
@@ -447,7 +450,7 @@ namespace FLAC_Benchmark_H
 
                     // Format the row data as a single line
                     string status = isChecked ? "Checked" : "Unchecked";
-                    jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                    _ = jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
                 }
             }
 
@@ -459,7 +462,7 @@ namespace FLAC_Benchmark_H
             else
             {
                 // Show a message if no rows were found to copy
-                MessageBox.Show("No jobs to copy.", "Information",
+                _ = MessageBox.Show("No jobs to copy.", "Information",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
