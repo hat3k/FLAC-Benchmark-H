@@ -32,8 +32,6 @@ Compares `.wav` and `.flac` files by calculating MD5 hashes of the actual audio 
 - Format statistics (FLAC/WAV count, size, duration with percentages)
 - Audio properties distribution (sampling rate, bit depth, channels)
 - Collapsible lists of problematic files (missing metadata, long paths, MD5 issues)
-- Clickable file paths (opens in Explorer) with visited-link tracking
-- Natural sorting for intuitive file lists
 
 ### 5. **Automate large-scale testing**
 Use the **Job List** to define, save, and execute complex sequences of encoding and decoding tasks.  
