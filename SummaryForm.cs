@@ -333,7 +333,6 @@ namespace FLAC_Benchmark_H
                 if (_flacFilesWithoutMd5Data.Count == 0)
                 {
                     AppendNormal(FormatRow("FLAC without MD5:", "0"));
-                    AppendNormal("\n");
                 }
                 else
                 {
@@ -356,7 +355,6 @@ namespace FLAC_Benchmark_H
                 if (_filesWithMd5ErrorsData.Count == 0)
                 {
                     AppendNormal(FormatRow("MD5 Errors:", "0"));
-                    AppendNormal("\n");
                 }
                 else
                 {
@@ -379,7 +377,6 @@ namespace FLAC_Benchmark_H
                 if (_longPathsData.Count == 0)
                 {
                     AppendNormal(FormatRow("Long path (>259):", "0"));
-                    AppendNormal("\n");
                 }
                 else
                 {
