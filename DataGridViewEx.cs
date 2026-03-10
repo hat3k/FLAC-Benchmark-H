@@ -38,8 +38,8 @@
         public bool MoveRow(int fromIndex, int toIndex)
         {
             // Validate indices
-            if (fromIndex < 0 || fromIndex >= this.Rows.Count ||
-                toIndex < 0 || toIndex >= this.Rows.Count)
+            if (fromIndex < 0 || fromIndex >= Rows.Count ||
+                toIndex < 0 || toIndex >= Rows.Count)
             {
                 return false; // Index out of bounds
             }
@@ -50,22 +50,22 @@
             }
 
             // Suspend painting to prevent flickering during the move
-            this.SuspendLayout();
+            SuspendLayout();
 
             try
             {
                 // Get the row to move
-                DataGridViewRow rowToMove = this.Rows[fromIndex];
+                DataGridViewRow rowToMove = Rows[fromIndex];
 
                 // Store CurrentCell info before moving
-                DataGridViewCell? previousCurrentCell = this.CurrentCell;
+                DataGridViewCell? previousCurrentCell = CurrentCell;
                 int previousCurrentColumnIndex = previousCurrentCell?.ColumnIndex ?? -1;
 
                 // Remove the row from its current position
-                this.Rows.RemoveAt(fromIndex);
+                Rows.RemoveAt(fromIndex);
 
                 // Insert the row at the new position
-                this.Rows.Insert(toIndex, rowToMove);
+                Rows.Insert(toIndex, rowToMove);
 
                 // Preserve selection
                 if (rowToMove.Selected)
@@ -77,9 +77,9 @@
                 if (previousCurrentCell != null && previousCurrentCell.RowIndex == fromIndex)
                 {
                     if (previousCurrentColumnIndex >= 0 &&
-                        previousCurrentColumnIndex < this.Rows[toIndex].Cells.Count)
+                        previousCurrentColumnIndex < Rows[toIndex].Cells.Count)
                     {
-                        this.CurrentCell = this.Rows[toIndex].Cells[previousCurrentColumnIndex];
+                        CurrentCell = Rows[toIndex].Cells[previousCurrentColumnIndex];
                     }
                 }
                 // If CurrentCell was on a row that shifted due to the move, update it
@@ -107,11 +107,11 @@
                         }
                     }
 
-                    if (newRowIndex >= 0 && newRowIndex < this.Rows.Count &&
+                    if (newRowIndex >= 0 && newRowIndex < Rows.Count &&
                         previousCurrentColumnIndex >= 0 &&
-                        previousCurrentColumnIndex < this.Rows[newRowIndex].Cells.Count)
+                        previousCurrentColumnIndex < Rows[newRowIndex].Cells.Count)
                     {
-                        this.CurrentCell = this.Rows[newRowIndex].Cells[previousCurrentColumnIndex];
+                        CurrentCell = Rows[newRowIndex].Cells[previousCurrentColumnIndex];
                     }
                 }
 
@@ -120,7 +120,7 @@
             finally
             {
                 // Resume painting
-                this.ResumeLayout();
+                ResumeLayout();
             }
         }
     }
