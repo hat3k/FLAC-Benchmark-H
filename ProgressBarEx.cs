@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.ComponentModel;
 
 namespace FLAC_Benchmark_H
 {
@@ -17,9 +10,6 @@ namespace FLAC_Benchmark_H
     {
         public const int WM_PAINT = 0xF;
         public const int WS_EX_COMPOSITED = 0x0200_000;
-
-        private TextDisplayType _style = TextDisplayType.Percent;
-        private string _manualText = "";
 
         public ProgressBarEx()
         {
@@ -35,16 +25,16 @@ namespace FLAC_Benchmark_H
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public TextDisplayType DisplayType
         {
-            get { return _style; }
+            get;
             set
             {
-                if (_style != value)
+                if (field != value)
                 {
-                    _style = value;
+                    field = value;
                     Invalidate();
                 }
             }
-        }
+        } = TextDisplayType.Percent;
 
         /// <summary>
         /// Gets or sets the manual text to display when DisplayType is set to Manual.
@@ -55,16 +45,16 @@ namespace FLAC_Benchmark_H
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public string ManualText
         {
-            get { return _manualText; }
+            get;
             set
             {
-                if (_manualText != value)
+                if (field != value)
                 {
-                    _manualText = value ?? "";
+                    field = value ?? "";
                     Invalidate();
                 }
             }
-        }
+        } = "";
 
         /// <summary>
         /// Gets or sets the color of the text displayed on the progress bar.
@@ -92,7 +82,7 @@ namespace FLAC_Benchmark_H
         {
             get
             {
-                var parms = base.CreateParams;
+                CreateParams parms = base.CreateParams;
                 parms.ExStyle |= WS_EX_COMPOSITED; // Enable double-buffering at OS level
                 return parms;
             }
@@ -102,18 +92,26 @@ namespace FLAC_Benchmark_H
         {
             base.WndProc(ref m);
             if (m.Msg == WM_PAINT)
+            {
                 AdditionalPaint(m);
+            }
         }
 
         private void AdditionalPaint(Message m)
         {
-            if (DisplayType == TextDisplayType.None) return;
+            if (DisplayType == TextDisplayType.None)
+            {
+                return;
+            }
 
             string text = GetDisplayText();
-            if (string.IsNullOrEmpty(text)) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            using var g = Graphics.FromHwnd(Handle);
-            var rect = new Rectangle(0, 0, Width, Height);
+            using Graphics g = Graphics.FromHwnd(Handle);
+            Rectangle rect = new(0, 0, Width, Height);
 
             TextRenderer.DrawText(
                 g,                         // graphics
@@ -139,7 +137,7 @@ namespace FLAC_Benchmark_H
 
                 TextDisplayType.Count => $"{Value} / {Maximum}",
 
-                TextDisplayType.Manual => _manualText,
+                TextDisplayType.Manual => ManualText,
 
                 _ => ""
             };

@@ -130,10 +130,8 @@ namespace FLAC_Benchmark_H
                 {
                     if (!IsDisposed && !Disposing)
                     {
-                        if (labelStopped != null)
-                            labelStopped.Visible = false;
-                        if (labelAudioFileRemoved != null)
-                            labelAudioFileRemoved.Visible = false;
+                        labelStopped?.Visible = false;
+                        labelAudioFileRemoved?.Visible = false;
                     }
                     temporaryMessageTimer.Stop();
                 }

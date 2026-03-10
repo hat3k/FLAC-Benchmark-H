@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace FLAC_Benchmark_H
 {
@@ -23,14 +18,14 @@ namespace FLAC_Benchmark_H
             // Base case: if there are no brackets, return the input as is
             if (string.IsNullOrWhiteSpace(input) || !input.Contains('[') || !input.Contains(']'))
             {
-                return new List<string> { input };
+                return [input];
             }
 
             // Check for balanced brackets
             if (input.Count(c => c == '[') != input.Count(c => c == ']'))
             {
                 Debug.WriteLine("Mismatched brackets in script: " + input);
-                return new List<string>(); // Invalid syntax
+                return []; // Invalid syntax
             }
 
             // Find the innermost [...] block
@@ -53,18 +48,18 @@ namespace FLAC_Benchmark_H
             // If no valid pair found, return as is
             if (lastOpenIndex == -1 || firstCloseIndex == -1 || lastOpenIndex > firstCloseIndex)
             {
-                return new List<string> { input };
+                return [input];
             }
 
             // Extract parts: prefix, content, suffix
-            string prefix = input.Substring(0, lastOpenIndex);
+            string prefix = input[..lastOpenIndex];
             string content = input.Substring(lastOpenIndex + 1, firstCloseIndex - lastOpenIndex - 1);
-            string suffix = input.Substring(firstCloseIndex + 1);
+            string suffix = input[(firstCloseIndex + 1)..];
 
             // Parse the innermost content
             List<string> parsedValues = ParseRange(content);
 
-            var result = new List<string>();
+            List<string> result = [];
 
             // For each possible value from the innermost range, recursively expand the full string
             foreach (string value in parsedValues)
@@ -88,17 +83,17 @@ namespace FLAC_Benchmark_H
         /// <returns>List of strings from parsed values/ranges</returns>
         private static List<string> ParseRange(string content)
         {
-            var values = new List<string>();
+            List<string> values = [];
 
             // Split by comma and process each part
-            foreach (var part in content.Split(','))
+            foreach (string part in content.Split(','))
             {
                 string trimmed = part.Trim(); // Remove leading/trailing whitespace
 
                 if (trimmed.Contains(".."))
                 {
                     // --- Handle numeric ranges ---
-                    var segments = trimmed.Split([".."], StringSplitOptions.None)
+                    string[] segments = trimmed.Split([".."], StringSplitOptions.None)
                         .Select(s => s.Trim())
                         .ToArray();
 
@@ -121,27 +116,36 @@ namespace FLAC_Benchmark_H
                                 double.TryParse(segments[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedStep))
                             {
                                 step = Math.Abs(parsedStep);
-                                if (step == 0) step = 1.0;
+                                if (step == 0)
+                                {
+                                    step = 1.0;
+                                }
                             }
 
                             if (start <= end)
                             {
                                 for (double i = start; Math.Round(i, 6) <= end; i += step)
+                                {
                                     values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
+                                }
                             }
                             else
                             {
                                 for (double i = start; Math.Round(i, 6) >= end; i -= step)
+                                {
                                     values.Add(Math.Round(i, 6).ToString(CultureInfo.InvariantCulture));
+                                }
                             }
                         }
                         else
                         {
                             // Not a numeric range, treat each non-empty segment as a text value
-                            foreach (var segment in segments)
+                            foreach (string? segment in segments)
                             {
                                 if (!string.IsNullOrEmpty(segment))
+                                {
                                     values.Add(segment);
+                                }
                             }
                         }
                     }
@@ -171,10 +175,7 @@ namespace FLAC_Benchmark_H
         {
             public int Compare(string? x, string? y)
             {
-                if (x == null && y == null) return 0;
-                if (x == null) return -1;
-                if (y == null) return 1;
-                return CompareNatural(x, y);
+                return x == null && y == null ? 0 : x == null ? -1 : y == null ? 1 : CompareNatural(x, y);
             }
 
             private static int CompareNatural(string strA, string strB)
@@ -198,7 +199,6 @@ namespace FLAC_Benchmark_H
                             if (c == '.' && dotCountA == 0)
                             {
                                 hasDecimalA = true;
-                                dotCountA++;
                                 i1++;
                                 break;
                             }
@@ -206,20 +206,23 @@ namespace FLAC_Benchmark_H
                             {
                                 if (hasDecimalA)
                                 {
-                                    fracA = fracA * 10 + (c - '0');
+                                    fracA = (fracA * 10) + (c - '0');
                                     fracDigitsA++;
                                 }
                                 else
                                 {
-                                    wholeA = wholeA * 10 + (c - '0');
+                                    wholeA = (wholeA * 10) + (c - '0');
                                 }
                                 i1++;
                             }
-                            else break;
+                            else
+                            {
+                                break;
+                            }
                         }
                         while (i1 < strA.Length && char.IsDigit(strA[i1]) && hasDecimalA)
                         {
-                            fracA = fracA * 10 + (strA[i1] - '0');
+                            fracA = (fracA * 10) + (strA[i1] - '0');
                             fracDigitsA++;
                             i1++;
                         }
@@ -231,7 +234,6 @@ namespace FLAC_Benchmark_H
                             if (c == '.' && dotCountB == 0)
                             {
                                 hasDecimalB = true;
-                                dotCountB++;
                                 i2++;
                                 break;
                             }
@@ -239,38 +241,46 @@ namespace FLAC_Benchmark_H
                             {
                                 if (hasDecimalB)
                                 {
-                                    fracB = fracB * 10 + (c - '0');
+                                    fracB = (fracB * 10) + (c - '0');
                                     fracDigitsB++;
                                 }
                                 else
                                 {
-                                    wholeB = wholeB * 10 + (c - '0');
+                                    wholeB = (wholeB * 10) + (c - '0');
                                 }
                                 i2++;
                             }
-                            else break;
+                            else
+                            {
+                                break;
+                            }
                         }
                         while (i2 < strB.Length && char.IsDigit(strB[i2]) && hasDecimalB)
                         {
-                            fracB = fracB * 10 + (strB[i2] - '0');
+                            fracB = (fracB * 10) + (strB[i2] - '0');
                             fracDigitsB++;
                             i2++;
                         }
 
                         // Normalize fractional parts to same scale
-                        long scaledA = wholeA * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB)) +
-                                      fracA * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB) - fracDigitsA);
-                        long scaledB = wholeB * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB)) +
-                                      fracB * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB) - fracDigitsB);
+                        long scaledA = (wholeA * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB))) +
+                                      (fracA * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB) - fracDigitsA));
+                        long scaledB = (wholeB * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB))) +
+                                      (fracB * (long)Math.Pow(10, Math.Max(fracDigitsA, fracDigitsB) - fracDigitsB));
 
                         if (scaledA != scaledB)
+                        {
                             return scaledA.CompareTo(scaledB);
+                        }
                     }
                     else
                     {
                         int result = char.ToLowerInvariant(strA[i1]).CompareTo(char.ToLowerInvariant(strB[i2]));
                         if (result != 0)
+                        {
                             return result;
+                        }
+
                         i1++;
                         i2++;
                     }

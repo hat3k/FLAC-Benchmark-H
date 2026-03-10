@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-
-namespace FLAC_Benchmark_H
+﻿namespace FLAC_Benchmark_H
 {
     public partial class DataGridViewLogSettingsForm : Form
     {
@@ -51,10 +47,10 @@ namespace FLAC_Benchmark_H
 
         private void LoadCurrentSettings()
         {
-            foreach (var kvp in _controls)
+            foreach (KeyValuePair<string, (CheckBox checkBox, TextBox textBox)> kvp in _controls)
             {
                 string columnName = kvp.Key;
-                var (checkBox, textBox) = kvp.Value;
+                (CheckBox? checkBox, TextBox? textBox) = kvp.Value;
 
                 if (_dataGridView.Columns[columnName] is DataGridViewColumn col)
                 {
@@ -66,7 +62,7 @@ namespace FLAC_Benchmark_H
 
         private void AttachEventHandlers()
         {
-            foreach (var (_, (checkBox, textBox)) in _controls)
+            foreach ((string _, (CheckBox? checkBox, TextBox? textBox)) in _controls)
             {
                 checkBox.CheckedChanged += OnVisibilityChanged;
                 textBox.TextChanged += OnHeaderTextChanged;
@@ -81,7 +77,7 @@ namespace FLAC_Benchmark_H
             if (sender is CheckBox cb)
             {
                 // Find column name by checkbox
-                foreach (var kvp in _controls)
+                foreach (KeyValuePair<string, (CheckBox checkBox, TextBox textBox)> kvp in _controls)
                 {
                     if (kvp.Value.checkBox == cb)
                     {
@@ -99,7 +95,7 @@ namespace FLAC_Benchmark_H
         {
             if (sender is TextBox tb)
             {
-                foreach (var kvp in _controls)
+                foreach (KeyValuePair<string, (CheckBox checkBox, TextBox textBox)> kvp in _controls)
                 {
                     if (kvp.Value.textBox == tb)
                     {
@@ -116,7 +112,7 @@ namespace FLAC_Benchmark_H
         private void OnResetToDefault(object? sender, EventArgs e)
         {
             // Reset to defaults (as in InitializeDataGridViewLog)
-            var defaultVisibility = new Dictionary<string, bool>
+            Dictionary<string, bool> defaultVisibility = new()
             {
                 { "Name", true },
                 { "Channels", false },
@@ -146,7 +142,7 @@ namespace FLAC_Benchmark_H
                 { "Errors", false }
             };
 
-            var defaultHeaders = new Dictionary<string, string>
+            Dictionary<string, string> defaultHeaders = new()
             {
                 { "Name", "Name" },
                 { "Channels", "Ch." },
@@ -176,10 +172,10 @@ namespace FLAC_Benchmark_H
                 { "Errors", "Errors" }
             };
 
-            foreach (var kvp in _controls)
+            foreach (KeyValuePair<string, (CheckBox checkBox, TextBox textBox)> kvp in _controls)
             {
                 string colName = kvp.Key;
-                var (cb, tb) = kvp.Value;
+                (CheckBox? cb, TextBox? tb) = kvp.Value;
 
                 bool visible = defaultVisibility.GetValueOrDefault(colName, true);
                 string header = defaultHeaders.GetValueOrDefault(colName, colName);
