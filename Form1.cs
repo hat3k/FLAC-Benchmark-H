@@ -66,9 +66,9 @@ namespace FLAC_Benchmark_H
         private readonly ConcurrentQueue<MediaInfo> _mediaInfoPool = new();
         private const int MediaInfoPoolSize = 20;
 
-        // Prevents the system from entering sleep or turning off the display
-        [DllImport("kernel32.dll")]
-        static extern uint SetThreadExecutionState(uint esFlags);
+        // Prevents the system from entering sleep or turning off the display (unsafe blocks have to be enabled)
+        [LibraryImport("kernel32.dll")]
+        private static partial uint SetThreadExecutionState(uint esFlags);
 
         // Flags for SetThreadExecutionState
         const uint ES_CONTINUOUS = 0x80000000;
@@ -165,9 +165,21 @@ namespace FLAC_Benchmark_H
             comboBoxCPUPriority.SelectedIndex = 3;
         }
 
+        // Pattern: \s+ (used in NormalizeSpaces, GetParametersWithoutJ, ScriptConstructor)
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespaceRegex();
+
+        // Pattern: -j(\d+)  (used in AnalyzeLogAsync to extract thread count)
+        [GeneratedRegex(@"-j(\d+)")]
+        private static partial Regex ThreadParamRegex();
+
+        // Pattern: \s*-j\d+\s*  (used in GetParametersWithoutJ to remove -jN)
+        [GeneratedRegex(@"\s*-j\d+\s*")]
+        private static partial Regex RemoveJParamRegex();
+
         private static string NormalizeSpaces(string input)
         {
-            return Regex.Replace(input.Trim(), @"\s+", " "); // Remove extra spaces inside the string
+            return WhitespaceRegex().Replace(input.Trim(), " "); // Remove extra spaces inside the string
         }
         private sealed class NaturalStringComparer : IComparer<string?>
         {
@@ -428,7 +440,7 @@ namespace FLAC_Benchmark_H
 
                 if (!string.IsNullOrEmpty(tempFolderPath) && tempFolderPath.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
                 {
-                    string relativePart = tempFolderPath.Substring(baseDir.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    string relativePart = tempFolderPath[baseDir.Length..].TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     tempPathToSave = $".\\{relativePart}";
                 }
 
@@ -638,7 +650,7 @@ namespace FLAC_Benchmark_H
                             // If path is relative - resolve it relative to application directory
                             if (value.StartsWith(".\\") || value.StartsWith("./"))
                             {
-                                string relativePart = value.Substring(2); // Remove ".\"
+                                string relativePart = value[2..]; // Remove ".\"
                                 tempFolderPath = Path.Combine(baseDir, relativePart);
                             }
                             else
@@ -665,14 +677,14 @@ namespace FLAC_Benchmark_H
 
                         // Logs
                         case string s when s.StartsWith("LogColumnHeaders_"):
-                            string columnNameHdr = s.Substring("LogColumnHeaders_".Length);
+                            string columnNameHdr = s["LogColumnHeaders_".Length..];
                             if (dataGridViewLog.Columns[columnNameHdr] is DataGridViewColumn colHdr)
                             {
                                 colHdr.HeaderText = value;
                             }
                             break;
                         case string s when s.StartsWith("LogColumnVisibility_"):
-                            string columnNameVis = s.Substring("LogColumnVisibility_".Length);
+                            string columnNameVis = s["LogColumnVisibility_".Length..];
                             if (bool.TryParse(value, out bool visible) && dataGridViewLog.Columns[columnNameVis] is DataGridViewColumn colVis)
                             {
                                 colVis.Visible = visible;
@@ -742,7 +754,7 @@ namespace FLAC_Benchmark_H
                         if (separatorIndex > 0 && separatorIndex < line.Length - 1)
                         {
                             bool isChecked = line.StartsWith("Checked");
-                            string encoderPath = line.Substring(separatorIndex + 1);
+                            string encoderPath = line[(separatorIndex + 1)..];
                             if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
                                 encoderPaths.Add((encoderPath, isChecked));
                             else
@@ -785,7 +797,7 @@ namespace FLAC_Benchmark_H
                             return null;
 
                         bool isChecked = line.StartsWith("Checked");
-                        string audioFilePath = line.Substring(separatorIndex + 1);
+                        string audioFilePath = line[(separatorIndex + 1)..];
 
                         if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                         {
@@ -879,7 +891,7 @@ namespace FLAC_Benchmark_H
                             bool isChecked = line.StartsWith("Checked");
                             string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
                             string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                            string parameters = thirdBar + 1 < line.Length ? line.Substring(thirdBar + 1) : "";
+                            string parameters = thirdBar + 1 < line.Length ? line[(thirdBar + 1)..] : "";
 
                             // Add the parsed job data as a new row to dataGridViewJobs
                             dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters)));
@@ -986,10 +998,9 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            validPaths = validPaths
+            validPaths = [.. validPaths
                 .OrderBy(x => Path.GetDirectoryName(x.path) ?? string.Empty, new NaturalStringComparer())
-                .ThenBy(x => Path.GetFileName(x.path), new NaturalStringComparer())
-                .ToList();
+                .ThenBy(x => Path.GetFileName(x.path), new NaturalStringComparer())];
 
             if (validPaths.Count > 0)
             {
@@ -1806,10 +1817,7 @@ namespace FLAC_Benchmark_H
                     var tasks = sortedFileNames.Select(async file =>
                     {
                         var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
-                        if (item != null)
-                        {
-                            item.Checked = true;
-                        }
+                        item?.Checked = true;
                         return item;
                     });
 
@@ -3669,9 +3677,9 @@ namespace FLAC_Benchmark_H
             })
             .Select(g => new
             {
-                AudioFilePath = g.Key.AudioFilePath,
-                EncoderPath = g.Key.EncoderPath,
-                Parameters = g.Key.Parameters,
+                g.Key.AudioFilePath,
+                g.Key.EncoderPath,
+                g.Key.Parameters,
                 PassesCount = g.Count(),
                 AvgTimeMs = g.Average(p => p.Time),
                 AvgSpeed = g.Average(p => p.Speed),
@@ -3679,10 +3687,10 @@ namespace FLAC_Benchmark_H
                 AvgCPUClock = g.Where(p => p.CPUClock > 0).Any() ? g.Where(p => p.CPUClock > 0).Average(p => p.CPUClock) : 0,
                 MinOutputSize = g.Min(p => p.OutputSize),
                 MaxOutputSize = g.Max(p => p.OutputSize),
-                InputSize = g.First().InputSize,
-                Channels = g.First().Channels,
-                BitDepth = g.First().BitDepth,
-                SamplingRate = g.First().SamplingRate,
+                g.First().InputSize,
+                g.First().Channels,
+                g.First().BitDepth,
+                g.First().SamplingRate,
                 Speeds = g.Where(p => p.Speed > 0).Select(p => p.Speed).OrderBy(s => s).ToList(), // Extract sorted speeds once
                 LatestPass = g.OrderByDescending(p => p.Timestamp).First() // Latest pass for final size
             })
@@ -3701,7 +3709,7 @@ namespace FLAC_Benchmark_H
             foreach (var group in grouped)
             {
                 int j = 1;
-                var jMatch = Regex.Match(group.Parameters, @"-j(\d+)");
+                var jMatch = ThreadParamRegex().Match(group.Parameters);
                 if (jMatch.Success)
                 {
                     j = int.Parse(jMatch.Groups[1].Value);
@@ -4278,9 +4286,8 @@ namespace FLAC_Benchmark_H
         {
             if (string.IsNullOrWhiteSpace(parameters))
                 return string.Empty;
-
-            string result = Regex.Replace(parameters, @"\s*-j\d+\s*", " ");
-            return Regex.Replace(result.Trim(), @"\s+", " ");
+            string result = RemoveJParamRegex().Replace(parameters, " ");
+            return WhitespaceRegex().Replace(result.Trim(), " ");
         }
 
         private void RenderScalingGraphSpeedByThreads(
@@ -4311,8 +4318,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.s).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.s)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4337,8 +4344,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgSpeedsForAllFiles).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgSpeedsForAllFiles)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4346,8 +4353,8 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
 
                     plt.XLabel("Threads (-jN)");
@@ -4381,8 +4388,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.s).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.s)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4407,8 +4414,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgSpeedsForAllFiles).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgSpeedsForAllFiles)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4416,8 +4423,8 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
 
                     // plt.XLabel("Threads (-jN)");
@@ -4453,8 +4460,8 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    double[] idealY = idealX.Select(j => j * 100.0).ToArray();
+                    double[] idealX = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    double[] idealY = [.. idealX.Select(j => j * 100.0)];
 
                     foreach (var kvp in series)
                     {
@@ -4465,8 +4472,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.l).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.l)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4491,8 +4498,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgCPULoad).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgCPULoad)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4503,7 +4510,7 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Threads (-jN)");
                     plt.YLabel("CPU Load (%)");
                     plt.Title("CPU Load Scaling by Threads");
-                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.XTicks(idealX, [.. idealX.Select(j => j.ToString("F0"))]);
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
@@ -4532,8 +4539,8 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    double[] idealX = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    double[] idealY = idealX.Select(j => j * 100.0).ToArray();
+                    double[] idealX = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    double[] idealY = [.. idealX.Select(j => j * 100.0)];
 
                     foreach (var kvp in series)
                     {
@@ -4544,8 +4551,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.l).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.l)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4570,8 +4577,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgCPULoad).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgCPULoad)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4582,7 +4589,7 @@ namespace FLAC_Benchmark_H
                     // plt.XLabel("Threads (-jN)");
                     plt.YLabel("CPU Load (%)");
                     plt.Title("CPU Load Scaling by Threads");
-                    plt.XTicks(idealX, idealX.Select(j => j.ToString("F0")).ToArray());
+                    plt.XTicks(idealX, [.. idealX.Select(j => j.ToString("F0"))]);
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
@@ -4631,8 +4638,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.c).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.c)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4657,8 +4664,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgCPUClock).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgCPUClock)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4669,8 +4676,8 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Threads (-jN)");
                     plt.YLabel("CPU Clock (MHz)");
                     plt.Title("CPU Clock Scaling by Threads");
-                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
@@ -4700,8 +4707,8 @@ namespace FLAC_Benchmark_H
                         var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
                                             .OrderBy(x => x.t)
                                             .ToList();
-                        double[] xs = sorted.Select(x => (double)x.t).ToArray();
-                        double[] ys = sorted.Select(x => x.c).ToArray();
+                        double[] xs = [.. sorted.Select(x => (double)x.t)];
+                        double[] ys = [.. sorted.Select(x => x.c)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4726,8 +4733,8 @@ namespace FLAC_Benchmark_H
                                                         .OrderBy(x => x.Thread)
                                                         .ToList();
 
-                            double[] xs = groupedByThread.Select(x => (double)x.Thread).ToArray();
-                            double[] ys = groupedByThread.Select(x => x.AvgCPUClock).ToArray();
+                            double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
+                            double[] ys = [.. groupedByThread.Select(x => x.AvgCPUClock)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4738,8 +4745,8 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Threads (-jN)");
                     plt.YLabel("CPU Clock (MHz)");
                     plt.Title("CPU Clock Scaling by Threads");
-                    double[] tickPositions = Enumerable.Range(minThread, threadCount).Select(j => (double)j).ToArray();
-                    string[] tickLabels = tickPositions.Select(j => j.ToString("F0")).ToArray();
+                    double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
+                    string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
                     plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
@@ -4762,17 +4769,16 @@ namespace FLAC_Benchmark_H
 
             if (series.Count > 0)
             {
-                allParams = series.Values
+                allParams = [.. series.Values
                     .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
                     .Select(p => string.IsNullOrEmpty(p) ? "[default]" : p)
                     .Distinct()
-                    .OrderBy(p => p, new NaturalStringComparer())
-                    .ToList();
+                    .OrderBy(p => p, new NaturalStringComparer())];
 
-                xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
+                xPositions = [.. Enumerable.Range(0, allParams.Count).Select(i => (double)i)];
 
-                xLabels = allParams.Select(param =>
+                xLabels = [.. allParams.Select(param =>
                 {
                     if (checkBoxWrapLongPlotLabels.Checked &&
                         int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
@@ -4781,7 +4787,7 @@ namespace FLAC_Benchmark_H
                         return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
                     }
                     return param;
-                }).ToArray();
+                })];
             }
 
             {
@@ -4806,8 +4812,8 @@ namespace FLAC_Benchmark_H
                                                    .Zip(speeds, (x, y) => new { x, y })
                                                    .OrderBy(p => p.x)
                                                    .ToArray();
-                        double[] xs = points.Select(p => p.x).ToArray();
-                        double[] ys = points.Select(p => p.y).ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4837,8 +4843,8 @@ namespace FLAC_Benchmark_H
 
                             if (groupedByParam.Count == 0) continue;
 
-                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                            double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgSpeed)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4876,8 +4882,8 @@ namespace FLAC_Benchmark_H
                                                    .Zip(speeds, (x, y) => new { x, y })
                                                    .OrderBy(p => p.x)
                                                    .ToArray();
-                        double[] xs = points.Select(p => p.x).ToArray();
-                        double[] ys = points.Select(p => p.y).ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -4907,8 +4913,8 @@ namespace FLAC_Benchmark_H
 
                             if (groupedByParam.Count == 0) continue;
 
-                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                            double[] ys = groupedByParam.Select(x => x.AvgSpeed).ToArray();
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgSpeed)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -4941,17 +4947,16 @@ namespace FLAC_Benchmark_H
 
             if (series.Count > 0)
             {
-                allParams = series.Values
+                allParams = [.. series.Values
                     .Where(v => v.Params != null)
                     .SelectMany(v => v.Params)
                     .Select(p => string.IsNullOrEmpty(p) ? "[default]" : p)
                     .Distinct()
-                    .OrderBy(p => p, new NaturalStringComparer())
-                    .ToList();
+                    .OrderBy(p => p, new NaturalStringComparer())];
 
-                xPositions = Enumerable.Range(0, allParams.Count).Select(i => (double)i).ToArray();
+                xPositions = [.. Enumerable.Range(0, allParams.Count).Select(i => (double)i)];
 
-                xLabels = allParams.Select(param =>
+                xLabels = [.. allParams.Select(param =>
                 {
                     if (checkBoxWrapLongPlotLabels.Checked &&
                         int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
@@ -4960,7 +4965,7 @@ namespace FLAC_Benchmark_H
                         return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
                     }
                     return param;
-                }).ToArray();
+                })];
             }
 
             {
@@ -4985,8 +4990,8 @@ namespace FLAC_Benchmark_H
                                                   .Zip(compressions, (x, y) => new { x, y })
                                                   .OrderBy(p => p.x)
                                                   .ToArray();
-                        double[] xs = points.Select(p => p.x).ToArray();
-                        double[] ys = points.Select(p => p.y).ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -5016,8 +5021,8 @@ namespace FLAC_Benchmark_H
 
                             if (groupedByParam.Count == 0) continue;
 
-                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                            double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgCompression)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -5055,8 +5060,8 @@ namespace FLAC_Benchmark_H
                                                   .Zip(compressions, (x, y) => new { x, y })
                                                   .OrderBy(p => p.x)
                                                   .ToArray();
-                        double[] xs = points.Select(p => p.x).ToArray();
-                        double[] ys = points.Select(p => p.y).ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
 
                         var scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
@@ -5086,8 +5091,8 @@ namespace FLAC_Benchmark_H
 
                             if (groupedByParam.Count == 0) continue;
 
-                            double[] xs = groupedByParam.Select(x => (double)allParams.IndexOf(x.Param)).ToArray();
-                            double[] ys = groupedByParam.Select(x => x.AvgCompression).ToArray();
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgCompression)];
 
                             var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
@@ -6205,7 +6210,7 @@ namespace FLAC_Benchmark_H
                             bool isChecked = line.StartsWith("Checked");
                             string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
                             string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                            string parameters = line.Substring(thirdBar + 1);
+                            string parameters = line[(thirdBar + 1)..];
 
                             // Add the parsed job data as a new row to dataGridViewJobs
                             dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
@@ -6268,7 +6273,7 @@ namespace FLAC_Benchmark_H
                                     bool isChecked = line.StartsWith("Checked");
                                     string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
                                     string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                                    string parameters = line.Substring(thirdBar + 1);
+                                    string parameters = line[(thirdBar + 1)..];
 
                                     // Add the parsed job data as a new row to dataGridViewJobs
                                     dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
@@ -6588,7 +6593,7 @@ namespace FLAC_Benchmark_H
                                 bool isChecked = line.StartsWith("Checked");
                                 string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
                                 string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                                string parameters = line.Substring(thirdBar + 1);
+                                string parameters = line[(thirdBar + 1)..];
 
                                 // Add the parsed job data as a new row to dataGridViewJobs
                                 dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
@@ -6707,7 +6712,7 @@ namespace FLAC_Benchmark_H
             {
                 parameters += $" -j{threads}";
             }
-            parameters = Regex.Replace(parameters, @"\s+", " ").Trim();
+            parameters = WhitespaceRegex().Replace(parameters, " ").Trim();
 
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
@@ -8252,8 +8257,8 @@ namespace FLAC_Benchmark_H
 
         private async void ButtonDetectDupesAudioFiles_Click(object? sender, EventArgs e)
         {
-            var button = (Button)sender!;
-            var originalText = button.Text;
+            string? originalButtonText = (sender as Button)?.Text;
+
             var cts = new CancellationTokenSource();
 
             // Declare variables for summary message
@@ -8263,11 +8268,18 @@ namespace FLAC_Benchmark_H
             try
             {
                 // --- STAGE 0: PREPARE USER INTERFACE ---
-                button.Invoke((MethodInvoker)(() =>
+                if (sender is Button btn)
                 {
-                    button.Text = "In progress...";
-                    button.Enabled = false;
-                }));
+                    btn.Invoke((MethodInvoker)(() =>
+                    {
+                        btn.Text = "In progress...";
+                        btn.Enabled = false;
+                    }));
+                }
+                else if (sender is ToolStripMenuItem item)
+                {
+                    item.Enabled = false;
+                }
 
                 // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
                 var itemsToRemove = new List<ListViewItem>();
@@ -8562,13 +8574,18 @@ namespace FLAC_Benchmark_H
             }
             finally
             {
-                if (button != null && !button.IsDisposed)
+                if (sender is Button btnFinal && !btnFinal.IsDisposed)
                 {
-                    button.Invoke((MethodInvoker)(() =>
+                    btnFinal.Invoke((MethodInvoker)(() =>
                     {
-                        button.Text = originalText;
-                        button.Enabled = true;
+                        if (originalButtonText != null)
+                            btnFinal.Text = originalButtonText;
+                        btnFinal.Enabled = true;
                     }));
+                }
+                else if (sender is ToolStripMenuItem itemFinal)
+                {
+                    itemFinal.Enabled = true;
                 }
 
                 // Show summary message to user
@@ -8598,14 +8615,22 @@ namespace FLAC_Benchmark_H
         }
         private async void ButtonTestForErrors_Click(object? sender, EventArgs e)
         {
-            var button = (Button)sender!;
-            var originalText = button.Text;
+            string? originalButtonText = (sender as Button)?.Text;
+
             var cts = new CancellationTokenSource();
 
             try
             {
-                button.Text = "In progress...";
-                button.Enabled = false;
+                // --- STAGE 0: PREPARE USER INTERFACE ---
+                if (sender is Button btn)
+                {
+                    btn.Text = "In progress...";
+                    btn.Enabled = false;
+                }
+                else if (sender is ToolStripMenuItem item)
+                {
+                    item.Enabled = false;
+                }
 
                 // --- STAGE 1: COLLECT DATA FROM UI ---
                 var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
@@ -8790,7 +8815,7 @@ namespace FLAC_Benchmark_H
                         }).ToList();
 
                         if (rowsToAdd.Count > 0)
-                            dataGridViewLogTestForErrors.Rows.AddRange(rowsToAdd.ToArray());
+                            dataGridViewLogTestForErrors.Rows.AddRange([.. rowsToAdd]);
 
                         if (dataGridViewLogTestForErrors.Rows.Count > 0)
                         {
@@ -8823,10 +8848,16 @@ namespace FLAC_Benchmark_H
             }
             finally
             {
-                if (!button.IsDisposed)
+                // --- STAGE 4: RESTORE UI STATE ---
+                if (sender is Button btnFinal && !btnFinal.IsDisposed)
                 {
-                    button.Text = originalText;
-                    button.Enabled = true;
+                    if (originalButtonText != null)
+                        btnFinal.Text = originalButtonText;
+                    btnFinal.Enabled = true;
+                }
+                else if (sender is ToolStripMenuItem itemFinal)
+                {
+                    itemFinal.Enabled = true;
                 }
                 cts.Dispose();
             }
@@ -9121,8 +9152,8 @@ namespace FLAC_Benchmark_H
             // Moving UP: Process rows from top to bottom (lowest index first) to prevent index shifts affecting subsequent moves.
             // Moving DOWN: Process rows from bottom to top (highest index first) for the same reason.
             List<int> sortedIndices = (direction == -1)
-            ? selectedIndices.OrderBy(i => i).ToList()      // 0, 1, 2, ...
-            : selectedIndices.OrderByDescending(i => i).ToList(); // ..., 2, 1, 0
+            ? [.. selectedIndices.OrderBy(i => i)]      // 0, 1, 2, ...
+            : [.. selectedIndices.OrderByDescending(i => i)]; // ..., 2, 1, 0
 
             // Perform the move operation for each selected row in the calculated order
             foreach (int originalIndex in sortedIndices)
@@ -9341,10 +9372,8 @@ namespace FLAC_Benchmark_H
                 series.IsVisible = checkBoxShowIndividualFilesPlots.Checked;
             foreach (var series in allAggregatedSeries)
                 series.IsVisible = checkBoxShowAggregatedByEncoderPlots.Checked;
-            if (idealCPULoadLineSingle != null)
-                idealCPULoadLineSingle.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
-            if (idealCPULoadLineMultiplot != null)
-                idealCPULoadLineMultiplot.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
+            idealCPULoadLineSingle?.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
+            idealCPULoadLineMultiplot?.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
 
             plotScalingPlotSpeedByThreads.Refresh();
             plotScalingPlotCPULoadByThreads.Refresh();
