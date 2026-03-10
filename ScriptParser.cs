@@ -70,7 +70,7 @@ namespace FLAC_Benchmark_H
             }
 
             // Remove duplicates and sort naturally
-            return result.Distinct().OrderBy(x => x, new NaturalStringComparer()).ToList();
+            return [.. result.Distinct().OrderBy(x => x, new NaturalStringComparer())];
         }
 
         /// <summary>
@@ -93,9 +93,7 @@ namespace FLAC_Benchmark_H
                 if (trimmed.Contains(".."))
                 {
                     // --- Handle numeric ranges ---
-                    string[] segments = trimmed.Split([".."], StringSplitOptions.None)
-                        .Select(s => s.Trim())
-                        .ToArray();
+                    string[] segments = [.. trimmed.Split([".."], StringSplitOptions.None).Select(s => s.Trim())];
 
                     // Check for empty segments (e.g., from "1...2")
                     bool hasEmptySegment = segments.Take(segments.Length - 1).Any(s => string.IsNullOrEmpty(s));
@@ -164,7 +162,7 @@ namespace FLAC_Benchmark_H
             }
 
             // Remove duplicates (empty strings are also considered)
-            return values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            return [.. values.Distinct(StringComparer.OrdinalIgnoreCase)];
         }
 
         /// <summary>

@@ -93,11 +93,11 @@ namespace FLAC_Benchmark_H
             base.WndProc(ref m);
             if (m.Msg == WM_PAINT)
             {
-                AdditionalPaint(m);
+                AdditionalPaint();
             }
         }
 
-        private void AdditionalPaint(Message m)
+        private void AdditionalPaint()
         {
             if (DisplayType == TextDisplayType.None)
             {

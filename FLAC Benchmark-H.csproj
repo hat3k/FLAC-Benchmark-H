@@ -9,7 +9,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <ApplicationIcon>Icon.ico</ApplicationIcon>
         <PlatformTarget>$(Platform)</PlatformTarget>
-        <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <Platforms>x86;x64</Platforms>
         <DisableIncrementalBuild>true</DisableIncrementalBuild>
     </PropertyGroup>

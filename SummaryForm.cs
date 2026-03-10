@@ -7,8 +7,8 @@ namespace FLAC_Benchmark_H
     public partial class SummaryForm : Form
     {
         // P/Invoke declaration to control control redrawing via Windows API
-        [DllImport("user32.dll")]
-        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+        [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+        private static partial IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
         private const int WM_SETREDRAW = 0x000B;
 
         // Map of link start positions to link information
@@ -337,7 +337,7 @@ namespace FLAC_Benchmark_H
                 else
                 {
                     string toggleText = _filesWithoutMd5Expanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}", toggleText, 1);
+                    AppendRowWithToggle("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}", toggleText, -1);
 
                     if (_filesWithoutMd5Expanded)
                     {

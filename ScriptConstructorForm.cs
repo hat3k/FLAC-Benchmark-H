@@ -404,11 +404,10 @@ namespace FLAC_Benchmark_H
             if (dataGridViewPreviewJobsListMadeByScript.SelectedRows.Count > 0)
             {
                 // --- LOGIC FOR SELECTED ROWS ---
-                // Get the indices of the selected rows
-                List<int> selectedIndices = dataGridViewPreviewJobsListMadeByScript.SelectedRows.Cast<DataGridViewRow>()
+                // Get the indices of the selected rows / Sort indices in ascending order (top -> down)
+                List<int> selectedIndices = [.. dataGridViewPreviewJobsListMadeByScript.SelectedRows.Cast<DataGridViewRow>()
                                                                  .Select(row => row.Index)
-                                                                 .OrderBy(index => index) // Sort indices in ascending order (top -> down)
-                                                                 .ToList();
+                                                                 .OrderBy(index => index)];
 
                 // Iterate through rows in the order of their ascending index
                 foreach (int index in selectedIndices)
