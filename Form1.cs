@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
 using ScottPlot;
+using ScottPlot.Plottable;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.ComponentModel;
@@ -71,8 +72,8 @@ namespace FLAC_Benchmark_H
         private static partial uint SetThreadExecutionState(uint esFlags);
 
         // Flags for SetThreadExecutionState
-        const uint ES_CONTINUOUS = 0x80000000;
-        const uint ES_SYSTEM_REQUIRED = 0x00000001;
+        private const uint ES_CONTINUOUS = 0x80000000;
+        private const uint ES_SYSTEM_REQUIRED = 0x00000001;
 
         // Paths and files
         private const string SettingsGeneralFilePath = "Settings_general.txt";              // General settings file
@@ -102,9 +103,9 @@ namespace FLAC_Benchmark_H
                 cpuLoadCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
                 performanceCountersAvailable = true;
             }
-            catch (Exception ex) when (ex is InvalidOperationException || ex is System.ComponentModel.Win32Exception)
+            catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
             {
-                MessageBox.Show(
+                _ = MessageBox.Show(
                 "Performance counters are unavailable.\n" +
                 "You may be running the program remotely or without administrator privileges.\n" +
                 "Some features will be disabled.\n\n" +
@@ -130,8 +131,8 @@ namespace FLAC_Benchmark_H
                 {
                     if (!IsDisposed && !Disposing)
                     {
-                        labelStopped?.Visible = false;
-                        labelAudioFileRemoved?.Visible = false;
+                        _ = (labelStopped?.Visible = false);
+                        _ = (labelAudioFileRemoved?.Visible = false);
                     }
                     temporaryMessageTimer.Stop();
                 }
@@ -185,11 +186,7 @@ namespace FLAC_Benchmark_H
         {
             public int Compare(string? x, string? y)
             {
-                if (ReferenceEquals(x, y)) return 0;
-                if (x is null) return -1;
-                if (y is null) return 1;
-
-                return CompareNatural(x.AsSpan(), y.AsSpan());
+                return ReferenceEquals(x, y) ? 0 : x is null ? -1 : y is null ? 1 : CompareNatural(x.AsSpan(), y.AsSpan());
             }
 
             private static int CompareNatural(ReadOnlySpan<char> strA, ReadOnlySpan<char> strB)
@@ -212,7 +209,9 @@ namespace FLAC_Benchmark_H
                         int numberComparison = CompareNumbers(strA[i1..numEnd1],
                                                               strB[i2..numEnd2]);
                         if (numberComparison != 0)
+                        {
                             return numberComparison;
+                        }
 
                         i1 = numEnd1;
                         i2 = numEnd2;
@@ -230,7 +229,9 @@ namespace FLAC_Benchmark_H
 
                         int cmp = char.ToLowerInvariant(c1).CompareTo(char.ToLowerInvariant(c2));
                         if (cmp != 0)
+                        {
                             return cmp;
+                        }
 
                         i1++; i2++;
                     }
@@ -250,25 +251,39 @@ namespace FLAC_Benchmark_H
             {
                 int i = start;
                 while (i < str.Length && IsDigit(str[i]))
+                {
                     i++;
+                }
+
                 return i;
             }
 
             private static int CompareNumbers(ReadOnlySpan<char> num1, ReadOnlySpan<char> num2)
             {
                 if (num1.SequenceEqual(num2))
+                {
                     return 0;
+                }
 
                 int start1 = 0, start2 = 0;
 
-                while (start1 < num1.Length - 1 && num1[start1] == '0') start1++;
-                while (start2 < num2.Length - 1 && num2[start2] == '0') start2++;
+                while (start1 < num1.Length - 1 && num1[start1] == '0')
+                {
+                    start1++;
+                }
+
+                while (start2 < num2.Length - 1 && num2[start2] == '0')
+                {
+                    start2++;
+                }
 
                 int len1 = num1.Length - start1;
                 int len2 = num2.Length - start2;
 
                 if (len1 != len2)
+                {
                     return len1.CompareTo(len2);
+                }
 
                 for (int i = 0; i < len1; i++)
                 {
@@ -276,7 +291,9 @@ namespace FLAC_Benchmark_H
                     char c2 = num2[start2 + i];
 
                     if (c1 != c2)
+                    {
                         return c1.CompareTo(c2);
+                    }
                 }
 
                 return 0;
@@ -312,14 +329,9 @@ namespace FLAC_Benchmark_H
                 });
 
                 // Update the CPU information label on the UI thread
-                if (physicalCores > 0 && threadCount > 0)
-                {
-                    labelCpuInfo.Text = $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}";
-                }
-                else
-                {
-                    labelCpuInfo.Text = "Unable to retrieve CPU information.";
-                }
+                labelCpuInfo.Text = physicalCores > 0 && threadCount > 0
+                    ? $"Your system has:\nCores: {physicalCores}, Threads: {threadCount}"
+                    : "Unable to retrieve CPU information.";
                 isCpuInfoLoaded = true;
             }
         }
@@ -343,12 +355,12 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
-                    _cpuClockCounter.NextValue(); // Warm up
+                    _ = _cpuClockCounter.NextValue(); // Warm up
                     await Task.Delay(1);
                     double clockPercent = _cpuClockCounter.NextValue();
                     if (clockPercent > 0)
                     {
-                        clockMhz = (clockPercent / 100.0) * _baseClockMhz;
+                        clockMhz = clockPercent / 100.0 * _baseClockMhz;
                     }
                 }
                 catch { }
@@ -357,7 +369,7 @@ namespace FLAC_Benchmark_H
             // Update UI
             if (labelCpuUsageTitle.InvokeRequired)
             {
-                labelCpuUsageTitle.Invoke((MethodInvoker)delegate
+                _ = labelCpuUsageTitle.Invoke((MethodInvoker)delegate
                 {
                     labelCpuUsageTitle.Text = "CPU Load:\nCPU Clock:";
                     labelCpuUsageValue.Text = $"{cpuLoad:F1} %\n{clockMhz:F0} MHz";
@@ -373,7 +385,7 @@ namespace FLAC_Benchmark_H
         // Gets a MediaInfo instance from the pool or creates a new one if pool is empty
         private MediaInfo GetMediaInfoFromPool()
         {
-            if (_mediaInfoPool.TryDequeue(out var mediaInfo))
+            if (_mediaInfoPool.TryDequeue(out MediaInfo? mediaInfo))
             {
                 return mediaInfo;
             }
@@ -384,7 +396,10 @@ namespace FLAC_Benchmark_H
         // Returns MediaInfo instance to the pool for reuse
         private void ReturnMediaInfoToPool(MediaInfo mediaInfo)
         {
-            if (mediaInfo == null) return;
+            if (mediaInfo == null)
+            {
+                return;
+            }
 
             if (_mediaInfoPool.Count < MediaInfoPoolSize)
             {
@@ -408,16 +423,9 @@ namespace FLAC_Benchmark_H
         // Method to get process priority
         private ProcessPriorityClass GetSelectedProcessPriority()
         {
-            string priorityText;
-            if (comboBoxCPUPriority.InvokeRequired)
-            {
-                priorityText = (string)comboBoxCPUPriority.Invoke(new Func<string>(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal"));
-            }
-            else
-            {
-                priorityText = comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
-            }
-
+            string priorityText = comboBoxCPUPriority.InvokeRequired
+                ? comboBoxCPUPriority.Invoke(new Func<string>(() => comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal"))
+                : comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal";
             return priorityText switch
             {
                 "Idle" => ProcessPriorityClass.Idle,
@@ -444,8 +452,8 @@ namespace FLAC_Benchmark_H
                     tempPathToSave = $".\\{relativePart}";
                 }
 
-                var settings = new List<string>
-                {
+                List<string> settings =
+                [
                     $"CompressionLevel={textBoxCompressionLevel.Text}",
                     $"Threads={textBoxThreads.Text}",
                     $"CommandLineOptionsEncoder={textBoxCommandLineOptionsEncoder.Text}",
@@ -456,7 +464,7 @@ namespace FLAC_Benchmark_H
                     $"AddWarmupPass={checkBoxWarmupPass.Checked}",
                     $"PreventSleep={checkBoxPreventSleep.Checked}",
                     $"AutoAnalyzeLog={checkBoxAutoAnalyzeLog.Checked}",
-                    $"CPUPriority={(comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal")}",                    
+                    $"CPUPriority={comboBoxCPUPriority.SelectedItem?.ToString() ?? "Normal"}",                    
  
                     //Plots
                     $"DrawMultiplots={checkBoxDrawMultiplots.Checked}",
@@ -474,7 +482,7 @@ namespace FLAC_Benchmark_H
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}"
-                };
+                ];
 
                 // Logs
                 foreach (DataGridViewColumn col in dataGridViewLog.Columns)
@@ -490,28 +498,27 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error saving settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void SaveEncoders()
         {
             try
             {
-                var encoders = listViewEncoders.Items
+                string[] encoders = [.. listViewEncoders.Items
                 .Cast<ListViewItem>()
                 .Select(item =>
                 {
                     string status = item.Checked ? "Checked" : "Unchecked";
                     string path = item.Tag?.ToString() ?? "";
                     return $"{status}|{path}";
-                })
-                .ToArray();
+                })];
 
                 File.WriteAllLines(SettingsEncodersFilePath, encoders, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving encoders: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error saving encoders: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -519,21 +526,20 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                var audioFiles = listViewAudioFiles.Items
+                string[] audioFiles = [.. listViewAudioFiles.Items
                 .Cast<ListViewItem>()
                 .Select(item =>
                 {
                     string status = item.Checked ? "Checked" : "Unchecked";
                     string path = item.Tag?.ToString() ?? "";
                     return $"{status}|{path}";
-                })
-                .ToArray();
+                })];
 
                 File.WriteAllLines(SettingsAudioFilesFilePath, audioFiles, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving audio files: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error saving audio files: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -543,7 +549,7 @@ namespace FLAC_Benchmark_H
             {
                 // Create an array of formatted strings representing the rows in dataGridViewJobs
                 // Exclude the new row if it exists (though we disabled it)
-                var lines = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
+                string[] lines = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()
                 .Where(row => !row.IsNewRow) // Filter out the new row
                 .Select(row =>
                 {
@@ -556,14 +562,13 @@ namespace FLAC_Benchmark_H
                     // Format the row data as a single line
                     string status = isChecked ? "Checked" : "Unchecked";
                     return $"{status}|{type}|{passes}|{parameters}";
-                })
-                .ToArray();
+                })];
 
                 File.WriteAllLines(SettingsJobsFilePath, lines, Encoding.UTF8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error saving jobs to file: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -577,18 +582,23 @@ namespace FLAC_Benchmark_H
             try
             {
                 if (!File.Exists(SettingsGeneralFilePath))
+                {
                     return;
+                }
 
                 string[] lines = File.ReadAllLines(SettingsGeneralFilePath);
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
-                foreach (var line in lines)
+                foreach (string line in lines)
                 {
-                    var parts = line.Split(['='], 2);
-                    if (parts.Length != 2) continue;
+                    string[] parts = line.Split(['='], 2);
+                    if (parts.Length != 2)
+                    {
+                        continue;
+                    }
 
-                    var key = parts[0].Trim();
-                    var value = parts[1].Trim();
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim();
 
                     switch (key)
                     {
@@ -700,7 +710,7 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        Directory.CreateDirectory(tempFolderPath);
+                        _ = Directory.CreateDirectory(tempFolderPath);
                     }
                     catch (Exception)
                     {
@@ -709,10 +719,10 @@ namespace FLAC_Benchmark_H
 
                         if (!Directory.Exists(tempFolderPath))
                         {
-                            Directory.CreateDirectory(tempFolderPath);
+                            _ = Directory.CreateDirectory(tempFolderPath);
                         }
 
-                        MessageBox.Show(
+                        _ = MessageBox.Show(
                         $"Cannot use specified temp folder:\n\n{failedPath}\n\nUsing default location:\n\n{tempFolderPath}",
                         "Info",
                         MessageBoxButtons.OK,
@@ -722,13 +732,15 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private async void LoadEncoders()
         {
             if (!File.Exists(SettingsEncodersFilePath))
+            {
                 return;
+            }
 
             try
             {
@@ -740,12 +752,15 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Collect all valid encoder paths with their checked state
-                var encoderPaths = new List<(string path, bool isChecked)>();
-                var missingFiles = new List<string>();
+                List<(string path, bool isChecked)> encoderPaths = [];
+                List<string> missingFiles = [];
 
-                foreach (var line in lines)
+                foreach (string line in lines)
                 {
-                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
 
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
@@ -756,9 +771,13 @@ namespace FLAC_Benchmark_H
                             bool isChecked = line.StartsWith("Checked");
                             string encoderPath = line[(separatorIndex + 1)..];
                             if (!string.IsNullOrEmpty(encoderPath) && File.Exists(encoderPath))
+                            {
                                 encoderPaths.Add((encoderPath, isChecked));
+                            }
                             else
+                            {
                                 missingFiles.Add(encoderPath);
+                            }
                         }
                     }
                 }
@@ -768,14 +787,16 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error loading encoders: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateGroupBoxEncodersHeader();
             }
         }
         private async void LoadAudioFiles()
         {
             if (!File.Exists(SettingsAudioFilesFilePath))
+            {
                 return;
+            }
 
             try
             {
@@ -784,24 +805,28 @@ namespace FLAC_Benchmark_H
                 string[] lines = await File.ReadAllLinesAsync(SettingsAudioFilesFilePath);
                 listViewAudioFiles.Items.Clear();
 
-                var missingFiles = new List<string>();
-                var tasks = lines.Select(async line =>
+                List<string> missingFiles = [];
+                IEnumerable<Task<ListViewItem?>> tasks = lines.Select(async line =>
                 {
                     if (string.IsNullOrWhiteSpace(line))
+                    {
                         return null;
+                    }
 
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
                         int separatorIndex = line.IndexOf('|');
                         if (separatorIndex == -1 || separatorIndex == line.Length - 1)
+                        {
                             return null;
+                        }
 
                         bool isChecked = line.StartsWith("Checked");
                         string audioFilePath = line[(separatorIndex + 1)..];
 
                         if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                         {
-                            var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
+                            ListViewItem? item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
                             if (item != null)
                             {
                                 item.Checked = isChecked;
@@ -815,14 +840,14 @@ namespace FLAC_Benchmark_H
                     }
                     else if (line.Contains('~'))
                     {
-                        var parts = line.Split('~');
+                        string[] parts = line.Split('~');
                         if (parts.Length >= 2 && bool.TryParse(parts[^1], out bool isChecked))
                         {
                             string audioFilePath = string.Join("~", parts.Take(parts.Length - 1));
 
                             if (!string.IsNullOrEmpty(audioFilePath) && File.Exists(audioFilePath))
                             {
-                                var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
+                                ListViewItem? item = await Task.Run(() => CreateListViewAudioFilesItemInternal(audioFilePath, isChecked));
                                 if (item != null)
                                 {
                                     item.Checked = isChecked;
@@ -838,7 +863,7 @@ namespace FLAC_Benchmark_H
                     return null;
                 });
 
-                var items = await Task.WhenAll(tasks);
+                ListViewItem?[] items = await Task.WhenAll(tasks);
 
                 listViewAudioFiles.Items.AddRange([.. items.OfType<ListViewItem>()]);
 
@@ -850,13 +875,13 @@ namespace FLAC_Benchmark_H
                     string.Join("\n", missingFiles.Select(Path.GetFileName)) +
                     "\n\nCheck if they still exist on your system.";
 
-                    MessageBox.Show(warningMessage, "Missing Audio Files",
+                    _ = MessageBox.Show(warningMessage, "Missing Audio Files",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading audio files: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error loading audio files: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             UpdateGroupBoxAudioFilesHeader();
@@ -865,18 +890,22 @@ namespace FLAC_Benchmark_H
         {
             BackupJobsFile();
             if (!File.Exists(SettingsJobsFilePath))
+            {
                 return;
+            }
 
             try
             {
                 string[] lines = File.ReadAllLines(SettingsJobsFilePath);
                 // Clear existing rows in dataGridViewJobs before loading
-                dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Clear()));
+                dataGridViewJobs.Invoke(new Action(dataGridViewJobs.Rows.Clear));
 
                 foreach (string line in lines)
                 {
                     if (string.IsNullOrWhiteSpace(line))
+                    {
                         continue;
+                    }
 
                     // Check for the primary format: "Status|Type|Passes|Parameters"
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
@@ -902,7 +931,7 @@ namespace FLAC_Benchmark_H
                     else if (line.Contains('~'))
                     {
                         // Old format: Text~Checked~Passes~Parameters
-                        var parts = line.Split('~');
+                        string[] parts = line.Split('~');
                         if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
                             // Add the parsed job data as a new row to dataGridViewJobs
@@ -911,13 +940,13 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    MessageBox.Show($"Invalid line format: {line}", "Error",
+                    _ = MessageBox.Show($"Invalid line format: {line}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             dataGridViewJobs.ClearSelection();
@@ -934,7 +963,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show(this, $"Error creating backup for jobs file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -965,18 +994,21 @@ namespace FLAC_Benchmark_H
         private async void ListViewEncoders_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
-            if (files.Length == 0) return;
+            if (files.Length == 0)
+            {
+                return;
+            }
 
-            var validPaths = new List<(string path, bool isChecked)>();
+            List<(string path, bool isChecked)> validPaths = [];
 
-            foreach (var file in files)
+            foreach (string file in files)
             {
                 if (Directory.Exists(file))
                 {
                     try
                     {
                         // Recursively find all .exe files in the directory (excluding metaflac.exe)
-                        var exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
+                        IEnumerable<(string f, bool)> exeFiles = Directory.GetFiles(file, "*.exe", SearchOption.AllDirectories)
                             .Where(f => !Path.GetFileName(f).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
                             .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
                             .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
@@ -985,7 +1017,7 @@ namespace FLAC_Benchmark_H
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        _ = MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 else if (Path.GetExtension(file).Equals(".exe", StringComparison.OrdinalIgnoreCase))
@@ -1011,7 +1043,7 @@ namespace FLAC_Benchmark_H
         {
             if (_isRefreshingEncoders)
             {
-                MessageBox.Show("Please wait until Refresh completes.",
+                _ = MessageBox.Show("Please wait until Refresh completes.",
                                "Refresh in Progress",
                                MessageBoxButtons.OK,
                                MessageBoxIcon.Information);
@@ -1025,12 +1057,11 @@ namespace FLAC_Benchmark_H
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                var validPaths = openFileDialog.FileNames
+                List<(string file, bool)> validPaths = [.. openFileDialog.FileNames
                     .Where(file => !Path.GetFileName(file).Equals("metaflac.exe", StringComparison.OrdinalIgnoreCase))
                     .OrderBy(f => Path.GetDirectoryName(f) ?? string.Empty, new NaturalStringComparer())
                     .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
-                    .Select(file => (file, true))
-                    .ToList();
+                    .Select(file => (file, true))];
 
                 if (validPaths.Count > 0)
                 {
@@ -1059,7 +1090,7 @@ namespace FLAC_Benchmark_H
         {
             _isProcessingEncodersQueue = true;
             _processedEncodersCount = 0;
-            var allMissingFiles = new List<string>(initialMissingFiles);
+            List<string> allMissingFiles = [.. initialMissingFiles];
 
             _encoderLoadCancellation = new CancellationTokenSource();
 
@@ -1070,26 +1101,34 @@ namespace FLAC_Benchmark_H
                 while (true)
                 {
                     if (_encoderLoadCancellation.Token.IsCancellationRequested)
+                    {
                         break;
+                    }
 
                     List<(string path, bool isChecked)> currentBatch;
 
                     using (_encodersQueueLock.EnterScope())
                     {
-                        if (_encodersLoadQueue.Count == 0) break;
+                        if (_encodersLoadQueue.Count == 0)
+                        {
+                            break;
+                        }
+
                         currentBatch = _encodersLoadQueue.Dequeue();
                     }
 
                     // Process each encoder in the current batch
-                    foreach (var (path, isChecked) in currentBatch)
+                    foreach ((string? path, bool isChecked) in currentBatch)
                     {
                         if (_encoderLoadCancellation.Token.IsCancellationRequested)
+                        {
                             break;
+                        }
 
-                        var item = await CreateListViewEncodersItemInternal(path, isChecked, _encoderLoadCancellation.Token);
+                        ListViewItem? item = await CreateListViewEncodersItemInternal(path, isChecked, _encoderLoadCancellation.Token);
                         if (item != null && !_encoderLoadCancellation.Token.IsCancellationRequested)
                         {
-                            listViewEncoders.Items.Add(item);
+                            _ = listViewEncoders.Items.Add(item);
                         }
 
                         _processedEncodersCount++;
@@ -1137,9 +1176,7 @@ namespace FLAC_Benchmark_H
 
                 if (allMissingFiles.Count > 0 && !(_encoderLoadCancellation?.IsCancellationRequested ?? false))
                 {
-                    var uniqueMissingFiles = new HashSet<string>(allMissingFiles)
-                        .OrderBy(f => f, new NaturalStringComparer())
-                        .ToList();
+                    List<string> uniqueMissingFiles = [.. new HashSet<string>(allMissingFiles).OrderBy(f => f, new NaturalStringComparer())];
 
                     string warningMessage = "The following Encoders were missing and not loaded:" +
                         Environment.NewLine + Environment.NewLine +
@@ -1147,7 +1184,7 @@ namespace FLAC_Benchmark_H
                         Environment.NewLine + Environment.NewLine +
                         "Check if they still exist on your system.";
 
-                    var dialog = new Form
+                    Form dialog = new()
                     {
                         Text = "Missing Encoders",
                         Size = new Size(600, 400),
@@ -1158,13 +1195,13 @@ namespace FLAC_Benchmark_H
                         StartPosition = FormStartPosition.Manual
                     };
 
-                    var mainForm = this;
+                    Form1 mainForm = this;
                     dialog.Location = new Point(
-                        mainForm.Location.X + (mainForm.Width - dialog.Width) / 2,
-                        mainForm.Location.Y + (mainForm.Height - dialog.Height) / 2
+                        mainForm.Location.X + ((mainForm.Width - dialog.Width) / 2),
+                        mainForm.Location.Y + ((mainForm.Height - dialog.Height) / 2)
                     );
 
-                    var textBoxMissingEncoders = new RichTextBox
+                    RichTextBox textBoxMissingEncoders = new()
                     {
                         BorderStyle = BorderStyle.Fixed3D,
                         Multiline = true,
@@ -1179,7 +1216,7 @@ namespace FLAC_Benchmark_H
                         Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
                     };
 
-                    var buttonCloseMissingEncoders = new Button
+                    Button buttonCloseMissingEncoders = new()
                     {
                         Text = "Close",
                         Width = 55,
@@ -1202,26 +1239,23 @@ namespace FLAC_Benchmark_H
         private void UpdateEncoderProgress()
         {
             if (_isRefreshingEncoders)
+            {
                 return;
+            }
 
             string progressText;
 
             lock (_encodersQueueLock)
             {
-                if (_totalEncodersInQueue > 0)
-                {
-                    progressText = $"Choose Encoder (Drag'n'Drop of files and folders is available) - Loading... ({_processedEncodersCount}/{_totalEncodersInQueue})";
-                }
-                else
-                {
-                    progressText = "Choose Encoder (Drag'n'Drop of files and folders is available)";
-                }
+                progressText = _totalEncodersInQueue > 0
+                    ? $"Choose Encoder (Drag'n'Drop of files and folders is available) - Loading... ({_processedEncodersCount}/{_totalEncodersInQueue})"
+                    : "Choose Encoder (Drag'n'Drop of files and folders is available)";
             }
 
             // Ensure UI thread safety
             if (groupBoxEncoders.InvokeRequired)
             {
-                groupBoxEncoders.Invoke((MethodInvoker)(() => groupBoxEncoders.Text = progressText));
+                _ = groupBoxEncoders.Invoke((MethodInvoker)(() => groupBoxEncoders.Text = progressText));
             }
             else
             {
@@ -1231,20 +1265,22 @@ namespace FLAC_Benchmark_H
         private async Task<ListViewItem?> CreateListViewEncodersItemInternal(string encoderPath, bool isChecked, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(encoderPath))
+            {
                 return null;
+            }
 
-            var fileInfo = new FileInfo(encoderPath);
+            FileInfo fileInfo = new(encoderPath);
             DateTime currentCreationTime = fileInfo.CreationTimeUtc;
             DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
             // Check the cache for existing info
-            if (encoderInfoCache.TryGetValue(encoderPath, out var cachedInfo))
+            if (encoderInfoCache.TryGetValue(encoderPath, out EncoderInfo? cachedInfo))
             {
                 // If the file was modified - invalidate the cache
                 if (cachedInfo.CreationTime != currentCreationTime ||
                     cachedInfo.LastWriteTime != currentLastWriteTime)
                 {
-                    encoderInfoCache.TryRemove(encoderPath, out _);
+                    _ = encoderInfoCache.TryRemove(encoderPath, out _);
                     cachedInfo = null;
                 }
             }
@@ -1258,7 +1294,9 @@ namespace FLAC_Benchmark_H
                     version = await Task.Run(() =>
                     {
                         if (cancellationToken.IsCancellationRequested)
+                        {
                             return null;
+                        }
 
                         using Process process = new();
                         process.StartInfo.FileName = encoderPath;
@@ -1267,7 +1305,7 @@ namespace FLAC_Benchmark_H
                         process.StartInfo.RedirectStandardOutput = true;
                         process.StartInfo.CreateNoWindow = true;
 
-                        process.Start();
+                        _ = process.Start();
                         string? result = process.StandardOutput.ReadLine();
 
                         while (!process.HasExited)
@@ -1277,7 +1315,7 @@ namespace FLAC_Benchmark_H
                                 try { process.Kill(); } catch { }
                                 return null;
                             }
-                            process.WaitForExit(100);
+                            _ = process.WaitForExit(100);
                         }
 
                         return result?.Trim();
@@ -1293,7 +1331,9 @@ namespace FLAC_Benchmark_H
                 }
 
                 if (cancellationToken.IsCancellationRequested)
+                {
                     return null;
+                }
 
                 // Create and cache fresh Encoder metadata
                 cachedInfo = new EncoderInfo
@@ -1313,19 +1353,21 @@ namespace FLAC_Benchmark_H
             }
 
             if (cancellationToken.IsCancellationRequested)
+            {
                 return null;
+            }
 
             // Create ListViewItem with subitems
-            var item = new ListViewItem(cachedInfo.FileName)
+            ListViewItem item = new(cachedInfo.FileName)
             {
                 Tag = encoderPath,
                 Checked = isChecked
             };
 
-            item.SubItems.Add(cachedInfo.Version);
-            item.SubItems.Add(cachedInfo.DirectoryPath);
-            item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
-            item.SubItems.Add(cachedInfo.LastWriteTime.ToString("yyyy.MM.dd HH:mm"));
+            _ = item.SubItems.Add(cachedInfo.Version);
+            _ = item.SubItems.Add(cachedInfo.DirectoryPath);
+            _ = item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
+            _ = item.SubItems.Add(cachedInfo.LastWriteTime.ToString("yyyy.MM.dd HH:mm"));
 
             return item;
         }
@@ -1404,7 +1446,7 @@ namespace FLAC_Benchmark_H
         // Encoders Context Menu
         private void ContextMenuStripEncoders_Opening(object sender, CancelEventArgs e)
         {
-            var items = listViewEncoders.Items;
+            ListView.ListViewItemCollection items = listViewEncoders.Items;
             int totalItemsCount = items.Count;
             int selectedItemsCount = listViewEncoders.SelectedItems.Count;
 
@@ -1422,13 +1464,20 @@ namespace FLAC_Benchmark_H
             {
                 for (int i = 0; i < totalItemsCount; i++)
                 {
-                    var item = (ListViewItem)items[i];
+                    ListViewItem item = items[i];
                     if (item.Checked)
+                    {
                         hasCheckedItems = true;
+                    }
                     else
+                    {
                         hasUncheckedItems = true;
+                    }
 
-                    if (hasCheckedItems && hasUncheckedItems) break;
+                    if (hasCheckedItems && hasUncheckedItems)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -1436,13 +1485,20 @@ namespace FLAC_Benchmark_H
             {
                 for (int i = 0; i < listViewEncoders.SelectedItems.Count; i++)
                 {
-                    var item = listViewEncoders.SelectedItems[i];
+                    ListViewItem item = listViewEncoders.SelectedItems[i];
                     if (item.Checked)
+                    {
                         hasSelectedCheckedItems = true;
+                    }
                     else
+                    {
                         hasSelectedUncheckedItems = true;
+                    }
 
-                    if (hasSelectedCheckedItems && hasSelectedUncheckedItems) break;
+                    if (hasSelectedCheckedItems && hasSelectedUncheckedItems)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -1537,14 +1593,16 @@ namespace FLAC_Benchmark_H
         private async void RefreshAllToolStripMenuItemEncoders_Click(object? sender, EventArgs e)
         {
             if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
+            {
                 return;
+            }
 
             _isRefreshingEncoders = true;
             groupBoxEncoders.Text = "Choose Encoder (Drag'n'Drop of files and folders is available) - Refreshing...";
             Application.DoEvents();
 
             int topIndex = listViewEncoders.TopItem?.Index ?? 0;
-            var selectedIndices = new List<int>();
+            List<int> selectedIndices = [];
             foreach (ListViewItem item in listViewEncoders.SelectedItems)
             {
                 selectedIndices.Add(item.Index);
@@ -1565,16 +1623,16 @@ namespace FLAC_Benchmark_H
 
                     bool currentChecked = item.Checked;
 
-                    var fileInfo = new FileInfo(encoderPath);
+                    FileInfo fileInfo = new(encoderPath);
                     DateTime currentCreationTime = fileInfo.CreationTimeUtc;
                     DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-                    var cachedInfo = encoderInfoCache[encoderPath];
+                    EncoderInfo cachedInfo = encoderInfoCache[encoderPath];
 
                     bool wasModified = cachedInfo.CreationTime != currentCreationTime ||
                                        cachedInfo.LastWriteTime != currentLastWriteTime;
 
-                    var newItem = await CreateListViewEncodersItemInternal(encoderPath, currentChecked);
+                    ListViewItem? newItem = await CreateListViewEncodersItemInternal(encoderPath, currentChecked);
                     if (newItem == null)
                     {
                         listViewEncoders.Items.RemoveAt(i);
@@ -1587,7 +1645,9 @@ namespace FLAC_Benchmark_H
                     for (int j = 0; j < newItem.SubItems.Count - 1; j++)
                     {
                         if (j + 1 < item.SubItems.Count)
+                        {
                             item.SubItems[j + 1].Text = newItem.SubItems[j + 1].Text;
+                        }
                     }
 
                     item.ForeColor = wasModified ? Color.DarkOrange : SystemColors.WindowText;
@@ -1626,18 +1686,22 @@ namespace FLAC_Benchmark_H
         private void OpenContainingFolderToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             if (listViewEncoders.SelectedItems.Count == 0)
+            {
                 return;
+            }
 
             foreach (ListViewItem selectedItem in listViewEncoders.SelectedItems)
             {
                 string? encoderPath = selectedItem.Tag?.ToString();
 
                 if (string.IsNullOrEmpty(encoderPath))
+                {
                     continue;
+                }
 
                 if (!File.Exists(encoderPath))
                 {
-                    MessageBox.Show($"The selected encoder file no longer exists on disk:\n\n{encoderPath}\n\n" +
+                    _ = MessageBox.Show($"The selected encoder file no longer exists on disk:\n\n{encoderPath}\n\n" +
                                    "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
                                    "File Not Found",
                                    MessageBoxButtons.OK,
@@ -1647,7 +1711,7 @@ namespace FLAC_Benchmark_H
 
                 try
                 {
-                    Process.Start(new ProcessStartInfo
+                    _ = Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         Arguments = $"/select,\"{encoderPath}\"",
@@ -1656,7 +1720,7 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(encoderPath)}:\n{ex.Message}",
+                    _ = MessageBox.Show($"Failed to open folder for {Path.GetFileName(encoderPath)}:\n{ex.Message}",
                                    "Error",
                                    MessageBoxButtons.OK,
                                    MessageBoxIcon.Error);
@@ -1687,16 +1751,20 @@ namespace FLAC_Benchmark_H
         private void ClearDuplicateEntriesToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             if (_isProcessingEncodersQueue || _isRefreshingEncoders || listViewEncoders.Items.Count == 0)
+            {
                 return;
+            }
 
-            var seenPaths = new HashSet<string>();
-            var itemsToRemove = new List<ListViewItem>();
+            HashSet<string> seenPaths = [];
+            List<ListViewItem> itemsToRemove = [];
 
             foreach (ListViewItem item in listViewEncoders.Items)
             {
                 string? encoderPath = item.Tag?.ToString();
                 if (string.IsNullOrEmpty(encoderPath))
+                {
                     continue;
+                }
 
                 if (!seenPaths.Add(encoderPath))
                 {
@@ -1706,13 +1774,13 @@ namespace FLAC_Benchmark_H
 
             if (itemsToRemove.Count > 0)
             {
-                foreach (var item in itemsToRemove)
+                foreach (ListViewItem item in itemsToRemove)
                 {
                     listViewEncoders.Items.Remove(item);
                 }
                 UpdateGroupBoxEncodersHeader();
 
-                MessageBox.Show(
+                _ = MessageBox.Show(
                     $"Cleared {itemsToRemove.Count} duplicate entr{(itemsToRemove.Count == 1 ? "y" : "ies")}.",
                     "Duplicates cleared",
                     MessageBoxButtons.OK,
@@ -1748,41 +1816,39 @@ namespace FLAC_Benchmark_H
             {
                 groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
 
-                var tasks = files.Select(async file =>
+                IEnumerable<Task<ListViewItem?[]>> tasks = files.Select(async file =>
                 {
                     if (Directory.Exists(file))
                     {
                         // Get all audio files in the directory
-                        var directoryFiles = Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
+                        List<string> directoryFiles = [.. Directory.GetFiles(file, "*.wav", SearchOption.AllDirectories)
                             .Concat(Directory.GetFiles(file, "*.flac", SearchOption.AllDirectories))
                             .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
-                            .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
-                            .ToList();
+                            .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())];
 
                         // Create a ListViewItem for each found audio file
-                        var items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItemInternal(f, true))));
+                        ListViewItem?[] items = await Task.WhenAll(directoryFiles.Select(f => Task.Run(() => CreateListViewAudioFilesItemInternal(f, true))));
                         return items; // Return an array of ListViewItem
                     }
                     else if (IsAudioFile(file) && File.Exists(file))
                     {
-                        var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
+                        ListViewItem? item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
                         return [item]; // Return an array with one item
                     }
 
                     return []; // Return an empty array if it's not an audio file
                 });
 
-                var itemsList = await Task.WhenAll(tasks); // Wait for all tasks to complete
+                ListViewItem?[][] itemsList = await Task.WhenAll(tasks); // Wait for all tasks to complete
 
                 // Add items to the ListView
-                foreach (var itemList in itemsList)
+                foreach (ListViewItem?[]? itemList in itemsList)
                 {
                     if (itemList != null && itemList.Length > 0)
                     {
-                        var nonNullItems = itemList
+                        ListViewItem[] nonNullItems = [.. itemList
                             .Where(item => item != null)
-                            .Select(item => item!)
-                            .ToArray();
+                            .Select(item => item!)];
 
                         if (nonNullItems.Length > 0)
                         {
@@ -1808,26 +1874,25 @@ namespace FLAC_Benchmark_H
                 {
                     groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - loading...";
 
-                    var sortedFileNames = openFileDialog.FileNames
+                    List<string> sortedFileNames = [.. openFileDialog.FileNames
                         .Where(IsAudioFile)
                         .OrderBy(f => Path.GetDirectoryName(f), new NaturalStringComparer())
-                        .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())
-                        .ToList();
+                        .ThenBy(f => Path.GetFileName(f), new NaturalStringComparer())];
 
-                    var tasks = sortedFileNames.Select(async file =>
+                    IEnumerable<Task<ListViewItem?>> tasks = sortedFileNames.Select(async file =>
                     {
-                        var item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
-                        item?.Checked = true;
+                        ListViewItem? item = await Task.Run(() => CreateListViewAudioFilesItemInternal(file, true)); // Create a list item
+                        _ = (item?.Checked = true);
                         return item;
                     });
 
-                    var items = await Task.WhenAll(tasks); // Wait for all tasks to complete
+                    ListViewItem?[] items = await Task.WhenAll(tasks); // Wait for all tasks to complete
 
-                    foreach (var item in items)
+                    foreach (ListViewItem? item in items)
                     {
                         if (item != null)
                         {
-                            listViewAudioFiles.Items.Add(item); // Add items to the ListView
+                            _ = listViewAudioFiles.Items.Add(item); // Add items to the ListView
                         }
                     }
                 }
@@ -1842,18 +1907,20 @@ namespace FLAC_Benchmark_H
         private async Task<ListViewItem?> CreateListViewAudioFilesItemInternal(string audioFilePath, bool isChecked)
         {
             if (!File.Exists(audioFilePath))
+            {
                 return null;
+            }
 
-            var fileInfo = new FileInfo(audioFilePath);
+            FileInfo fileInfo = new(audioFilePath);
             DateTime currentCreationTime = fileInfo.CreationTimeUtc;
             DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-            if (audioFileInfoCache.TryGetValue(audioFilePath, out var cachedInfo))
+            if (audioFileInfoCache.TryGetValue(audioFilePath, out AudioFileInfo? cachedInfo))
             {
                 if (cachedInfo.CreationTime != currentCreationTime ||
                     cachedInfo.LastWriteTime != currentLastWriteTime)
                 {
-                    audioFileInfoCache.TryRemove(audioFilePath, out _);
+                    _ = audioFileInfoCache.TryRemove(audioFilePath, out _);
                     cachedInfo = null;
                 }
             }
@@ -1883,10 +1950,10 @@ namespace FLAC_Benchmark_H
 
                 audioFileInfoCache[audioFilePath] = cachedInfo;
 
-                var mediaInfo = GetMediaInfoFromPool();
+                MediaInfo mediaInfo = GetMediaInfoFromPool();
                 try
                 {
-                    mediaInfo.Open(audioFilePath);
+                    _ = mediaInfo.Open(audioFilePath);
 
                     cachedInfo.Channels = mediaInfo.Get(StreamKind.Audio, 0, "Channel(s)") ?? "N/A";
                     cachedInfo.Duration = mediaInfo.Get(StreamKind.Audio, 0, "Duration") ?? "N/A";
@@ -1898,7 +1965,7 @@ namespace FLAC_Benchmark_H
                     if (cachedInfo.Extension == ".flac")
                     {
                         cachedInfo.WritingLibrary = mediaInfo.Get(StreamKind.Audio, 0, "Encoded_Library/String") ?? "N/A";
-                        
+
                         cachedInfo.Md5Hash = mediaInfo.Get(StreamKind.Audio, 0, "MD5_Unencoded") ?? "N/A";
                         cachedInfo.Md5HashMissing = string.IsNullOrEmpty(cachedInfo.Md5Hash) ||
                                  cachedInfo.Md5Hash == "N/A" ||
@@ -1926,20 +1993,20 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            var item = new ListViewItem(cachedInfo.FileName)
+            ListViewItem item = new(cachedInfo.FileName)
             {
                 Tag = audioFilePath,
                 Checked = isChecked
             };
 
-            item.SubItems.Add(cachedInfo.Channels);
-            item.SubItems.Add(cachedInfo.BitDepthString);
-            item.SubItems.Add(cachedInfo.SamplingRateString);
-            item.SubItems.Add($"{cachedInfo.Duration:n0} ms");
-            item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
-            item.SubItems.Add(cachedInfo.Md5Hash);
-            item.SubItems.Add(cachedInfo.DirectoryPath);
-            item.SubItems.Add(cachedInfo.WritingLibrary);
+            _ = item.SubItems.Add(cachedInfo.Channels);
+            _ = item.SubItems.Add(cachedInfo.BitDepthString);
+            _ = item.SubItems.Add(cachedInfo.SamplingRateString);
+            _ = item.SubItems.Add($"{cachedInfo.Duration:n0} ms");
+            _ = item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
+            _ = item.SubItems.Add(cachedInfo.Md5Hash);
+            _ = item.SubItems.Add(cachedInfo.DirectoryPath);
+            _ = item.SubItems.Add(cachedInfo.WritingLibrary);
 
             return item;
         }
@@ -1973,9 +2040,9 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                await using var stream = File.OpenRead(audioFilePath);
-                using var md5 = MD5.Create();
-                using var reader = new BinaryReader(stream);
+                await using FileStream stream = File.OpenRead(audioFilePath);
+                using MD5 md5 = MD5.Create();
+                using BinaryReader reader = new(stream);
 
                 // Validate RIFF header
                 if (reader.ReadUInt32() != 0x46464952) // "RIFF"
@@ -1984,7 +2051,7 @@ namespace FLAC_Benchmark_H
                     return "MD5 calculation failed";
                 }
 
-                reader.ReadUInt32(); // Skip file size
+                _ = reader.ReadUInt32(); // Skip file size
 
                 // Validate WAVE header
                 if (reader.ReadUInt32() != 0x45564157) // "WAVE"
@@ -1998,7 +2065,9 @@ namespace FLAC_Benchmark_H
                 {
                     // Check if we can read chunk header
                     if (reader.BaseStream.Position + 8 > reader.BaseStream.Length)
+                    {
                         break;
+                    }
 
                     uint chunkId = reader.ReadUInt32();
                     uint chunkSize = reader.ReadUInt32();
@@ -2012,11 +2081,13 @@ namespace FLAC_Benchmark_H
 
                     if (chunkId == 0x20746D66) // "fmt "
                     {
-                        reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                        _ = reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
 
                         // Align to 2-byte boundary after chunk
                         if (chunkSize % 2 == 1)
-                            reader.BaseStream.Seek(1, SeekOrigin.Current);
+                        {
+                            _ = reader.BaseStream.Seek(1, SeekOrigin.Current);
+                        }
                     }
                     else if (chunkId == 0x61746164) // "data"
                     {
@@ -2043,11 +2114,11 @@ namespace FLAC_Benchmark_H
                                 return "MD5 calculation failed";
                             }
 
-                            md5.TransformBlock(buffer, 0, bytesRead, null, 0);
+                            _ = md5.TransformBlock(buffer, 0, bytesRead, null, 0);
                             totalBytesRead += bytesRead;
                         }
 
-                        md5.TransformFinalBlock([], 0, 0);
+                        _ = md5.TransformFinalBlock([], 0, 0);
                         string md5Hash = Convert.ToHexString(md5.Hash!).ToUpperInvariant();
 
                         // Align to 2-byte boundary after data chunk
@@ -2055,11 +2126,13 @@ namespace FLAC_Benchmark_H
                         {
                             // Only seek if we're not at the end of the stream
                             if (reader.BaseStream.Position < reader.BaseStream.Length)
-                                reader.BaseStream.Seek(1, SeekOrigin.Current);
+                            {
+                                _ = reader.BaseStream.Seek(1, SeekOrigin.Current);
+                            }
                         }
 
                         // Success: Update cache directly
-                        var cachedInfo = audioFileInfoCache[audioFilePath];
+                        AudioFileInfo cachedInfo = audioFileInfoCache[audioFilePath];
                         cachedInfo.Md5Hash = md5Hash;
                         cachedInfo.ErrorDetails = string.Empty;
 
@@ -2068,14 +2141,16 @@ namespace FLAC_Benchmark_H
                     else
                     {
                         // Skip unknown chunk
-                        reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+                        _ = reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
 
                         // Align to 2-byte boundary after unknown chunk
                         if (chunkSize % 2 == 1)
                         {
                             // Only seek if we're not at the end of the stream
                             if (reader.BaseStream.Position < reader.BaseStream.Length)
-                                reader.BaseStream.Seek(1, SeekOrigin.Current);
+                            {
+                                _ = reader.BaseStream.Seek(1, SeekOrigin.Current);
+                            }
                         }
                     }
                 }
@@ -2098,11 +2173,15 @@ namespace FLAC_Benchmark_H
                 // Get encoder path from UI (thread-safe)
                 await InvokeAsync(() =>
                 {
-                    var encoderItem = listViewEncoders.Items
+                    ListViewItem? encoderItem = listViewEncoders.Items
                         .Cast<ListViewItem>()
                         .FirstOrDefault(item =>
                         {
-                            if (item.Tag == null) return false;
+                            if (item.Tag == null)
+                            {
+                                return false;
+                            }
+
                             string path = item.Tag.ToString()!;
                             return encoderInfoCache[path].Extension == ".exe";
                         });
@@ -2122,7 +2201,7 @@ namespace FLAC_Benchmark_H
                 {
                     try
                     {
-                        Directory.CreateDirectory(tempFolderPath);
+                        _ = Directory.CreateDirectory(tempFolderPath);
                     }
                     catch (Exception ex)
                     {
@@ -2136,14 +2215,14 @@ namespace FLAC_Benchmark_H
                 string arguments = $"\"{flacFilePath}\" -d --no-preserve-modtime --silent -f -o \"{tempWavFile}\"";
 
                 // Configure and start the decoding process
-                using var process = new Process();
+                using Process process = new();
                 process.StartInfo.FileName = encoderExePath;
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.CreateNoWindow = true;
 
-                process.Start();
+                _ = process.Start();
 
                 // Read error output and wait for completion
                 string errorOutput = await process.StandardError.ReadToEndAsync();
@@ -2153,7 +2232,7 @@ namespace FLAC_Benchmark_H
                 if (process.ExitCode != 0)
                 {
                     UpdateCacheWithMD5Error(flacFilePath, $"Decode failed: {errorOutput.Trim()}");
-                    try { if (File.Exists(tempWavFile)) File.Delete(tempWavFile); } catch { }
+                    try { if (File.Exists(tempWavFile)) { File.Delete(tempWavFile); } } catch { }
                     return "MD5 calculation failed";
                 }
 
@@ -2165,8 +2244,8 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Create a chache entry for temp WAV file
-                var tempFileInfo = new FileInfo(tempWavFile);
-                var tempCachedInfo = audioFileInfoCache.GetOrAdd(tempWavFile, _ => new AudioFileInfo
+                FileInfo tempFileInfo = new(tempWavFile);
+                AudioFileInfo tempCachedInfo = audioFileInfoCache.GetOrAdd(tempWavFile, _ => new AudioFileInfo
                 {
                     FilePath = tempWavFile,
                     DirectoryPath = tempFileInfo.DirectoryName!,
@@ -2203,19 +2282,19 @@ namespace FLAC_Benchmark_H
                     UpdateCacheWithMD5Error(flacFilePath, tempWavErrorDetails);
 
                     // Remove temp file entry from cache
-                    audioFileInfoCache.TryRemove(tempWavFile, out _);
+                    _ = audioFileInfoCache.TryRemove(tempWavFile, out _);
 
                     return "MD5 calculation failed";
                 }
 
                 // Success: update original FLAC file's cache entry
-                var cachedInfo = audioFileInfoCache[flacFilePath];
+                AudioFileInfo cachedInfo = audioFileInfoCache[flacFilePath];
                 cachedInfo.Md5Hash = wavMd5Result;
                 cachedInfo.ErrorDetails = string.Empty;
 
                 // Clean up temp file and its cache entry
                 try { File.Delete(tempWavFile); } catch { }
-                audioFileInfoCache.TryRemove(tempWavFile, out _);
+                _ = audioFileInfoCache.TryRemove(tempWavFile, out _);
 
                 return wavMd5Result;
             }
@@ -2227,7 +2306,7 @@ namespace FLAC_Benchmark_H
         }
         private void UpdateCacheWithMD5Error(string filePath, string errorDetails)
         {
-            var cachedInfo = audioFileInfoCache[filePath];
+            AudioFileInfo cachedInfo = audioFileInfoCache[filePath];
             cachedInfo.Md5Hash = "MD5 calculation failed";
             cachedInfo.ErrorDetails = errorDetails;
         }
@@ -2302,7 +2381,7 @@ namespace FLAC_Benchmark_H
         }
         private void UpdateMenuItemCheckAndSelectState()
         {
-            var items = listViewAudioFiles.Items;
+            ListView.ListViewItemCollection items = listViewAudioFiles.Items;
             int totalItemsCount = items.Count;
             int selectedItemsCount = listViewAudioFiles.SelectedItems.Count;
 
@@ -2326,28 +2405,64 @@ namespace FLAC_Benchmark_H
                 string filePath = item.Tag!.ToString()!;
                 string extension = audioFileInfoCache[filePath].Extension;
 
-                if (item.Checked) hasCheckedItems = true; else hasUncheckedItems = true;
-                if (item.Checked) allChecked++;
-                if (item.Selected) allSelected++;
+                if (item.Checked)
+                {
+                    hasCheckedItems = true;
+                }
+                else
+                {
+                    hasUncheckedItems = true;
+                }
+
+                if (item.Checked)
+                {
+                    allChecked++;
+                }
 
                 if (item.Selected)
                 {
-                    if (item.Checked) hasSelectedCheckedItems = true; else hasSelectedUncheckedItems = true;
+                    allSelected++;
+                }
+
+                if (item.Selected)
+                {
+                    if (item.Checked)
+                    {
+                        hasSelectedCheckedItems = true;
+                    }
+                    else
+                    {
+                        hasSelectedUncheckedItems = true;
+                    }
                 }
 
                 if (extension == ".flac")
                 {
                     hasFLAC = true;
                     flacTotal++;
-                    if (item.Checked) flacChecked++;
-                    if (item.Selected) flacSelected++;
+                    if (item.Checked)
+                    {
+                        flacChecked++;
+                    }
+
+                    if (item.Selected)
+                    {
+                        flacSelected++;
+                    }
                 }
                 else if (extension == ".wav")
                 {
                     hasWAV = true;
                     wavTotal++;
-                    if (item.Checked) wavChecked++;
-                    if (item.Selected) wavSelected++;
+                    if (item.Checked)
+                    {
+                        wavChecked++;
+                    }
+
+                    if (item.Selected)
+                    {
+                        wavSelected++;
+                    }
                 }
 
                 if (hasCheckedItems && hasUncheckedItems && hasSelectedCheckedItems &&
@@ -2417,7 +2532,10 @@ namespace FLAC_Benchmark_H
         }
         private void CheckAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            if (listViewAudioFiles.Items.Count == 0) return;
+            if (listViewAudioFiles.Items.Count == 0)
+            {
+                return;
+            }
 
             bool allChecked = listViewAudioFiles.Items.Cast<ListViewItem>().All(item => item.Checked);
 
@@ -2430,16 +2548,18 @@ namespace FLAC_Benchmark_H
         }
         private void CheckAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            var flacItems = listViewAudioFiles.Items
+            List<ListViewItem> flacItems = [.. listViewAudioFiles.Items
                 .Cast<ListViewItem>()
-                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")
-                .ToList();
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")];
 
-            if (flacItems.Count == 0) return;
+            if (flacItems.Count == 0)
+            {
+                return;
+            }
 
             bool allChecked = flacItems.All(item => item.Checked);
 
-            foreach (var item in flacItems)
+            foreach (ListViewItem? item in flacItems)
             {
                 item.Checked = !allChecked;
             }
@@ -2448,16 +2568,18 @@ namespace FLAC_Benchmark_H
         }
         private void CheckAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            var wavItems = listViewAudioFiles.Items
+            List<ListViewItem> wavItems = [.. listViewAudioFiles.Items
                 .Cast<ListViewItem>()
-                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")
-                .ToList();
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")];
 
-            if (wavItems.Count == 0) return;
+            if (wavItems.Count == 0)
+            {
+                return;
+            }
 
             bool allChecked = wavItems.All(item => item.Checked);
 
-            foreach (var item in wavItems)
+            foreach (ListViewItem? item in wavItems)
             {
                 item.Checked = !allChecked;
             }
@@ -2502,7 +2624,10 @@ namespace FLAC_Benchmark_H
         }
         private void SelectAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            if (listViewAudioFiles.Items.Count == 0) return;
+            if (listViewAudioFiles.Items.Count == 0)
+            {
+                return;
+            }
 
             bool allSelected = listViewAudioFiles.Items.Cast<ListViewItem>().All(item => item.Selected);
 
@@ -2514,16 +2639,18 @@ namespace FLAC_Benchmark_H
         }
         private void SelectAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            var flacItems = listViewAudioFiles.Items
+            List<ListViewItem> flacItems = [.. listViewAudioFiles.Items
                 .Cast<ListViewItem>()
-                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")
-                .ToList();
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".flac")];
 
-            if (flacItems.Count == 0) return;
+            if (flacItems.Count == 0)
+            {
+                return;
+            }
 
             bool allSelected = flacItems.All(item => item.Selected);
 
-            foreach (var item in flacItems)
+            foreach (ListViewItem? item in flacItems)
             {
                 item.Selected = !allSelected;
             }
@@ -2531,16 +2658,18 @@ namespace FLAC_Benchmark_H
         }
         private void SelectAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            var wavItems = listViewAudioFiles.Items
+            List<ListViewItem> wavItems = [.. listViewAudioFiles.Items
                 .Cast<ListViewItem>()
-                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")
-                .ToList();
+                .Where(item => audioFileInfoCache[item.Tag!.ToString()!].Extension == ".wav")];
 
-            if (wavItems.Count == 0) return;
+            if (wavItems.Count == 0)
+            {
+                return;
+            }
 
             bool allSelected = wavItems.All(item => item.Selected);
 
-            foreach (var item in wavItems)
+            foreach (ListViewItem? item in wavItems)
             {
                 item.Selected = !allSelected;
             }
@@ -2571,14 +2700,16 @@ namespace FLAC_Benchmark_H
         private async void RefreshAllToolStripMenuItemAudioFiles_Click(object? sender, EventArgs e)
         {
             if (/*_isProcessingAudioFilesQueue || _isRefreshingAudioFiles || */listViewAudioFiles.Items.Count == 0)
+            {
                 return;
+            }
 
             //_isRefreshingAudioFiles = true;
             groupBoxAudioFiles.Text = "Choose Audio Files (Drag'n'Drop of files and folders is available) - Refreshing...";
             Application.DoEvents();
 
             int topIndex = listViewAudioFiles.TopItem?.Index ?? 0;
-            var selectedIndices = new List<int>();
+            List<int> selectedIndices = [];
             foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
             {
                 selectedIndices.Add(item.Index);
@@ -2599,16 +2730,16 @@ namespace FLAC_Benchmark_H
 
                     bool currentChecked = item.Checked;
 
-                    var fileInfo = new FileInfo(audioFilePath);
+                    FileInfo fileInfo = new(audioFilePath);
                     DateTime currentCreationTime = fileInfo.CreationTimeUtc;
                     DateTime currentLastWriteTime = fileInfo.LastWriteTimeUtc;
 
-                    var cachedInfo = audioFileInfoCache[audioFilePath];
+                    AudioFileInfo cachedInfo = audioFileInfoCache[audioFilePath];
 
                     bool wasModified = cachedInfo.CreationTime != currentCreationTime ||
                                        cachedInfo.LastWriteTime != currentLastWriteTime;
 
-                    var newItem = await CreateListViewAudioFilesItemInternal(audioFilePath, currentChecked);
+                    ListViewItem? newItem = await CreateListViewAudioFilesItemInternal(audioFilePath, currentChecked);
                     if (newItem == null)
                     {
                         listViewAudioFiles.Items.RemoveAt(i);
@@ -2622,7 +2753,9 @@ namespace FLAC_Benchmark_H
                     for (int j = 0; j < newItem.SubItems.Count - 1; j++)
                     {
                         if (j + 1 < item.SubItems.Count)
+                        {
                             item.SubItems[j + 1].Text = newItem.SubItems[j + 1].Text;
+                        }
                     }
 
                     item.ForeColor = wasModified ? Color.DarkOrange : SystemColors.WindowText;
@@ -2662,18 +2795,22 @@ namespace FLAC_Benchmark_H
         private void OpenContainingFolderToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             if (listViewAudioFiles.SelectedItems.Count == 0)
+            {
                 return;
+            }
 
             foreach (ListViewItem selectedItem in listViewAudioFiles.SelectedItems)
             {
                 string? audioFilePath = selectedItem.Tag?.ToString();
 
                 if (string.IsNullOrEmpty(audioFilePath))
+                {
                     continue;
+                }
 
                 if (!File.Exists(audioFilePath))
                 {
-                    MessageBox.Show($"The selected audio file no longer exists on disk:\n\n{audioFilePath}\n\n" +
+                    _ = MessageBox.Show($"The selected audio file no longer exists on disk:\n\n{audioFilePath}\n\n" +
                                    "You can remove it from the list using 'Clear Selected' or 'Refresh'.",
                                    "File Not Found",
                                    MessageBoxButtons.OK,
@@ -2683,7 +2820,7 @@ namespace FLAC_Benchmark_H
 
                 try
                 {
-                    Process.Start(new ProcessStartInfo
+                    _ = Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         Arguments = $"/select,\"{audioFilePath}\"",
@@ -2692,7 +2829,7 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to open folder for {Path.GetFileName(audioFilePath)}:\n{ex.Message}",
+                    _ = MessageBox.Show($"Failed to open folder for {Path.GetFileName(audioFilePath)}:\n{ex.Message}",
                                    "Error",
                                    MessageBoxButtons.OK,
                                    MessageBoxIcon.Error);
@@ -2726,16 +2863,20 @@ namespace FLAC_Benchmark_H
         private void ClearDuplicateEntriesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             if (listViewAudioFiles.Items.Count == 0)
+            {
                 return;
+            }
 
-            var seenPaths = new HashSet<string>();
-            var itemsToRemove = new List<ListViewItem>();
+            HashSet<string> seenPaths = [];
+            List<ListViewItem> itemsToRemove = [];
 
             foreach (ListViewItem item in listViewAudioFiles.Items)
             {
                 string? audioFilePath = item.Tag?.ToString();
                 if (string.IsNullOrEmpty(audioFilePath))
+                {
                     continue;
+                }
 
                 if (!seenPaths.Add(audioFilePath))
                 {
@@ -2745,13 +2886,13 @@ namespace FLAC_Benchmark_H
 
             if (itemsToRemove.Count > 0)
             {
-                foreach (var item in itemsToRemove)
+                foreach (ListViewItem item in itemsToRemove)
                 {
                     listViewAudioFiles.Items.Remove(item);
                 }
                 UpdateGroupBoxAudioFilesHeader();
 
-                MessageBox.Show(
+                _ = MessageBox.Show(
                     $"Cleared {itemsToRemove.Count} duplicate entr{(itemsToRemove.Count == 1 ? "y" : "ies")}.",
                     "Duplicates cleared",
                     MessageBoxButtons.OK,
@@ -2768,35 +2909,39 @@ namespace FLAC_Benchmark_H
         {
             static string FormatDuration(long totalMilliseconds)
             {
-                if (totalMilliseconds <= 0) return "0:00:00";
-                var duration = TimeSpan.FromMilliseconds(totalMilliseconds);
+                if (totalMilliseconds <= 0)
+                {
+                    return "0:00:00";
+                }
+
+                TimeSpan duration = TimeSpan.FromMilliseconds(totalMilliseconds);
                 return duration.TotalDays < 1
                     ? duration.ToString(@"hh\:mm\:ss\.fff")
                     : $"{(int)duration.TotalDays} {(duration.TotalDays == 1 ? "day" : "days")} {duration:hh\\:mm\\:ss\\.fff}";
             }
 
-            var items = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+            List<ListViewItem> items = [.. listViewAudioFiles.Items.Cast<ListViewItem>()];
 
             // === FILTER BY EXTENSION ===
-            var flacItems = items.Where(i => audioFileInfoCache[i.Tag!.ToString()!].Extension == ".flac").ToList();
-            var wavItems = items.Where(i => audioFileInfoCache[i.Tag!.ToString()!].Extension == ".wav").ToList();
+            List<ListViewItem> flacItems = [.. items.Where(i => audioFileInfoCache[i.Tag!.ToString()!].Extension == ".flac")];
+            List<ListViewItem> wavItems = [.. items.Where(i => audioFileInfoCache[i.Tag!.ToString()!].Extension == ".wav")];
 
             // === TOTAL STATISTICS ===
             int totalFiles = items.Count;
             long totalSize = items.Sum(i => audioFileInfoCache[i.Tag!.ToString()!].FileSize);
-            long totalDurationMs = items.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out var d) ? d : 0);
+            long totalDurationMs = items.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out long d) ? d : 0);
             string totalDurationFormatted = FormatDuration(totalDurationMs);
 
             // === FLAC STATISTICS ===
             int flacFiles = flacItems.Count;
             long flacSize = flacItems.Sum(i => audioFileInfoCache[i.Tag!.ToString()!].FileSize);
-            long flacDurationMs = flacItems.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out var d) ? d : 0);
+            long flacDurationMs = flacItems.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out long d) ? d : 0);
             string flacDurationFormatted = FormatDuration(flacDurationMs);
 
             // === WAV STATISTICS ===
             int wavFiles = wavItems.Count;
             long wavSize = wavItems.Sum(i => audioFileInfoCache[i.Tag!.ToString()!].FileSize);
-            long wavDurationMs = wavItems.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out var d) ? d : 0);
+            long wavDurationMs = wavItems.Sum(i => long.TryParse(audioFileInfoCache[i.Tag!.ToString()!].Duration, out long d) ? d : 0);
             string wavDurationFormatted = FormatDuration(wavDurationMs);
 
             // === PERCENTAGES ===
@@ -2809,92 +2954,88 @@ namespace FLAC_Benchmark_H
             double wavDurationPercent = totalDurationMs > 0 ? (double)wavDurationMs / totalDurationMs * 100 : 0;
 
             // === AUDIO PROPERTIES (filter N/A) ===
-            var samplingRates = items
+            List<string> samplingRates = [.. items
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].SamplingRateString)
                 .Where(sr => !string.IsNullOrEmpty(sr) && sr != "N/A")
                 .GroupBy(sr => sr)
                 .OrderByDescending(g => g.Count())
-                .Select(g => $"{g.Key} ({g.Count()})")
-                .ToList();
+                .Select(g => $"{g.Key} ({g.Count()})")];
 
-            var bitDepths = items
+            List<string> bitDepths = [.. items
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].BitDepthString)
                 .Where(bd => !string.IsNullOrEmpty(bd) && bd != "N/A")
                 .GroupBy(bd => bd)
                 .OrderByDescending(g => g.Count())
-                .Select(g => $"{g.Key} ({g.Count()})")
-                .ToList();
+                .Select(g => $"{g.Key} ({g.Count()})")];
 
-            var channels = items
+            List<string> channels = [.. items
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].Channels)
                 .Where(ch => !string.IsNullOrEmpty(ch) && ch != "N/A")
                 .GroupBy(ch => ch)
                 .OrderByDescending(g => g.Count())
-                .Select(g => $"{g.Key} ({g.Count()})")
-                .ToList();
+                .Select(g => $"{g.Key} ({g.Count()})")];
 
-            var writingLibraries = flacItems
+            List<string> writingLibraries = [.. flacItems
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].WritingLibrary)
                 .Where(wl => !string.IsNullOrEmpty(wl) && wl != "N/A")
                 .GroupBy(wl => wl)
                 .OrderByDescending(g => g.Count())
-                .Select(g => $"{g.Key} ({g.Count()})")
-                .ToList();
+                .Select(g => $"{g.Key} ({g.Count()})")];
 
             // === PROBLEMATIC FILES ===
-            var longPathItems = items
+            List<string> longPathItems = [.. items
                 .Where(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath.Length >= 260)
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithoutMd5List = items
+            List<string> filesWithoutMd5List = [.. items
                 .Where(i => audioFileInfoCache[i.Tag!.ToString()!].Md5HashMissing)
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithMd5Errors = items
+            List<string> filesWithMd5Errors = [.. items
                 .Where(i => audioFileInfoCache[i.Tag!.ToString()!].Md5Hash == "MD5 calculation failed")
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithoutChannels = items
+            List<string> filesWithoutChannels = [.. items
                 .Where(i =>
                 {
-                    var info = audioFileInfoCache[i.Tag!.ToString()!];
+                    AudioFileInfo info = audioFileInfoCache[i.Tag!.ToString()!];
                     return string.IsNullOrEmpty(info.Channels) || info.Channels == "N/A";
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithoutSamplingRate = items
+            List<string> filesWithoutSamplingRate = [.. items
                 .Where(i =>
                 {
-                    var info = audioFileInfoCache[i.Tag!.ToString()!];
+                    AudioFileInfo info = audioFileInfoCache[i.Tag!.ToString()!];
                     return string.IsNullOrEmpty(info.SamplingRate) || info.SamplingRate == "N/A";
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithoutBitDepth = items
+            List<string> filesWithoutBitDepth = [.. items
                 .Where(i =>
                 {
-                    var info = audioFileInfoCache[i.Tag!.ToString()!];
+                    AudioFileInfo info = audioFileInfoCache[i.Tag!.ToString()!];
                     return string.IsNullOrEmpty(info.BitDepth) || info.BitDepth == "N/A";
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
-            var filesWithoutDuration = items
+            List<string> filesWithoutDuration = [.. items
                 .Where(i =>
                 {
-                    var info = audioFileInfoCache[i.Tag!.ToString()!];
+                    AudioFileInfo info = audioFileInfoCache[i.Tag!.ToString()!];
                     return string.IsNullOrEmpty(info.Duration) || info.Duration == "N/A";
                 })
                 .Select(i => audioFileInfoCache[i.Tag!.ToString()!].FilePath)
-                .OrderBy(path => path, new NaturalStringComparer()).ToList();
+                .OrderBy(path => path, new NaturalStringComparer())];
 
             // === PASS TO SUMMARY FORM ===
-            var summaryForm = new SummaryForm();
+            SummaryForm summaryForm = new();
             summaryForm.SetSummaryData(
 
                 // === TOTAL ===
@@ -2947,7 +3088,7 @@ namespace FLAC_Benchmark_H
             else
             {
                 _logSettingsForm.BringToFront();
-                _logSettingsForm.Focus();
+                _ = _logSettingsForm.Focus();
             }
         }
 
@@ -2955,49 +3096,49 @@ namespace FLAC_Benchmark_H
         private void InitializeDataGridViewLog()
         {
             // Configure DataGridView
-            dataGridViewLog.Columns.Add("Name", "Name");
-            dataGridViewLog.Columns.Add("Channels", "Ch.");
-            dataGridViewLog.Columns.Add("BitDepth", "Bit Depth");
-            dataGridViewLog.Columns.Add("SamplingRate", "Samp. Rate");
-            dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
-            dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
-            dataGridViewLog.Columns.Add("Compression", "Compr.");
-            dataGridViewLog.Columns.Add("Time", "Time");
-            dataGridViewLog.Columns.Add("Speed", "Speed");
-            dataGridViewLog.Columns.Add("SpeedMin", "Speed Min.");
-            dataGridViewLog.Columns.Add("SpeedMax", "Speed Max.");
-            dataGridViewLog.Columns.Add("SpeedRange", "Range");
-            dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
-            dataGridViewLog.Columns.Add("CPULoadEncoder", "CPU Load");
-            dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
-            dataGridViewLog.Columns.Add("Passes", "Passes");
-            dataGridViewLog.Columns.Add("Parameters", "Parameters");
-            dataGridViewLog.Columns.Add("Encoder", "Encoder");
-            dataGridViewLog.Columns.Add("Version", "Version");
+            _ = dataGridViewLog.Columns.Add("Name", "Name");
+            _ = dataGridViewLog.Columns.Add("Channels", "Ch.");
+            _ = dataGridViewLog.Columns.Add("BitDepth", "Bit Depth");
+            _ = dataGridViewLog.Columns.Add("SamplingRate", "Samp. Rate");
+            _ = dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
+            _ = dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
+            _ = dataGridViewLog.Columns.Add("Compression", "Compr.");
+            _ = dataGridViewLog.Columns.Add("Time", "Time");
+            _ = dataGridViewLog.Columns.Add("Speed", "Speed");
+            _ = dataGridViewLog.Columns.Add("SpeedMin", "Speed Min.");
+            _ = dataGridViewLog.Columns.Add("SpeedMax", "Speed Max.");
+            _ = dataGridViewLog.Columns.Add("SpeedRange", "Range");
+            _ = dataGridViewLog.Columns.Add("SpeedConsistency", "Speed Consistency");
+            _ = dataGridViewLog.Columns.Add("CPULoadEncoder", "CPU Load");
+            _ = dataGridViewLog.Columns.Add("CPUClock", "CPU Clock");
+            _ = dataGridViewLog.Columns.Add("Passes", "Passes");
+            _ = dataGridViewLog.Columns.Add("Parameters", "Parameters");
+            _ = dataGridViewLog.Columns.Add("Encoder", "Encoder");
+            _ = dataGridViewLog.Columns.Add("Version", "Version");
 
-            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn encoderDirectoryColumn = new()
             {
                 Name = "EncoderDirectory",
                 HeaderText = "Encoder Directory",
                 DataPropertyName = "EncoderDirectory"
             };
-            dataGridViewLog.Columns.Add(encoderDirectoryColumn);
+            _ = dataGridViewLog.Columns.Add(encoderDirectoryColumn);
 
-            dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
-            dataGridViewLog.Columns.Add("BestSize", "Best Size");
-            dataGridViewLog.Columns.Add("SameSize", "Same Size");
+            _ = dataGridViewLog.Columns.Add("FastestEncoder", "Fastest Encoder");
+            _ = dataGridViewLog.Columns.Add("BestSize", "Best Size");
+            _ = dataGridViewLog.Columns.Add("SameSize", "Same Size");
 
-            var audioFileDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn audioFileDirectoryColumn = new()
             {
                 Name = "AudioFileDirectory",
                 HeaderText = "Audio File Directory",
                 DataPropertyName = "AudioFileDirectory"
             };
-            dataGridViewLog.Columns.Add(audioFileDirectoryColumn);
+            _ = dataGridViewLog.Columns.Add(audioFileDirectoryColumn);
 
-            dataGridViewLog.Columns.Add("MD5", "MD5");
-            dataGridViewLog.Columns.Add("Duplicates", "Duplicates");
-            dataGridViewLog.Columns.Add("Errors", "Errors");
+            _ = dataGridViewLog.Columns.Add("MD5", "MD5");
+            _ = dataGridViewLog.Columns.Add("Duplicates", "Duplicates");
+            _ = dataGridViewLog.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
             dataGridViewLog.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -3053,7 +3194,10 @@ namespace FLAC_Benchmark_H
         private void DataGridViewLog_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
 
             string columnName = dataGridViewLog.Columns[e.ColumnIndex].Name;
 
@@ -3069,12 +3213,12 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(fullPath))
                     {
                         // Highlight the audio file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if file not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
@@ -3092,19 +3236,19 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(encoderExePath))
                     {
                         // Highlight the encoder .exe file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if .exe not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
         }
         private void DataGridViewLog_MouseDown(object? sender, MouseEventArgs e)
         {
-            var hitTest = dataGridViewLog.HitTest(e.X, e.Y);
+            DataGridView.HitTestInfo hitTest = dataGridViewLog.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewLog.ClearSelection();
@@ -3115,49 +3259,49 @@ namespace FLAC_Benchmark_H
         private void InitializeDataGridViewLogDetectDupes()
         {
             // Configure DataGridView
-            dataGridViewLogDetectDupes.Columns.Add("Name", "Name");
-            dataGridViewLogDetectDupes.Columns.Add("Channels", "Ch.");
-            dataGridViewLogDetectDupes.Columns.Add("BitDepth", "Bit Depth");
-            dataGridViewLogDetectDupes.Columns.Add("SamplingRate", "Samp. Rate");
-            dataGridViewLogDetectDupes.Columns.Add("InputFileSize", "In. Size");
-            dataGridViewLogDetectDupes.Columns.Add("OutputFileSize", "Out. Size");
-            dataGridViewLogDetectDupes.Columns.Add("Compression", "Compr.");
-            dataGridViewLogDetectDupes.Columns.Add("Time", "Time");
-            dataGridViewLogDetectDupes.Columns.Add("Speed", "Speed");
-            dataGridViewLogDetectDupes.Columns.Add("SpeedMin", "Speed Min.");
-            dataGridViewLogDetectDupes.Columns.Add("SpeedMax", "Speed Max.");
-            dataGridViewLogDetectDupes.Columns.Add("SpeedRange", "Range");
-            dataGridViewLogDetectDupes.Columns.Add("SpeedConsistency", "Speed Consistency");
-            dataGridViewLogDetectDupes.Columns.Add("CPULoadEncoder", "CPU Load");
-            dataGridViewLogDetectDupes.Columns.Add("CPUClock", "CPU Clock");
-            dataGridViewLogDetectDupes.Columns.Add("Passes", "Passes");
-            dataGridViewLogDetectDupes.Columns.Add("Parameters", "Parameters");
-            dataGridViewLogDetectDupes.Columns.Add("Encoder", "Encoder");
-            dataGridViewLogDetectDupes.Columns.Add("Version", "Version");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Name", "Name");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Channels", "Ch.");
+            _ = dataGridViewLogDetectDupes.Columns.Add("BitDepth", "Bit Depth");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SamplingRate", "Samp. Rate");
+            _ = dataGridViewLogDetectDupes.Columns.Add("InputFileSize", "In. Size");
+            _ = dataGridViewLogDetectDupes.Columns.Add("OutputFileSize", "Out. Size");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Compression", "Compr.");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Time", "Time");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Speed", "Speed");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SpeedMin", "Speed Min.");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SpeedMax", "Speed Max.");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SpeedRange", "Range");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SpeedConsistency", "Speed Consistency");
+            _ = dataGridViewLogDetectDupes.Columns.Add("CPULoadEncoder", "CPU Load");
+            _ = dataGridViewLogDetectDupes.Columns.Add("CPUClock", "CPU Clock");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Passes", "Passes");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Parameters", "Parameters");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Encoder", "Encoder");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Version", "Version");
 
-            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn encoderDirectoryColumn = new()
             {
                 Name = "EncoderDirectory",
                 HeaderText = "Encoder Directory",
                 DataPropertyName = "EncoderDirectory"
             };
-            dataGridViewLogDetectDupes.Columns.Add(encoderDirectoryColumn);
+            _ = dataGridViewLogDetectDupes.Columns.Add(encoderDirectoryColumn);
 
-            dataGridViewLogDetectDupes.Columns.Add("FastestEncoder", "Fastest Encoder");
-            dataGridViewLogDetectDupes.Columns.Add("BestSize", "Best Size");
-            dataGridViewLogDetectDupes.Columns.Add("SameSize", "Same Size");
+            _ = dataGridViewLogDetectDupes.Columns.Add("FastestEncoder", "Fastest Encoder");
+            _ = dataGridViewLogDetectDupes.Columns.Add("BestSize", "Best Size");
+            _ = dataGridViewLogDetectDupes.Columns.Add("SameSize", "Same Size");
 
-            var audioFileDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn audioFileDirectoryColumn = new()
             {
                 Name = "AudioFileDirectory",
                 HeaderText = "Audio File Directory",
                 DataPropertyName = "AudioFileDirectory"
             };
-            dataGridViewLogDetectDupes.Columns.Add(audioFileDirectoryColumn);
+            _ = dataGridViewLogDetectDupes.Columns.Add(audioFileDirectoryColumn);
 
-            dataGridViewLogDetectDupes.Columns.Add("MD5", "MD5");
-            dataGridViewLogDetectDupes.Columns.Add("Duplicates", "Duplicates");
-            dataGridViewLogDetectDupes.Columns.Add("Errors", "Errors");
+            _ = dataGridViewLogDetectDupes.Columns.Add("MD5", "MD5");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Duplicates", "Duplicates");
+            _ = dataGridViewLogDetectDupes.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
             dataGridViewLogDetectDupes.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -3213,7 +3357,10 @@ namespace FLAC_Benchmark_H
         private void DataGridViewLogDetectDupes_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
 
             string columnName = dataGridViewLogDetectDupes.Columns[e.ColumnIndex].Name;
 
@@ -3229,12 +3376,12 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(fullPath))
                     {
                         // Highlight the audio file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if file not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
@@ -3251,19 +3398,19 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(encoderExePath))
                     {
                         // Highlight the encoder .exe file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if .exe not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
         }
         private void DataGridViewLogDetectDupes_MouseDown(object? sender, MouseEventArgs e)
         {
-            var hitTest = dataGridViewLogDetectDupes.HitTest(e.X, e.Y);
+            DataGridView.HitTestInfo hitTest = dataGridViewLogDetectDupes.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewLogDetectDupes.ClearSelection();
@@ -3274,49 +3421,49 @@ namespace FLAC_Benchmark_H
         private void InitializeDataGridViewLogTestForErrors()
         {
             // Configure DataGridView
-            dataGridViewLogTestForErrors.Columns.Add("Name", "Name");
-            dataGridViewLogTestForErrors.Columns.Add("Channels", "Ch.");
-            dataGridViewLogTestForErrors.Columns.Add("BitDepth", "Bit Depth");
-            dataGridViewLogTestForErrors.Columns.Add("SamplingRate", "Samp. Rate");
-            dataGridViewLogTestForErrors.Columns.Add("InputFileSize", "In. Size");
-            dataGridViewLogTestForErrors.Columns.Add("OutputFileSize", "Out. Size");
-            dataGridViewLogTestForErrors.Columns.Add("Compression", "Compr.");
-            dataGridViewLogTestForErrors.Columns.Add("Time", "Time");
-            dataGridViewLogTestForErrors.Columns.Add("Speed", "Speed");
-            dataGridViewLogTestForErrors.Columns.Add("SpeedMin", "Speed Min.");
-            dataGridViewLogTestForErrors.Columns.Add("SpeedMax", "Speed Max.");
-            dataGridViewLogTestForErrors.Columns.Add("SpeedRange", "Range");
-            dataGridViewLogTestForErrors.Columns.Add("SpeedConsistency", "Speed Consistency");
-            dataGridViewLogTestForErrors.Columns.Add("CPULoadEncoder", "CPU Load");
-            dataGridViewLogTestForErrors.Columns.Add("CPUClock", "CPU Clock");
-            dataGridViewLogTestForErrors.Columns.Add("Passes", "Passes");
-            dataGridViewLogTestForErrors.Columns.Add("Parameters", "Parameters");
-            dataGridViewLogTestForErrors.Columns.Add("Encoder", "Encoder");
-            dataGridViewLogTestForErrors.Columns.Add("Version", "Version");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Name", "Name");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Channels", "Ch.");
+            _ = dataGridViewLogTestForErrors.Columns.Add("BitDepth", "Bit Depth");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SamplingRate", "Samp. Rate");
+            _ = dataGridViewLogTestForErrors.Columns.Add("InputFileSize", "In. Size");
+            _ = dataGridViewLogTestForErrors.Columns.Add("OutputFileSize", "Out. Size");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Compression", "Compr.");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Time", "Time");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Speed", "Speed");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SpeedMin", "Speed Min.");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SpeedMax", "Speed Max.");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SpeedRange", "Range");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SpeedConsistency", "Speed Consistency");
+            _ = dataGridViewLogTestForErrors.Columns.Add("CPULoadEncoder", "CPU Load");
+            _ = dataGridViewLogTestForErrors.Columns.Add("CPUClock", "CPU Clock");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Passes", "Passes");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Parameters", "Parameters");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Encoder", "Encoder");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Version", "Version");
 
-            var encoderDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn encoderDirectoryColumn = new()
             {
                 Name = "EncoderDirectory",
                 HeaderText = "Encoder Directory",
                 DataPropertyName = "EncoderDirectory"
             };
-            dataGridViewLogTestForErrors.Columns.Add(encoderDirectoryColumn);
+            _ = dataGridViewLogTestForErrors.Columns.Add(encoderDirectoryColumn);
 
-            dataGridViewLogTestForErrors.Columns.Add("FastestEncoder", "Fastest Encoder");
-            dataGridViewLogTestForErrors.Columns.Add("BestSize", "Best Size");
-            dataGridViewLogTestForErrors.Columns.Add("SameSize", "Same Size");
+            _ = dataGridViewLogTestForErrors.Columns.Add("FastestEncoder", "Fastest Encoder");
+            _ = dataGridViewLogTestForErrors.Columns.Add("BestSize", "Best Size");
+            _ = dataGridViewLogTestForErrors.Columns.Add("SameSize", "Same Size");
 
-            var audioFileDirectoryColumn = new DataGridViewLinkColumn
+            DataGridViewLinkColumn audioFileDirectoryColumn = new()
             {
                 Name = "AudioFileDirectory",
                 HeaderText = "Audio File Directory",
                 DataPropertyName = "AudioFileDirectory"
             };
-            dataGridViewLogTestForErrors.Columns.Add(audioFileDirectoryColumn);
+            _ = dataGridViewLogTestForErrors.Columns.Add(audioFileDirectoryColumn);
 
-            dataGridViewLogTestForErrors.Columns.Add("MD5", "MD5");
-            dataGridViewLogTestForErrors.Columns.Add("Duplicates", "Duplicates");
-            dataGridViewLogTestForErrors.Columns.Add("Errors", "Errors");
+            _ = dataGridViewLogTestForErrors.Columns.Add("MD5", "MD5");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Duplicates", "Duplicates");
+            _ = dataGridViewLogTestForErrors.Columns.Add("Errors", "Errors");
 
             // Set alignment for columns
             dataGridViewLogTestForErrors.Columns["Channels"]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -3372,7 +3519,10 @@ namespace FLAC_Benchmark_H
         private void DataGridViewLogTestForErrors_CellContentClick(object? sender, DataGridViewCellEventArgs e)
         {
             // Prevent interaction with the new row or invalid cell
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
 
             string columnName = dataGridViewLogTestForErrors.Columns[e.ColumnIndex].Name;
 
@@ -3388,12 +3538,12 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(fullPath))
                     {
                         // Highlight the audio file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if file not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
@@ -3410,19 +3560,19 @@ namespace FLAC_Benchmark_H
                     if (File.Exists(encoderExePath))
                     {
                         // Highlight the encoder .exe file in Explorer
-                        Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
+                        _ = Process.Start("explorer.exe", $"/select,\"{encoderExePath}\"");
                     }
                     else if (Directory.Exists(directoryPath))
                     {
                         // Open directory if .exe not found
-                        Process.Start("explorer.exe", $"\"{directoryPath}\"");
+                        _ = Process.Start("explorer.exe", $"\"{directoryPath}\"");
                     }
                 }
             }
         }
         private void DataGridViewLogTestForErrors_MouseDown(object? sender, MouseEventArgs e)
         {
-            var hitTest = dataGridViewLogTestForErrors.HitTest(e.X, e.Y);
+            DataGridView.HitTestInfo hitTest = dataGridViewLogTestForErrors.HitTest(e.X, e.Y);
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
                 dataGridViewLogTestForErrors.ClearSelection();
@@ -3433,14 +3583,16 @@ namespace FLAC_Benchmark_H
         private async Task LogProcessResults(string outputFilePath, string audioFilePath, string parameters, string encoderPath, TimeSpan elapsedTime, TimeSpan userProcessorTime, TimeSpan privilegedProcessorTime, double avgClock, string errorOutput = "", int exitCode = 0)
         {
             // Get Encoder and input Audio File information from cache
-            var encoderInfo = encoderInfoCache[encoderPath];
-            var audioFileInfo = audioFileInfoCache[audioFilePath];
+            EncoderInfo encoderInfo = encoderInfoCache[encoderPath];
+            AudioFileInfo audioFileInfo = audioFileInfoCache[audioFilePath];
 
             if (exitCode == 0)
             {
                 FileInfo outputFile = new(outputFilePath);
                 if (!outputFile.Exists)
+                {
                     return;
+                }
 
 
                 // Extract data from cache
@@ -3450,17 +3602,17 @@ namespace FLAC_Benchmark_H
 
                 // Get output audio file information
                 long outputSize = outputFile.Length;
-                double compressionPercentage = inputSize > 0 ? ((double)outputSize / inputSize) * 100 : 0;
-                double encodingSpeed = elapsedTime.TotalMilliseconds > 0 ? (double)durationMs / elapsedTime.TotalMilliseconds : 0;
+                double compressionPercentage = inputSize > 0 ? (double)outputSize / inputSize * 100 : 0;
+                double encodingSpeed = elapsedTime.TotalMilliseconds > 0 ? durationMs / elapsedTime.TotalMilliseconds : 0;
 
 
 
                 // Calculate CPU Load
                 double totalCpuTime = (userProcessorTime + privilegedProcessorTime).TotalMilliseconds;
-                double cpuLoadEncoder = elapsedTime.TotalMilliseconds > 0 ? (totalCpuTime / elapsedTime.TotalMilliseconds) * 100 : 0;
+                double cpuLoadEncoder = elapsedTime.TotalMilliseconds > 0 ? totalCpuTime / elapsedTime.TotalMilliseconds * 100 : 0;
 
                 // Create benchmark pass object
-                var benchmarkPass = new BenchmarkPass
+                BenchmarkPass benchmarkPass = new()
                 {
                     AudioFilePath = audioFilePath,
                     EncoderPath = encoderPath,
@@ -3648,7 +3800,7 @@ namespace FLAC_Benchmark_H
             else
             {
                 // Auto-resize only the currently selected tab
-                var selectedTab = tabControlLog.SelectedTab;
+                TabPage? selectedTab = tabControlLog.SelectedTab;
                 DataGridView? activeGrid = selectedTab switch
                 {
                     _ when selectedTab == Benchmark => dataGridViewLog,
@@ -3697,23 +3849,26 @@ namespace FLAC_Benchmark_H
             .ToList();
 
             // Speed, CPU Load and CPU Clock by Threads (3 graphs)
-            var speedByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgSpeeds)>();
-            var cpuLoadByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPULoads)>();
-            var cpuClockByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPUClocks)>();
+            Dictionary<string, (List<int> Threads, List<double> AvgSpeeds)> speedByThreadsSeries = [];
+            Dictionary<string, (List<int> Threads, List<double> AvgCPULoads)> cpuLoadByThreadsSeries = [];
+            Dictionary<string, (List<int> Threads, List<double> AvgCPUClocks)> cpuClockByThreadsSeries = [];
 
             // Aggregated metrics across all files for one "Encoder+Parameters" set
-            var avgSpeedsForAllFilesByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgSpeedsForAllFiles)>();
-            var avgCPULoadsForAllFilesByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)>();
-            var avgCPUClocksForAllFilesByThreadsSeries = new Dictionary<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)>();
+            Dictionary<string, (List<int> Threads, List<double> AvgSpeedsForAllFiles)> avgSpeedsForAllFilesByThreadsSeries = [];
+            Dictionary<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)> avgCPULoadsForAllFilesByThreadsSeries = [];
+            Dictionary<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)> avgCPUClocksForAllFilesByThreadsSeries = [];
 
             foreach (var group in grouped)
             {
                 int j = 1;
-                var jMatch = ThreadParamRegex().Match(group.Parameters);
+                Match jMatch = ThreadParamRegex().Match(group.Parameters);
                 if (jMatch.Success)
                 {
                     j = int.Parse(jMatch.Groups[1].Value);
-                    if (j <= 0 || j > 256) continue;
+                    if (j is <= 0 or > 256)
+                    {
+                        continue;
+                    }
                 }
 
                 string fileName = Path.GetFileName(group.AudioFilePath);
@@ -3722,7 +3877,7 @@ namespace FLAC_Benchmark_H
                 string seriesKey = $"{fileName}|{encoderName}|{parametersWithoutJ}".TrimEnd('|');
 
                 // Speed by Threads series (Individual files)
-                if (!speedByThreadsSeries.TryGetValue(seriesKey, out var speedValue))
+                if (!speedByThreadsSeries.TryGetValue(seriesKey, out (List<int> Threads, List<double> AvgSpeeds) speedValue))
                 {
                     speedValue = (new List<int>(), new List<double>());
                     speedByThreadsSeries[seriesKey] = speedValue;
@@ -3731,7 +3886,7 @@ namespace FLAC_Benchmark_H
                 speedValue.AvgSpeeds.Add(group.AvgSpeed);
 
                 // CPU Load  by Threads series
-                if (!cpuLoadByThreadsSeries.TryGetValue(seriesKey, out var cpuLoadValue))
+                if (!cpuLoadByThreadsSeries.TryGetValue(seriesKey, out (List<int> Threads, List<double> AvgCPULoads) cpuLoadValue))
                 {
                     cpuLoadValue = (new List<int>(), new List<double>());
                     cpuLoadByThreadsSeries[seriesKey] = cpuLoadValue;
@@ -3740,7 +3895,7 @@ namespace FLAC_Benchmark_H
                 cpuLoadValue.AvgCPULoads.Add(group.AvgCPULoadEncoder);
 
                 // CPU Clock  by Threads series
-                if (!cpuClockByThreadsSeries.TryGetValue(seriesKey, out var cpuClockValue))
+                if (!cpuClockByThreadsSeries.TryGetValue(seriesKey, out (List<int> Threads, List<double> AvgCPUClocks) cpuClockValue))
                 {
                     cpuClockValue = (new List<int>(), new List<double>());
                     cpuClockByThreadsSeries[seriesKey] = cpuClockValue;
@@ -3751,7 +3906,7 @@ namespace FLAC_Benchmark_H
                 // Aggregated series for all files by "Encoder + parameters without -jN" set
                 string avgKey = $"{encoderName}|{parametersWithoutJ}".TrimEnd('|');
 
-                if (!avgSpeedsForAllFilesByThreadsSeries.TryGetValue(avgKey, out var avgSpeedValue))
+                if (!avgSpeedsForAllFilesByThreadsSeries.TryGetValue(avgKey, out (List<int> Threads, List<double> AvgSpeedsForAllFiles) avgSpeedValue))
                 {
                     avgSpeedValue = (new List<int>(), new List<double>());
                     avgSpeedsForAllFilesByThreadsSeries[avgKey] = avgSpeedValue;
@@ -3760,7 +3915,7 @@ namespace FLAC_Benchmark_H
                 avgSpeedValue.AvgSpeedsForAllFiles.Add(group.AvgSpeed);
 
                 // Aggregated CPU Load series for all files
-                if (!avgCPULoadsForAllFilesByThreadsSeries.TryGetValue(avgKey, out var avgCPULoadValue))
+                if (!avgCPULoadsForAllFilesByThreadsSeries.TryGetValue(avgKey, out (List<int> Threads, List<double> AvgCPULoadsForAllFiles) avgCPULoadValue))
                 {
                     avgCPULoadValue = (new List<int>(), new List<double>());
                     avgCPULoadsForAllFilesByThreadsSeries[avgKey] = avgCPULoadValue;
@@ -3769,7 +3924,7 @@ namespace FLAC_Benchmark_H
                 avgCPULoadValue.AvgCPULoadsForAllFiles.Add(group.AvgCPULoadEncoder);
 
                 // Aggregated CPU Clock series for all files
-                if (!avgCPUClocksForAllFilesByThreadsSeries.TryGetValue(avgKey, out var avgCPUClockValue))
+                if (!avgCPUClocksForAllFilesByThreadsSeries.TryGetValue(avgKey, out (List<int> Threads, List<double> AvgCPUClocksForAllFiles) avgCPUClockValue))
                 {
                     avgCPUClockValue = (new List<int>(), new List<double>());
                     avgCPUClocksForAllFilesByThreadsSeries[avgKey] = avgCPUClockValue;
@@ -3779,23 +3934,23 @@ namespace FLAC_Benchmark_H
             }
 
             // Speed and Compression by Parameters (2 graphs)
-            var speedByParamsSeries = new Dictionary<string, (List<string> Params, List<double> AvgSpeeds)>();
-            var compressionByParamsSeries = new Dictionary<string, (List<string> Params, List<double> Compressions)>();
+            Dictionary<string, (List<string> Params, List<double> AvgSpeeds)> speedByParamsSeries = [];
+            Dictionary<string, (List<string> Params, List<double> Compressions)> compressionByParamsSeries = [];
 
             // Aggregated metrics across all files for one "Encoder" set
-            var avgCompressionForAllFilesByEncoder = new Dictionary<string, List<(string Param, double Compression)>>();
-            var avgSpeedForAllFilesByEncoder = new Dictionary<string, List<(string Param, double Speed)>>();
+            Dictionary<string, List<(string Param, double Compression)>> avgCompressionForAllFilesByEncoder = [];
+            Dictionary<string, List<(string Param, double Speed)>> avgSpeedForAllFilesByEncoder = [];
 
             foreach (var group in grouped)
             {
-                double compression = ((double)group.MinOutputSize / group.InputSize) * 100;
+                double compression = (double)group.MinOutputSize / group.InputSize * 100;
 
                 string fileName = Path.GetFileName(group.AudioFilePath);
                 string encoderName = Path.GetFileName(group.EncoderPath);
                 string seriesKey = $"{fileName}|{encoderName}".TrimEnd('|');
 
                 // Speed by Parameters series
-                if (!speedByParamsSeries.TryGetValue(seriesKey, out var speedValue))
+                if (!speedByParamsSeries.TryGetValue(seriesKey, out (List<string> Params, List<double> AvgSpeeds) speedValue))
                 {
                     speedValue = (new List<string>(), new List<double>());
                     speedByParamsSeries[seriesKey] = speedValue;
@@ -3804,7 +3959,7 @@ namespace FLAC_Benchmark_H
                 speedValue.AvgSpeeds.Add(group.AvgSpeed);
 
                 // Compression by Parameters series
-                if (!compressionByParamsSeries.TryGetValue(seriesKey, out var compValue))
+                if (!compressionByParamsSeries.TryGetValue(seriesKey, out (List<string> Params, List<double> Compressions) compValue))
                 {
                     compValue = (new List<string>(), new List<double>());
                     compressionByParamsSeries[seriesKey] = compValue;
@@ -3813,7 +3968,7 @@ namespace FLAC_Benchmark_H
                 compValue.Compressions.Add(compression);
 
                 // Aggregated compression series for all files by Encoder
-                if (!avgCompressionForAllFilesByEncoder.TryGetValue(encoderName, out var compList))
+                if (!avgCompressionForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Compression)>? compList))
                 {
                     compList = [];
                     avgCompressionForAllFilesByEncoder[encoderName] = compList;
@@ -3821,7 +3976,7 @@ namespace FLAC_Benchmark_H
                 compList.Add((group.Parameters, compression));
 
                 // Aggregated speed series for all files by Encoder
-                if (!avgSpeedForAllFilesByEncoder.TryGetValue(encoderName, out var speedList))
+                if (!avgSpeedForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Speed)>? speedList))
                 {
                     speedList = [];
                     avgSpeedForAllFilesByEncoder[encoderName] = speedList;
@@ -3829,13 +3984,13 @@ namespace FLAC_Benchmark_H
                 speedList.Add((group.Parameters, group.AvgSpeed));
             }
 
-            var resultEntries = new List<LogEntry>();
+            List<LogEntry> resultEntries = [];
 
             foreach (var group in grouped)
             {
                 // Get Audio File and Encoder info for display
-                var audioFileInfo = audioFileInfoCache[group.AudioFilePath];
-                var encoderInfo = encoderInfoCache[group.EncoderPath];
+                AudioFileInfo audioFileInfo = audioFileInfoCache[group.AudioFilePath];
+                EncoderInfo encoderInfo = encoderInfoCache[group.EncoderPath];
 
                 string inputSizeFormatted = group.InputSize.ToString("N0", NumberFormatWithSpaces);
 
@@ -3844,7 +3999,7 @@ namespace FLAC_Benchmark_H
                 string outputSizeFormatted = outputSizeFinal.ToString("N0", NumberFormatWithSpaces);
 
                 // Calculate Compression using the final output size
-                double compressionPercentage = ((double)outputSizeFinal / group.InputSize) * 100;
+                double compressionPercentage = (double)outputSizeFinal / group.InputSize * 100;
 
                 // Format SamplingRate for display (e.g. 44100 -> "44 100")
                 string samplingRateFormatted = long.TryParse(group.SamplingRate, out long sr) ? sr.ToString("N0", NumberFormatWithSpaces) : "N/A";
@@ -3852,7 +4007,7 @@ namespace FLAC_Benchmark_H
                 string audioFileDirectory = audioFileInfo.DirectoryPath;
 
                 // --- Speed Stability Analysis ---
-                var speeds = group.Speeds; // Use pre-extracted list
+                List<double> speeds = group.Speeds; // Use pre-extracted list
 
                 string speedMin = "", speedMax = "", speedRange = "", speedConsistency = "";
 
@@ -3870,22 +4025,22 @@ namespace FLAC_Benchmark_H
                     // Calculate p50 (median)
                     int n = speeds.Count;
                     double p50 = n % 2 == 0
-                    ? (speeds[n / 2 - 1] + speeds[n / 2]) / 2.0
+                    ? (speeds[(n / 2) - 1] + speeds[n / 2]) / 2.0
                     : speeds[n / 2];
 
                     // Calculate p90 (90th percentile)
                     double p90Index = 0.9 * (n - 1);
                     int p90Low = (int)Math.Floor(p90Index);
                     int p90High = (int)Math.Ceiling(p90Index);
-                    double p90 = speeds[p90Low] + (p90Index - p90Low) * (speeds[p90High] - speeds[p90Low]);
+                    double p90 = speeds[p90Low] + ((p90Index - p90Low) * (speeds[p90High] - speeds[p90Low]));
 
                     // Speed Consistency = ratio of p50 to p90, expressed as a percentage
-                    double consistency = p90 > 0 ? (p50 / p90) * 100.0 : 0.0;
+                    double consistency = p90 > 0 ? p50 / p90 * 100.0 : 0.0;
                     speedConsistency = $"{consistency:F3}%";
                 }
 
                 // Create the log entry with averaged values
-                var logEntry = new LogEntry
+                LogEntry logEntry = new()
                 {
                     Name = audioFileInfo.FileName,
                     Channels = group.Channels,
@@ -3923,16 +4078,16 @@ namespace FLAC_Benchmark_H
             }
 
             // 2. Split into encoding and decoding groups
-            var encodeGroups = resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
-            var decodeGroups = resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p == "-d" || p == "--decode")).ToList();
+            List<LogEntry> encodeGroups = [.. resultEntries.Where(e => !e.Parameters.Split(' ').Any(p => p is "-d" or "--decode"))];
+            List<LogEntry> decodeGroups = [.. resultEntries.Where(e => e.Parameters.Split(' ').Any(p => p is "-d" or "--decode"))];
 
             // 3. Analysis for encoding: find fastest encoder and best compression
-            var finalEncodeEntries = new List<LogEntry>();
-            var encodeParamGroups = encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
+            List<LogEntry> finalEncodeEntries = [];
+            List<IGrouping<string, LogEntry>> encodeParamGroups = [.. encodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters)];
 
-            foreach (var group in encodeParamGroups)
+            foreach (IGrouping<string, LogEntry>? group in encodeParamGroups)
             {
-                var entries = group.ToList();
+                List<LogEntry> entries = [.. group];
                 if (entries.Count <= 1)
                 {
                     finalEncodeEntries.AddRange(entries);
@@ -3941,17 +4096,18 @@ namespace FLAC_Benchmark_H
 
                 // Find fastest encoder
                 double maxSpeed = entries.Max(e => double.TryParse(e.Speed.Replace("x", "").Trim(), out double s) ? s : 0.0);
-                foreach (var entry in entries)
+                foreach (LogEntry? entry in entries)
                 {
                     if (double.TryParse(entry.Speed.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
+                    {
                         entry.FastestEncoder = "fastest encoder";
+                    }
                 }
 
                 // Analyze output file sizes
-                var validEntries = entries
+                List<(LogEntry e, long)> validEntries = [.. entries
                 .Where(e => long.TryParse(e.OutputFileSize.Replace(" ", "").Trim(), out long size) && size > 0)
-                .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))
-                .ToList();
+                .Select(e => (e, long.Parse(e.OutputFileSize.Replace(" ", ""))))];
 
                 if (validEntries.Count == 0)
                 {
@@ -3960,9 +4116,9 @@ namespace FLAC_Benchmark_H
                 }
 
                 long minSize = validEntries.Min(x => x.Item2);
-                var sizeCountDict = validEntries.GroupBy(x => x.Item2).ToDictionary(g => g.Key, g => g.Count());
+                Dictionary<long, int> sizeCountDict = validEntries.GroupBy(x => x.Item2).ToDictionary(g => g.Key, g => g.Count());
 
-                foreach (var (entry, size) in validEntries)
+                foreach ((LogEntry? entry, long size) in validEntries)
                 {
                     entry.BestSize = (size == minSize && sizeCountDict.Keys.Any(s => s > minSize)) ? "smallest size" : string.Empty;
                     entry.SameSize = (sizeCountDict[size] > 1) ? "has same size" : string.Empty;
@@ -3972,21 +4128,26 @@ namespace FLAC_Benchmark_H
             }
 
             // 4. Analysis for decoding: find fastest decoder
-            var decodeParamGroups = decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters).ToList();
-            foreach (var group in decodeParamGroups)
+            List<IGrouping<string, LogEntry>> decodeParamGroups = [.. decodeGroups.GroupBy(e => Path.Combine(e.AudioFileDirectory ?? "", e.Name ?? "") + "|" + e.Parameters)];
+            foreach (IGrouping<string, LogEntry>? group in decodeParamGroups)
             {
-                if (group.Count() <= 1) continue;
+                if (group.Count() <= 1)
+                {
+                    continue;
+                }
 
                 double maxSpeed = group.Max(e => double.TryParse(e.Speed.Replace("x", "").Trim(), out double s) ? s : 0.0);
-                foreach (var entry in group)
+                foreach (LogEntry? entry in group)
                 {
                     if (double.TryParse(entry.Speed.Replace("x", "").Trim(), out double speed) && speed >= maxSpeed - 0.01)
+                    {
                         entry.FastestEncoder = "fastest decoder";
+                    }
                 }
             }
 
             // 5. Merge successful results
-            var finalSuccessEntries = finalEncodeEntries.Concat(decodeGroups).ToList();
+            List<LogEntry> finalSuccessEntries = [.. finalEncodeEntries, .. decodeGroups];
 
             // Group error rows from current log
             var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
@@ -4008,10 +4169,10 @@ namespace FLAC_Benchmark_H
             })
             .ToList();
 
-            var errorEntries = new List<LogEntry>();
+            List<LogEntry> errorEntries = [];
             foreach (var eg in errorGroups)
             {
-                var r = eg.First;
+                DataGridViewRow r = eg.First;
                 errorEntries.Add(new LogEntry
                 {
                     Name = r.Cells["Name"].Value?.ToString() ?? "",
@@ -4041,13 +4202,13 @@ namespace FLAC_Benchmark_H
             }
 
             // 6. Merge all results
-            var finalEntries = finalSuccessEntries.Concat(errorEntries).ToList();
+            List<LogEntry> finalEntries = [.. finalSuccessEntries, .. errorEntries];
 
             // 7. Update UI
             await InvokeAsync(() =>
             {
                 dataGridViewLog.Rows.Clear();
-                foreach (var entry in finalEntries)
+                foreach (LogEntry? entry in finalEntries)
                 {
                     int rowIndex = dataGridViewLog.Rows.Add(
                     entry.Name,
@@ -4091,7 +4252,11 @@ namespace FLAC_Benchmark_H
                 // Apply red color to all text in error rows
                 foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    if (row.IsNewRow) continue;
+                    if (row.IsNewRow)
+                    {
+                        continue;
+                    }
+
                     if (!string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
                     {
                         foreach (DataGridViewCell cell in row.Cells)
@@ -4139,7 +4304,7 @@ namespace FLAC_Benchmark_H
                 int totalRuns = errorEntries.Sum(e => int.Parse(e.Passes));
                 string taskWord = errorEntries.Count == 1 ? "task" : "tasks";
                 string runWord = totalRuns == 1 ? "run" : "runs";
-                MessageBox.Show(
+                _ = MessageBox.Show(
                 $"WARNING: {totalRuns} failed {runWord} across {errorEntries.Count} unique {taskWord}.\n\n" +
                 "Results are based only on successful runs.",
                 "Analysis Summary",
@@ -4188,12 +4353,15 @@ namespace FLAC_Benchmark_H
         private void SortDataGridViewLog()
         {
             // Collect data from DataGridView into a list
-            var dataToSort = new List<LogEntry>();
+            List<LogEntry> dataToSort = [];
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                if (row.IsNewRow) continue; // Skip new row
+                if (row.IsNewRow)
+                {
+                    continue; // Skip new row
+                }
 
-                var logEntry = new LogEntry
+                LogEntry logEntry = new()
                 {
                     Name = row.Cells["Name"].Value?.ToString() ?? string.Empty,
                     Channels = row.Cells["Channels"].Value?.ToString() ?? string.Empty,
@@ -4232,17 +4400,16 @@ namespace FLAC_Benchmark_H
             }
 
             // Perform multi-level sorting with natural sort for Parameters
-            var sortedData = dataToSort
+            List<LogEntry> sortedData = [.. dataToSort
             .OrderBy(x => x.AudioFileDirectory, new NaturalStringComparer())
             .ThenBy(x => x.Name, new NaturalStringComparer())
             .ThenBy(x => x.Parameters, new NaturalStringComparer())
             .ThenBy(x => x.EncoderDirectory, new NaturalStringComparer())
-            .ThenBy(x => x.Encoder, new NaturalStringComparer())
-            .ToList();
+            .ThenBy(x => x.Encoder, new NaturalStringComparer())];
 
             // Clear DataGridView and add sorted data
             dataGridViewLog.Rows.Clear();
-            foreach (var data in sortedData)
+            foreach (LogEntry? data in sortedData)
             {
                 int rowIndex = dataGridViewLog.Rows.Add(
                 data.Name,
@@ -4285,7 +4452,10 @@ namespace FLAC_Benchmark_H
         private static string GetParametersWithoutJ(string parameters)
         {
             if (string.IsNullOrWhiteSpace(parameters))
+            {
                 return string.Empty;
+            }
+
             string result = RemoveJParamRegex().Replace(parameters, " ");
             return WhitespaceRegex().Replace(result.Trim(), " ");
         }
@@ -4295,7 +4465,7 @@ namespace FLAC_Benchmark_H
             Dictionary<string, (List<int> Threads, List<double> AvgSpeedsForAllFiles)>? aggregatedSeries = null)
         {
             {
-                var plt = plotScalingPlotSpeedByThreads.Plot;
+                Plot plt = plotScalingPlotSpeedByThreads.Plot;
                 plt.Clear();
                 allScatterSeriesSpeedByThreads.Clear();
 
@@ -4309,11 +4479,11 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgSpeeds)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgSpeeds = kvp.Value.AvgSpeeds;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgSpeeds = kvp.Value.AvgSpeeds;
 
                         var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
                                             .OrderBy(x => x.t)
@@ -4321,18 +4491,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.s)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgSpeedsForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Speed: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
 
                             var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
                                                         .GroupBy(x => x.t)
@@ -4347,7 +4517,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgSpeedsForAllFiles)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesSpeedByThreads.Add((scatter, label));
                         }
@@ -4360,13 +4530,13 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Threads (-jN)");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed Scaling by Threads");
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
                 }
             }
 
             {
-                var plt = plotScalingMultiPlotSpeedByThreads.Plot;
+                Plot plt = plotScalingMultiPlotSpeedByThreads.Plot;
                 plt.Clear();
 
                 if (series.Count == 0)
@@ -4379,11 +4549,11 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgSpeeds)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgSpeeds = kvp.Value.AvgSpeeds;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgSpeeds = kvp.Value.AvgSpeeds;
 
                         var sorted = threads.Zip(avgSpeeds, (t, s) => new { t, s })
                                             .OrderBy(x => x.t)
@@ -4391,18 +4561,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.s)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgSpeedsForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Speed: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgSpeedsForAllFiles = kvp.Value.AvgSpeedsForAllFiles;
 
                             var groupedByThread = threads.Zip(avgSpeedsForAllFiles, (t, s) => new { t, s })
                                                         .GroupBy(x => x.t)
@@ -4417,7 +4587,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgSpeedsForAllFiles)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesSpeedByThreads.Add((scatter, label));
                         }
@@ -4430,7 +4600,7 @@ namespace FLAC_Benchmark_H
                     // plt.XLabel("Threads (-jN)");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed Scaling by Threads");
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
                 }
             }
@@ -4446,7 +4616,7 @@ namespace FLAC_Benchmark_H
             Dictionary<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)>? aggregatedSeries = null)
         {
             {
-                var plt = plotScalingPlotCPULoadByThreads.Plot;
+                Plot plt = plotScalingPlotCPULoadByThreads.Plot;
                 plt.Clear();
                 allScatterSeriesCPULoadByThreads.Clear();
 
@@ -4463,11 +4633,11 @@ namespace FLAC_Benchmark_H
                     double[] idealX = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
                     double[] idealY = [.. idealX.Select(j => j * 100.0)];
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPULoads)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgCPULoads = kvp.Value.AvgCPULoads;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgCPULoads = kvp.Value.AvgCPULoads;
 
                         var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
                                             .OrderBy(x => x.t)
@@ -4475,18 +4645,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.l)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCPULoadByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg CPU Load: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
 
                             var groupedByThread = threads.Zip(avgCPULoadsForAllFiles, (t, l) => new { t, l })
                                                         .GroupBy(x => x.t)
@@ -4501,7 +4671,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgCPULoad)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCPULoadByThreads.Add((scatter, label));
                         }
@@ -4511,7 +4681,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("CPU Load (%)");
                     plt.Title("CPU Load Scaling by Threads");
                     plt.XTicks(idealX, [.. idealX.Select(j => j.ToString("F0"))]);
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
                     idealCPULoadLineSingle = plt.AddScatter(
@@ -4526,7 +4696,7 @@ namespace FLAC_Benchmark_H
             }
 
             {
-                var plt = plotScalingMultiPlotCPULoadByThreads.Plot;
+                Plot plt = plotScalingMultiPlotCPULoadByThreads.Plot;
                 plt.Clear();
 
                 if (series.Count == 0)
@@ -4542,11 +4712,11 @@ namespace FLAC_Benchmark_H
                     double[] idealX = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
                     double[] idealY = [.. idealX.Select(j => j * 100.0)];
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPULoads)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgCPULoads = kvp.Value.AvgCPULoads;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgCPULoads = kvp.Value.AvgCPULoads;
 
                         var sorted = threads.Zip(avgCPULoads, (t, l) => new { t, l })
                                             .OrderBy(x => x.t)
@@ -4554,18 +4724,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.l)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCPULoadByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPULoadsForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg CPU Load: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgCPULoadsForAllFiles = kvp.Value.AvgCPULoadsForAllFiles;
 
                             var groupedByThread = threads.Zip(avgCPULoadsForAllFiles, (t, l) => new { t, l })
                                                         .GroupBy(x => x.t)
@@ -4580,7 +4750,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgCPULoad)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCPULoadByThreads.Add((scatter, label));
                         }
@@ -4590,7 +4760,7 @@ namespace FLAC_Benchmark_H
                     plt.YLabel("CPU Load (%)");
                     plt.Title("CPU Load Scaling by Threads");
                     plt.XTicks(idealX, [.. idealX.Select(j => j.ToString("F0"))]);
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
 
                     idealCPULoadLineMultiplot = plt.AddScatter(
@@ -4615,7 +4785,7 @@ namespace FLAC_Benchmark_H
             Dictionary<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)>? aggregatedSeries = null)
         {
             {
-                var plt = plotScalingPlotCPUClockByThreads.Plot;
+                Plot plt = plotScalingPlotCPUClockByThreads.Plot;
                 plt.Clear();
                 allScatterSeriesCPUClockByThreads.Clear();
 
@@ -4629,11 +4799,11 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPUClocks)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgCPUClocks = kvp.Value.AvgCPUClocks;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgCPUClocks = kvp.Value.AvgCPUClocks;
 
                         var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
                                             .OrderBy(x => x.t)
@@ -4641,18 +4811,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.c)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCPUClockByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg CPU Clock: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
 
                             var groupedByThread = threads.Zip(avgCPUClocksForAllFiles, (t, c) => new { t, c })
                                                         .GroupBy(x => x.t)
@@ -4667,7 +4837,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgCPUClock)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCPUClockByThreads.Add((scatter, label));
                         }
@@ -4679,13 +4849,13 @@ namespace FLAC_Benchmark_H
                     double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
                     string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
                 }
             }
 
             {
-                var plt = plotScalingMultiPlotCPUClockByThreads.Plot;
+                Plot plt = plotScalingMultiPlotCPUClockByThreads.Plot;
                 plt.Clear();
 
                 if (series.Count == 0)
@@ -4698,11 +4868,11 @@ namespace FLAC_Benchmark_H
                     int maxThread = series.Values.SelectMany(v => v.Threads).Max();
                     int threadCount = maxThread - minThread + 1;
 
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPUClocks)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var threads = kvp.Value.Threads;
-                        var avgCPUClocks = kvp.Value.AvgCPUClocks;
+                        List<int> threads = kvp.Value.Threads;
+                        List<double> avgCPUClocks = kvp.Value.AvgCPUClocks;
 
                         var sorted = threads.Zip(avgCPUClocks, (t, c) => new { t, c })
                                             .OrderBy(x => x.t)
@@ -4710,18 +4880,18 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. sorted.Select(x => (double)x.t)];
                         double[] ys = [.. sorted.Select(x => x.c)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCPUClockByThreads.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, (List<int> Threads, List<double> AvgCPUClocksForAllFiles)> kvp in aggregatedSeries)
                         {
                             string label = $"Avg CPU Clock: {kvp.Key}";
-                            var threads = kvp.Value.Threads;
-                            var avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
+                            List<int> threads = kvp.Value.Threads;
+                            List<double> avgCPUClocksForAllFiles = kvp.Value.AvgCPUClocksForAllFiles;
 
                             var groupedByThread = threads.Zip(avgCPUClocksForAllFiles, (t, c) => new { t, c })
                                                         .GroupBy(x => x.t)
@@ -4736,7 +4906,7 @@ namespace FLAC_Benchmark_H
                             double[] xs = [.. groupedByThread.Select(x => (double)x.Thread)];
                             double[] ys = [.. groupedByThread.Select(x => x.AvgCPUClock)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCPUClockByThreads.Add((scatter, label));
                         }
@@ -4748,7 +4918,7 @@ namespace FLAC_Benchmark_H
                     double[] tickPositions = [.. Enumerable.Range(minThread, threadCount).Select(j => (double)j)];
                     string[] tickLabels = [.. tickPositions.Select(j => j.ToString("F0"))];
                     plt.XTicks(tickPositions, tickLabels);
-                    plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.LowerRight);
                     plt.AxisAuto();
                 }
             }
@@ -4778,20 +4948,15 @@ namespace FLAC_Benchmark_H
 
                 xPositions = [.. Enumerable.Range(0, allParams.Count).Select(i => (double)i)];
 
-                xLabels = [.. allParams.Select(param =>
-                {
-                    if (checkBoxWrapLongPlotLabels.Checked &&
+                xLabels = [.. allParams.Select(param => checkBoxWrapLongPlotLabels.Checked &&
                         int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
-                        maxLength > 0)
-                    {
-                        return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
-                    }
-                    return param;
-                })];
+                        maxLength > 0
+                        ? param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param
+                        : param)];
             }
 
             {
-                var plt = plotScalingPlotSpeedByParameters.Plot;
+                Plot plt = plotScalingPlotSpeedByParameters.Plot;
                 plt.Clear();
                 allScatterSeriesSpeedByParameters.Clear();
 
@@ -4801,13 +4966,13 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> AvgSpeeds)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var paramsList = kvp.Value.Params;
-                        var speeds = kvp.Value.AvgSpeeds;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> speeds = kvp.Value.AvgSpeeds;
 
-                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
                         var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
                                                    .Zip(speeds, (x, y) => new { x, y })
                                                    .OrderBy(p => p.x)
@@ -4815,17 +4980,17 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. points.Select(p => p.x)];
                         double[] ys = [.. points.Select(p => p.y)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, List<(string Param, double Speed)>> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Speed: {kvp.Key}";
-                            var dataPoints = kvp.Value;
+                            List<(string Param, double Speed)> dataPoints = kvp.Value;
 
                             var normalizedData = dataPoints.Select(dp =>
                                 new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Speed });
@@ -4841,12 +5006,15 @@ namespace FLAC_Benchmark_H
                                 .OrderBy(x => x.Param, new NaturalStringComparer())
                                 .ToList();
 
-                            if (groupedByParam.Count == 0) continue;
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
 
                             double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
                             double[] ys = [.. groupedByParam.Select(x => x.AvgSpeed)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesSpeedByParameters.Add((scatter, label));
                         }
@@ -4856,13 +5024,13 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Parameters");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
-                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
                     plt.AxisAuto();
                 }
             }
 
             {
-                var plt = plotScalingMultiPlotSpeedByParameters.Plot;
+                Plot plt = plotScalingMultiPlotSpeedByParameters.Plot;
                 plt.Clear();
 
                 if (series.Count == 0)
@@ -4871,13 +5039,13 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> AvgSpeeds)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var paramsList = kvp.Value.Params;
-                        var speeds = kvp.Value.AvgSpeeds;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> speeds = kvp.Value.AvgSpeeds;
 
-                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
                         var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
                                                    .Zip(speeds, (x, y) => new { x, y })
                                                    .OrderBy(p => p.x)
@@ -4885,17 +5053,17 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. points.Select(p => p.x)];
                         double[] ys = [.. points.Select(p => p.y)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesSpeedByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, List<(string Param, double Speed)>> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Speed: {kvp.Key}";
-                            var dataPoints = kvp.Value;
+                            List<(string Param, double Speed)> dataPoints = kvp.Value;
 
                             var normalizedData = dataPoints.Select(dp =>
                                 new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Speed });
@@ -4911,12 +5079,15 @@ namespace FLAC_Benchmark_H
                                 .OrderBy(x => x.Param, new NaturalStringComparer())
                                 .ToList();
 
-                            if (groupedByParam.Count == 0) continue;
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
 
                             double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
                             double[] ys = [.. groupedByParam.Select(x => x.AvgSpeed)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesSpeedByParameters.Add((scatter, label));
                         }
@@ -4926,7 +5097,7 @@ namespace FLAC_Benchmark_H
                     // plt.XLabel("Parameters");
                     plt.YLabel("Speed (x real-time)");
                     plt.Title("Speed by Parameters");
-                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
                     plt.AxisAuto();
                 }
             }
@@ -4956,20 +5127,15 @@ namespace FLAC_Benchmark_H
 
                 xPositions = [.. Enumerable.Range(0, allParams.Count).Select(i => (double)i)];
 
-                xLabels = [.. allParams.Select(param =>
-                {
-                    if (checkBoxWrapLongPlotLabels.Checked &&
+                xLabels = [.. allParams.Select(param => checkBoxWrapLongPlotLabels.Checked &&
                         int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
-                        maxLength > 0)
-                    {
-                        return param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param;
-                    }
-                    return param;
-                })];
+                        maxLength > 0
+                        ? param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param
+                        : param)];
             }
 
             {
-                var plt = plotScalingPlotCompressionByParameters.Plot;
+                Plot plt = plotScalingPlotCompressionByParameters.Plot;
                 plt.Clear();
                 allScatterSeriesCompressionByParameters.Clear();
 
@@ -4979,13 +5145,13 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> Compressions)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var paramsList = kvp.Value.Params;
-                        var compressions = kvp.Value.Compressions;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> compressions = kvp.Value.Compressions;
 
-                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
                         var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
                                                   .Zip(compressions, (x, y) => new { x, y })
                                                   .OrderBy(p => p.x)
@@ -4993,17 +5159,17 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. points.Select(p => p.x)];
                         double[] ys = [.. points.Select(p => p.y)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCompressionByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, List<(string Param, double Compression)>> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Compression: {kvp.Key}";
-                            var dataPoints = kvp.Value;
+                            List<(string Param, double Compression)> dataPoints = kvp.Value;
 
                             var normalizedData = dataPoints.Select(dp =>
                                 new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Compression });
@@ -5019,12 +5185,15 @@ namespace FLAC_Benchmark_H
                                 .OrderBy(x => x.Param, new NaturalStringComparer())
                                 .ToList();
 
-                            if (groupedByParam.Count == 0) continue;
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
 
                             double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
                             double[] ys = [.. groupedByParam.Select(x => x.AvgCompression)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCompressionByParameters.Add((scatter, label));
                         }
@@ -5034,13 +5203,13 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Parameters");
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
-                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
                     plt.AxisAuto();
                 }
             }
 
             {
-                var plt = plotScalingMultiPlotCompressionByParameters.Plot;
+                Plot plt = plotScalingMultiPlotCompressionByParameters.Plot;
                 plt.Clear();
 
                 if (series.Count == 0)
@@ -5049,13 +5218,13 @@ namespace FLAC_Benchmark_H
                 }
                 else
                 {
-                    foreach (var kvp in series)
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> Compressions)> kvp in series)
                     {
                         string label = kvp.Key;
-                        var paramsList = kvp.Value.Params;
-                        var compressions = kvp.Value.Compressions;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> compressions = kvp.Value.Compressions;
 
-                        var normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
                         var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
                                                   .Zip(compressions, (x, y) => new { x, y })
                                                   .OrderBy(p => p.x)
@@ -5063,17 +5232,17 @@ namespace FLAC_Benchmark_H
                         double[] xs = [.. points.Select(p => p.x)];
                         double[] ys = [.. points.Select(p => p.y)];
 
-                        var scatter = plt.AddScatter(xs, ys, label: label);
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
                         allIndividualSeries.Add(scatter);
                         allScatterSeriesCompressionByParameters.Add((scatter, label));
                     }
 
                     if (aggregatedSeries != null)
                     {
-                        foreach (var kvp in aggregatedSeries)
+                        foreach (KeyValuePair<string, List<(string Param, double Compression)>> kvp in aggregatedSeries)
                         {
                             string label = $"Avg Compression: {kvp.Key}";
-                            var dataPoints = kvp.Value;
+                            List<(string Param, double Compression)> dataPoints = kvp.Value;
 
                             var normalizedData = dataPoints.Select(dp =>
                                 new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.Compression });
@@ -5089,12 +5258,15 @@ namespace FLAC_Benchmark_H
                                 .OrderBy(x => x.Param, new NaturalStringComparer())
                                 .ToList();
 
-                            if (groupedByParam.Count == 0) continue;
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
 
                             double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
                             double[] ys = [.. groupedByParam.Select(x => x.AvgCompression)];
 
-                            var scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
                             allAggregatedSeries.Add(scatter);
                             allScatterSeriesCompressionByParameters.Add((scatter, label));
                         }
@@ -5104,7 +5276,7 @@ namespace FLAC_Benchmark_H
                     plt.XLabel("Parameters");
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
-                    plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
                     plt.AxisAuto();
                 }
             }
@@ -5118,9 +5290,11 @@ namespace FLAC_Benchmark_H
         private static string WrapTextLabelsOnPlots(string text, int maxLineLength)
         {
             if (string.IsNullOrEmpty(text) || text.Length <= maxLineLength)
+            {
                 return text;
+            }
 
-            var lines = new List<string>();
+            List<string> lines = [];
             int start = 0;
 
             while (start < text.Length)
@@ -5130,12 +5304,16 @@ namespace FLAC_Benchmark_H
                 {
                     int lastSpace = text.LastIndexOf(' ', end - 1, end - start);
                     if (lastSpace > start)
+                    {
                         end = lastSpace;
+                    }
                 }
                 lines.Add(text[start..end]);
                 start = end;
                 while (start < text.Length && text[start] == ' ')
+                {
                     start++;
+                }
             }
 
             return string.Join("\n", lines);
@@ -5143,10 +5321,13 @@ namespace FLAC_Benchmark_H
 
         private void PlotScalingPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
 
             if (found && dynamicTooltipSpeedByThreads == null)
             {
@@ -5172,10 +5353,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotSpeedByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesSpeedByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotSpeedByThreads == null)
             {
@@ -5201,10 +5385,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
 
             if (found && dynamicTooltipCPULoadByThreads == null)
             {
@@ -5230,10 +5417,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCPULoadByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCPULoadByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotCPULoadByThreads == null)
             {
@@ -5259,10 +5449,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
 
             if (found && dynamicTooltipCPUClockByThreads == null)
             {
@@ -5288,10 +5481,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCPUClockByThreads_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCPUClockByThreads, formsPlot);
 
             if (found && dynamicTooltipMultiplotCPUClockByThreads == null)
             {
@@ -5318,10 +5514,13 @@ namespace FLAC_Benchmark_H
 
         private void PlotScalingPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
 
             if (found && dynamicTooltipSpeedByParameters == null)
             {
@@ -5351,10 +5550,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotSpeedByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesSpeedByParameters, formsPlot);
 
             if (found && dynamicTooltipMultiplotSpeedByParameters == null)
             {
@@ -5384,10 +5586,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
 
             if (found && dynamicTooltipCompressionByParameters == null)
             {
@@ -5417,10 +5622,13 @@ namespace FLAC_Benchmark_H
         }
         private void PlotScalingMultiPlotCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
         {
-            if (sender is not ScottPlot.FormsPlot formsPlot) return;
+            if (sender is not ScottPlot.FormsPlot formsPlot)
+            {
+                return;
+            }
 
-            var plt = formsPlot.Plot;
-            var (label, x, y, found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesCompressionByParameters, formsPlot);
 
             if (found && dynamicTooltipMultiplotCompressionByParameters == null)
             {
@@ -5454,11 +5662,13 @@ namespace FLAC_Benchmark_H
             ScottPlot.FormsPlot formsPlot)
         {
             if (seriesList.Count == 0)
+            {
                 return (string.Empty, 0, 0, false);
+            }
 
             (double mouseX, double mouseY) = formsPlot.GetMouseCoordinates();
 
-            var limits = formsPlot.Plot.GetAxisLimits();
+            AxisLimits limits = formsPlot.Plot.GetAxisLimits();
             double xRange = limits.XSpan;
             double yRange = limits.YSpan;
 
@@ -5467,15 +5677,18 @@ namespace FLAC_Benchmark_H
             double bestX = 0, bestY = 0;
             bool found = false;
 
-            foreach (var (scatter, label) in seriesList)
+            foreach ((ScatterPlot? scatter, string? label) in seriesList)
             {
-                if (!scatter.IsVisible) continue;
+                if (!scatter.IsVisible)
+                {
+                    continue;
+                }
 
                 (double pointX, double pointY, int pointIndex) = scatter.GetPointNearest(mouseX, mouseY, 1.0);
 
                 double normalizedDx = (pointX - mouseX) / xRange;
                 double normalizedDy = (pointY - mouseY) / yRange;
-                double distance = Math.Sqrt(normalizedDx * normalizedDx + normalizedDy * normalizedDy);
+                double distance = Math.Sqrt((normalizedDx * normalizedDx) + (normalizedDy * normalizedDy));
 
                 if (distance < bestDistance)
                 {
@@ -5488,7 +5701,9 @@ namespace FLAC_Benchmark_H
             }
 
             if (bestDistance > 0.01)
+            {
                 return (string.Empty, 0, 0, false);
+            }
 
             return (bestLabel, bestX, bestY, found);
         }
@@ -5496,7 +5711,7 @@ namespace FLAC_Benchmark_H
         // Log to Excel, copy, clear
         private void ButtonLogToExcel_Click(object? sender, EventArgs e)
         {
-            using var workbook = new XLWorkbook();
+            using XLWorkbook workbook = new();
             // Export each tab as a separate worksheet
             ExportDataGridViewToWorksheet(workbook, dataGridViewLog, "Benchmark");
             ExportDataGridViewToWorksheet(workbook, dataGridViewLogDetectDupes, "Detect Dupes");
@@ -5515,30 +5730,35 @@ namespace FLAC_Benchmark_H
             $"Log exported to Excel successfully!\n\nSaved as:\n{fullPath}\n\nWould you like to open it?",
             "Success", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
             {
-                Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
+                _ = Process.Start(new ProcessStartInfo { FileName = fullPath, UseShellExecute = true });
             }
         }
         private static void ExportDataGridViewToWorksheet(XLWorkbook workbook, DataGridView dgv, string sheetName)
         {
-            if (dgv.Rows.Count == 0) return;
+            if (dgv.Rows.Count == 0)
+            {
+                return;
+            }
 
-            var worksheet = workbook.Worksheets.Add(sheetName);
+            IXLWorksheet worksheet = workbook.Worksheets.Add(sheetName);
 
             // Get only VISIBLE columns in display order
-            var visibleColumns = dgv.Columns.Cast<DataGridViewColumn>()
+            List<DataGridViewColumn> visibleColumns = [.. dgv.Columns.Cast<DataGridViewColumn>()
             .Where(col => col.Visible)
-            .OrderBy(col => col.DisplayIndex)
-            .ToList();
+            .OrderBy(col => col.DisplayIndex)];
 
-            if (visibleColumns.Count == 0) return;
+            if (visibleColumns.Count == 0)
+            {
+                return;
+            }
 
             int colCount = visibleColumns.Count;
 
             // --- Write headers ---
             for (int j = 0; j < colCount; j++)
             {
-                var col = visibleColumns[j];
-                var cell = worksheet.Cell(1, j + 1);
+                DataGridViewColumn col = visibleColumns[j];
+                IXLCell cell = worksheet.Cell(1, j + 1);
                 cell.Value = col.HeaderText;
                 cell.Style.Font.Bold = true;
             }
@@ -5547,55 +5767,45 @@ namespace FLAC_Benchmark_H
             int rowIndexInSheet = 2;
             foreach (DataGridViewRow row in dgv.Rows)
             {
-                if (row.IsNewRow) continue;
+                if (row.IsNewRow)
+                {
+                    continue;
+                }
 
                 for (int j = 0; j < colCount; j++)
                 {
-                    var col = visibleColumns[j];
-                    var cellValue = row.Cells[col.Index].Value;
-                    var sheetCell = worksheet.Cell(rowIndexInSheet, j + 1);
+                    DataGridViewColumn col = visibleColumns[j];
+                    object? cellValue = row.Cells[col.Index].Value;
+                    IXLCell sheetCell = worksheet.Cell(rowIndexInSheet, j + 1);
 
                     // Handle special formatting by column name
                     string colName = col.Name;
                     string stringValue = cellValue?.ToString() ?? string.Empty;
 
-                    if (colName == "InputFileSize" || colName == "OutputFileSize")
+                    if (colName is "InputFileSize" or "OutputFileSize")
                     {
-                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val))
-                            sheetCell.Value = val;
-                        else
-                            sheetCell.Value = stringValue;
+                        sheetCell.Value = !string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val) ? (XLCellValue)val : (XLCellValue)stringValue;
                     }
                     else if (colName == "Channels")
                     {
-                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue, out long val))
-                            sheetCell.Value = val;
-                        else
-                            sheetCell.Value = stringValue;
+                        sheetCell.Value = !string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue, out long val) ? (XLCellValue)val : (XLCellValue)stringValue;
                     }
-                    else if (colName == "BitDepth" || colName == "SamplingRate")
+                    else if (colName is "BitDepth" or "SamplingRate")
                     {
-                        if (!string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val))
-                            sheetCell.Value = val;
-                        else
-                            sheetCell.Value = stringValue;
+                        sheetCell.Value = !string.IsNullOrEmpty(stringValue) && long.TryParse(stringValue.Replace(" ", ""), out long val) ? (XLCellValue)val : (XLCellValue)stringValue;
                     }
-                    else if (colName == "Compression" || colName == "CPULoadEncoder" || colName == "SpeedConsistency")
+                    else if (colName is "Compression" or "CPULoadEncoder" or "SpeedConsistency")
                     {
-                        if (!string.IsNullOrEmpty(stringValue) && double.TryParse(stringValue.Replace("%", "").Trim(), out double val))
-                            sheetCell.Value = val / 100.0;
-                        else
-                            sheetCell.Value = stringValue;
+                        sheetCell.Value = !string.IsNullOrEmpty(stringValue) && double.TryParse(stringValue.Replace("%", "").Trim(), out double val)
+                            ? (XLCellValue)(val / 100.0)
+                            : (XLCellValue)stringValue;
                     }
-                    else if (colName == "Time" || colName == "Speed" || colName == "SpeedMin" || colName == "SpeedMax" || colName == "SpeedRange" || colName == "CPUClock")
+                    else if (colName is "Time" or "Speed" or "SpeedMin" or "SpeedMax" or "SpeedRange" or "CPUClock")
                     {
                         if (!string.IsNullOrEmpty(stringValue))
                         {
                             string cleanValue = stringValue.Replace("x", "").Replace("MHz", "").Trim();
-                            if (double.TryParse(cleanValue, out double val))
-                                sheetCell.Value = val;
-                            else
-                                sheetCell.Value = stringValue;
+                            sheetCell.Value = double.TryParse(cleanValue, out double val) ? (XLCellValue)val : (XLCellValue)stringValue;
                         }
                         else
                         {
@@ -5604,16 +5814,15 @@ namespace FLAC_Benchmark_H
                     }
                     else if (colName == "Passes")
                     {
-                        if (!string.IsNullOrEmpty(stringValue) && int.TryParse(stringValue, out int val))
-                            sheetCell.Value = val;
-                        else
-                            sheetCell.Value = stringValue;
+                        sheetCell.Value = !string.IsNullOrEmpty(stringValue) && int.TryParse(stringValue, out int val) ? (XLCellValue)val : (XLCellValue)stringValue;
                     }
-                    else if (colName == "EncoderDirectory" || colName == "AudioFileDirectory")
+                    else if (colName is "EncoderDirectory" or "AudioFileDirectory")
                     {
                         sheetCell.Value = stringValue;
                         if (Directory.Exists(stringValue))
+                        {
                             sheetCell.SetHyperlink(new XLHyperlink(stringValue));
+                        }
                     }
                     else
                     {
@@ -5623,7 +5832,7 @@ namespace FLAC_Benchmark_H
                     // Copy text color
                     if (row.Cells[col.Index].Style.ForeColor != Color.Empty)
                     {
-                        var color = row.Cells[col.Index].Style.ForeColor;
+                        Color color = row.Cells[col.Index].Style.ForeColor;
                         sheetCell.Style.Font.FontColor = XLColor.FromArgb(color.A, color.R, color.G, color.B);
                     }
                 }
@@ -5634,8 +5843,8 @@ namespace FLAC_Benchmark_H
             // --- Apply number formats ---
             for (int j = 0; j < colCount; j++)
             {
-                var col = visibleColumns[j];
-                var excelCol = worksheet.Column(j + 1);
+                DataGridViewColumn col = visibleColumns[j];
+                IXLColumn excelCol = worksheet.Column(j + 1);
 
                 switch (col.Name)
                 {
@@ -5669,12 +5878,12 @@ namespace FLAC_Benchmark_H
             }
 
             // Final touches
-            worksheet.RangeUsed()?.SetAutoFilter();
+            _ = (worksheet.RangeUsed()?.SetAutoFilter());
             worksheet.SheetView.FreezeRows(1);
-            worksheet.Columns().AdjustToContents();
+            _ = worksheet.Columns().AdjustToContents();
 
             // Header style
-            worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
+            _ = worksheet.Row(1).Style.Fill.SetBackgroundColor(XLColor.FromHtml("4F81BD"));
             worksheet.Row(1).Style.Font.FontColor = XLColor.White;
         }
         private void ButtonCopyLogAsBBCode_Click(object? sender, EventArgs e)
@@ -5682,15 +5891,14 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Get only VISIBLE columns, sorted by their display order in the UI
-                var visibleColumns = dataGridViewLog.Columns.Cast<DataGridViewColumn>()
+                List<DataGridViewColumn> visibleColumns = [.. dataGridViewLog.Columns.Cast<DataGridViewColumn>()
                 .Where(col => col.Visible)
-                .OrderBy(col => col.DisplayIndex)
-                .ToList();
+                .OrderBy(col => col.DisplayIndex)];
 
                 // Check if there are any visible columns to copy
                 if (visibleColumns.Count == 0)
                 {
-                    MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -5700,37 +5908,40 @@ namespace FLAC_Benchmark_H
 
                 if (!hasData)
                 {
-                    MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 // Build BBCode using only visible columns
-                var bbCodeText = new StringBuilder();
-                bbCodeText.AppendLine("[table]");
+                StringBuilder bbCodeText = new();
+                _ = bbCodeText.AppendLine("[table]");
 
                 // Add header row
-                bbCodeText.Append("[tr]");
-                foreach (var col in visibleColumns)
+                _ = bbCodeText.Append("[tr]");
+                foreach (DataGridViewColumn? col in visibleColumns)
                 {
-                    bbCodeText.Append($"[td][b]{col.HeaderText}[/b][/td]");
+                    _ = bbCodeText.Append($"[td][b]{col.HeaderText}[/b][/td]");
                 }
-                bbCodeText.AppendLine("[/tr]");
+                _ = bbCodeText.AppendLine("[/tr]");
 
                 // Iterate through data rows
                 foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    if (row.IsNewRow) continue; // Skip the empty "new row" at the bottom
+                    if (row.IsNewRow)
+                    {
+                        continue; // Skip the empty "new row" at the bottom
+                    }
 
-                    bbCodeText.Append("[tr]");
-                    foreach (var col in visibleColumns)
+                    _ = bbCodeText.Append("[tr]");
+                    foreach (DataGridViewColumn? col in visibleColumns)
                     {
                         string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? "";
-                        bbCodeText.Append($"[td]{cellValue}[/td]");
+                        _ = bbCodeText.Append($"[td]{cellValue}[/td]");
                     }
-                    bbCodeText.AppendLine("[/tr]");
+                    _ = bbCodeText.AppendLine("[/tr]");
                 }
 
-                bbCodeText.Append("[/table]");
+                _ = bbCodeText.Append("[/table]");
 
                 // Copy to clipboard if there's content
                 if (bbCodeText.Length > 0)
@@ -5740,7 +5951,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error copying log as BBCode: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -5754,7 +5965,7 @@ namespace FLAC_Benchmark_H
                 try
                 {
                     // Open log.txt with default text editor
-                    Process.Start(new ProcessStartInfo
+                    _ = Process.Start(new ProcessStartInfo
                     {
                         FileName = logFilePath,
                         UseShellExecute = true // This will open the file with associated application
@@ -5762,12 +5973,12 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show($"Error opening log file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("Log file does not exist.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private void ButtonCopyLog_Click(object? sender, EventArgs e)
@@ -5784,20 +5995,19 @@ namespace FLAC_Benchmark_H
             // If no valid grid is found, show error and exit
             if (activeGrid == null)
             {
-                MessageBox.Show("Unable to determine active log tab.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show("Unable to determine active log tab.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             // Get only VISIBLE columns, sorted by their display order in the UI
-            var visibleColumns = activeGrid.Columns.Cast<DataGridViewColumn>()
+            List<DataGridViewColumn> visibleColumns = [.. activeGrid.Columns.Cast<DataGridViewColumn>()
             .Where(col => col.Visible)
-            .OrderBy(col => col.DisplayIndex)
-            .ToList();
+            .OrderBy(col => col.DisplayIndex)];
 
             // Check if there are any visible columns to copy
             if (visibleColumns.Count == 0)
             {
-                MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("No visible columns to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -5807,32 +6017,35 @@ namespace FLAC_Benchmark_H
 
             if (!hasData)
             {
-                MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _ = MessageBox.Show("There is no log to copy.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             // Build tab-separated text using only visible columns
-            var logText = new StringBuilder();
+            StringBuilder logText = new();
 
             // Add header row
-            foreach (var col in visibleColumns)
+            foreach (DataGridViewColumn? col in visibleColumns)
             {
-                logText.Append(col.HeaderText).Append('\t');
+                _ = logText.Append(col.HeaderText).Append('\t');
             }
-            logText.AppendLine();
+            _ = logText.AppendLine();
 
 
             // Iterate through data rows
             foreach (DataGridViewRow row in activeGrid.Rows)
             {
-                if (row.IsNewRow) continue; // Skip the empty "new row" at the bottom
+                if (row.IsNewRow)
+                {
+                    continue; // Skip the empty "new row" at the bottom
+                }
 
-                foreach (var col in visibleColumns)
+                foreach (DataGridViewColumn? col in visibleColumns)
                 {
                     string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? string.Empty;
-                    logText.Append(cellValue).Append('\t');
+                    _ = logText.Append(cellValue).Append('\t');
                 }
-                logText.AppendLine();
+                _ = logText.AppendLine();
             }
 
             // Copy to clipboard if there's content
@@ -6020,11 +6233,14 @@ namespace FLAC_Benchmark_H
         {
             if (e.KeyCode == Keys.Delete)
             {
-                var passesToDelete = new List<BenchmarkPass>();
+                List<BenchmarkPass> passesToDelete = [];
 
                 foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
                 {
-                    if (row.IsNewRow) continue;
+                    if (row.IsNewRow)
+                    {
+                        continue;
+                    }
 
                     // Case 1: Raw log row (before AnalyzeLogAsync)
                     // In this case, row.Tag holds a direct reference to a BenchmarkPass object.
@@ -6050,25 +6266,23 @@ namespace FLAC_Benchmark_H
                         // Find all BenchmarkPass entries matching the test configuration (AudioFilePath, EncoderPath, Parameters)
                         // Sort them by Timestamp (oldest first) to match the order in which they were originally added
                         // Then take only the first 'passesCount' entries - this corresponds to the group that was analyzed
-                        var matchingPasses = _benchmarkPasses
+                        List<BenchmarkPass> matchingPasses = [.. _benchmarkPasses
                         .Where(p =>
                         p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
                         p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
                         p.Parameters == parameters)
-                        .OrderBy(p => p.Timestamp) // Oldest first
-                        .Take(passesCount)         // Take exactly N = Passes
-                        .ToList();
+                        .OrderBy(p => p.Timestamp) // Oldest first / Take exactly N = Passes
+                        .Take(passesCount)];
 
                         passesToDelete.AddRange(matchingPasses);
                     }
                 }
 
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
-                var indexes = dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
+                List<int> indexes = [.. dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
                 .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
-                .OrderByDescending(i => i)
-                .ToList();
+                .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
@@ -6077,9 +6291,9 @@ namespace FLAC_Benchmark_H
 
                 // Remove the identified BenchmarkPass objects from the internal cache
                 // This ensures they won't reappear after a subsequent AnalyzeLogAsync call
-                foreach (var pass in passesToDelete)
+                foreach (BenchmarkPass pass in passesToDelete)
                 {
-                    _benchmarkPasses.Remove(pass);
+                    _ = _benchmarkPasses.Remove(pass);
                 }
 
                 // Suppress default key press behavior (e.g., error beep)
@@ -6091,11 +6305,10 @@ namespace FLAC_Benchmark_H
             if (e.KeyCode == Keys.Delete)
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
-                var indexes = dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
+                List<int> indexes = [.. dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
                 .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
-                .OrderByDescending(i => i)
-                .ToList();
+                .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
@@ -6111,11 +6324,10 @@ namespace FLAC_Benchmark_H
             if (e.KeyCode == Keys.Delete)
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
-                var indexes = dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
+                List<int> indexes = [.. dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
                 .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
-                .OrderByDescending(i => i)
-                .ToList();
+                .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
@@ -6148,7 +6360,7 @@ namespace FLAC_Benchmark_H
         private void DataGridViewJobs_DragDrop(object? sender, DragEventArgs e)
         {
             string[] files = (string[]?)e.Data?.GetData(DataFormats.FileDrop) ?? [];
-            foreach (var file in files)
+            foreach (string file in files)
             {
                 if (Directory.Exists(file))
                 {
@@ -6165,27 +6377,27 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Find all .txt and .bak files in current directory and subdirectories
-                var txtFiles = await Task.Run(() => Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories));
-                var bakFiles = await Task.Run(() => Directory.GetFiles(directory, "*.bak", SearchOption.AllDirectories));
+                string[] txtFiles = await Task.Run(() => Directory.GetFiles(directory, "*.txt", SearchOption.AllDirectories));
+                string[] bakFiles = await Task.Run(() => Directory.GetFiles(directory, "*.bak", SearchOption.AllDirectories));
 
                 // Combine file arrays
-                var allFiles = txtFiles.Concat(bakFiles);
+                IEnumerable<string> allFiles = txtFiles.Concat(bakFiles);
 
-                foreach (var file in allFiles)
+                foreach (string file in allFiles)
                 {
                     LoadJobsFromFile(file); // Load jobs from found file into dataGridViewJobs
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error accessing directory: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private async void LoadJobsFromFile(string filePath)
         {
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("The specified file does not exist.", "Error",
+                _ = MessageBox.Show("The specified file does not exist.", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -6193,10 +6405,12 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = await Task.Run(() => File.ReadAllLines(filePath));
-                foreach (var line in lines)
+                foreach (string line in lines)
                 {
                     if (string.IsNullOrWhiteSpace(line))
+                    {
                         continue;
+                    }
 
                     // Check for the primary format: "Status|Type|Passes|Parameters"
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
@@ -6213,32 +6427,32 @@ namespace FLAC_Benchmark_H
                             string parameters = line[(thirdBar + 1)..];
 
                             // Add the parsed job data as a new row to dataGridViewJobs
-                            dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
+                            _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                             continue;
                         }
                     }
                     // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
                     else if (line.Contains('~'))
                     {
-                        var parts = line.Split('~');
+                        string[] parts = line.Split('~');
                         if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                         {
                             string jobName = NormalizeSpaces(parts[0]);
                             string passes = NormalizeSpaces(parts[2]);
                             string parameters = NormalizeSpaces(parts[3]);
                             // Add the parsed job data as a new row to dataGridViewJobs
-                            dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
+                            _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
                             continue;
                         }
                     }
 
-                    MessageBox.Show($"Invalid line format: {line}", "Error",
+                    _ = MessageBox.Show($"Invalid line format: {line}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error reading file: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -6256,10 +6470,12 @@ namespace FLAC_Benchmark_H
                     foreach (string fileName in openFileDialog.FileNames)
                     {
                         string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
-                        foreach (var line in lines)
+                        foreach (string line in lines)
                         {
                             if (string.IsNullOrWhiteSpace(line))
+                            {
                                 continue;
+                            }
 
                             // Check for the primary format: "Status|Type|Passes|Parameters"
                             if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
@@ -6276,33 +6492,33 @@ namespace FLAC_Benchmark_H
                                     string parameters = line[(thirdBar + 1)..];
 
                                     // Add the parsed job data as a new row to dataGridViewJobs
-                                    dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
+                                    _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                                     continue;
                                 }
                             }
                             // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
                             else if (line.Contains('~'))
                             {
-                                var parts = line.Split('~');
+                                string[] parts = line.Split('~');
                                 if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                                 {
                                     string jobName = NormalizeSpaces(parts[0]);
                                     string passes = NormalizeSpaces(parts[2]);
                                     string parameters = NormalizeSpaces(parts[3]);
                                     // Add the parsed job data as a new row to dataGridViewJobs
-                                    dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
+                                    _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
                                     continue;
                                 }
                             }
 
-                            MessageBox.Show($"Invalid line format: {line}", "Error",
+                            _ = MessageBox.Show($"Invalid line format: {line}", "Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error reading file: {ex.Message}", "Error",
+                    _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -6320,7 +6536,7 @@ namespace FLAC_Benchmark_H
                 {
                     // Create an array of formatted strings representing the rows in dataGridViewJobs
                     // Exclude the new row if it exists (though we disabled it)
-                    var jobList = dataGridViewJobs.Rows.Cast<DataGridViewRow>()
+                    string[] jobList = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()
                     .Where(row => !row.IsNewRow) // Filter out the new row
                     .Select(row =>
                     {
@@ -6333,14 +6549,13 @@ namespace FLAC_Benchmark_H
                         // Format the row data as a single line
                         string status = isChecked ? "Checked" : "Unchecked";
                         return $"{status}|{type}|{passes}|{parameters}";
-                    })
-                    .ToArray();
+                    })];
 
                     File.WriteAllLines(saveFileDialog.FileName, jobList, Encoding.UTF8);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
+                    _ = MessageBox.Show($"Error exporting job list: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -6357,10 +6572,9 @@ namespace FLAC_Benchmark_H
         {
             // Remove selected rows from dataGridViewJobs
             // Get selected row indices in descending order to avoid index shifting issues during removal
-            var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
+            List<int> selectedIndices = [.. dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
             .Select(row => row.Index)
-            .OrderByDescending(index => index)
-            .ToList();
+            .OrderByDescending(index => index)];
 
             foreach (int index in selectedIndices)
             {
@@ -6400,7 +6614,7 @@ namespace FLAC_Benchmark_H
             bool existingRowFoundForDGV = false;
             if (dataGridViewJobs.Rows.Count > 0)
             {
-                var lastRow = dataGridViewJobs.Rows[^1];
+                DataGridViewRow lastRow = dataGridViewJobs.Rows[^1];
                 // Compare Job Type and Parameters columns
                 if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
@@ -6415,7 +6629,7 @@ namespace FLAC_Benchmark_H
             if (!existingRowFoundForDGV)
             {
                 // Add new row with checkbox checked, job type, default pass count, and parameters
-                dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
+                _ = dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
             }
 
             // Clear selection and current cell after modification to prevent default highlighting
@@ -6436,7 +6650,7 @@ namespace FLAC_Benchmark_H
             bool existingRowFoundForDGV = false;
             if (dataGridViewJobs.Rows.Count > 0)
             {
-                var lastRow = dataGridViewJobs.Rows[^1];
+                DataGridViewRow lastRow = dataGridViewJobs.Rows[^1];
                 // Compare Job Type and Parameters columns
                 if (lastRow.Cells["Column2JobType"].Value?.ToString() == jobName && lastRow.Cells["Column4Parameters"].Value?.ToString() == parameters)
                 {
@@ -6451,7 +6665,7 @@ namespace FLAC_Benchmark_H
             if (!existingRowFoundForDGV)
             {
                 // Add new row with checkbox checked, job type, default pass count, and parameters
-                dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
+                _ = dataGridViewJobs.Rows.Add(true, jobName, "1", parameters);
             }
 
             // Clear selection and current cell after modification to prevent default highlighting
@@ -6510,10 +6724,9 @@ namespace FLAC_Benchmark_H
             {
                 // --- LOGIC FOR SELECTED ROWS ---
                 // Get the indices of the selected rows
-                var selectedIndices = dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
+                List<int> selectedIndices = [.. dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
                 .Select(row => row.Index)
-                .OrderBy(index => index) // Sort indices in ascending order (top -> down)
-                .ToList();
+                .OrderBy(index => index)]; // Sort indices in ascending order (top -> down)
 
                 // Iterate through rows in the order of their ascending index
                 foreach (int index in selectedIndices)
@@ -6521,7 +6734,7 @@ namespace FLAC_Benchmark_H
                     // Verify the index is valid (just in case)
                     if (index >= 0 && index < dataGridViewJobs.Rows.Count)
                     {
-                        var row = dataGridViewJobs.Rows[index];
+                        DataGridViewRow row = dataGridViewJobs.Rows[index];
 
                         // Get values from the respective cells
                         bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
@@ -6531,7 +6744,7 @@ namespace FLAC_Benchmark_H
 
                         // Format the row data as a single line
                         string status = isChecked ? "Checked" : "Unchecked";
-                        jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                        _ = jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
                     }
                 }
             }
@@ -6541,7 +6754,10 @@ namespace FLAC_Benchmark_H
                 // Iterate through all rows (excluding the potential new row)
                 foreach (DataGridViewRow row in dataGridViewJobs.Rows)
                 {
-                    if (row.IsNewRow) continue; // Skip the new row
+                    if (row.IsNewRow)
+                    {
+                        continue; // Skip the new row
+                    }
 
                     // Get values from the respective cells
                     bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
@@ -6551,7 +6767,7 @@ namespace FLAC_Benchmark_H
 
                     // Format the row data as a single line
                     string status = isChecked ? "Checked" : "Unchecked";
-                    jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
+                    _ = jobsText.AppendLine($"{status}|{type}|{passes}|{parameters}");
                 }
             }
 
@@ -6563,7 +6779,7 @@ namespace FLAC_Benchmark_H
             else
             {
                 // Show a message if no rows were found to copy
-                MessageBox.Show("No jobs to copy.", "Information",
+                _ = MessageBox.Show("No jobs to copy.", "Information",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -6576,10 +6792,12 @@ namespace FLAC_Benchmark_H
                 {
                     // Split the clipboard text into lines
                     string[] lines = clipboardText.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var line in lines)
+                    foreach (string line in lines)
                     {
                         if (string.IsNullOrWhiteSpace(line))
+                        {
                             continue;
+                        }
 
                         // Check for the primary format: "Status|Type|Passes|Parameters"
                         if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
@@ -6596,41 +6814,41 @@ namespace FLAC_Benchmark_H
                                 string parameters = line[(thirdBar + 1)..];
 
                                 // Add the parsed job data as a new row to dataGridViewJobs
-                                dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
+                                _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                                 continue;
                             }
                         }
                         // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
                         else if (line.Contains('~'))
                         {
-                            var parts = line.Split('~');
+                            string[] parts = line.Split('~');
                             if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
                             {
                                 string jobName = parts[0];
                                 string passes = parts[2];
                                 string parameters = parts[3];
                                 // Add the parsed job data as a new row to dataGridViewJobs
-                                dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
+                                _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
                                 continue;
                             }
                         }
 
                         // Show a warning if a line doesn't match expected formats
-                        MessageBox.Show($"Invalid line format: {line}", "Error",
+                        _ = MessageBox.Show($"Invalid line format: {line}", "Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 else
                 {
                     // Show a message if the clipboard is empty
-                    MessageBox.Show("Clipboard is empty.", "Information",
+                    _ = MessageBox.Show("Clipboard is empty.", "Information",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
                 // Show an error message if an exception occurs during pasting
-                MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error",
+                _ = MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -6653,13 +6871,13 @@ namespace FLAC_Benchmark_H
         }
         private void DataGridViewJobs_MouseDown(object? sender, MouseEventArgs e)
         {
-            var hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
+            DataGridView.HitTestInfo hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
 
             // Handle click on checkbox column header (column 0)
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == 0)
             {
                 // Get only data rows (exclude new row and any other special rows)
-                var dataRows = dataGridViewJobs.Rows
+                IEnumerable<DataGridViewRow> dataRows = dataGridViewJobs.Rows
                 .Cast<DataGridViewRow>()
                 .Where(row => !row.IsNewRow && row.Index >= 0);
 
@@ -6688,7 +6906,7 @@ namespace FLAC_Benchmark_H
                 }
 
                 // Force immediate refresh
-                dataGridViewJobs.EndEdit();
+                _ = dataGridViewJobs.EndEdit();
                 dataGridViewJobs.Refresh();
                 return;
             }
@@ -6725,7 +6943,7 @@ namespace FLAC_Benchmark_H
                 {
                     // Iterate through the list of jobs received from the ScriptConstructorForm
                     // Each job is now a ScriptJobData struct containing the script definition
-                    foreach (var job in jobs) // job is ScriptJobData
+                    foreach (ScriptJobData job in jobs) // job is ScriptJobData
                     {
                         // Extract data directly from the ScriptJobData struct
                         bool isChecked = job.IsChecked; // Get the checked state
@@ -6734,7 +6952,7 @@ namespace FLAC_Benchmark_H
                         string jobParameters = job.Parameters; // Get the script parameters (the script itself)
 
                         // Add a new row to dataGridViewJobs with the extracted data
-                        dataGridViewJobs.Rows.Add(isChecked, jobType, passes, jobParameters);
+                        _ = dataGridViewJobs.Rows.Add(isChecked, jobType, passes, jobParameters);
                     }
                     // Optionally clear selection after adding new jobs to maintain a clean UI state
                     dataGridViewJobs.ClearSelection();
@@ -6748,7 +6966,7 @@ namespace FLAC_Benchmark_H
             {
                 _scriptForm.InitialScriptText = parameters;
                 _scriptForm.BringToFront();
-                _scriptForm.Focus();
+                _ = _scriptForm.Focus();
             }
         }
 
@@ -6756,15 +6974,19 @@ namespace FLAC_Benchmark_H
         private async void ButtonStartEncode_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
-            Directory.CreateDirectory(tempFolderPath);
+            _ = Directory.CreateDirectory(tempFolderPath);
 
-            if (isExecuting) return; // Check if process is already running
+            if (isExecuting)
+            {
+                return; // Check if process is already running
+            }
+
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
             _isPaused = false;
-            _pauseEvent.Set();
+            _ = _pauseEvent.Set();
 
-            Invoke((MethodInvoker)(() =>
+            _ = Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -6777,26 +6999,24 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Get selected encoders
-                var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
+                List<string> selectedEncoders = [.. listViewEncoders.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                    .ToList();
+                    .Select(item => item.Tag!.ToString()!)];
 
                 // Get all selected .wav and .flac audio files using cache
-                var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
+                List<string> selectedAudioFiles = [.. listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
                     .Select(item => item.Tag!.ToString()!)
                     .Where(filePath =>
                     {
                         string extension = audioFileInfoCache[filePath].Extension;
-                        return extension == ".wav" || extension == ".flac";
-                    })
-                    .ToList();
+                        return extension is ".wav" or ".flac";
+                    })];
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -6804,7 +7024,7 @@ namespace FLAC_Benchmark_H
                 // 2. Check if there is at least one audio file
                 if (selectedAudioFiles.Count == 0)
                 {
-                    MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -6812,8 +7032,8 @@ namespace FLAC_Benchmark_H
                 // === WARM-UP PASS (before main loop) ===
                 if (checkBoxWarmupPass.Checked)
                 {
-                    var firstAudioFile = selectedAudioFiles.FirstOrDefault();
-                    var firstEncoder = selectedEncoders.FirstOrDefault();
+                    string? firstAudioFile = selectedAudioFiles.FirstOrDefault();
+                    string? firstEncoder = selectedEncoders.FirstOrDefault();
 
                     if (!string.IsNullOrEmpty(firstAudioFile) && !string.IsNullOrEmpty(firstEncoder))
                     {
@@ -6831,15 +7051,12 @@ namespace FLAC_Benchmark_H
                         string warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.flac");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
-                        Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarEncoder.ManualText = "Warming up...";
-                        }));
+                        _ = Invoke((MethodInvoker)(() => progressBarEncoder.ManualText = "Warming up..."));
 
                         // Run warm-up asynchronously
                         await Task.Run(() =>
                         {
-                            var warmupStopwatch = Stopwatch.StartNew();
+                            Stopwatch warmupStopwatch = Stopwatch.StartNew();
                             int iteration = 0;
 
                             try
@@ -6849,7 +7066,7 @@ namespace FLAC_Benchmark_H
                                     iteration++;
                                     DeleteFileIfExists(warmupOutputFilePath);
 
-                                    using var warmupProcess = new Process();
+                                    using Process warmupProcess = new();
                                     warmupProcess.StartInfo = new ProcessStartInfo
                                     {
                                         FileName = firstEncoder,
@@ -6858,7 +7075,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    warmupProcess.Start();
+                                    _ = warmupProcess.Start();
 
                                     try
                                     {
@@ -6913,10 +7130,7 @@ namespace FLAC_Benchmark_H
                                     }
                                 });
 
-                                Invoke((MethodInvoker)(() =>
-                                {
-                                    progressBarEncoder.ManualText = "";
-                                }));
+                                _ = Invoke((MethodInvoker)(() => progressBarEncoder.ManualText = ""));
 
                                 Debug.WriteLine($"Warm-up completed in {warmupStopwatch.Elapsed.TotalSeconds:F2}s after {iteration} iterations.");
                             }
@@ -6929,9 +7143,9 @@ namespace FLAC_Benchmark_H
                 progressBarEncoder.Maximum = selectedEncoders.Count * selectedAudioFiles.Count;
                 progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
 
-                foreach (var audioFilePath in selectedAudioFiles)
+                foreach (string audioFilePath in selectedAudioFiles)
                 {
-                    foreach (var encoderPath in selectedEncoders)
+                    foreach (string encoderPath in selectedEncoders)
                     {
                         if (_isEncodingStopped)
                         {
@@ -6958,7 +7172,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = [];
-                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                        System.Timers.Timer clockTimer = new(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -6995,7 +7209,7 @@ namespace FLAC_Benchmark_H
                             {
                                 if (_isPaused)
                                 {
-                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                    _ = _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                 }
 
                                 using (_process = new Process())
@@ -7010,13 +7224,13 @@ namespace FLAC_Benchmark_H
                                         StandardErrorEncoding = Encoding.UTF8,
                                     };
 
-                                    var stopwatch = Stopwatch.StartNew();
+                                    Stopwatch stopwatch = Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
                                         try
                                         {
-                                            _process.Start();
+                                            _ = _process.Start();
 
                                             // Set process priority
                                             try
@@ -7059,7 +7273,7 @@ namespace FLAC_Benchmark_H
                             if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                             {
                                 double avgPercent = _cpuClockReadings.Average();
-                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                avgClock = avgPercent / 100.0 * _baseClockMhz;
                             }
                             if (!_isEncodingStopped)
                             {
@@ -7069,7 +7283,7 @@ namespace FLAC_Benchmark_H
                                     // Run metaflac.exe --remove-all if checkbox is checked
                                     try
                                     {
-                                        using var metaflacProcess = new Process();
+                                        using Process metaflacProcess = new();
                                         metaflacProcess.StartInfo = new ProcessStartInfo
                                         {
                                             FileName = "metaflac.exe",
@@ -7080,13 +7294,13 @@ namespace FLAC_Benchmark_H
 
                                         await Task.Run(() =>
                                         {
-                                            metaflacProcess.Start();
+                                            _ = metaflacProcess.Start();
                                             metaflacProcess.WaitForExit();
                                         });
                                     }
                                     catch (Exception ex)
                                     {
-                                        MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        _ = MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                     }
                                 }
                             }
@@ -7141,7 +7355,7 @@ namespace FLAC_Benchmark_H
                         }
                         finally
                         {
-                            progressBarEncoder.Invoke((MethodInvoker)(() =>
+                            _ = progressBarEncoder.Invoke((MethodInvoker)(() =>
                             {
                                 progressBarEncoder.Value++;
                                 progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
@@ -7159,9 +7373,9 @@ namespace FLAC_Benchmark_H
             {
                 isExecuting = false;
                 _isPaused = false;
-                _pauseEvent.Set();
+                _ = _pauseEvent.Set();
 
-                Invoke((MethodInvoker)(() =>
+                _ = Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -7175,15 +7389,19 @@ namespace FLAC_Benchmark_H
         private async void ButtonStartDecode_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
-            Directory.CreateDirectory(tempFolderPath);
+            _ = Directory.CreateDirectory(tempFolderPath);
 
-            if (isExecuting) return; // Check if process is already running
+            if (isExecuting)
+            {
+                return; // Check if process is already running
+            }
+
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
             _isPaused = false;
-            _pauseEvent.Set();
+            _ = _pauseEvent.Set();
 
-            Invoke((MethodInvoker)(() =>
+            _ = Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -7196,22 +7414,20 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Get selected encoders
-                var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
+                List<string> selectedEncoders = [.. listViewEncoders.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                    .ToList();
+                    .Select(item => item.Tag!.ToString()!)];
 
                 // Get all selected .flac audio files using cache
-                var selectedFlacAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
+                List<string> selectedFlacAudioFiles = [.. listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
                     .Select(item => item.Tag!.ToString()!)
-                    .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
-                    .ToList();
+                    .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")];
 
                 // 1. Check if there is at least one encoder
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -7219,7 +7435,7 @@ namespace FLAC_Benchmark_H
                 // 2. Check if there is at least one .flac audio file
                 if (selectedFlacAudioFiles.Count == 0)
                 {
-                    MessageBox.Show("Select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one FLAC audio file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -7227,8 +7443,8 @@ namespace FLAC_Benchmark_H
                 // === WARM-UP PASS (before main loop) ===
                 if (checkBoxWarmupPass.Checked)
                 {
-                    var firstAudioFile = selectedFlacAudioFiles.FirstOrDefault();
-                    var firstEncoder = selectedEncoders.FirstOrDefault();
+                    string? firstAudioFile = selectedFlacAudioFiles.FirstOrDefault();
+                    string? firstEncoder = selectedEncoders.FirstOrDefault();
 
                     if (firstAudioFile is not null && firstEncoder is not null)
                     {
@@ -7240,15 +7456,12 @@ namespace FLAC_Benchmark_H
                         string warmupOutputFilePath = Path.Combine(tempFolderPath, $"temp_warmup_{Guid.NewGuid()}.wav");
                         string arguments = $"\"{firstAudioFile}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
-                        Invoke((MethodInvoker)(() =>
-                        {
-                            progressBarDecoder.ManualText = "Warming up...";
-                        }));
+                        _ = Invoke((MethodInvoker)(() => progressBarDecoder.ManualText = "Warming up..."));
 
                         // Run warm-up asynchronously
                         await Task.Run(() =>
                         {
-                            var warmupStopwatch = Stopwatch.StartNew();
+                            Stopwatch warmupStopwatch = Stopwatch.StartNew();
                             int iteration = 0;
 
                             try
@@ -7258,7 +7471,7 @@ namespace FLAC_Benchmark_H
                                     iteration++;
                                     DeleteFileIfExists(warmupOutputFilePath);
 
-                                    using var warmupProcess = new Process();
+                                    using Process warmupProcess = new();
                                     warmupProcess.StartInfo = new ProcessStartInfo
                                     {
                                         FileName = firstEncoder,
@@ -7267,7 +7480,7 @@ namespace FLAC_Benchmark_H
                                         CreateNoWindow = true,
                                     };
 
-                                    warmupProcess.Start();
+                                    _ = warmupProcess.Start();
 
                                     try
                                     {
@@ -7322,10 +7535,7 @@ namespace FLAC_Benchmark_H
                                     }
                                 });
 
-                                Invoke((MethodInvoker)(() =>
-                                {
-                                    progressBarDecoder.ManualText = "";
-                                }));
+                                _ = Invoke((MethodInvoker)(() => progressBarDecoder.ManualText = ""));
 
                                 Debug.WriteLine($"Warm-up completed in {warmupStopwatch.Elapsed.TotalSeconds:F2}s after {iteration} iterations.");
                             }
@@ -7338,9 +7548,9 @@ namespace FLAC_Benchmark_H
                 progressBarDecoder.Maximum = selectedEncoders.Count * selectedFlacAudioFiles.Count;
                 progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
 
-                foreach (var audioFilePath in selectedFlacAudioFiles)
+                foreach (string audioFilePath in selectedFlacAudioFiles)
                 {
-                    foreach (var encoderPath in selectedEncoders)
+                    foreach (string encoderPath in selectedEncoders)
                     {
                         if (_isEncodingStopped)
                         {
@@ -7359,7 +7569,7 @@ namespace FLAC_Benchmark_H
 
                         // Prepare for CPU clock monitoring
                         _cpuClockReadings = [];
-                        var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                        System.Timers.Timer clockTimer = new(20); // Read every 20ms
                         bool isFirstValue = true;
                         clockTimer.Elapsed += (s, e) =>
                         {
@@ -7396,7 +7606,7 @@ namespace FLAC_Benchmark_H
                             {
                                 if (_isPaused)
                                 {
-                                    _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                    _ = _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                 }
 
                                 using (_process = new Process())
@@ -7411,13 +7621,13 @@ namespace FLAC_Benchmark_H
                                         StandardErrorEncoding = Encoding.UTF8,
                                     };
 
-                                    var stopwatch = Stopwatch.StartNew();
+                                    Stopwatch stopwatch = Stopwatch.StartNew();
 
                                     if (!_isEncodingStopped)
                                     {
                                         try
                                         {
-                                            _process.Start();
+                                            _ = _process.Start();
 
                                             // Set process priority
                                             try
@@ -7460,7 +7670,7 @@ namespace FLAC_Benchmark_H
                             if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                             {
                                 double avgPercent = _cpuClockReadings.Average();
-                                avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                avgClock = avgPercent / 100.0 * _baseClockMhz;
                             }
 
                             if (!_isEncodingStopped)
@@ -7513,7 +7723,7 @@ namespace FLAC_Benchmark_H
                         }
                         finally
                         {
-                            progressBarDecoder.Invoke((MethodInvoker)(() =>
+                            _ = progressBarDecoder.Invoke((MethodInvoker)(() =>
                             {
                                 progressBarDecoder.Value++;
                                 progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
@@ -7531,9 +7741,9 @@ namespace FLAC_Benchmark_H
             {
                 isExecuting = false;
                 _isPaused = false;
-                _pauseEvent.Set();
+                _ = _pauseEvent.Set();
 
-                Invoke((MethodInvoker)(() =>
+                _ = Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -7547,15 +7757,19 @@ namespace FLAC_Benchmark_H
         private async void ButtonStartJobList_Click(object? sender, EventArgs e)
         {
             // Create a temporary directory for the output file
-            Directory.CreateDirectory(tempFolderPath);
+            _ = Directory.CreateDirectory(tempFolderPath);
 
-            if (isExecuting) return; // Check if process is already running
+            if (isExecuting)
+            {
+                return; // Check if process is already running
+            }
+
             isExecuting = true; // Set execution flag
             _isEncodingStopped = false;
             _isPaused = false;
-            _pauseEvent.Set();
+            _ = _pauseEvent.Set();
 
-            Invoke((MethodInvoker)(() =>
+            _ = Invoke((MethodInvoker)(() =>
             {
                 buttonPauseResume.Text = "Pause";
                 buttonPauseResume.Enabled = true;
@@ -7568,35 +7782,34 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Get selected encoders
-                var selectedEncoders = listViewEncoders.Items.Cast<ListViewItem>()
+                List<string> selectedEncoders = [.. listViewEncoders.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
-                    .Select(item => item.Tag!.ToString()!) // Get full path from Tag
-                    .ToList();
+                    .Select(item => item.Tag!.ToString()!)];
 
                 // Get all selected .wav and .flac audio files using cache
-                var selectedAudioFiles = listViewAudioFiles.Items.Cast<ListViewItem>()
+                List<string> selectedAudioFiles = [.. listViewAudioFiles.Items.Cast<ListViewItem>()
                     .Where(item => item.Checked)
                     .Select(item => item.Tag!.ToString()!)
                     .Where(filePath =>
                     {
                         string extension = audioFileInfoCache[filePath].Extension;
-                        return extension == ".wav" || extension == ".flac";
-                    })
-                    .ToList();
+                        return extension is ".wav" or ".flac";
+                    })];
 
                 // Get all selected .flac audio files using cache
-                var selectedFlacAudioFiles = selectedAudioFiles
-                    .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
-                    .ToList();
+                List<string> selectedFlacAudioFiles = [.. selectedAudioFiles.Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")];
 
                 // Create expanded Job List (Virtual Job List)
-                var dataGridViewJobsExpanded = new List<DataGridViewRow>();
+                List<DataGridViewRow> dataGridViewJobsExpanded = [];
 
                 foreach (DataGridViewRow row in dataGridViewJobs.Rows)
                 {
-                    if (row.IsNewRow) continue;
+                    if (row.IsNewRow)
+                    {
+                        continue;
+                    }
 
-                    var checkBoxCell = row.Cells[0] as DataGridViewCheckBoxCell;
+                    DataGridViewCheckBoxCell? checkBoxCell = row.Cells[0] as DataGridViewCheckBoxCell;
                     if (checkBoxCell?.Value is bool isChecked && isChecked)
                     {
                         string jobType = row.Cells[1].Value?.ToString() ?? "";
@@ -7607,7 +7820,7 @@ namespace FLAC_Benchmark_H
                         if (parameters.Contains('[') && parameters.Contains(']'))
                         {
                             // Expand script using ScriptParser
-                            var expandedParameters = ScriptParser.ExpandScriptLine(parameters);
+                            List<string> expandedParameters = ScriptParser.ExpandScriptLine(parameters);
 
                             foreach (string expandedParam in expandedParameters)
                             {
@@ -7641,7 +7854,7 @@ namespace FLAC_Benchmark_H
                 // 1. Check if there is at least one job
                 if (totalEncodeTasks == 0 && totalDecodeTasks == 0)
                 {
-                    MessageBox.Show("Select at least one job.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one job.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -7649,7 +7862,7 @@ namespace FLAC_Benchmark_H
                 // 2. Check if there is at least one Encoder
                 if (selectedEncoders.Count == 0)
                 {
-                    MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("Select at least one Encoder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     isExecuting = false;
                     return;
                 }
@@ -7660,7 +7873,7 @@ namespace FLAC_Benchmark_H
                     // For encoding: any WAV/FLAC files
                     if (selectedAudioFiles.Count == 0)
                     {
-                        MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        _ = MessageBox.Show("Select at least one Audio File (WAV or FLAC).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         isExecuting = false;
                         return;
                     }
@@ -7670,7 +7883,7 @@ namespace FLAC_Benchmark_H
                     // For decoding: only FLAC files
                     if (selectedFlacAudioFiles.Count == 0)
                     {
-                        MessageBox.Show("Select at least one FLAC file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        _ = MessageBox.Show("Select at least one FLAC file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         isExecuting = false;
                         return;
                     }
@@ -7685,7 +7898,7 @@ namespace FLAC_Benchmark_H
                     string? audioFilePath = null;
                     string? warmupOutputFilePath = null;
 
-                    foreach (var jobRow in dataGridViewJobsExpanded)
+                    foreach (DataGridViewRow jobRow in dataGridViewJobsExpanded)
                     {
                         string type = NormalizeSpaces(jobRow.Cells[1].Value?.ToString() ?? "");
                         if (string.Equals(type, "Encode", StringComparison.OrdinalIgnoreCase) && selectedAudioFiles.Count > 0)
@@ -7709,15 +7922,20 @@ namespace FLAC_Benchmark_H
                     }
 
                     if (firstExecutableJobRow == null || audioFilePath == null || warmupOutputFilePath == null)
+                    {
                         return;
+                    }
 
                     string parameters = NormalizeSpaces((firstExecutableJobRow.Cells[3].Value?.ToString() ?? "").Trim());
-                    var firstEncoder = selectedEncoders.FirstOrDefault();
-                    if (string.IsNullOrEmpty(firstEncoder)) return;
+                    string? firstEncoder = selectedEncoders.FirstOrDefault();
+                    if (string.IsNullOrEmpty(firstEncoder))
+                    {
+                        return;
+                    }
 
                     string arguments = $"\"{audioFilePath}\" {parameters} --no-preserve-modtime -f -o \"{warmupOutputFilePath}\"";
 
-                    Invoke((MethodInvoker)(() =>
+                    _ = Invoke((MethodInvoker)(() =>
                     {
                         progressBarEncoder.ManualText = "Warming up...";
                         progressBarDecoder.ManualText = "Warming up...";
@@ -7725,7 +7943,7 @@ namespace FLAC_Benchmark_H
 
                     await Task.Run(() =>
                     {
-                        var warmupStopwatch = Stopwatch.StartNew();
+                        Stopwatch warmupStopwatch = Stopwatch.StartNew();
                         int iteration = 0;
 
                         try
@@ -7735,7 +7953,7 @@ namespace FLAC_Benchmark_H
                                 iteration++;
                                 DeleteFileIfExists(warmupOutputFilePath);
 
-                                using var warmupProcess = new Process();
+                                using Process warmupProcess = new();
                                 warmupProcess.StartInfo = new ProcessStartInfo
                                 {
                                     FileName = firstEncoder,
@@ -7744,7 +7962,7 @@ namespace FLAC_Benchmark_H
                                     CreateNoWindow = true,
                                 };
 
-                                warmupProcess.Start();
+                                _ = warmupProcess.Start();
 
                                 try
                                 {
@@ -7799,7 +8017,7 @@ namespace FLAC_Benchmark_H
                                 }
                             });
 
-                            Invoke((MethodInvoker)(() =>
+                            _ = Invoke((MethodInvoker)(() =>
                             {
                                 progressBarEncoder.ManualText = "";
                                 progressBarDecoder.ManualText = "";
@@ -7832,9 +8050,9 @@ namespace FLAC_Benchmark_H
 
                         if (string.Equals(jobType, "Encode", StringComparison.OrdinalIgnoreCase))
                         {
-                            foreach (var audioFilePath in selectedAudioFiles)
+                            foreach (string audioFilePath in selectedAudioFiles)
                             {
-                                foreach (var encoderPath in selectedEncoders)
+                                foreach (string encoderPath in selectedEncoders)
                                 {
                                     if (_isEncodingStopped)
                                     {
@@ -7852,7 +8070,7 @@ namespace FLAC_Benchmark_H
 
                                     // Prepare for CPU clock monitoring
                                     _cpuClockReadings = [];
-                                    var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                                    System.Timers.Timer clockTimer = new(20); // Read every 20ms
                                     bool isFirstValue = true;
                                     clockTimer.Elapsed += (s, e) =>
                                     {
@@ -7889,7 +8107,7 @@ namespace FLAC_Benchmark_H
                                         {
                                             if (_isPaused)
                                             {
-                                                _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                                _ = _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                             }
 
                                             using (_process = new Process())
@@ -7904,13 +8122,13 @@ namespace FLAC_Benchmark_H
                                                     StandardErrorEncoding = Encoding.UTF8,
                                                 };
 
-                                                var stopwatch = Stopwatch.StartNew();
+                                                Stopwatch stopwatch = Stopwatch.StartNew();
 
                                                 if (!_isEncodingStopped)
                                                 {
                                                     try
                                                     {
-                                                        _process.Start();
+                                                        _ = _process.Start();
 
                                                         // Set process priority
                                                         try
@@ -7953,7 +8171,7 @@ namespace FLAC_Benchmark_H
                                         if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                                         {
                                             double avgPercent = _cpuClockReadings.Average();
-                                            avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                            avgClock = avgPercent / 100.0 * _baseClockMhz;
                                         }
                                         if (!_isEncodingStopped)
                                         {
@@ -7963,7 +8181,7 @@ namespace FLAC_Benchmark_H
                                                 // Run metaflac.exe --remove-all if checkbox is checked
                                                 try
                                                 {
-                                                    using var metaflacProcess = new Process();
+                                                    using Process metaflacProcess = new();
                                                     metaflacProcess.StartInfo = new ProcessStartInfo
                                                     {
                                                         FileName = "metaflac.exe",
@@ -7974,13 +8192,13 @@ namespace FLAC_Benchmark_H
 
                                                     await Task.Run(() =>
                                                     {
-                                                        metaflacProcess.Start();
+                                                        _ = metaflacProcess.Start();
                                                         metaflacProcess.WaitForExit();
                                                     });
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                                    _ = MessageBox.Show($"Error removing metadata: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                                 }
                                             }
                                         }
@@ -8035,7 +8253,7 @@ namespace FLAC_Benchmark_H
                                     }
                                     finally
                                     {
-                                        progressBarEncoder.Invoke((MethodInvoker)(() =>
+                                        _ = progressBarEncoder.Invoke((MethodInvoker)(() =>
                                         {
                                             progressBarEncoder.Value++;
                                             progressBarEncoder.ManualText = $"{progressBarEncoder.Value}/{progressBarEncoder.Maximum}";
@@ -8046,9 +8264,9 @@ namespace FLAC_Benchmark_H
                         }
                         else if (string.Equals(jobType, "Decode", StringComparison.OrdinalIgnoreCase))
                         {
-                            foreach (var audioFilePath in selectedFlacAudioFiles)
+                            foreach (string audioFilePath in selectedFlacAudioFiles)
                             {
-                                foreach (var encoderPath in selectedEncoders)
+                                foreach (string encoderPath in selectedEncoders)
                                 {
                                     if (_isEncodingStopped)
                                     {
@@ -8066,7 +8284,7 @@ namespace FLAC_Benchmark_H
 
                                     // Prepare for CPU clock monitoring
                                     _cpuClockReadings = [];
-                                    var clockTimer = new System.Timers.Timer(20); // Read every 20ms
+                                    System.Timers.Timer clockTimer = new(20); // Read every 20ms
                                     bool isFirstValue = true;
                                     clockTimer.Elapsed += (s, e) =>
                                     {
@@ -8103,7 +8321,7 @@ namespace FLAC_Benchmark_H
                                         {
                                             if (_isPaused)
                                             {
-                                                _pauseEvent.WaitOne(); // Wait for pause in the background thread
+                                                _ = _pauseEvent.WaitOne(); // Wait for pause in the background thread
                                             }
 
                                             using (_process = new Process())
@@ -8118,13 +8336,13 @@ namespace FLAC_Benchmark_H
                                                     StandardErrorEncoding = Encoding.UTF8,
                                                 };
 
-                                                var stopwatch = Stopwatch.StartNew();
+                                                Stopwatch stopwatch = Stopwatch.StartNew();
 
                                                 if (!_isEncodingStopped)
                                                 {
                                                     try
                                                     {
-                                                        _process.Start();
+                                                        _ = _process.Start();
 
                                                         // Set process priority
                                                         try
@@ -8167,7 +8385,7 @@ namespace FLAC_Benchmark_H
                                         if (_cpuClockReadings.Count > 0 && _baseClockMhz > 0)
                                         {
                                             double avgPercent = _cpuClockReadings.Average();
-                                            avgClock = (avgPercent / 100.0) * _baseClockMhz;
+                                            avgClock = avgPercent / 100.0 * _baseClockMhz;
                                         }
 
                                         if (!_isEncodingStopped)
@@ -8220,7 +8438,7 @@ namespace FLAC_Benchmark_H
                                     }
                                     finally
                                     {
-                                        progressBarDecoder.Invoke((MethodInvoker)(() =>
+                                        _ = progressBarDecoder.Invoke((MethodInvoker)(() =>
                                         {
                                             progressBarDecoder.Value++;
                                             progressBarDecoder.ManualText = $"{progressBarDecoder.Value}/{progressBarDecoder.Maximum}";
@@ -8241,9 +8459,9 @@ namespace FLAC_Benchmark_H
             {
                 isExecuting = false;
                 _isPaused = false;
-                _pauseEvent.Set();
+                _ = _pauseEvent.Set();
 
-                Invoke((MethodInvoker)(() =>
+                _ = Invoke((MethodInvoker)(() =>
                 {
                     buttonPauseResume.Text = "Pause";
                     buttonPauseResume.Enabled = false;
@@ -8259,7 +8477,7 @@ namespace FLAC_Benchmark_H
         {
             string? originalButtonText = (sender as Button)?.Text;
 
-            var cts = new CancellationTokenSource();
+            CancellationTokenSource cts = new();
 
             // Declare variables for summary message
             Dictionary<string, List<string>> hashDict = null!;
@@ -8270,7 +8488,7 @@ namespace FLAC_Benchmark_H
                 // --- STAGE 0: PREPARE USER INTERFACE ---
                 if (sender is Button btn)
                 {
-                    btn.Invoke((MethodInvoker)(() =>
+                    _ = btn.Invoke((MethodInvoker)(() =>
                     {
                         btn.Text = "In progress...";
                         btn.Enabled = false;
@@ -8282,8 +8500,8 @@ namespace FLAC_Benchmark_H
                 }
 
                 // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
-                var itemsToRemove = new List<ListViewItem>();
-                Invoke((MethodInvoker)delegate
+                List<ListViewItem> itemsToRemove = [];
+                _ = Invoke((MethodInvoker)delegate
                 {
                     foreach (ListViewItem item in listViewAudioFiles.Items)
                     {
@@ -8294,7 +8512,7 @@ namespace FLAC_Benchmark_H
                         }
                     }
 
-                    foreach (var item in itemsToRemove)
+                    foreach (ListViewItem item in itemsToRemove)
                     {
                         listViewAudioFiles.Items.Remove(item);
                     }
@@ -8302,7 +8520,7 @@ namespace FLAC_Benchmark_H
                     UpdateGroupBoxAudioFilesHeader();
                     if (itemsToRemove.Count > 0)
                     {
-                        var count = itemsToRemove.Count;
+                        int count = itemsToRemove.Count;
 
                         ShowTemporaryAudioFileRemovedMessage(
                             $"{count} {(count == 1 ? "file was" : "files were")} not found on disk and {(count == 1 ? "has" : "have")} been removed from the list."
@@ -8312,13 +8530,13 @@ namespace FLAC_Benchmark_H
 
                 if (listViewAudioFiles.Items.Count == 0)
                 {
-                    MessageBox.Show("No audio files to process.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _ = MessageBox.Show("No audio files to process.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 // --- STAGE 0.2: COLLECT FILE PATHS (on UI thread) ---
-                var filePaths = new List<string>();
-                Invoke((MethodInvoker)delegate
+                List<string> filePaths = [];
+                _ = Invoke((MethodInvoker)delegate
                 {
                     filePaths.AddRange(listViewAudioFiles.Items.Cast<ListViewItem>().Select(item => item.Tag!.ToString()!));
                 });
@@ -8328,14 +8546,16 @@ namespace FLAC_Benchmark_H
                 {
                     hashDict = []; // Group files by MD5 hash.
                     filesWithMD5Errors = []; // Track paths of files with MD5 errors.
-                    var itemsToCheck = new List<string>();   // Paths of files to mark as checked (primary).
-                    var itemsToUncheck = new List<string>(); // Paths of files to mark as unchecked (non-primary duplicates).
+                    List<string> itemsToCheck = [];   // Paths of files to mark as checked (primary).
+                    List<string> itemsToUncheck = []; // Paths of files to mark as unchecked (non-primary duplicates).
 
                     // --- STAGE 1.1: CALCULATE OR RETRIEVE MD5 HASHES ---
                     foreach (string filePath in filePaths)
                     {
                         if (cts.Token.IsCancellationRequested)
+                        {
                             return;
+                        }
 
                         string md5Hash = audioFileInfoCache[filePath].Md5Hash;
 
@@ -8345,18 +8565,9 @@ namespace FLAC_Benchmark_H
                         md5Hash == "N/A")
                         {
                             string fileExtension = audioFileInfoCache[filePath].Extension;
-                            if (fileExtension == ".wav")
-                            {
-                                md5Hash = await CalculateWavMD5Async(filePath);
-                            }
-                            else if (fileExtension == ".flac")
-                            {
-                                md5Hash = await CalculateFlacMD5Async(filePath);
-                            }
-                            else
-                            {
-                                md5Hash = "MD5 calculation failed";
-                            }
+                            md5Hash = fileExtension == ".wav"
+                                ? await CalculateWavMD5Async(filePath)
+                                : fileExtension == ".flac" ? await CalculateFlacMD5Async(filePath) : "MD5 calculation failed";
 
                             // Update the cache with the new MD5 hash
                             audioFileInfoCache[filePath].Md5Hash = md5Hash;
@@ -8365,9 +8576,13 @@ namespace FLAC_Benchmark_H
 
                         if (!string.IsNullOrEmpty(md5Hash) && md5Hash != "MD5 calculation failed")
                         {
-                            if (!hashDict.ContainsKey(md5Hash))
-                                hashDict[md5Hash] = [];
-                            hashDict[md5Hash].Add(filePath);
+                            if (!hashDict.TryGetValue(md5Hash, out List<string>? value))
+                            {
+                                value = [];
+                                hashDict[md5Hash] = value;
+                            }
+
+                            value.Add(filePath);
                         }
                         else
                         {
@@ -8376,15 +8591,17 @@ namespace FLAC_Benchmark_H
                     }
 
                     if (cts.Token.IsCancellationRequested)
+                    {
                         return;
+                    }
 
                     // --- STAGE 1.2: DETERMINE PRIMARY DUPLICATE IN EACH GROUP ---
-                    foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
+                    foreach (KeyValuePair<string, List<string>> kvp in hashDict.Where(g => g.Value.Count > 1))
                     {
                         var sortedPaths = kvp.Value
                     .Select(path =>
                     {
-                        var info = audioFileInfoCache[path];
+                        AudioFileInfo info = audioFileInfoCache[path];
                         return new { Path = path, Info = info };
                     })
                         .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)  // FLAC > WAV
@@ -8401,7 +8618,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // --- STAGE 2: UPDATE USER INTERFACE (on UI thread) ---
-                    Invoke((MethodInvoker)delegate
+                    _ = Invoke((MethodInvoker)delegate
                     {
                         // --- STAGE 2.1: CLEAR PREVIOUS RESULTS FROM LOG ---
                         for (int i = dataGridViewLogDetectDupes.Rows.Count - 1; i >= 0; i--)
@@ -8424,7 +8641,7 @@ namespace FLAC_Benchmark_H
                         foreach (ListViewItem item in listViewAudioFiles.Items)
                         {
                             string path = item.Tag!.ToString()!;
-                            var info = audioFileInfoCache[path];
+                            AudioFileInfo info = audioFileInfoCache[path];
                             if (item.SubItems.Count > 6 && item.SubItems[6].Text != info.Md5Hash)
                             {
                                 item.SubItems[6].Text = info.Md5Hash;
@@ -8434,7 +8651,7 @@ namespace FLAC_Benchmark_H
                         // --- STAGE 2.4: LOG MD5 CALCULATION ERROR RESULTS ---
                         foreach (string filePath in filesWithMD5Errors)
                         {
-                            var info = audioFileInfoCache[filePath];
+                            AudioFileInfo info = audioFileInfoCache[filePath];
 
                             int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                             info.FileName, // 0 Name
@@ -8470,7 +8687,7 @@ namespace FLAC_Benchmark_H
 
 
                         // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
-                        foreach (var kvp in hashDict.Where(g => g.Value.Count > 1))
+                        foreach (KeyValuePair<string, List<string>> kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
                             string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
                         audioFileInfoCache[path].FileName
@@ -8478,7 +8695,7 @@ namespace FLAC_Benchmark_H
 
                             foreach (string path in kvp.Value)
                             {
-                                var info = audioFileInfoCache[path];
+                                AudioFileInfo info = audioFileInfoCache[path];
 
                                 int rowIndex = dataGridViewLogDetectDupes.Rows.Add(
                                 info.FileName, // 0 Name
@@ -8520,7 +8737,7 @@ namespace FLAC_Benchmark_H
                         }
 
                         // --- STAGE 2.7: REORDER DUPLICATE GROUPS IN LISTVIEW ---
-                        var allItems = listViewAudioFiles.Items.Cast<ListViewItem>().ToList();
+                        List<ListViewItem> allItems = [.. listViewAudioFiles.Items.Cast<ListViewItem>()];
                         var duplicateGroups = hashDict
                         .Where(kvp => kvp.Value.Count > 1)
                         .Select(kvp => new
@@ -8540,22 +8757,29 @@ namespace FLAC_Benchmark_H
                             // Add duplicate groups first (with primary item first in group)
                             foreach (var group in duplicateGroups)
                             {
-                                var groupItems = allItems.Where(item => item.Tag is string tag && group.Group.Contains(tag)).ToList();
-                                var primaryItem = groupItems.FirstOrDefault(item => item.Tag!.ToString() == group.Primary);
-                                var otherItems = groupItems.Where(item => item != primaryItem).ToList();
+                                List<ListViewItem> groupItems = [.. allItems.Where(item => item.Tag is string tag && group.Group.Contains(tag))];
+                                ListViewItem? primaryItem = groupItems.FirstOrDefault(item => item.Tag!.ToString() == group.Primary);
+                                List<ListViewItem> otherItems = [.. groupItems.Where(item => item != primaryItem)];
 
                                 if (primaryItem != null)
-                                    listViewAudioFiles.Items.Add(primaryItem);
-                                foreach (var item in otherItems)
-                                    listViewAudioFiles.Items.Add(item);
+                                {
+                                    _ = listViewAudioFiles.Items.Add(primaryItem);
+                                }
+
+                                foreach (ListViewItem? item in otherItems)
+                                {
+                                    _ = listViewAudioFiles.Items.Add(item);
+                                }
                             }
 
                             // Add non-duplicate items - only those NOT in any duplicate group
-                            var duplicatePaths = duplicateGroups.SelectMany(g => g.Group).ToHashSet();
-                            var nonDuplicateItems = allItems.Where(item => item.Tag is string tag && !duplicatePaths.Contains(tag));
+                            HashSet<string> duplicatePaths = [.. duplicateGroups.SelectMany(g => g.Group)];
+                            IEnumerable<ListViewItem> nonDuplicateItems = allItems.Where(item => item.Tag is string tag && !duplicatePaths.Contains(tag));
 
-                            foreach (var item in nonDuplicateItems)
-                                listViewAudioFiles.Items.Add(item);
+                            foreach (ListViewItem? item in nonDuplicateItems)
+                            {
+                                _ = listViewAudioFiles.Items.Add(item);
+                            }
                         }
                         finally
                         {
@@ -8570,16 +8794,19 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 if (sender is Button btnFinal && !btnFinal.IsDisposed)
                 {
-                    btnFinal.Invoke((MethodInvoker)(() =>
+                    _ = btnFinal.Invoke((MethodInvoker)(() =>
                     {
                         if (originalButtonText != null)
+                        {
                             btnFinal.Text = originalButtonText;
+                        }
+
                         btnFinal.Enabled = true;
                     }));
                 }
@@ -8591,7 +8818,7 @@ namespace FLAC_Benchmark_H
                 // Show summary message to user
                 if (!cts.IsCancellationRequested && hashDict != null && filesWithMD5Errors != null)
                 {
-                    Invoke((MethodInvoker)(() =>
+                    _ = Invoke((MethodInvoker)(() =>
                     {
                         int totalFiles = listViewAudioFiles.Items.Count;
                         int duplicateGroups = hashDict.Count(g => g.Value.Count > 1);
@@ -8606,7 +8833,7 @@ namespace FLAC_Benchmark_H
                         $"Primary files are CHECKED.\n" +
                         $"Duplicate files are UNCHECKED.";
 
-                        MessageBox.Show(message, "Duplicate Detection Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        _ = MessageBox.Show(message, "Duplicate Detection Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }));
                 }
 
@@ -8617,7 +8844,7 @@ namespace FLAC_Benchmark_H
         {
             string? originalButtonText = (sender as Button)?.Text;
 
-            var cts = new CancellationTokenSource();
+            CancellationTokenSource cts = new();
 
             try
             {
@@ -8633,27 +8860,30 @@ namespace FLAC_Benchmark_H
                 }
 
                 // --- STAGE 1: COLLECT DATA FROM UI ---
-                var (flacFilePaths, encoderPath, useWarningsAsErrors) = await Task.Run(() =>
+                (List<string>? flacFilePaths, string? encoderPath, bool useWarningsAsErrors) = await Task.Run(() =>
                 {
                     List<string> flacFilePaths = [];
                     string? encoderPath = null;
                     bool useWarningsAsErrors = false;
 
-                    Invoke((MethodInvoker)delegate
+                    _ = Invoke((MethodInvoker)delegate
                     {
                         // Clear previous results
                         for (int i = dataGridViewLogTestForErrors.Rows.Count - 1; i >= 0; i--)
                         {
                             if (dataGridViewLogTestForErrors.Rows[i].Cells["MD5"].Value?.ToString() == "Integrity Check Failed")
+                            {
                                 dataGridViewLogTestForErrors.Rows.RemoveAt(i);
+                            }
                         }
 
                         // Remove missing files
-                        var itemsToRemove = listViewAudioFiles.Items.Cast<ListViewItem>()
-                            .Where(item => item.Tag != null && !File.Exists(item.Tag.ToString())).ToList();
+                        List<ListViewItem> itemsToRemove = [.. listViewAudioFiles.Items.Cast<ListViewItem>().Where(item => item.Tag != null && !File.Exists(item.Tag.ToString()))];
 
-                        foreach (var item in itemsToRemove)
+                        foreach (ListViewItem item in itemsToRemove)
+                        {
                             listViewAudioFiles.Items.Remove(item);
+                        }
 
                         if (itemsToRemove.Count > 0)
                         {
@@ -8672,7 +8902,11 @@ namespace FLAC_Benchmark_H
                             .Cast<ListViewItem>()
                             .FirstOrDefault(item =>
                             {
-                                if (item.Tag == null) return false;
+                                if (item.Tag == null)
+                                {
+                                    return false;
+                                }
+
                                 string path = item.Tag.ToString()!;
 
                                 return encoderInfoCache[path].Extension == ".exe";
@@ -8688,30 +8922,33 @@ namespace FLAC_Benchmark_H
                 // Validation
                 if (flacFilePaths.Count == 0)
                 {
-                    MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _ = MessageBox.Show("No FLAC files found in the list.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
                 {
-                    MessageBox.Show("No encoders found in the list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("No encoders found in the list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 // --- STAGE 2: PARALLEL INTEGRITY TEST ---
-                var errorResults = new ConcurrentBag<(string FileName, string FilePath, string Message)>();
-                var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+                ConcurrentBag<(string FileName, string FilePath, string Message)> errorResults = [];
+                SemaphoreSlim semaphore = new(Environment.ProcessorCount);
 
                 await Task.WhenAll(flacFilePaths.Select(async filePath =>
                 {
-                    if (cts.Token.IsCancellationRequested) return;
+                    if (cts.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
                     await semaphore.WaitAsync(cts.Token);
                     try
                     {
                         string fileName = audioFileInfoCache[filePath].FileName;
 
-                        using var process = new Process();
+                        using Process process = new();
                         process.StartInfo = new ProcessStartInfo
                         {
                             FileName = encoderPath,
@@ -8724,10 +8961,10 @@ namespace FLAC_Benchmark_H
                             StandardOutputEncoding = Encoding.UTF8
                         };
 
-                        process.Start();
+                        _ = process.Start();
 
-                        var errorTask = process.StandardError.ReadToEndAsync();
-                        var outputTask = process.StandardOutput.ReadToEndAsync();
+                        Task<string> errorTask = process.StandardError.ReadToEndAsync();
+                        Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
 
                         await process.WaitForExitAsync(cts.Token);
 
@@ -8738,18 +8975,9 @@ namespace FLAC_Benchmark_H
                             string message = errorOutput;
 
                             // Check for illegal instruction (e.g. AVX-512 on older CPU)
-                            if (process.ExitCode == unchecked((int)0xC000001D))
-                            {
-                                message = "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU).";
-                            }
-                            else if (string.IsNullOrWhiteSpace(errorOutput))
-                            {
-                                message = "Unknown error (non-zero exit code).";
-                            }
-                            else
-                            {
-                                message = errorOutput.Trim();
-                            }
+                            message = process.ExitCode == unchecked((int)0xC000001D)
+                                ? "Process failed: Illegal instruction (e.g. AVX-512 not supported on this CPU)."
+                                : string.IsNullOrWhiteSpace(errorOutput) ? "Unknown error (non-zero exit code)." : errorOutput.Trim();
 
                             errorResults.Add((fileName, filePath, message));
                         }
@@ -8761,11 +8989,14 @@ namespace FLAC_Benchmark_H
                     }
                     finally
                     {
-                        semaphore.Release();
+                        _ = semaphore.Release();
                     }
                 }));
 
-                if (cts.Token.IsCancellationRequested) return;
+                if (cts.Token.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 // --- STAGE 3: UPDATE UI ---
                 await InvokeAsync(() =>
@@ -8773,15 +9004,15 @@ namespace FLAC_Benchmark_H
                     dataGridViewLogTestForErrors.SuspendLayout();
                     try
                     {
-                        var sortedResults = errorResults.OrderBy(r => r.FilePath).ToList();
+                        List<(string FileName, string FilePath, string Message)> sortedResults = [.. errorResults.OrderBy(r => r.FilePath)];
 
-                        var rowsToAdd = sortedResults.Select(result =>
+                        List<DataGridViewRow> rowsToAdd = [.. sortedResults.Select(result =>
                         {
                             string directoryPath = audioFileInfoCache[result.FilePath].DirectoryPath;
 
-                            var row = new DataGridViewRow();
+                            DataGridViewRow row = new();
                             row.CreateCells(dataGridViewLogTestForErrors);
-                            row.SetValues(
+                            _ = row.SetValues(
                             result.FileName, // 0 Name
                             "", // 1 Channels
                             "", // 2 BitDepth
@@ -8812,10 +9043,12 @@ namespace FLAC_Benchmark_H
                             );
                             row.DefaultCellStyle.ForeColor = Color.Red;
                             return row;
-                        }).ToList();
+                        })];
 
                         if (rowsToAdd.Count > 0)
+                        {
                             dataGridViewLogTestForErrors.Rows.AddRange([.. rowsToAdd]);
+                        }
 
                         if (dataGridViewLogTestForErrors.Rows.Count > 0)
                         {
@@ -8827,7 +9060,7 @@ namespace FLAC_Benchmark_H
                         dataGridViewLogTestForErrors.ResumeLayout();
                     }
 
-                    MessageBox.Show(
+                    _ = MessageBox.Show(
                     errorResults.IsEmpty
                     ? "All FLAC files passed the integrity test."
                     : $"{errorResults.Count} FLAC file(s) failed the integrity test.",
@@ -8843,7 +9076,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
+                _ = MessageBox.Show($"An error occurred during the integrity test: {ex.Message}", "Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -8852,7 +9085,10 @@ namespace FLAC_Benchmark_H
                 if (sender is Button btnFinal && !btnFinal.IsDisposed)
                 {
                     if (originalButtonText != null)
+                    {
                         btnFinal.Text = originalButtonText;
+                    }
+
                     btnFinal.Enabled = true;
                 }
                 else if (sender is ToolStripMenuItem itemFinal)
@@ -8867,7 +9103,7 @@ namespace FLAC_Benchmark_H
         {
             _isEncodingStopped = true; // Flag to request encoding stop
             _isPaused = false; // Reset pause flag
-            _pauseEvent.Set(); // Unblock execution
+            _ = _pauseEvent.Set(); // Unblock execution
 
             if (_process != null)
             {
@@ -8904,12 +9140,12 @@ namespace FLAC_Benchmark_H
             if (_isPaused)
             {
                 buttonPauseResume.Text = "Resume";
-                _pauseEvent.Reset(); // Block execution
+                _ = _pauseEvent.Reset(); // Block execution
             }
             else
             {
                 buttonPauseResume.Text = "Pause";
-                _pauseEvent.Set(); // Unblock execution
+                _ = _pauseEvent.Set(); // Unblock execution
             }
         }
 
@@ -9024,12 +9260,13 @@ namespace FLAC_Benchmark_H
         private static void MoveSelectedItemsForListview(ListView listView, int direction)
         {
             // Get selected items and sort them by indices
-            var selectedItems = listView.SelectedItems.Cast<ListViewItem>()
-            .OrderBy(item => item.Index)
-            .ToList();
+            List<ListViewItem> selectedItems = [.. listView.SelectedItems.Cast<ListViewItem>().OrderBy(item => item.Index)];
+
             // If no items are selected, exit the method
             if (selectedItems.Count == 0)
+            {
                 return;
+            }
             // If moving down, we'll take items in reverse order
             if (direction > 0)
             {
@@ -9040,18 +9277,20 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Move items
-                foreach (var item in selectedItems)
+                foreach (ListViewItem? item in selectedItems)
                 {
                     int currentIndex = item.Index;
                     int newIndex = currentIndex + direction;
                     // Check boundaries
                     if (newIndex < 0 || newIndex >= listView.Items.Count)
+                    {
                         return; // If out of bounds, exit the method
+                    }
 
                     // Remove item from current position
                     listView.Items.Remove(item);
                     // Insert item at new position
-                    listView.Items.Insert(newIndex, item);
+                    _ = listView.Items.Insert(newIndex, item);
                 }
                 // Update selection
                 UpdateSelection(selectedItems, listView);
@@ -9064,7 +9303,7 @@ namespace FLAC_Benchmark_H
         }
         private static void MoveListViewItemToRecycleBin(ListView listView, Func<ListViewItem, bool> predicate, string itemType, Action updateHeaderCallback)
         {
-            var filesToRemove = new List<string>();
+            List<string> filesToRemove = [];
 
             foreach (ListViewItem item in listView.Items)
             {
@@ -9076,12 +9315,12 @@ namespace FLAC_Benchmark_H
 
             if (filesToRemove.Count == 0)
             {
-                MessageBox.Show($"There are no {itemType} to delete.", "Information",
+                _ = MessageBox.Show($"There are no {itemType} to delete.", "Information",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            var result = MessageBox.Show(
+            DialogResult result = MessageBox.Show(
                 $"Are you sure you want to move all {itemType} to the Recycle Bin?",
                 "Confirmation",
                 MessageBoxButtons.YesNo,
@@ -9089,16 +9328,16 @@ namespace FLAC_Benchmark_H
 
             if (result == DialogResult.Yes)
             {
-                foreach (var file in filesToRemove)
+                foreach (string file in filesToRemove)
                 {
                     Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file,
                         Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
                         Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
                 }
 
-                foreach (var file in filesToRemove)
+                foreach (string file in filesToRemove)
                 {
-                    var itemToRemove = listView.Items.Cast<ListViewItem>()
+                    ListViewItem? itemToRemove = listView.Items.Cast<ListViewItem>()
                         .FirstOrDefault(i => i.Tag?.ToString() == file);
                     if (itemToRemove != null)
                     {
@@ -9108,7 +9347,7 @@ namespace FLAC_Benchmark_H
 
                 updateHeaderCallback();
 
-                MessageBox.Show($"{itemType} have been moved to the Recycle Bin.", "Deletion",
+                _ = MessageBox.Show($"{itemType} have been moved to the Recycle Bin.", "Deletion",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -9120,11 +9359,11 @@ namespace FLAC_Benchmark_H
                 item.Selected = false;
             }
             // Select moved items
-            foreach (var item in selectedItems)
+            foreach (ListViewItem item in selectedItems)
             {
                 item.Selected = true; // Set selection on moved items
             }
-            listView.Focus(); // Set focus on the list
+            _ = listView.Focus(); // Set focus on the list
         }
         private static void MoveSelectedItemsForDataGridViewEx(DataGridViewEx dataGridView, int direction)
         {
@@ -9135,10 +9374,9 @@ namespace FLAC_Benchmark_H
             }
 
             // Get the indices of all selected rows and sort them in ascending order
-            var selectedIndices = dataGridView.SelectedRows.Cast<DataGridViewRow>()
+            List<int> selectedIndices = [.. dataGridView.SelectedRows.Cast<DataGridViewRow>()
             .Select(row => row.Index)
-            .OrderBy(index => index)
-            .ToList();
+            .OrderBy(index => index)];
 
             // Check boundaries: Ensure no selected row is at the edge where it cannot move further
             // For moving UP, no selected row should be at index 0
@@ -9162,11 +9400,11 @@ namespace FLAC_Benchmark_H
 
                 // Move the row using the custom MoveRow method from DataGridViewEx
                 // It handles internal validation and index adjustments during the move.
-                dataGridView.MoveRow(originalIndex, targetIndex);
+                _ = dataGridView.MoveRow(originalIndex, targetIndex);
             }
 
             // Calculate the new indices for the moved rows
-            var newSelectedIndices = selectedIndices.Select(originalIdx => originalIdx + direction).OrderBy(i => i).ToList();
+            List<int> newSelectedIndices = [.. selectedIndices.Select(originalIdx => originalIdx + direction).OrderBy(i => i)];
 
             // Restore selection and focus on the rows at their new positions
             dataGridView.ClearSelection();
@@ -9189,10 +9427,9 @@ namespace FLAC_Benchmark_H
         }
         private static CheckState GetCheckStateForContextMenuItem(int count, int total)
         {
-            if (total == 0) return CheckState.Unchecked;
-            if (count == 0) return CheckState.Unchecked;
-            if (count == total) return CheckState.Checked;
-            return CheckState.Indeterminate;
+            return total == 0
+                ? CheckState.Unchecked
+                : count == 0 ? CheckState.Unchecked : count == total ? CheckState.Checked : CheckState.Indeterminate;
         }
         private void ContextMenu_Closing(object? sender, ToolStripDropDownClosingEventArgs e)
         {
@@ -9253,7 +9490,7 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Unable to delete {filePath}: {ex.Message}",
+                _ = MessageBox.Show($"Unable to delete {filePath}: {ex.Message}",
                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -9346,7 +9583,7 @@ namespace FLAC_Benchmark_H
                 plotScalingMultiPlotCompressionByParameters.MouseMove -= PlotScalingMultiPlotCompressionByParameters_MouseMove;
                 plotScalingMultiPlotCompressionByParameters.MouseLeave -= PlotScalingMultiPlotCompressionByParameters_MouseLeave;
 
-                var plotsToRefresh = new List<ScottPlot.FormsPlot>();
+                List<FormsPlot> plotsToRefresh = [];
 
                 if (dynamicTooltipSpeedByThreads != null) { plotScalingPlotSpeedByThreads.Plot.Remove(dynamicTooltipSpeedByThreads); dynamicTooltipSpeedByThreads = null; plotsToRefresh.Add(plotScalingPlotSpeedByThreads); }
                 if (dynamicTooltipMultiplotSpeedByThreads != null) { plotScalingMultiPlotSpeedByThreads.Plot.Remove(dynamicTooltipMultiplotSpeedByThreads); dynamicTooltipMultiplotSpeedByThreads = null; plotsToRefresh.Add(plotScalingMultiPlotSpeedByThreads); }
@@ -9363,17 +9600,26 @@ namespace FLAC_Benchmark_H
                 if (dynamicTooltipCompressionByParameters != null) { plotScalingPlotCompressionByParameters.Plot.Remove(dynamicTooltipCompressionByParameters); dynamicTooltipCompressionByParameters = null; plotsToRefresh.Add(plotScalingPlotCompressionByParameters); }
                 if (dynamicTooltipMultiplotCompressionByParameters != null) { plotScalingMultiPlotCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotCompressionByParameters); dynamicTooltipMultiplotCompressionByParameters = null; plotsToRefresh.Add(plotScalingMultiPlotCompressionByParameters); }
 
-                foreach (var plot in plotsToRefresh) plot.Refresh();
+                foreach (FormsPlot plot in plotsToRefresh)
+                {
+                    plot.Refresh();
+                }
             }
         }
         private void UpdateSeriesVisibility()
         {
-            foreach (var series in allIndividualSeries)
+            foreach (ScatterPlot series in allIndividualSeries)
+            {
                 series.IsVisible = checkBoxShowIndividualFilesPlots.Checked;
-            foreach (var series in allAggregatedSeries)
+            }
+
+            foreach (ScatterPlot series in allAggregatedSeries)
+            {
                 series.IsVisible = checkBoxShowAggregatedByEncoderPlots.Checked;
-            idealCPULoadLineSingle?.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
-            idealCPULoadLineMultiplot?.IsVisible = checkBoxShowIdealCPULoadLine.Checked;
+            }
+
+            _ = (idealCPULoadLineSingle?.IsVisible = checkBoxShowIdealCPULoadLine.Checked);
+            _ = (idealCPULoadLineMultiplot?.IsVisible = checkBoxShowIdealCPULoadLine.Checked);
 
             plotScalingPlotSpeedByThreads.Refresh();
             plotScalingPlotCPULoadByThreads.Refresh();
@@ -9394,26 +9640,23 @@ namespace FLAC_Benchmark_H
             {
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageMultiplotByThreads))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageMultiplotByThreads);
+                }
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageMultiplotByParameters))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageMultiplotByParameters);
+                }
 
-                if (previouslyActiveTab == tabPageSpeedByThreads ||
+                tabControlScalingPlots.SelectedTab = previouslyActiveTab == tabPageSpeedByThreads ||
                     previouslyActiveTab == tabPageCPULoadByThreads ||
-                    previouslyActiveTab == tabPageCPUClockByThreads)
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageMultiplotByThreads;
-                }
-                else if (previouslyActiveTab == tabPageSpeedByParameters ||
-                         previouslyActiveTab == tabPageCompressionByParameters)
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageMultiplotByParameters;
-                }
-                else
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageMultiplotByThreads;
-                }
+                    previouslyActiveTab == tabPageCPUClockByThreads
+                    ? tabPageMultiplotByThreads
+                    : previouslyActiveTab == tabPageSpeedByParameters ||
+                         previouslyActiveTab == tabPageCompressionByParameters
+                        ? tabPageMultiplotByParameters
+                        : tabPageMultiplotByThreads;
 
                 tabControlScalingPlots.TabPages.Remove(tabPageSpeedByThreads);
                 tabControlScalingPlots.TabPages.Remove(tabPageCPULoadByThreads);
@@ -9424,32 +9667,33 @@ namespace FLAC_Benchmark_H
             else
             {
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageSpeedByThreads))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageSpeedByThreads);
+                }
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageCPULoadByThreads))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageCPULoadByThreads);
+                }
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageCPUClockByThreads))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageCPUClockByThreads);
+                }
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageSpeedByParameters))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageSpeedByParameters);
+                }
 
                 if (!tabControlScalingPlots.TabPages.Contains(tabPageCompressionByParameters))
+                {
                     tabControlScalingPlots.TabPages.Add(tabPageCompressionByParameters);
+                }
 
-                if (previouslyActiveTab == tabPageMultiplotByThreads)
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageSpeedByThreads;
-                }
-                else if (previouslyActiveTab == tabPageMultiplotByParameters)
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageSpeedByParameters;
-                }
-                else
-                {
-                    tabControlScalingPlots.SelectedTab = tabPageSpeedByThreads;
-                }
+                tabControlScalingPlots.SelectedTab = previouslyActiveTab == tabPageMultiplotByThreads
+                    ? tabPageSpeedByThreads
+                    : previouslyActiveTab == tabPageMultiplotByParameters ? tabPageSpeedByParameters : tabPageSpeedByThreads;
 
                 tabControlScalingPlots.TabPages.Remove(tabPageMultiplotByThreads);
                 tabControlScalingPlots.TabPages.Remove(tabPageMultiplotByParameters);
@@ -9472,14 +9716,9 @@ namespace FLAC_Benchmark_H
         }
         private void CheckBoxPreventSleep_CheckedChanged(object? sender, EventArgs e)
         {
-            if (checkBoxPreventSleep.Checked)
-            {
-                _ = SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
-            }
-            else
-            {
-                _ = SetThreadExecutionState(ES_CONTINUOUS);
-            }
+            _ = checkBoxPreventSleep.Checked
+                ? SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+                : SetThreadExecutionState(ES_CONTINUOUS);
         }
         private void CheckBoxCheckForUpdatesOnStartup_CheckedChanged(object? sender, EventArgs e)
         {
@@ -9497,7 +9736,7 @@ namespace FLAC_Benchmark_H
         {
             try
             {
-                using var client = new HttpClient();
+                using HttpClient client = new();
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("FLAC-Benchmark-H-App");
 
                 string programVersionOnlineUrl = "https://raw.githubusercontent.com/hat3k/FLAC-Benchmark-H/master/Version.txt";
@@ -9509,9 +9748,11 @@ namespace FLAC_Benchmark_H
                 if (programVersionOnlineParsed != null && programVersionCurrentParsed != null && programVersionOnlineParsed > programVersionCurrentParsed)
                 {
                     if (programVersionIgnored == programVersionOnline)
+                    {
                         return;
+                    }
 
-                    Invoke((MethodInvoker)delegate
+                    _ = Invoke((MethodInvoker)delegate
                     {
                         ShowDialogUpdateAvailable(programVersionOnline);
                     });
@@ -9521,7 +9762,7 @@ namespace FLAC_Benchmark_H
             {
                 void ShowDialogUpdateError()
                 {
-                    MessageBox.Show(this,
+                    _ = MessageBox.Show(this,
                         ex.Message,
                         "Error checking for updates",
                         MessageBoxButtons.OK,
@@ -9529,14 +9770,18 @@ namespace FLAC_Benchmark_H
                 }
 
                 if (InvokeRequired)
-                    Invoke((MethodInvoker)ShowDialogUpdateError);
+                {
+                    _ = Invoke((MethodInvoker)ShowDialogUpdateError);
+                }
                 else
+                {
                     ShowDialogUpdateError();
+                }
             }
         }
         private void ShowDialogUpdateAvailable(string programVersionOnline)
         {
-            var result = MessageBox.Show(
+            DialogResult result = MessageBox.Show(
             this,
             $"A new version is available!\n\nCurrent version:\t{programVersionCurrent}\nLatest version:\t{programVersionOnline}\n\nClick 'Cancel' to ignore this update.\nDo you want to open the releases page?",
             "Update Available",
@@ -9547,7 +9792,7 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
-                    Process.Start(new ProcessStartInfo
+                    _ = Process.Start(new ProcessStartInfo
                     {
                         FileName = "https://github.com/hat3k/FLAC-Benchmark-H/releases",
                         UseShellExecute = true
@@ -9555,7 +9800,7 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this,
+                    _ = MessageBox.Show(this,
                         $"Failed to open the releases page:\n{ex.Message}",
                         "Browser Error",
                         MessageBoxButtons.OK,
@@ -9571,9 +9816,11 @@ namespace FLAC_Benchmark_H
         private static System.Version ParseVersion(string versionString)
         {
             if (string.IsNullOrWhiteSpace(versionString))
+            {
                 return new System.Version("0.0.0");
+            }
 
-            var versionStringParts = versionString.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+            string[] versionStringParts = versionString.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
             // Expect format "1.7.6 build 20251201"
             if (versionStringParts.Length >= 3 && versionStringParts[1].Equals("build", StringComparison.OrdinalIgnoreCase))
@@ -9616,7 +9863,7 @@ namespace FLAC_Benchmark_H
             {
                 try
                 {
-                    System.Diagnostics.Process.Start(new ProcessStartInfo
+                    _ = System.Diagnostics.Process.Start(new ProcessStartInfo
                     {
                         FileName = "https://github.com/hat3k/FLAC-Benchmark-H",
                         UseShellExecute = true,
@@ -9625,15 +9872,15 @@ namespace FLAC_Benchmark_H
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to open URL: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show($"Failed to open URL: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
         private void EnableListViewDoubleBuffering()
         {
-            var listViewType = typeof(ListView);
-            var doubleBufferedProperty = listViewType.GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Type listViewType = typeof(ListView);
+            System.Reflection.PropertyInfo? doubleBufferedProperty = listViewType.GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
             // Apply to all ListViews including OwnerDraw ones
             doubleBufferedProperty?.SetValue(listViewEncoders, true, null);
@@ -9709,11 +9956,13 @@ namespace FLAC_Benchmark_H
             SaveJobs();         // Job list
 
             // Clean up MediaInfo pool
-            while (_mediaInfoPool.TryDequeue(out var mediaInfo))
+            while (_mediaInfoPool.TryDequeue(out MediaInfo? mediaInfo))
             {
                 mediaInfo?.Close();
                 if (mediaInfo is IDisposable disposable)
+                {
                     disposable.Dispose();
+                }
             }
 
             // Stop and dispose UI timers and performance counters
@@ -9744,7 +9993,7 @@ namespace FLAC_Benchmark_H
                     else
                     {
                         // Option 2: Delete only warm-up files (preserve other temp files for debugging)
-                        foreach (var file in Directory.GetFiles(tempFolderPath, "temp_warmup_*.*"))
+                        foreach (string file in Directory.GetFiles(tempFolderPath, "temp_warmup_*.*"))
                         {
                             try { File.Delete(file); } catch { }
                         }
