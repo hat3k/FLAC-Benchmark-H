@@ -76,7 +76,7 @@
             invertCheckToolStripMenuItemEncoders = new ToolStripMenuItem();
             toolStripEncodersSeparator1 = new ToolStripSeparator();
             selectAllToolStripMenuItemEncoders = new ToolStripMenuItem();
-            clearSelectionToolStripMenuItemEncoders = new ToolStripMenuItem();
+            deselectAllToolStripMenuItemEncoders = new ToolStripMenuItem();
             invertSelectionToolStripMenuItemEncoders = new ToolStripMenuItem();
             toolStripEncodersSeparator2 = new ToolStripSeparator();
             moveUpToolStripMenuItemEncoders = new ToolStripMenuItem();
@@ -122,7 +122,7 @@
             toolStripAudioFilesSeparator8 = new ToolStripSeparator();
             selectAllFLACToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             selectAllWAVToolStripMenuItemAudioFiles = new ToolStripMenuItem();
-            clearSelectionToolStripMenuItemAudioFiles = new ToolStripMenuItem();
+            deselectAllToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             invertSelectionToolStripMenuItemAudioFiles = new ToolStripMenuItem();
             toolStripAudioFilesSeparator2 = new ToolStripSeparator();
             moveUpToolStripMenuItemAudioFiles = new ToolStripMenuItem();
@@ -691,7 +691,7 @@
             // 
             // contextMenuStripEncoders
             // 
-            contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemEncoders, uncheckAllToolStripMenuItemEncoders, checkSelectedToolStripMenuItemEncoders, uncheckSelectedToolStripMenuItemEncoders, invertCheckToolStripMenuItemEncoders, toolStripEncodersSeparator1, selectAllToolStripMenuItemEncoders, clearSelectionToolStripMenuItemEncoders, invertSelectionToolStripMenuItemEncoders, toolStripEncodersSeparator2, moveUpToolStripMenuItemEncoders, moveDownToolStripMenuItemEncoders, toolStripEncodersSeparator4, refreshAllToolStripMenuItemEncoders, toolStripEncodersSeparator3, openContainingFolderToolStripMenuItemEncoders, toolStripEncodersSeparator5, clearUncheckedToolStripMenuItemEncoders, clearSelectedToolStripMenuItemEncoders, clearDuplicateEntriesToolStripMenuItemEncoders, clearAllToolStripMenuItemEncoders });
+            contextMenuStripEncoders.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemEncoders, uncheckAllToolStripMenuItemEncoders, checkSelectedToolStripMenuItemEncoders, uncheckSelectedToolStripMenuItemEncoders, invertCheckToolStripMenuItemEncoders, toolStripEncodersSeparator1, selectAllToolStripMenuItemEncoders, deselectAllToolStripMenuItemEncoders, invertSelectionToolStripMenuItemEncoders, toolStripEncodersSeparator2, moveUpToolStripMenuItemEncoders, moveDownToolStripMenuItemEncoders, toolStripEncodersSeparator4, refreshAllToolStripMenuItemEncoders, toolStripEncodersSeparator3, openContainingFolderToolStripMenuItemEncoders, toolStripEncodersSeparator5, clearUncheckedToolStripMenuItemEncoders, clearSelectedToolStripMenuItemEncoders, clearDuplicateEntriesToolStripMenuItemEncoders, clearAllToolStripMenuItemEncoders });
             contextMenuStripEncoders.Name = "contextMenuStripEncoders";
             contextMenuStripEncoders.Size = new Size(202, 386);
             contextMenuStripEncoders.Closing += ContextMenu_Closing;
@@ -745,12 +745,13 @@
             selectAllToolStripMenuItemEncoders.Text = "Select All";
             selectAllToolStripMenuItemEncoders.Click += SelectAllToolStripMenuItemEncoders_Click;
             // 
-            // clearSelectionToolStripMenuItemEncoders
+            // deselectAllToolStripMenuItemEncoders
             // 
-            clearSelectionToolStripMenuItemEncoders.Name = "clearSelectionToolStripMenuItemEncoders";
-            clearSelectionToolStripMenuItemEncoders.Size = new Size(201, 22);
-            clearSelectionToolStripMenuItemEncoders.Text = "Clear Selection";
-            clearSelectionToolStripMenuItemEncoders.Click += ClearSelectionToolStripMenuItemEncoders_Click;
+            deselectAllToolStripMenuItemEncoders.Name = "deselectAllToolStripMenuItemEncoders";
+            deselectAllToolStripMenuItemEncoders.ShortcutKeys = Keys.Control | Keys.D;
+            deselectAllToolStripMenuItemEncoders.Size = new Size(201, 22);
+            deselectAllToolStripMenuItemEncoders.Text = "Deselect All";
+            deselectAllToolStripMenuItemEncoders.Click += DeselectAllToolStripMenuItemEncoders_Click;
             // 
             // invertSelectionToolStripMenuItemEncoders
             // 
@@ -1005,7 +1006,7 @@
             // 
             // contextMenuStripAudioFiles
             // 
-            contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, clearSelectionToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
+            contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, deselectAllToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
             contextMenuStripAudioFiles.Size = new Size(202, 436);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
@@ -1127,12 +1128,13 @@
             selectAllWAVToolStripMenuItemAudioFiles.Text = "WAV";
             selectAllWAVToolStripMenuItemAudioFiles.Click += SelectAllWAVToolStripMenuItemAudioFiles_Click;
             // 
-            // clearSelectionToolStripMenuItemAudioFiles
+            // deselectAllToolStripMenuItemAudioFiles
             // 
-            clearSelectionToolStripMenuItemAudioFiles.Name = "clearSelectionToolStripMenuItemAudioFiles";
-            clearSelectionToolStripMenuItemAudioFiles.Size = new Size(201, 22);
-            clearSelectionToolStripMenuItemAudioFiles.Text = "Clear Selection";
-            clearSelectionToolStripMenuItemAudioFiles.Click += ClearSelectionToolStripMenuItemAudioFiles_Click;
+            deselectAllToolStripMenuItemAudioFiles.Name = "deselectAllToolStripMenuItemAudioFiles";
+            deselectAllToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Control | Keys.D;
+            deselectAllToolStripMenuItemAudioFiles.Size = new Size(201, 22);
+            deselectAllToolStripMenuItemAudioFiles.Text = "Deselect All";
+            deselectAllToolStripMenuItemAudioFiles.Click += DeselectAllToolStripMenuItemAudioFiles_Click;
             // 
             // invertSelectionToolStripMenuItemAudioFiles
             // 
@@ -2761,7 +2763,7 @@
         private ToolStripMenuItem invertCheckToolStripMenuItemEncoders;
         private ToolStripSeparator toolStripEncodersSeparator1;
         private ToolStripMenuItem selectAllToolStripMenuItemEncoders;
-        private ToolStripMenuItem clearSelectionToolStripMenuItemEncoders;
+        private ToolStripMenuItem deselectAllToolStripMenuItemEncoders;
         private ToolStripMenuItem invertSelectionToolStripMenuItemEncoders;
         private ToolStripSeparator toolStripEncodersSeparator2;
         private ToolStripMenuItem moveUpToolStripMenuItemEncoders;
@@ -2783,7 +2785,7 @@
         private ToolStripMenuItem invertCheckToolStripMenuItemAudioFiles;
         private ToolStripSeparator toolStripAudioFilesSeparator1;
         private ToolStripMenuItem selectAllToolStripMenuItemAudioFiles;
-        private ToolStripMenuItem clearSelectionToolStripMenuItemAudioFiles;
+        private ToolStripMenuItem deselectAllToolStripMenuItemAudioFiles;
         private ToolStripMenuItem invertSelectionToolStripMenuItemAudioFiles;
         private ToolStripSeparator toolStripAudioFilesSeparator2;
         private ToolStripMenuItem moveUpToolStripMenuItemAudioFiles;

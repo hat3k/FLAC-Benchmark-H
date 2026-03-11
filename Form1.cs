@@ -1514,7 +1514,7 @@ namespace FLAC_Benchmark_H
 
             // Selection operations  
             selectAllToolStripMenuItemEncoders.Enabled = hasUnselectedItems && !isBusy;
-            clearSelectionToolStripMenuItemEncoders.Enabled = hasSelectedItems;
+            deselectAllToolStripMenuItemEncoders.Enabled = hasSelectedItems;
             invertSelectionToolStripMenuItemEncoders.Enabled = hasItems && !isBusy;
 
             // Move operations
@@ -1571,7 +1571,7 @@ namespace FLAC_Benchmark_H
                 item.Selected = true;
             }
         }
-        private void ClearSelectionToolStripMenuItemEncoders_Click(object sender, EventArgs e)
+        private void DeselectAllToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewEncoders.SelectedItems)
             {
@@ -2491,7 +2491,7 @@ namespace FLAC_Benchmark_H
             selectAllAllAudioFilesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
             selectAllFLACToolStripMenuItemAudioFiles.Enabled = hasFLAC && !isBusy;
             selectAllWAVToolStripMenuItemAudioFiles.Enabled = hasWAV && !isBusy;
-            clearSelectionToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
+            deselectAllToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
             invertSelectionToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
             moveUpToolStripMenuItemAudioFiles.Enabled = hasSelectedItems && !isBusy;
@@ -2678,7 +2678,7 @@ namespace FLAC_Benchmark_H
             }
             UpdateMenuAudioFilesItemCheckAndSelectState();
         }
-        private void ClearSelectionToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
+        private void DeselectAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewAudioFiles.SelectedItems)
             {
