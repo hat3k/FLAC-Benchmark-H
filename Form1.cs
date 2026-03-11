@@ -88,6 +88,9 @@ namespace FLAC_Benchmark_H
         private bool _isEncodingStopped = false;                    // Request to stop
         private bool _isPaused = false;                             // Pause state
         private readonly ManualResetEvent _pauseEvent = new(true);  // Controls pause/resume sync for encoding thread
+        private bool _isExecutingDetectDupes = false;               // Controls pause/resume sync for Detect Dupes
+        private bool _isExecutingTestForErrors = false;             // Controls pause/resume sync for Test for Errors
+
 
         public Form1()
         {
@@ -2377,9 +2380,9 @@ namespace FLAC_Benchmark_H
         // Audio Files Context Menu
         private void ContextMenuStripAudioFiles_Opening(object sender, CancelEventArgs e)
         {
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
-        private void UpdateMenuItemCheckAndSelectState()
+        private void UpdateMenuAudioFilesItemCheckAndSelectState()
         {
             ListView.ListViewItemCollection items = listViewAudioFiles.Items;
             int totalItemsCount = items.Count;
@@ -2498,8 +2501,8 @@ namespace FLAC_Benchmark_H
             openContainingFolderToolStripMenuItemAudioFiles.Enabled = hasSelectedItems;
 
             toolsToolStripMenuItemAudioFiles.Enabled = true;
-            detectDupesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
-            testForErrorsToolStripMenuItemAudioFIles.Enabled = hasFLAC && !isBusy;
+            detectDupesToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy && !_isExecutingDetectDupes;
+            testForErrorsToolStripMenuItemAudioFIles.Enabled = hasFLAC && !isBusy && !_isExecutingTestForErrors;
             warningsAsErrorsToolStripMenuItemAudioFiles.Enabled = true;
             summaryToolStripMenuItemAudioFiles.Enabled = hasItems && !isBusy;
 
@@ -2528,7 +2531,7 @@ namespace FLAC_Benchmark_H
             {
                 item.Checked = true;
             }
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void CheckAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2544,7 +2547,7 @@ namespace FLAC_Benchmark_H
                 item.Checked = !allChecked;
             }
 
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void CheckAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2564,7 +2567,7 @@ namespace FLAC_Benchmark_H
                 item.Checked = !allChecked;
             }
 
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void CheckAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2584,7 +2587,7 @@ namespace FLAC_Benchmark_H
                 item.Checked = !allChecked;
             }
 
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void UncheckAllToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2620,7 +2623,7 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = true;
             }
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void SelectAllAllAudioFilesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2635,7 +2638,7 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = !allSelected;
             }
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void SelectAllFLACToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2654,7 +2657,7 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = !allSelected;
             }
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void SelectAllWAVToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2673,7 +2676,7 @@ namespace FLAC_Benchmark_H
             {
                 item.Selected = !allSelected;
             }
-            UpdateMenuItemCheckAndSelectState();
+            UpdateMenuAudioFilesItemCheckAndSelectState();
         }
         private void ClearSelectionToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -2838,11 +2841,11 @@ namespace FLAC_Benchmark_H
         }
         private void DetectDupesToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            ButtonDetectDupesAudioFiles_Click(sender, e);
+            ButtonDetectDupesAudioFiles_Click(buttonDetectDupesAudioFiles, e);
         }
         private void TestForErrorsToolStripMenuItemAudioFIles_Click(object sender, EventArgs e)
         {
-            ButtonTestForErrors_Click(sender, e);
+            ButtonTestForErrors_Click(buttonTestForErrors, e);
         }
         private void WarningsAsErrorsToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
@@ -3836,7 +3839,7 @@ namespace FLAC_Benchmark_H
                 AvgTimeMs = g.Average(p => p.Time),
                 AvgSpeed = g.Average(p => p.Speed),
                 AvgCPULoadEncoder = g.Average(p => p.CPULoadEncoder),
-                AvgCPUClock = g.Where(p => p.CPUClock > 0).Any() ? g.Where(p => p.CPUClock > 0).Average(p => p.CPUClock) : 0,
+                AvgCPUClock = g.Where(p => p.CPUClock > 0).Average(p => (double?)p.CPUClock) ?? 0,
                 MinOutputSize = g.Min(p => p.OutputSize),
                 MaxOutputSize = g.Max(p => p.OutputSize),
                 g.First().InputSize,
@@ -6914,7 +6917,9 @@ namespace FLAC_Benchmark_H
             // Clear selection on click out of cell
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == -1)
             {
+                _ = dataGridViewJobs.EndEdit();
                 dataGridViewJobs.ClearSelection();
+                dataGridViewJobs.CurrentCell = null;
             }
         }
 
@@ -8477,6 +8482,7 @@ namespace FLAC_Benchmark_H
         {
             string? originalButtonText = (sender as Button)?.Text;
 
+            _isExecutingDetectDupes = true;
             CancellationTokenSource cts = new();
 
             // Declare variables for summary message
@@ -8493,10 +8499,6 @@ namespace FLAC_Benchmark_H
                         btn.Text = "In progress...";
                         btn.Enabled = false;
                     }));
-                }
-                else if (sender is ToolStripMenuItem item)
-                {
-                    item.Enabled = false;
                 }
 
                 // --- STAGE 0.1: CHECK FILE EXISTENCE AND CLEAN UP LISTVIEW ---
@@ -8598,22 +8600,18 @@ namespace FLAC_Benchmark_H
                     // --- STAGE 1.2: DETERMINE PRIMARY DUPLICATE IN EACH GROUP ---
                     foreach (KeyValuePair<string, List<string>> kvp in hashDict.Where(g => g.Value.Count > 1))
                     {
-                        var sortedPaths = kvp.Value
-                    .Select(path =>
-                    {
-                        AudioFileInfo info = audioFileInfoCache[path];
-                        return new { Path = path, Info = info };
-                    })
-                        .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)  // FLAC > WAV
-                        .ThenBy(x => x.Info.DirectoryPath.Length)           // Shorter path first
-                        .ThenByDescending(x => x.Info.LastWriteTime)        // Newer first
-                        .ThenBy(x => x.Path)                                // Then by path
-                        .ToList();
+                        string[] sortedPaths = [.. kvp.Value
+                            .Select(path => new { Path = path, Info = audioFileInfoCache[path] })
+                            .OrderBy(x => x.Info.Extension == ".flac" ? 0 : 1)
+                            .ThenBy(x => x.Info.DirectoryPath.Length)
+                            .ThenByDescending(x => x.Info.LastWriteTime)
+                            .ThenBy(x => x.Path)
+                            .Select(x => x.Path)];
 
-                        if (sortedPaths.Count > 0)
+                        if (sortedPaths.Length > 0)
                         {
-                            itemsToCheck.Add(sortedPaths[0].Path); // Primary file
-                            itemsToUncheck.AddRange(sortedPaths.Skip(1).Select(x => x.Path)); // Others
+                            itemsToCheck.Add(sortedPaths[0]);
+                            itemsToUncheck.AddRange(sortedPaths[1..]);
                         }
                     }
 
@@ -8689,9 +8687,7 @@ namespace FLAC_Benchmark_H
                         // --- STAGE 2.5: LOG DUPLICATE GROUPS ---
                         foreach (KeyValuePair<string, List<string>> kvp in hashDict.Where(g => g.Value.Count > 1))
                         {
-                            string duplicatesList = string.Join(", ", kvp.Value.Select(path =>
-                        audioFileInfoCache[path].FileName
-                    ));
+                            string duplicatesList = string.Join(", ", kvp.Value.Select(path => audioFileInfoCache[path].FileName));
 
                             foreach (string path in kvp.Value)
                             {
@@ -8810,10 +8806,6 @@ namespace FLAC_Benchmark_H
                         btnFinal.Enabled = true;
                     }));
                 }
-                else if (sender is ToolStripMenuItem itemFinal)
-                {
-                    itemFinal.Enabled = true;
-                }
 
                 // Show summary message to user
                 if (!cts.IsCancellationRequested && hashDict != null && filesWithMD5Errors != null)
@@ -8837,6 +8829,8 @@ namespace FLAC_Benchmark_H
                     }));
                 }
 
+                _isExecutingDetectDupes = false;
+                UpdateMenuAudioFilesItemCheckAndSelectState();
                 cts.Dispose();
             }
         }
@@ -8844,6 +8838,7 @@ namespace FLAC_Benchmark_H
         {
             string? originalButtonText = (sender as Button)?.Text;
 
+            _isExecutingTestForErrors = true;
             CancellationTokenSource cts = new();
 
             try
@@ -8853,10 +8848,6 @@ namespace FLAC_Benchmark_H
                 {
                     btn.Text = "In progress...";
                     btn.Enabled = false;
-                }
-                else if (sender is ToolStripMenuItem item)
-                {
-                    item.Enabled = false;
                 }
 
                 // --- STAGE 1: COLLECT DATA FROM UI ---
@@ -9091,10 +9082,9 @@ namespace FLAC_Benchmark_H
 
                     btnFinal.Enabled = true;
                 }
-                else if (sender is ToolStripMenuItem itemFinal)
-                {
-                    itemFinal.Enabled = true;
-                }
+
+                _isExecutingTestForErrors = false;
+                UpdateMenuAudioFilesItemCheckAndSelectState();
                 cts.Dispose();
             }
         }
