@@ -72,7 +72,7 @@ Jobs are saved between sessions — set up once, run anytime.
 
 ## Technical
 
-- Built with C# and Windows Forms (.NET 9)
+- Built with C# and Windows Forms (.NET 10)
 - Temporary files are stored in the `temp` folder (configurable)
 - Supports FLAC 1.5.0+ (for multi-threading; use 1 thread for older versions)
 - Natural string comparer for intuitive file sorting
