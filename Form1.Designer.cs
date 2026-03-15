@@ -160,6 +160,30 @@
             Column2JobType = new DataGridViewTextBoxColumn();
             Column3Passes = new DataGridViewTextBoxColumn();
             Column4Parameters = new DataGridViewTextBoxColumn();
+            contextMenuStripJobs = new ContextMenuStrip(components);
+            editSelectedCellToolStripMenuItemJobs = new ToolStripMenuItem();
+            copyToolStripMenuItemJobs = new ToolStripMenuItem();
+            pasteToolStripMenuItemJobs = new ToolStripMenuItem();
+            sendToScriptConstructorToolStripMenuItemJobs = new ToolStripMenuItem();
+            toolStripJobsSeparator1 = new ToolStripSeparator();
+            checkAllToolStripMenuItemJobs = new ToolStripMenuItem();
+            uncheckAllToolStripMenuItemJobs = new ToolStripMenuItem();
+            checkSelectedToolStripMenuItemJobs = new ToolStripMenuItem();
+            unCheckSelectedToolStripMenuItemJobs = new ToolStripMenuItem();
+            invertCheckToolStripMenuItemJobs = new ToolStripMenuItem();
+            toolStripJobsSeparator2 = new ToolStripSeparator();
+            selectAllToolStripMenuItemJobs = new ToolStripMenuItem();
+            deselectAllToolStripMenuItemJobs = new ToolStripMenuItem();
+            invertSelectionToolStripMenuItemJobs = new ToolStripMenuItem();
+            toolStripJobsSeparator3 = new ToolStripSeparator();
+            moveUpToolStripMenuItemJobs = new ToolStripMenuItem();
+            moveDownToolStripMenuItemJobs = new ToolStripMenuItem();
+            toolStripJobsSeparator4 = new ToolStripSeparator();
+            clearUncheckedToolStripMenuItemJobs = new ToolStripMenuItem();
+            clearSelectedToolStripMenuItemJobs = new ToolStripMenuItem();
+            clearDuplicateEntriesToolStripMenuItemJobs = new ToolStripMenuItem();
+            mergeDuplicateEntriesToolStripMenuItemJobs = new ToolStripMenuItem();
+            clearAllJobsToolStripMenuItemJobs = new ToolStripMenuItem();
             buttonStartJobList = new Button();
             buttonUpJob = new Button();
             buttonDownJob = new Button();
@@ -252,6 +276,7 @@
             contextMenuStripAudioFiles.SuspendLayout();
             groupBoxJobsList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).BeginInit();
+            contextMenuStripJobs.SuspendLayout();
             groupBoxLog.SuspendLayout();
             tabControlLog.SuspendLayout();
             Benchmark.SuspendLayout();
@@ -823,6 +848,7 @@
             // clearSelectedToolStripMenuItemEncoders
             // 
             clearSelectedToolStripMenuItemEncoders.Name = "clearSelectedToolStripMenuItemEncoders";
+            clearSelectedToolStripMenuItemEncoders.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItemEncoders.Size = new Size(201, 22);
             clearSelectedToolStripMenuItemEncoders.Text = "Clear Selected";
             clearSelectedToolStripMenuItemEncoders.ToolTipText = "Hold 'Shift' to move files to the Recycle Bin.";
@@ -1008,7 +1034,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, deselectAllToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 436);
+            contextMenuStripAudioFiles.Size = new Size(202, 414);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1090,6 +1116,7 @@
             // 
             selectAllToolStripMenuItemAudioFiles.DropDownItems.AddRange(new ToolStripItem[] { selectAllAllAudioFilesToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator8, selectAllFLACToolStripMenuItemAudioFiles, selectAllWAVToolStripMenuItemAudioFiles });
             selectAllToolStripMenuItemAudioFiles.Name = "selectAllToolStripMenuItemAudioFiles";
+            selectAllToolStripMenuItemAudioFiles.ShortcutKeyDisplayString = "";
             selectAllToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Control | Keys.A;
             selectAllToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             selectAllToolStripMenuItemAudioFiles.Text = "Select All";
@@ -1205,20 +1232,20 @@
             // detectDupesToolStripMenuItemAudioFiles
             // 
             detectDupesToolStripMenuItemAudioFiles.Name = "detectDupesToolStripMenuItemAudioFiles";
-            detectDupesToolStripMenuItemAudioFiles.Size = new Size(180, 22);
+            detectDupesToolStripMenuItemAudioFiles.Size = new Size(171, 22);
             detectDupesToolStripMenuItemAudioFiles.Text = "Detect Dupes";
             detectDupesToolStripMenuItemAudioFiles.Click += DetectDupesToolStripMenuItemAudioFiles_Click;
             // 
             // toolStripAudioFilesSeparator9
             // 
             toolStripAudioFilesSeparator9.Name = "toolStripAudioFilesSeparator9";
-            toolStripAudioFilesSeparator9.Size = new Size(177, 6);
+            toolStripAudioFilesSeparator9.Size = new Size(168, 6);
             toolStripAudioFilesSeparator9.Tag = "KeepOpened";
             // 
             // testForErrorsToolStripMenuItemAudioFIles
             // 
             testForErrorsToolStripMenuItemAudioFIles.Name = "testForErrorsToolStripMenuItemAudioFIles";
-            testForErrorsToolStripMenuItemAudioFIles.Size = new Size(180, 22);
+            testForErrorsToolStripMenuItemAudioFIles.Size = new Size(171, 22);
             testForErrorsToolStripMenuItemAudioFIles.Text = "Test for Errors";
             testForErrorsToolStripMenuItemAudioFIles.Click += TestForErrorsToolStripMenuItemAudioFIles_Click;
             // 
@@ -1226,7 +1253,7 @@
             // 
             warningsAsErrorsToolStripMenuItemAudioFiles.CheckOnClick = true;
             warningsAsErrorsToolStripMenuItemAudioFiles.Name = "warningsAsErrorsToolStripMenuItemAudioFiles";
-            warningsAsErrorsToolStripMenuItemAudioFiles.Size = new Size(180, 22);
+            warningsAsErrorsToolStripMenuItemAudioFiles.Size = new Size(171, 22);
             warningsAsErrorsToolStripMenuItemAudioFiles.Tag = "KeepOpened";
             warningsAsErrorsToolStripMenuItemAudioFiles.Text = "Warnings as Errors";
             warningsAsErrorsToolStripMenuItemAudioFiles.Click += WarningsAsErrorsToolStripMenuItemAudioFiles_Click;
@@ -1234,13 +1261,13 @@
             // toolStripAudioFilesSeparator10
             // 
             toolStripAudioFilesSeparator10.Name = "toolStripAudioFilesSeparator10";
-            toolStripAudioFilesSeparator10.Size = new Size(177, 6);
+            toolStripAudioFilesSeparator10.Size = new Size(168, 6);
             toolStripAudioFilesSeparator10.Tag = "KeepOpened";
             // 
             // summaryToolStripMenuItemAudioFiles
             // 
             summaryToolStripMenuItemAudioFiles.Name = "summaryToolStripMenuItemAudioFiles";
-            summaryToolStripMenuItemAudioFiles.Size = new Size(180, 22);
+            summaryToolStripMenuItemAudioFiles.Size = new Size(171, 22);
             summaryToolStripMenuItemAudioFiles.Text = "Summary";
             summaryToolStripMenuItemAudioFiles.ToolTipText = "Show detailed statistics for loaded audio files";
             summaryToolStripMenuItemAudioFiles.Click += SummaryToolStripMenuItemAudioFiles_Click;
@@ -1261,6 +1288,7 @@
             // clearSelectedToolStripMenuItemAudioFiles
             // 
             clearSelectedToolStripMenuItemAudioFiles.Name = "clearSelectedToolStripMenuItemAudioFiles";
+            clearSelectedToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             clearSelectedToolStripMenuItemAudioFiles.Text = "Clear Selected";
             clearSelectedToolStripMenuItemAudioFiles.ToolTipText = "Hold 'Shift' to move files to the Recycle Bin.";
@@ -1433,6 +1461,7 @@
             dataGridViewJobs.ClipboardCopyMode = DataGridViewClipboardCopyMode.Disable;
             dataGridViewJobs.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dataGridViewJobs.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
+            dataGridViewJobs.ContextMenuStrip = contextMenuStripJobs;
             dataGridViewJobs.GridColor = SystemColors.Control;
             dataGridViewJobs.Location = new Point(6, 22);
             dataGridViewJobs.Name = "dataGridViewJobs";
@@ -1475,6 +1504,178 @@
             Column4Parameters.HeaderText = "Parameters";
             Column4Parameters.Name = "Column4Parameters";
             Column4Parameters.Width = 634;
+            // 
+            // contextMenuStripJobs
+            // 
+            contextMenuStripJobs.Items.AddRange(new ToolStripItem[] { editSelectedCellToolStripMenuItemJobs, copyToolStripMenuItemJobs, pasteToolStripMenuItemJobs, sendToScriptConstructorToolStripMenuItemJobs, toolStripJobsSeparator1, checkAllToolStripMenuItemJobs, uncheckAllToolStripMenuItemJobs, checkSelectedToolStripMenuItemJobs, unCheckSelectedToolStripMenuItemJobs, invertCheckToolStripMenuItemJobs, toolStripJobsSeparator2, selectAllToolStripMenuItemJobs, deselectAllToolStripMenuItemJobs, invertSelectionToolStripMenuItemJobs, toolStripJobsSeparator3, moveUpToolStripMenuItemJobs, moveDownToolStripMenuItemJobs, toolStripJobsSeparator4, clearUncheckedToolStripMenuItemJobs, clearSelectedToolStripMenuItemJobs, clearDuplicateEntriesToolStripMenuItemJobs, mergeDuplicateEntriesToolStripMenuItemJobs, clearAllJobsToolStripMenuItemJobs });
+            contextMenuStripJobs.Name = "contextMenuStrip1";
+            contextMenuStripJobs.Size = new Size(214, 446);
+            contextMenuStripJobs.Closing += ContextMenu_Closing;
+            contextMenuStripJobs.Opening += ContextMenuStripJobs_Opening;
+            // 
+            // editSelectedCellToolStripMenuItemJobs
+            // 
+            editSelectedCellToolStripMenuItemJobs.Name = "editSelectedCellToolStripMenuItemJobs";
+            editSelectedCellToolStripMenuItemJobs.ShortcutKeys = Keys.F2;
+            editSelectedCellToolStripMenuItemJobs.Size = new Size(213, 22);
+            editSelectedCellToolStripMenuItemJobs.Text = "Edit Selected Cell";
+            editSelectedCellToolStripMenuItemJobs.Click += EditSelectedCellToolStripMenuItemJobs_Click;
+            // 
+            // copyToolStripMenuItemJobs
+            // 
+            copyToolStripMenuItemJobs.Name = "copyToolStripMenuItemJobs";
+            copyToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.C;
+            copyToolStripMenuItemJobs.Size = new Size(213, 22);
+            copyToolStripMenuItemJobs.Text = "Copy";
+            copyToolStripMenuItemJobs.Click += CopyToolStripMenuItemJobs_Click;
+            // 
+            // pasteToolStripMenuItemJobs
+            // 
+            pasteToolStripMenuItemJobs.Name = "pasteToolStripMenuItemJobs";
+            pasteToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.V;
+            pasteToolStripMenuItemJobs.Size = new Size(213, 22);
+            pasteToolStripMenuItemJobs.Text = "Paste";
+            pasteToolStripMenuItemJobs.Click += PasteToolStripMenuItemJobs_Click;
+            // 
+            // sendToScriptConstructorToolStripMenuItemJobs
+            // 
+            sendToScriptConstructorToolStripMenuItemJobs.Name = "sendToScriptConstructorToolStripMenuItemJobs";
+            sendToScriptConstructorToolStripMenuItemJobs.Size = new Size(213, 22);
+            sendToScriptConstructorToolStripMenuItemJobs.Text = "Send to Script Constructor";
+            sendToScriptConstructorToolStripMenuItemJobs.ToolTipText = "Open selected cell in Script Constructor";
+            sendToScriptConstructorToolStripMenuItemJobs.Click += SendToScriptConstructorToolStripMenuItemJobs_Click;
+            // 
+            // toolStripJobsSeparator1
+            // 
+            toolStripJobsSeparator1.Name = "toolStripJobsSeparator1";
+            toolStripJobsSeparator1.Size = new Size(210, 6);
+            // 
+            // checkAllToolStripMenuItemJobs
+            // 
+            checkAllToolStripMenuItemJobs.Name = "checkAllToolStripMenuItemJobs";
+            checkAllToolStripMenuItemJobs.Size = new Size(213, 22);
+            checkAllToolStripMenuItemJobs.Text = "Check All";
+            checkAllToolStripMenuItemJobs.Click += CheckAllToolStripMenuItemJobs_Click;
+            // 
+            // uncheckAllToolStripMenuItemJobs
+            // 
+            uncheckAllToolStripMenuItemJobs.Name = "uncheckAllToolStripMenuItemJobs";
+            uncheckAllToolStripMenuItemJobs.Size = new Size(213, 22);
+            uncheckAllToolStripMenuItemJobs.Text = "Uncheck All";
+            uncheckAllToolStripMenuItemJobs.Click += UncheckAllToolStripMenuItemJobs_Click;
+            // 
+            // checkSelectedToolStripMenuItemJobs
+            // 
+            checkSelectedToolStripMenuItemJobs.Name = "checkSelectedToolStripMenuItemJobs";
+            checkSelectedToolStripMenuItemJobs.Size = new Size(213, 22);
+            checkSelectedToolStripMenuItemJobs.Text = "Check Selected";
+            checkSelectedToolStripMenuItemJobs.Click += CheckSelectedToolStripMenuItemJobs_Click;
+            // 
+            // unCheckSelectedToolStripMenuItemJobs
+            // 
+            unCheckSelectedToolStripMenuItemJobs.Name = "unCheckSelectedToolStripMenuItemJobs";
+            unCheckSelectedToolStripMenuItemJobs.Size = new Size(213, 22);
+            unCheckSelectedToolStripMenuItemJobs.Text = "Uncheck Selected";
+            unCheckSelectedToolStripMenuItemJobs.Click += UnCheckSelectedToolStripMenuItemJobs_Click;
+            // 
+            // invertCheckToolStripMenuItemJobs
+            // 
+            invertCheckToolStripMenuItemJobs.Name = "invertCheckToolStripMenuItemJobs";
+            invertCheckToolStripMenuItemJobs.Size = new Size(213, 22);
+            invertCheckToolStripMenuItemJobs.Text = "Invert Check";
+            invertCheckToolStripMenuItemJobs.Click += InvertCheckToolStripMenuItemJobs_Click;
+            // 
+            // toolStripJobsSeparator2
+            // 
+            toolStripJobsSeparator2.Name = "toolStripJobsSeparator2";
+            toolStripJobsSeparator2.Size = new Size(210, 6);
+            // 
+            // selectAllToolStripMenuItemJobs
+            // 
+            selectAllToolStripMenuItemJobs.Name = "selectAllToolStripMenuItemJobs";
+            selectAllToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.A;
+            selectAllToolStripMenuItemJobs.Size = new Size(213, 22);
+            selectAllToolStripMenuItemJobs.Text = "Select All";
+            selectAllToolStripMenuItemJobs.Click += SelectAllToolStripMenuItemJobs_Click;
+            // 
+            // deselectAllToolStripMenuItemJobs
+            // 
+            deselectAllToolStripMenuItemJobs.Name = "deselectAllToolStripMenuItemJobs";
+            deselectAllToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.D;
+            deselectAllToolStripMenuItemJobs.Size = new Size(213, 22);
+            deselectAllToolStripMenuItemJobs.Text = "Deselect All";
+            deselectAllToolStripMenuItemJobs.Click += DeselectAllToolStripMenuItemJobs_Click;
+            // 
+            // invertSelectionToolStripMenuItemJobs
+            // 
+            invertSelectionToolStripMenuItemJobs.Name = "invertSelectionToolStripMenuItemJobs";
+            invertSelectionToolStripMenuItemJobs.Size = new Size(213, 22);
+            invertSelectionToolStripMenuItemJobs.Text = "Invert Selection";
+            invertSelectionToolStripMenuItemJobs.Click += InvertSelectionToolStripMenuItemJobs_Click;
+            // 
+            // toolStripJobsSeparator3
+            // 
+            toolStripJobsSeparator3.Name = "toolStripJobsSeparator3";
+            toolStripJobsSeparator3.Size = new Size(210, 6);
+            // 
+            // moveUpToolStripMenuItemJobs
+            // 
+            moveUpToolStripMenuItemJobs.Name = "moveUpToolStripMenuItemJobs";
+            moveUpToolStripMenuItemJobs.Size = new Size(213, 22);
+            moveUpToolStripMenuItemJobs.Tag = "KeepOpened";
+            moveUpToolStripMenuItemJobs.Text = "↑ Move Up";
+            moveUpToolStripMenuItemJobs.Click += MoveUpToolStripMenuItemJobs_Click;
+            // 
+            // moveDownToolStripMenuItemJobs
+            // 
+            moveDownToolStripMenuItemJobs.Name = "moveDownToolStripMenuItemJobs";
+            moveDownToolStripMenuItemJobs.Size = new Size(213, 22);
+            moveDownToolStripMenuItemJobs.Tag = "KeepOpened";
+            moveDownToolStripMenuItemJobs.Text = "↓ Move Down";
+            moveDownToolStripMenuItemJobs.Click += MoveDownToolStripMenuItemJobs_Click;
+            // 
+            // toolStripJobsSeparator4
+            // 
+            toolStripJobsSeparator4.Name = "toolStripJobsSeparator4";
+            toolStripJobsSeparator4.Size = new Size(210, 6);
+            // 
+            // clearUncheckedToolStripMenuItemJobs
+            // 
+            clearUncheckedToolStripMenuItemJobs.Name = "clearUncheckedToolStripMenuItemJobs";
+            clearUncheckedToolStripMenuItemJobs.Size = new Size(213, 22);
+            clearUncheckedToolStripMenuItemJobs.Text = "Clear Unchecked";
+            clearUncheckedToolStripMenuItemJobs.Click += ClearUncheckedToolStripMenuItemJobs_Click;
+            // 
+            // clearSelectedToolStripMenuItemJobs
+            // 
+            clearSelectedToolStripMenuItemJobs.Name = "clearSelectedToolStripMenuItemJobs";
+            clearSelectedToolStripMenuItemJobs.ShortcutKeys = Keys.Delete;
+            clearSelectedToolStripMenuItemJobs.Size = new Size(213, 22);
+            clearSelectedToolStripMenuItemJobs.Text = "Clear Selected";
+            clearSelectedToolStripMenuItemJobs.Click += ClearSelectedToolStripMenuItemJobs_Click;
+            // 
+            // clearDuplicateEntriesToolStripMenuItemJobs
+            // 
+            clearDuplicateEntriesToolStripMenuItemJobs.Name = "clearDuplicateEntriesToolStripMenuItemJobs";
+            clearDuplicateEntriesToolStripMenuItemJobs.Size = new Size(213, 22);
+            clearDuplicateEntriesToolStripMenuItemJobs.Text = "Clear Duplicate Entries";
+            clearDuplicateEntriesToolStripMenuItemJobs.ToolTipText = "Clear duplicate entries leaving only first one.";
+            clearDuplicateEntriesToolStripMenuItemJobs.Click += ClearDuplicateEntriesToolStripMenuItemJobs_Click;
+            // 
+            // mergeDuplicateEntriesToolStripMenuItemJobs
+            // 
+            mergeDuplicateEntriesToolStripMenuItemJobs.Name = "mergeDuplicateEntriesToolStripMenuItemJobs";
+            mergeDuplicateEntriesToolStripMenuItemJobs.Size = new Size(213, 22);
+            mergeDuplicateEntriesToolStripMenuItemJobs.Text = "Merge Duplicate Entries";
+            mergeDuplicateEntriesToolStripMenuItemJobs.ToolTipText = "Merge duplicate entries to one, increasing passes count.";
+            mergeDuplicateEntriesToolStripMenuItemJobs.Click += MergeDuplicateEntriesToolStripMenuItemJobs_Click;
+            // 
+            // clearAllJobsToolStripMenuItemJobs
+            // 
+            clearAllJobsToolStripMenuItemJobs.Name = "clearAllJobsToolStripMenuItemJobs";
+            clearAllJobsToolStripMenuItemJobs.Size = new Size(213, 22);
+            clearAllJobsToolStripMenuItemJobs.Text = "Clear All Jobs";
+            clearAllJobsToolStripMenuItemJobs.Click += ClearAllJobsToolStripMenuItemJobs_Click;
             // 
             // buttonStartJobList
             // 
@@ -2562,6 +2763,7 @@
             groupBoxJobsList.ResumeLayout(false);
             groupBoxJobsList.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewJobs).EndInit();
+            contextMenuStripJobs.ResumeLayout(false);
             groupBoxLog.ResumeLayout(false);
             groupBoxLog.PerformLayout();
             tabControlLog.ResumeLayout(false);
@@ -2816,5 +3018,29 @@
         private ToolStripMenuItem warningsAsErrorsToolStripMenuItemAudioFiles;
         private ToolStripSeparator toolStripAudioFilesSeparator10;
         private ToolStripMenuItem summaryToolStripMenuItemAudioFiles;
+        private ContextMenuStrip contextMenuStripJobs;
+        private ToolStripMenuItem checkAllToolStripMenuItemJobs;
+        private ToolStripMenuItem uncheckAllToolStripMenuItemJobs;
+        private ToolStripMenuItem checkSelectedToolStripMenuItemJobs;
+        private ToolStripMenuItem unCheckSelectedToolStripMenuItemJobs;
+        private ToolStripMenuItem invertCheckToolStripMenuItemJobs;
+        private ToolStripMenuItem editSelectedCellToolStripMenuItemJobs;
+        private ToolStripMenuItem sendToScriptConstructorToolStripMenuItemJobs;
+        private ToolStripSeparator toolStripJobsSeparator1;
+        private ToolStripSeparator toolStripJobsSeparator2;
+        private ToolStripMenuItem selectAllToolStripMenuItemJobs;
+        private ToolStripMenuItem deselectAllToolStripMenuItemJobs;
+        private ToolStripMenuItem invertSelectionToolStripMenuItemJobs;
+        private ToolStripSeparator toolStripJobsSeparator3;
+        private ToolStripMenuItem moveUpToolStripMenuItemJobs;
+        private ToolStripMenuItem moveDownToolStripMenuItemJobs;
+        private ToolStripSeparator toolStripJobsSeparator4;
+        private ToolStripMenuItem clearUncheckedToolStripMenuItemJobs;
+        private ToolStripMenuItem clearSelectedToolStripMenuItemJobs;
+        private ToolStripMenuItem clearDuplicateEntriesToolStripMenuItemJobs;
+        private ToolStripMenuItem mergeDuplicateEntriesToolStripMenuItemJobs;
+        private ToolStripMenuItem clearAllJobsToolStripMenuItemJobs;
+        private ToolStripMenuItem copyToolStripMenuItemJobs;
+        private ToolStripMenuItem pasteToolStripMenuItemJobs;
     }
 }
