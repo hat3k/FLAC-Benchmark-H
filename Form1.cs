@@ -551,9 +551,7 @@ namespace FLAC_Benchmark_H
             try
             {
                 // Create an array of formatted strings representing the rows in dataGridViewJobs
-                // Exclude the new row if it exists (though we disabled it)
                 string[] lines = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()
-                .Where(row => !row.IsNewRow) // Filter out the new row
                 .Select(row =>
                 {
                     // Get values from the respective cells
@@ -900,7 +898,6 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = File.ReadAllLines(SettingsJobsFilePath);
-                // Clear existing rows in dataGridViewJobs before loading
                 dataGridViewJobs.Invoke(new Action(dataGridViewJobs.Rows.Clear));
 
                 foreach (string line in lines)
@@ -913,7 +910,6 @@ namespace FLAC_Benchmark_H
                     // Check for the primary format: "Status|Type|Passes|Parameters"
                     if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
                     {
-                        // New format: Checked|Type|Passes|Parameters
                         int firstBar = line.IndexOf('|');
                         int secondBar = line.IndexOf('|', firstBar + 1);
                         int thirdBar = line.IndexOf('|', secondBar + 1);
@@ -925,33 +921,21 @@ namespace FLAC_Benchmark_H
                             string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
                             string parameters = thirdBar + 1 < line.Length ? line[(thirdBar + 1)..] : "";
 
-                            // Add the parsed job data as a new row to dataGridViewJobs
                             dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters)));
-                            continue;
-                        }
-                    }
-                    // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
-                    else if (line.Contains('~'))
-                    {
-                        // Old format: Text~Checked~Passes~Parameters
-                        string[] parts = line.Split('~');
-                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            // Add the parsed job data as a new row to dataGridViewJobs
-                            dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Add(isChecked, NormalizeSpaces(parts[0]), NormalizeSpaces(parts[2]), NormalizeSpaces(parts[3]))));
                             continue;
                         }
                     }
 
                     _ = MessageBox.Show($"Invalid line format: {line}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
                 _ = MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
             dataGridViewJobs.ClearSelection();
         }
         private void BackupJobsFile()
@@ -1864,7 +1848,7 @@ namespace FLAC_Benchmark_H
         }
         private async void ButtonAddAudioFiles_Click(object? sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new())
+            using OpenFileDialog openFileDialog = new();
             {
                 openFileDialog.Title = "Select Audio Files";
                 openFileDialog.Filter = "Audio Files (*.flac;*.wav)|*.flac;*.wav|" +
@@ -2972,7 +2956,7 @@ namespace FLAC_Benchmark_H
 
             try
             {
-                string[] lines = await Task.Run(() => File.ReadAllLines(filePath));
+                string[] lines = await File.ReadAllLinesAsync(filePath);
                 foreach (string line in lines)
                 {
                     if (string.IsNullOrWhiteSpace(line))
@@ -3103,9 +3087,7 @@ namespace FLAC_Benchmark_H
                 try
                 {
                     // Create an array of formatted strings representing the rows in dataGridViewJobs
-                    // Exclude the new row if it exists (though we disabled it)
                     string[] jobList = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()
-                    .Where(row => !row.IsNewRow) // Filter out the new row
                     .Select(row =>
                     {
                         // Get values from the respective cells
@@ -3136,7 +3118,7 @@ namespace FLAC_Benchmark_H
         {
             MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, 1); // Pass 1 to move down
         }
-        private void ButtonRemoveJob_Click(object? sender, EventArgs e)
+        private void ButtonClearSelectedJob_Click(object? sender, EventArgs e)
         {
             // Remove selected rows from dataGridViewJobs
             // Get selected row indices in descending order to avoid index shifting issues during removal
@@ -3245,18 +3227,13 @@ namespace FLAC_Benchmark_H
             // Iterate through the selected rows in dataGridViewJobs
             foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
             {
-                // Ensure it's not the new row (which is always present when AllowUserToAddRows is true, but we set it to false)
-                // and that the cell in the "Passes" column (index 2 or by name) contains a valid integer.
-                if (!row.IsNewRow)
+                // Get the current passes value from the "Passes" column (assuming Column3Passes)
+                if (int.TryParse(row.Cells["Column3Passes"].Value?.ToString(), out int currentPasses))
                 {
-                    // Get the current passes value from the "Passes" column (assuming Column3Passes)
-                    if (int.TryParse(row.Cells["Column3Passes"].Value?.ToString(), out int currentPasses))
-                    {
-                        // Increment the passes count
-                        currentPasses++;
-                        // Update the cell value in dataGridViewJobs
-                        row.Cells["Column3Passes"].Value = currentPasses.ToString();
-                    }
+                    // Increment the passes count
+                    currentPasses++;
+                    // Update the cell value in dataGridViewJobs
+                    row.Cells["Column3Passes"].Value = currentPasses.ToString();
                 }
             }
         }
@@ -3265,21 +3242,16 @@ namespace FLAC_Benchmark_H
             // Iterate through the selected rows in dataGridViewJobs
             foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
             {
-                // Ensure it's not the new row (which is always present when AllowUserToAddRows is true, but we set it to false)
-                // and that the cell in the "Passes" column (index 2 or by name) contains a valid integer.
-                if (!row.IsNewRow)
+                // Get the current passes value from the "Passes" column (assuming Column3Passes)
+                if (int.TryParse(row.Cells["Column3Passes"].Value?.ToString(), out int currentPasses))
                 {
-                    // Get the current passes value from the "Passes" column (assuming Column3Passes)
-                    if (int.TryParse(row.Cells["Column3Passes"].Value?.ToString(), out int currentPasses))
+                    // Ensure the value is greater than 1 before decrementing
+                    if (currentPasses > 1)
                     {
-                        // Ensure the value is greater than 1 before decrementing
-                        if (currentPasses > 1)
-                        {
-                            // Decrement the passes count
-                            currentPasses--;
-                            // Update the cell value in dataGridViewJobs
-                            row.Cells["Column3Passes"].Value = currentPasses.ToString();
-                        }
+                        // Decrement the passes count
+                        currentPasses--;
+                        // Update the cell value in dataGridViewJobs
+                        row.Cells["Column3Passes"].Value = currentPasses.ToString();
                     }
                 }
             }
@@ -3319,15 +3291,8 @@ namespace FLAC_Benchmark_H
             else
             {
                 // --- LOGIC FOR ALL ROWS (when nothing is selected) ---
-                // Iterate through all rows (excluding the potential new row)
                 foreach (DataGridViewRow row in dataGridViewJobs.Rows)
                 {
-                    if (row.IsNewRow)
-                    {
-                        continue; // Skip the new row
-                    }
-
-                    // Get values from the respective cells
                     bool isChecked = Convert.ToBoolean(row.Cells["Column1CheckBox"].Value);
                     string type = row.Cells["Column2JobType"].Value?.ToString() ?? "";
                     string passes = row.Cells["Column3Passes"].Value?.ToString() ?? "";
@@ -3355,6 +3320,15 @@ namespace FLAC_Benchmark_H
         {
             try
             {
+                List<int> selectedRowIndices = [];
+                if (dataGridViewJobs.SelectedRows.Count > 0)
+                {
+                    foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
+                    {
+                        selectedRowIndices.Add(row.Index);
+                    }
+                }
+
                 string clipboardText = Clipboard.GetText();
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
@@ -3412,6 +3386,23 @@ namespace FLAC_Benchmark_H
                     _ = MessageBox.Show("Clipboard is empty.", "Information",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+
+                if (selectedRowIndices.Count > 0)
+                {
+                    dataGridViewJobs.ClearSelection();
+
+                    foreach (int index in selectedRowIndices)
+                    {
+                        if (index < dataGridViewJobs.Rows.Count)
+                        {
+                            dataGridViewJobs.Rows[index].Selected = true;
+                        }
+                    }
+                }
+                else
+                {
+                    dataGridViewJobs.ClearSelection();
+                }
             }
             catch (Exception ex)
             {
@@ -3437,6 +3428,19 @@ namespace FLAC_Benchmark_H
                 }
             }
         }
+        private void DataGridViewJobs_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == dataGridViewJobs.Columns["Column3Passes"]!.Index)
+            {
+                DataGridViewCell cell = dataGridViewJobs.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+                if (!int.TryParse(cell.Value?.ToString(), out int passes) || passes < 1)
+                {
+                    cell.Value = 1;
+                    //dataGridViewJobs.Refresh();
+                }
+            }
+        }
         private void DataGridViewJobs_MouseDown(object? sender, MouseEventArgs e)
         {
             DataGridView.HitTestInfo hitTest = dataGridViewJobs.HitTest(e.X, e.Y);
@@ -3444,28 +3448,16 @@ namespace FLAC_Benchmark_H
             // Handle click on checkbox column header (column 0)
             if (hitTest.RowIndex == -1 && hitTest.ColumnIndex == 0)
             {
-                // Get only data rows (exclude new row and any other special rows)
-                IEnumerable<DataGridViewRow> dataRows = dataGridViewJobs.Rows
-                .Cast<DataGridViewRow>()
-                .Where(row => !row.IsNewRow && row.Index >= 0);
+                List<DataGridViewRow> dataRows = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()];
 
-                // Check if all data rows are selected
-                bool allChecked = true;
-                bool hasDataRows = false;
-
-                foreach (DataGridViewRow row in dataRows)
+                if (dataRows.Count == 0)
                 {
-                    hasDataRows = true;
-                    object? value = row.Cells["Column1CheckBox"].Value;
-                    if (value == null || !Convert.ToBoolean(value))
-                    {
-                        allChecked = false;
-                        break;
-                    }
+                    return;
                 }
 
-                // If no data rows exist, default to checked state
-                bool newState = !(hasDataRows && allChecked);
+                // Check if all data rows are checked
+                bool allChecked = dataRows.All(row => row.Cells["Column1CheckBox"].Value is bool b && b);
+                bool newState = !allChecked;
 
                 // Set new state for all data rows
                 foreach (DataGridViewRow row in dataRows)
@@ -3473,9 +3465,49 @@ namespace FLAC_Benchmark_H
                     row.Cells["Column1CheckBox"].Value = newState;
                 }
 
-                // Force immediate refresh
                 _ = dataGridViewJobs.EndEdit();
                 dataGridViewJobs.Refresh();
+                return;
+            }
+
+            // Right-click on a cell
+            if (e.Button == MouseButtons.Right && hitTest.RowIndex >= 0 && hitTest.ColumnIndex >= 0)
+            {
+                // Save indices of all selected rows BEFORE any changes
+                List<int> selectedIndices = [.. dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>().Select(r => r.Index)];
+
+                // If clicked on unselected row - select it (considering modifiers)
+                if (!dataGridViewJobs.Rows[hitTest.RowIndex].Selected)
+                {
+                    if (ModifierKeys.HasFlag(Keys.Control))
+                    {
+                        dataGridViewJobs.Rows[hitTest.RowIndex].Selected = true;
+                    }
+                    else
+                    {
+                        dataGridViewJobs.ClearSelection();
+                        dataGridViewJobs.Rows[hitTest.RowIndex].Selected = true;
+                    }
+                }
+                // If row is already selected - just set CurrentCell and restore selection
+                else
+                {
+                    // Temporarily remember that we need to restore selection
+                    dataGridViewJobs.CurrentCell = dataGridViewJobs.Rows[hitTest.RowIndex].Cells[hitTest.ColumnIndex];
+
+                    // Restore multiple selection
+                    dataGridViewJobs.ClearSelection();
+                    foreach (int index in selectedIndices)
+                    {
+                        if (index >= 0 && index < dataGridViewJobs.Rows.Count)
+                        {
+                            dataGridViewJobs.Rows[index].Selected = true;
+                        }
+                    }
+                    return;
+                }
+
+                dataGridViewJobs.CurrentCell = dataGridViewJobs.Rows[hitTest.RowIndex].Cells[hitTest.ColumnIndex];
                 return;
             }
 
@@ -3485,89 +3517,261 @@ namespace FLAC_Benchmark_H
                 _ = dataGridViewJobs.EndEdit();
                 dataGridViewJobs.ClearSelection();
                 dataGridViewJobs.CurrentCell = null;
+                return;
             }
         }
 
         // Jobs Context Menu
         private void ContextMenuStripJobs_Opening(object sender, CancelEventArgs e)
         {
+            IEnumerable<DataGridViewRow> rows = dataGridViewJobs.Rows.Cast<DataGridViewRow>();
 
+            bool hasItems = dataGridViewJobs.Rows.Count > 0;
+            bool hasCheckedItems = rows.Any(r => r.Cells["Column1CheckBox"].Value is true);
+            bool hasUncheckedItems = rows.Any(r => r.Cells["Column1CheckBox"].Value is false);
+            bool hasSelectedItems = dataGridViewJobs.SelectedRows.Count > 0;
+            bool isEditableCell = dataGridViewJobs.CurrentCell is { ColumnIndex: not 0, ReadOnly: false };
+
+            editCurrentCellToolStripMenuItemJobs.Enabled = hasSelectedItems && isEditableCell;
+            copyToolStripMenuItemJobs.Enabled = hasItems;
+            pasteToolStripMenuItemJobs.Enabled = true;
+            sendToScriptConstructorToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            checkAllToolStripMenuItemJobs.Enabled = hasUncheckedItems;
+            uncheckAllToolStripMenuItemJobs.Enabled = hasCheckedItems;
+            checkSelectedToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            unCheckSelectedToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            invertCheckToolStripMenuItemJobs.Enabled = hasItems;
+            selectAllToolStripMenuItemJobs.Enabled = hasItems;
+            deselectAllToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            invertSelectionToolStripMenuItemJobs.Enabled = hasItems;
+            moveUpToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            moveDownToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            clearUncheckedToolStripMenuItemJobs.Enabled = hasUncheckedItems;
+            clearSelectedToolStripMenuItemJobs.Enabled = hasSelectedItems;
+            clearDuplicateEntriesToolStripMenuItemJobs.Enabled = hasItems;
+            mergeDuplicateEntriesToolStripMenuItemJobs.Enabled = hasItems;
+            clearAllJobsToolStripMenuItemJobs.Enabled = hasItems;
         }
-        private void EditSelectedCellToolStripMenuItemJobs_Click(object sender, EventArgs e)
+        private void EditCurrentCellToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            _ = dataGridViewJobs.BeginEdit(true);
         }
         private void CopyToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            ButtonCopyJobs_Click(sender, EventArgs.Empty);
         }
         private void PasteToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            ButtonPasteJobs_Click(sender, EventArgs.Empty);
         }
         private void SendToScriptConstructorToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            if (dataGridViewJobs.CurrentCell?.ColumnIndex == 3) // Parameters column
+            {
+                string? parameters = dataGridViewJobs.CurrentCell.Value?.ToString();
+                if (!string.IsNullOrEmpty(parameters))
+                {
+                    if (_scriptForm == null || _scriptForm.IsDisposed)
+                    {
+                        _scriptForm = new ScriptConstructorForm
+                        {
+                            InitialScriptText = parameters
+                        };
+                        _scriptForm.FormClosed += (s, args) => _scriptForm = null;
+                        _scriptForm.Show(this);
+                    }
+                    else
+                    {
+                        _scriptForm.InitialScriptText = parameters;
+                        _scriptForm.BringToFront();
+                        _ = _scriptForm.Focus();
+                    }
+                }
+            }
         }
         private void CheckAllToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            foreach (DataGridViewRow row in dataGridViewJobs.Rows)
+            {
+                if (row.Cells["Column1CheckBox"].Value is bool)
+                {
+                    row.Cells["Column1CheckBox"].Value = true;
+                }
+            }
+            dataGridViewJobs.Refresh();
         }
         private void UncheckAllToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            foreach (DataGridViewRow row in dataGridViewJobs.Rows)
+            {
+                if (row.Cells["Column1CheckBox"].Value is bool)
+                {
+                    row.Cells["Column1CheckBox"].Value = false;
+                }
+            }
+            dataGridViewJobs.Refresh();
         }
         private void CheckSelectedToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
+            {
+                if (row.Cells["Column1CheckBox"].Value is bool)
+                {
+                    row.Cells["Column1CheckBox"].Value = true;
+                }
+            }
+            dataGridViewJobs.Refresh();
         }
         private void UnCheckSelectedToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            foreach (DataGridViewRow row in dataGridViewJobs.SelectedRows)
+            {
+                if (row.Cells["Column1CheckBox"].Value is bool)
+                {
+                    row.Cells["Column1CheckBox"].Value = false;
+                }
+            }
+            dataGridViewJobs.Refresh();
         }
         private void InvertCheckToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
+            _ = dataGridViewJobs.EndEdit();
 
+            foreach (DataGridViewRow row in dataGridViewJobs.Rows)
+            {
+                if (row.Cells["Column1CheckBox"] is DataGridViewCheckBoxCell checkBoxCell)
+                {
+                    object? value = checkBoxCell.Value;
+                    bool currentValue = value != null && Convert.ToBoolean(value);
+
+                    checkBoxCell.Value = !currentValue;
+                }
+            }
+            dataGridViewJobs.Refresh();
         }
         private void SelectAllToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            dataGridViewJobs.SelectAll();
         }
         private void DeselectAllToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            dataGridViewJobs.ClearSelection();
+            dataGridViewJobs.CurrentCell = null;
         }
         private void InvertSelectionToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
+            List<DataGridViewRow> unselectedRows = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>().Where(r => !r.Selected)];
 
+            dataGridViewJobs.ClearSelection();
+
+            foreach (DataGridViewRow row in unselectedRows)
+            {
+                row.Selected = true;
+            }
         }
         private void MoveUpToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, -1);
         }
         private void MoveDownToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            MoveSelectedItemsForDataGridViewEx(dataGridViewJobs, 1);
         }
         private void ClearUncheckedToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            for (int i = dataGridViewJobs.Rows.Count - 1; i >= 0; i--)
+            {
+                DataGridViewRow row = dataGridViewJobs.Rows[i];
+                if (row.Cells["Column1CheckBox"].Value is bool isChecked && !isChecked)
+                {
+                    dataGridViewJobs.Rows.RemoveAt(i);
+                }
+            }
         }
         private void ClearSelectedToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
+            List<int> selectedIndices = [.. dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
+            .Select(row => row.Index)
+            .OrderByDescending(index => index)];
 
+            foreach (int index in selectedIndices)
+            {
+                if (index >= 0 && index < dataGridViewJobs.Rows.Count)
+                {
+                    dataGridViewJobs.Rows.RemoveAt(index);
+                }
+            }
+            dataGridViewJobs.ClearSelection();
+            dataGridViewJobs.CurrentCell = null;
         }
         private void ClearDuplicateEntriesToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
+            HashSet<string> seenParameters = [];
+            List<DataGridViewRow> rowsToRemove = [];
 
+            foreach (DataGridViewRow row in dataGridViewJobs.Rows)
+            {
+                string key = $"{row.Cells["Column2JobType"].Value}|{row.Cells["Column4Parameters"].Value}";
+
+                if (!seenParameters.Add(key))
+                {
+                    rowsToRemove.Add(row);
+                }
+            }
+
+            foreach (DataGridViewRow row in rowsToRemove)
+            {
+                dataGridViewJobs.Rows.Remove(row);
+            }
+
+            if (rowsToRemove.Count > 0)
+            {
+                _ = MessageBox.Show(
+                    $"Cleared {rowsToRemove.Count} duplicate entr{(rowsToRemove.Count == 1 ? "y" : "ies")}.",
+                    "Duplicates cleared",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
         private void MergeDuplicateEntriesToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
+            List<IGrouping<string, DataGridViewRow>> groups = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>()
+                .GroupBy(r => $"{r.Cells["Column2JobType"].Value}|{r.Cells["Column4Parameters"].Value}")
+                .Where(g => g.Count() > 1)];
 
+            int mergedCount = 0;
+
+            foreach (IGrouping<string, DataGridViewRow> group in groups)
+            {
+                int totalPasses = group.Sum(r =>
+                    int.TryParse(r.Cells["Column3Passes"].Value?.ToString(), out int p) ? p : 1);
+
+                DataGridViewRow firstRow = group.First();
+                firstRow.Cells["Column3Passes"].Value = totalPasses.ToString();
+
+                List<int> indicesToRemove = [.. group.Skip(1)
+            .Select(r => r.Index)
+            .OrderByDescending(i => i)];
+
+                foreach (int index in indicesToRemove)
+                {
+                    dataGridViewJobs.Rows.RemoveAt(index);
+                    mergedCount++;
+                }
+            }
+
+            if (mergedCount > 0)
+            {
+                _ = MessageBox.Show(
+                    $"Merged {mergedCount} duplicate entr{(mergedCount == 1 ? "y" : "ies")}.",
+                    "Merge completed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
         private void ClearAllJobsToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-
+            dataGridViewJobs.Rows.Clear();
         }
 
         // Log Settings (now supports only "Benchmark" tab)
@@ -4646,7 +4850,7 @@ namespace FLAC_Benchmark_H
 
             // Group error rows from current log
             var errorGroups = dataGridViewLog.Rows.Cast<DataGridViewRow>()
-            .Where(row => !row.IsNewRow && !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
+            .Where(row => !string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
             .GroupBy(row => new
             {
                 Audio = (row.Cells["AudioFileDirectory"].Value?.ToString() ?? "") + "\\" + (row.Cells["Name"].Value?.ToString() ?? ""),
@@ -4747,11 +4951,6 @@ namespace FLAC_Benchmark_H
                 // Apply red color to all text in error rows
                 foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    if (row.IsNewRow)
-                    {
-                        continue;
-                    }
-
                     if (!string.IsNullOrEmpty(row.Cells["Errors"].Value?.ToString()))
                     {
                         foreach (DataGridViewCell cell in row.Cells)
@@ -4851,11 +5050,6 @@ namespace FLAC_Benchmark_H
             List<LogEntry> dataToSort = [];
             foreach (DataGridViewRow row in dataGridViewLog.Rows)
             {
-                if (row.IsNewRow)
-                {
-                    continue; // Skip new row
-                }
-
                 LogEntry logEntry = new()
                 {
                     Name = row.Cells["Name"].Value?.ToString() ?? string.Empty,
@@ -6262,11 +6456,6 @@ namespace FLAC_Benchmark_H
             int rowIndexInSheet = 2;
             foreach (DataGridViewRow row in dgv.Rows)
             {
-                if (row.IsNewRow)
-                {
-                    continue;
-                }
-
                 for (int j = 0; j < colCount; j++)
                 {
                     DataGridViewColumn col = visibleColumns[j];
@@ -6397,9 +6586,8 @@ namespace FLAC_Benchmark_H
                     return;
                 }
 
-                // Check if there are any data rows (excluding the new row placeholder)
-                bool hasData = dataGridViewLog.Rows.Cast<DataGridViewRow>()
-                .Any(row => !row.IsNewRow);
+                // Check if there are any data rows
+                bool hasData = dataGridViewLog.Rows.Cast<DataGridViewRow>().Any();
 
                 if (!hasData)
                 {
@@ -6422,11 +6610,6 @@ namespace FLAC_Benchmark_H
                 // Iterate through data rows
                 foreach (DataGridViewRow row in dataGridViewLog.Rows)
                 {
-                    if (row.IsNewRow)
-                    {
-                        continue; // Skip the empty "new row" at the bottom
-                    }
-
                     _ = bbCodeText.Append("[tr]");
                     foreach (DataGridViewColumn? col in visibleColumns)
                     {
@@ -6506,9 +6689,8 @@ namespace FLAC_Benchmark_H
                 return;
             }
 
-            // Check if there are any data rows (excluding the new row placeholder)
-            bool hasData = activeGrid.Rows.Cast<DataGridViewRow>()
-            .Any(row => !row.IsNewRow);
+            // Check if there are any data rows
+            bool hasData = activeGrid.Rows.Cast<DataGridViewRow>().Any();
 
             if (!hasData)
             {
@@ -6530,11 +6712,6 @@ namespace FLAC_Benchmark_H
             // Iterate through data rows
             foreach (DataGridViewRow row in activeGrid.Rows)
             {
-                if (row.IsNewRow)
-                {
-                    continue; // Skip the empty "new row" at the bottom
-                }
-
                 foreach (DataGridViewColumn? col in visibleColumns)
                 {
                     string cellValue = row.Cells[col.Index]?.Value?.ToString() ?? string.Empty;
@@ -6695,7 +6872,7 @@ namespace FLAC_Benchmark_H
             // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
-                buttonRemoveJob.PerformClick(); // Reuse the existing remove logic
+                buttonClearSelectedJob.PerformClick(); // Reuse the existing remove logic
             }
 
             // Check if Ctrl and A are pressed simultaneously
@@ -6732,11 +6909,6 @@ namespace FLAC_Benchmark_H
 
                 foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
                 {
-                    if (row.IsNewRow)
-                    {
-                        continue;
-                    }
-
                     // Case 1: Raw log row (before AnalyzeLogAsync)
                     // In this case, row.Tag holds a direct reference to a BenchmarkPass object.
                     if (row.Tag is BenchmarkPass singlePass)
@@ -6775,7 +6947,6 @@ namespace FLAC_Benchmark_H
 
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
                 .OrderByDescending(i => i)];
 
@@ -6801,7 +6972,6 @@ namespace FLAC_Benchmark_H
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
                 .OrderByDescending(i => i)];
 
@@ -6820,7 +6990,6 @@ namespace FLAC_Benchmark_H
             {
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
-                .Where(r => !r.IsNewRow)
                 .Select(r => r.Index)
                 .OrderByDescending(i => i)];
 
@@ -7668,11 +7837,6 @@ namespace FLAC_Benchmark_H
 
                 foreach (DataGridViewRow row in dataGridViewJobs.Rows)
                 {
-                    if (row.IsNewRow)
-                    {
-                        continue;
-                    }
-
                     DataGridViewCheckBoxCell? checkBoxCell = row.Cells[0] as DataGridViewCheckBoxCell;
                     if (checkBoxCell?.Value is bool isChecked && isChecked)
                     {

@@ -156,12 +156,8 @@
             labelAudioFileRemoved = new Label();
             groupBoxJobsList = new GroupBox();
             dataGridViewJobs = new DataGridViewEx();
-            Column1CheckBox = new DataGridViewCheckBoxColumn();
-            Column2JobType = new DataGridViewTextBoxColumn();
-            Column3Passes = new DataGridViewTextBoxColumn();
-            Column4Parameters = new DataGridViewTextBoxColumn();
             contextMenuStripJobs = new ContextMenuStrip(components);
-            editSelectedCellToolStripMenuItemJobs = new ToolStripMenuItem();
+            editCurrentCellToolStripMenuItemJobs = new ToolStripMenuItem();
             copyToolStripMenuItemJobs = new ToolStripMenuItem();
             pasteToolStripMenuItemJobs = new ToolStripMenuItem();
             sendToScriptConstructorToolStripMenuItemJobs = new ToolStripMenuItem();
@@ -187,7 +183,7 @@
             buttonStartJobList = new Button();
             buttonUpJob = new Button();
             buttonDownJob = new Button();
-            buttonRemoveJob = new Button();
+            buttonClearSelectedJob = new Button();
             buttonMinusPass = new Button();
             labelPasses = new Label();
             buttonPlusPass = new Button();
@@ -269,6 +265,10 @@
             groupBoxInformation = new GroupBox();
             labelCpuUsageValue = new Label();
             buttonAbout = new Button();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             contextMenuStripEncoders.SuspendLayout();
@@ -1433,7 +1433,7 @@
             groupBoxJobsList.Controls.Add(buttonStartJobList);
             groupBoxJobsList.Controls.Add(buttonUpJob);
             groupBoxJobsList.Controls.Add(buttonDownJob);
-            groupBoxJobsList.Controls.Add(buttonRemoveJob);
+            groupBoxJobsList.Controls.Add(buttonClearSelectedJob);
             groupBoxJobsList.Controls.Add(buttonMinusPass);
             groupBoxJobsList.Controls.Add(labelPasses);
             groupBoxJobsList.Controls.Add(buttonPlusPass);
@@ -1469,57 +1469,28 @@
             dataGridViewJobs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewJobs.Size = new Size(765, 336);
             dataGridViewJobs.TabIndex = 0;
+            dataGridViewJobs.CellEndEdit += DataGridViewJobs_CellEndEdit;
             dataGridViewJobs.CellFormatting += DataGridViewJobs_CellFormatting;
             dataGridViewJobs.DragDrop += DataGridViewJobs_DragDrop;
             dataGridViewJobs.DragEnter += DataGridViewJobs_DragEnter;
             dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
             dataGridViewJobs.MouseDown += DataGridViewJobs_MouseDown;
             // 
-            // Column1CheckBox
-            // 
-            Column1CheckBox.FillWeight = 20F;
-            Column1CheckBox.Frozen = true;
-            Column1CheckBox.HeaderText = "";
-            Column1CheckBox.Name = "Column1CheckBox";
-            Column1CheckBox.Width = 20;
-            // 
-            // Column2JobType
-            // 
-            Column2JobType.FillWeight = 60F;
-            Column2JobType.HeaderText = "Job Type";
-            Column2JobType.Name = "Column2JobType";
-            Column2JobType.ReadOnly = true;
-            Column2JobType.Resizable = DataGridViewTriState.True;
-            Column2JobType.Width = 60;
-            // 
-            // Column3Passes
-            // 
-            Column3Passes.FillWeight = 48F;
-            Column3Passes.HeaderText = "Passes";
-            Column3Passes.Name = "Column3Passes";
-            Column3Passes.Width = 48;
-            // 
-            // Column4Parameters
-            // 
-            Column4Parameters.HeaderText = "Parameters";
-            Column4Parameters.Name = "Column4Parameters";
-            Column4Parameters.Width = 634;
-            // 
             // contextMenuStripJobs
             // 
-            contextMenuStripJobs.Items.AddRange(new ToolStripItem[] { editSelectedCellToolStripMenuItemJobs, copyToolStripMenuItemJobs, pasteToolStripMenuItemJobs, sendToScriptConstructorToolStripMenuItemJobs, toolStripJobsSeparator1, checkAllToolStripMenuItemJobs, uncheckAllToolStripMenuItemJobs, checkSelectedToolStripMenuItemJobs, unCheckSelectedToolStripMenuItemJobs, invertCheckToolStripMenuItemJobs, toolStripJobsSeparator2, selectAllToolStripMenuItemJobs, deselectAllToolStripMenuItemJobs, invertSelectionToolStripMenuItemJobs, toolStripJobsSeparator3, moveUpToolStripMenuItemJobs, moveDownToolStripMenuItemJobs, toolStripJobsSeparator4, clearUncheckedToolStripMenuItemJobs, clearSelectedToolStripMenuItemJobs, clearDuplicateEntriesToolStripMenuItemJobs, mergeDuplicateEntriesToolStripMenuItemJobs, clearAllJobsToolStripMenuItemJobs });
+            contextMenuStripJobs.Items.AddRange(new ToolStripItem[] { editCurrentCellToolStripMenuItemJobs, copyToolStripMenuItemJobs, pasteToolStripMenuItemJobs, sendToScriptConstructorToolStripMenuItemJobs, toolStripJobsSeparator1, checkAllToolStripMenuItemJobs, uncheckAllToolStripMenuItemJobs, checkSelectedToolStripMenuItemJobs, unCheckSelectedToolStripMenuItemJobs, invertCheckToolStripMenuItemJobs, toolStripJobsSeparator2, selectAllToolStripMenuItemJobs, deselectAllToolStripMenuItemJobs, invertSelectionToolStripMenuItemJobs, toolStripJobsSeparator3, moveUpToolStripMenuItemJobs, moveDownToolStripMenuItemJobs, toolStripJobsSeparator4, clearUncheckedToolStripMenuItemJobs, clearSelectedToolStripMenuItemJobs, clearDuplicateEntriesToolStripMenuItemJobs, mergeDuplicateEntriesToolStripMenuItemJobs, clearAllJobsToolStripMenuItemJobs });
             contextMenuStripJobs.Name = "contextMenuStrip1";
             contextMenuStripJobs.Size = new Size(214, 446);
             contextMenuStripJobs.Closing += ContextMenu_Closing;
             contextMenuStripJobs.Opening += ContextMenuStripJobs_Opening;
             // 
-            // editSelectedCellToolStripMenuItemJobs
+            // editCurrentCellToolStripMenuItemJobs
             // 
-            editSelectedCellToolStripMenuItemJobs.Name = "editSelectedCellToolStripMenuItemJobs";
-            editSelectedCellToolStripMenuItemJobs.ShortcutKeys = Keys.F2;
-            editSelectedCellToolStripMenuItemJobs.Size = new Size(213, 22);
-            editSelectedCellToolStripMenuItemJobs.Text = "Edit Selected Cell";
-            editSelectedCellToolStripMenuItemJobs.Click += EditSelectedCellToolStripMenuItemJobs_Click;
+            editCurrentCellToolStripMenuItemJobs.Name = "editCurrentCellToolStripMenuItemJobs";
+            editCurrentCellToolStripMenuItemJobs.ShortcutKeys = Keys.F2;
+            editCurrentCellToolStripMenuItemJobs.Size = new Size(213, 22);
+            editCurrentCellToolStripMenuItemJobs.Text = "Edit Current Cell";
+            editCurrentCellToolStripMenuItemJobs.Click += EditCurrentCellToolStripMenuItemJobs_Click;
             // 
             // copyToolStripMenuItemJobs
             // 
@@ -1711,16 +1682,16 @@
             buttonDownJob.UseVisualStyleBackColor = true;
             buttonDownJob.Click += ButtonDownJob_Click;
             // 
-            // buttonRemoveJob
+            // buttonClearSelectedJob
             // 
-            buttonRemoveJob.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonRemoveJob.Location = new Point(181, 364);
-            buttonRemoveJob.Name = "buttonRemoveJob";
-            buttonRemoveJob.Size = new Size(24, 23);
-            buttonRemoveJob.TabIndex = 4;
-            buttonRemoveJob.Text = "❌";
-            buttonRemoveJob.UseVisualStyleBackColor = true;
-            buttonRemoveJob.Click += ButtonRemoveJob_Click;
+            buttonClearSelectedJob.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonClearSelectedJob.Location = new Point(181, 364);
+            buttonClearSelectedJob.Name = "buttonClearSelectedJob";
+            buttonClearSelectedJob.Size = new Size(24, 23);
+            buttonClearSelectedJob.TabIndex = 4;
+            buttonClearSelectedJob.Text = "❌";
+            buttonClearSelectedJob.UseVisualStyleBackColor = true;
+            buttonClearSelectedJob.Click += ButtonClearSelectedJob_Click;
             // 
             // buttonMinusPass
             // 
@@ -2730,6 +2701,36 @@
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += ButtonAbout_Click;
             // 
+            // Column1CheckBox
+            // 
+            Column1CheckBox.FillWeight = 21F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.Width = 21;
+            // 
+            // Column2JobType
+            // 
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
+            // 
+            // Column3Passes
+            // 
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.Width = 633;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2865,7 +2866,7 @@
         private ColumnHeader VersionExe;
         private Button buttonCopyJobs;
         private Button buttonPasteJobs;
-        private Button buttonRemoveJob;
+        private Button buttonClearSelectedJob;
         private Button buttonDownEncoder;
         private Button buttonUpEncoder;
         private Button buttonDownAudioFile;
@@ -2916,10 +2917,6 @@
         private Button buttonDataGridViewLogSettings;
         private ColumnHeader Channels;
         private DataGridViewEx dataGridViewJobs;
-        private DataGridViewCheckBoxColumn Column1CheckBox;
-        private DataGridViewTextBoxColumn Column2JobType;
-        private DataGridViewTextBoxColumn Column3Passes;
-        private DataGridViewTextBoxColumn Column4Parameters;
         private TabPage ScalingPlots;
         private ScottPlot.FormsPlot plotScalingPlotSpeedByThreads;
         private TabControl tabControlScalingPlots;
@@ -3024,7 +3021,7 @@
         private ToolStripMenuItem checkSelectedToolStripMenuItemJobs;
         private ToolStripMenuItem unCheckSelectedToolStripMenuItemJobs;
         private ToolStripMenuItem invertCheckToolStripMenuItemJobs;
-        private ToolStripMenuItem editSelectedCellToolStripMenuItemJobs;
+        private ToolStripMenuItem editCurrentCellToolStripMenuItemJobs;
         private ToolStripMenuItem sendToScriptConstructorToolStripMenuItemJobs;
         private ToolStripSeparator toolStripJobsSeparator1;
         private ToolStripSeparator toolStripJobsSeparator2;
@@ -3042,5 +3039,9 @@
         private ToolStripMenuItem clearAllJobsToolStripMenuItemJobs;
         private ToolStripMenuItem copyToolStripMenuItemJobs;
         private ToolStripMenuItem pasteToolStripMenuItemJobs;
+        private DataGridViewCheckBoxColumn Column1CheckBox;
+        private DataGridViewTextBoxColumn Column2JobType;
+        private DataGridViewTextBoxColumn Column3Passes;
+        private DataGridViewTextBoxColumn Column4Parameters;
     }
 }
