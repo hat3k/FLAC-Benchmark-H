@@ -42,7 +42,17 @@ namespace FLAC_Benchmark_H
         /// Ensures help text is visible, preview is updated, and input field has focus.
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string InitialScriptText { get; set; } = string.Empty;
+        public string InitialScriptText
+        {
+            get => comboBoxScript.Text;
+            set
+            {
+                if (comboBoxScript.Text != value)
+                {
+                    comboBoxScript.Text = value;
+                }
+            }
+        }
 
         private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
         {
@@ -57,17 +67,11 @@ namespace FLAC_Benchmark_H
             // 2. Update preview based on current script text
             PreviewJobs();
 
-            // 3. Set text if provided
-            if (!string.IsNullOrEmpty(InitialScriptText))
-            {
-                comboBoxScript.Text = InitialScriptText;
-            }
-
-            // 4. Position cursor at the end
+            // 3. Position cursor at the end
             comboBoxScript.SelectionStart = comboBoxScript.Text.Length;
             comboBoxScript.SelectionLength = 0;
 
-            // 5. Set focus to the input combo box
+            // 4. Set focus to the input combo box
             comboBoxScript.Select();
         }
 

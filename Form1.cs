@@ -898,42 +898,50 @@ namespace FLAC_Benchmark_H
             try
             {
                 string[] lines = File.ReadAllLines(SettingsJobsFilePath);
-                dataGridViewJobs.Invoke(new Action(dataGridViewJobs.Rows.Clear));
+                dataGridViewJobs.Invoke(dataGridViewJobs.Rows.Clear);
+
+                List<string> errors = [];
+                int lineNumber = 0;
 
                 foreach (string line in lines)
                 {
+                    lineNumber++;
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
                     }
 
-                    // Check for the primary format: "Status|Type|Passes|Parameters"
-                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
+                    if (TryParseJobLine(line, out bool isChecked, out string type, out string passes, out string parameters))
                     {
-                        int firstBar = line.IndexOf('|');
-                        int secondBar = line.IndexOf('|', firstBar + 1);
-                        int thirdBar = line.IndexOf('|', secondBar + 1);
+                        _ = dataGridViewJobs.Invoke(() => dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters));
+                    }
+                    else
+                    {
+                        errors.Add($"Line {lineNumber}: {line}");
+                    }
+                }
 
-                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1)
-                        {
-                            bool isChecked = line.StartsWith("Checked");
-                            string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
-                            string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                            string parameters = thirdBar + 1 < line.Length ? line[(thirdBar + 1)..] : "";
-
-                            dataGridViewJobs.Invoke(new Action(() => dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters)));
-                            continue;
-                        }
+                if (errors.Count > 0)
+                {
+                    string errorMessage;
+                    if (errors.Count == 1)
+                    {
+                        errorMessage = $"1 invalid line found in jobs file:\n\n{errors[0]}";
+                    }
+                    else
+                    {
+                        string linesToShow = string.Join("\n", errors.Take(10));
+                        errorMessage = errors.Count <= 10
+                            ? $"{errors.Count} invalid lines found in jobs file:\n\n{linesToShow}"
+                            : $"{errors.Count} invalid lines found in jobs file.\n\nShowing first 10 of {errors.Count}:\n{linesToShow}";
                     }
 
-                    _ = MessageBox.Show($"Invalid line format: {line}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show(errorMessage, "Load Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show($"Error loading jobs: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error loading jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             dataGridViewJobs.ClearSelection();
@@ -2949,129 +2957,120 @@ namespace FLAC_Benchmark_H
         {
             if (!File.Exists(filePath))
             {
-                _ = MessageBox.Show("The specified file does not exist.", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show("The specified file does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             try
             {
                 string[] lines = await File.ReadAllLinesAsync(filePath);
+                List<string> errors = [];
+                int lineNumber = 0;
+
                 foreach (string line in lines)
                 {
+                    lineNumber++;
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
                     }
 
-                    // Check for the primary format: "Status|Type|Passes|Parameters"
-                    if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
+                    if (TryParseJobLine(line, out bool isChecked, out string type, out string passes, out string parameters))
                     {
-                        int firstBar = line.IndexOf('|');
-                        int secondBar = line.IndexOf('|', firstBar + 1);
-                        int thirdBar = line.IndexOf('|', secondBar + 1);
-
-                        if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
-                        {
-                            bool isChecked = line.StartsWith("Checked");
-                            string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
-                            string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                            string parameters = line[(thirdBar + 1)..];
-
-                            // Add the parsed job data as a new row to dataGridViewJobs
-                            _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
-                            continue;
-                        }
+                        _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                     }
-                    // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
-                    else if (line.Contains('~'))
+                    else
                     {
-                        string[] parts = line.Split('~');
-                        if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                        {
-                            string jobName = NormalizeSpaces(parts[0]);
-                            string passes = NormalizeSpaces(parts[2]);
-                            string parameters = NormalizeSpaces(parts[3]);
-                            // Add the parsed job data as a new row to dataGridViewJobs
-                            _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
-                            continue;
-                        }
+                        errors.Add($"Line {lineNumber}: {line}");
+                    }
+                }
+
+                if (errors.Count > 0)
+                {
+                    string errorMessage;
+                    if (errors.Count == 1)
+                    {
+                        errorMessage = $"1 invalid line found in {Path.GetFileName(filePath)}:\n\n{errors[0]}";
+                    }
+                    else
+                    {
+                        string linesToShow = string.Join("\n", errors.Take(10));
+                        errorMessage = errors.Count <= 10
+                            ? $"{errors.Count} invalid lines found in {Path.GetFileName(filePath)}:\n\n{linesToShow}"
+                            : $"{errors.Count} invalid lines found in {Path.GetFileName(filePath)}.\n\nShowing first 10 of {errors.Count}:\n{linesToShow}";
                     }
 
-                    _ = MessageBox.Show($"Invalid line format: {line}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    _ = MessageBox.Show(errorMessage, "Import Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private async void ButtonImportJobList_Click(object? sender, EventArgs e)
         {
-            using OpenFileDialog openFileDialog = new();
-            openFileDialog.Filter = "Text and Backup files (*.txt;*.bak)|*.txt;*.bak|All files (*.*)|*.*";
-            openFileDialog.Title = "Import Job Lists";
-            openFileDialog.Multiselect = true;
+            using OpenFileDialog openFileDialog = new()
+            {
+                Filter = "Text and Backup files (*.txt;*.bak)|*.txt;*.bak|All files (*.*)|*.*",
+                Title = "Import Job Lists",
+                Multiselect = true
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
+                    List<string> allErrors = [];
+                    int totalLines = 0;
+                    int totalFiles = openFileDialog.FileNames.Length;
+
                     foreach (string fileName in openFileDialog.FileNames)
                     {
                         string[] lines = await Task.Run(() => File.ReadAllLines(fileName));
+                        int lineNumber = 0;
+
                         foreach (string line in lines)
                         {
+                            lineNumber++;
+                            totalLines++;
                             if (string.IsNullOrWhiteSpace(line))
                             {
                                 continue;
                             }
 
-                            // Check for the primary format: "Status|Type|Passes|Parameters"
-                            if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
+                            if (TryParseJobLine(line, out bool isChecked, out string type, out string passes, out string parameters))
                             {
-                                int firstBar = line.IndexOf('|');
-                                int secondBar = line.IndexOf('|', firstBar + 1);
-                                int thirdBar = line.IndexOf('|', secondBar + 1);
-
-                                if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
-                                {
-                                    bool isChecked = line.StartsWith("Checked");
-                                    string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
-                                    string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                                    string parameters = line[(thirdBar + 1)..];
-
-                                    // Add the parsed job data as a new row to dataGridViewJobs
-                                    _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
-                                    continue;
-                                }
+                                _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
                             }
-                            // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
-                            else if (line.Contains('~'))
+                            else
                             {
-                                string[] parts = line.Split('~');
-                                if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                                {
-                                    string jobName = NormalizeSpaces(parts[0]);
-                                    string passes = NormalizeSpaces(parts[2]);
-                                    string parameters = NormalizeSpaces(parts[3]);
-                                    // Add the parsed job data as a new row to dataGridViewJobs
-                                    _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
-                                    continue;
-                                }
+                                allErrors.Add($"{Path.GetFileName(fileName)} (line {lineNumber}): {line}");
                             }
-
-                            _ = MessageBox.Show($"Invalid line format: {line}", "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
+                    }
+
+                    if (allErrors.Count > 0)
+                    {
+                        string errorMessage;
+                        if (allErrors.Count == 1)
+                        {
+                            errorMessage = $"1 invalid line found across {totalFiles} file(s):\n\n{allErrors[0]}";
+                        }
+                        else
+                        {
+                            string linesToShow = string.Join("\n", allErrors.Take(10));
+                            errorMessage = allErrors.Count <= 10
+                                ? $"{allErrors.Count} invalid lines found out of {totalLines} total lines:\n\n{linesToShow}"
+                                : $"{allErrors.Count} invalid lines found out of {totalLines} total lines.\n\nShowing first 10 of {allErrors.Count}:\n{linesToShow}";
+                        }
+
+                        _ = MessageBox.Show(errorMessage, "Import Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show($"Error reading file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -3133,9 +3132,6 @@ namespace FLAC_Benchmark_H
                     dataGridViewJobs.Rows.RemoveAt(index);
                 }
             }
-            // Clear selection and current cell after modification to prevent default highlighting
-            dataGridViewJobs.ClearSelection();
-            dataGridViewJobs.CurrentCell = null;
         }
         private void ButtonClearJobList_Click(object? sender, EventArgs e)
         {
@@ -3330,73 +3326,58 @@ namespace FLAC_Benchmark_H
                 }
 
                 string clipboardText = Clipboard.GetText();
-                if (!string.IsNullOrEmpty(clipboardText))
+                if (string.IsNullOrEmpty(clipboardText))
                 {
-                    // Split the clipboard text into lines
-                    string[] lines = clipboardText.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string line in lines)
+                    _ = MessageBox.Show("Clipboard is empty.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                string[] lines = clipboardText.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+                List<string> errors = [];
+                int lineNumber = 0;
+
+                foreach (string line in lines)
+                {
+                    lineNumber++;
+                    if (string.IsNullOrWhiteSpace(line))
                     {
-                        if (string.IsNullOrWhiteSpace(line))
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        // Check for the primary format: "Status|Type|Passes|Parameters"
-                        if (line.StartsWith("Checked|") || line.StartsWith("Unchecked|"))
-                        {
-                            int firstBar = line.IndexOf('|');
-                            int secondBar = line.IndexOf('|', firstBar + 1);
-                            int thirdBar = line.IndexOf('|', secondBar + 1);
-
-                            if (firstBar != -1 && secondBar != -1 && thirdBar != -1 && thirdBar != line.Length - 1)
-                            {
-                                bool isChecked = line.StartsWith("Checked");
-                                string type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
-                                string passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
-                                string parameters = line[(thirdBar + 1)..];
-
-                                // Add the parsed job data as a new row to dataGridViewJobs
-                                _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
-                                continue;
-                            }
-                        }
-                        // Check for the alternative format: "Type~IsChecked~Passes~Parameters"
-                        else if (line.Contains('~'))
-                        {
-                            string[] parts = line.Split('~');
-                            if (parts.Length == 4 && bool.TryParse(parts[1], out bool isChecked))
-                            {
-                                string jobName = parts[0];
-                                string passes = parts[2];
-                                string parameters = parts[3];
-                                // Add the parsed job data as a new row to dataGridViewJobs
-                                _ = dataGridViewJobs.Rows.Add(isChecked, jobName, passes, parameters);
-                                continue;
-                            }
-                        }
-
-                        // Show a warning if a line doesn't match expected formats
-                        _ = MessageBox.Show($"Invalid line format: {line}", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (TryParseJobLine(line, out bool isChecked, out string type, out string passes, out string parameters))
+                    {
+                        _ = dataGridViewJobs.Rows.Add(isChecked, type, passes, parameters);
+                    }
+                    else
+                    {
+                        errors.Add($"Line {lineNumber}: {line}");
                     }
                 }
-                else
+
+                if (errors.Count > 0)
                 {
-                    // Show a message if the clipboard is empty
-                    _ = MessageBox.Show("Clipboard is empty.", "Information",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string errorMessage;
+                    if (errors.Count == 1)
+                    {
+                        errorMessage = $"1 invalid line found in clipboard:\n\n{errors[0]}";
+                    }
+                    else
+                    {
+                        string linesToShow = string.Join("\n", errors.Take(10));
+                        errorMessage = errors.Count <= 10
+                            ? $"{errors.Count} invalid lines found in clipboard:\n\n{linesToShow}"
+                            : $"{errors.Count} invalid lines found in clipboard.\n\nShowing first 10 of {errors.Count}:\n{linesToShow}";
+                    }
+
+                    _ = MessageBox.Show(errorMessage, "Paste Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 if (selectedRowIndices.Count > 0)
                 {
                     dataGridViewJobs.ClearSelection();
-
-                    foreach (int index in selectedRowIndices)
+                    foreach (int index in selectedRowIndices.Where(i => i < dataGridViewJobs.Rows.Count))
                     {
-                        if (index < dataGridViewJobs.Rows.Count)
-                        {
-                            dataGridViewJobs.Rows[index].Selected = true;
-                        }
+                        dataGridViewJobs.Rows[index].Selected = true;
                     }
                 }
                 else
@@ -3406,10 +3387,35 @@ namespace FLAC_Benchmark_H
             }
             catch (Exception ex)
             {
-                // Show an error message if an exception occurs during pasting
-                _ = MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _ = MessageBox.Show($"Error pasting jobs: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private static bool TryParseJobLine(string line, out bool isChecked, out string type, out string passes, out string parameters)
+        {
+            isChecked = false;
+            type = passes = parameters = string.Empty;
+
+            if (!line.StartsWith("Checked|") && !line.StartsWith("Unchecked|"))
+            {
+                return false;
+            }
+
+            int firstBar = line.IndexOf('|');
+            int secondBar = line.IndexOf('|', firstBar + 1);
+            int thirdBar = line.IndexOf('|', secondBar + 1);
+
+            if (firstBar == -1 || secondBar == -1 || thirdBar == -1)
+            {
+                return false;
+            }
+
+            isChecked = line.StartsWith("Checked");
+            type = line.Substring(firstBar + 1, secondBar - firstBar - 1);
+            passes = line.Substring(secondBar + 1, thirdBar - secondBar - 1);
+
+            parameters = thirdBar + 1 < line.Length ? line[(thirdBar + 1)..] : "";
+
+            return true;
         }
         private void DataGridViewJobs_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -3439,6 +3445,39 @@ namespace FLAC_Benchmark_H
                     cell.Value = 1;
                     //dataGridViewJobs.Refresh();
                 }
+            }
+        }
+        private void DataGridViewJobs_KeyDown(object? sender, KeyEventArgs e)
+        {
+            // Handle Ctrl+C (Copy in custom format)
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                ButtonCopyJobs_Click(sender, EventArgs.Empty);
+            }
+            // Handle Ctrl+V (Paste with TryParseJobLine)
+            else if (e.Control && e.KeyCode == Keys.V)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                ButtonPasteJobs_Click(sender, EventArgs.Empty);
+            }
+            // Handle Ctrl+X (Cut) - Copy + Delete
+            else if (e.Control && e.KeyCode == Keys.X)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                ButtonCopyJobs_Click(sender, EventArgs.Empty);
+                ButtonClearSelectedJob_Click(sender, EventArgs.Empty);
+            }
+            // Handle Ctrl+D (Deselect All)
+            else if (e.Control && e.KeyCode == Keys.D)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                dataGridViewJobs.ClearSelection();
+                dataGridViewJobs.CurrentCell = null;
             }
         }
         private void DataGridViewJobs_MouseDown(object? sender, MouseEventArgs e)
@@ -3558,11 +3597,11 @@ namespace FLAC_Benchmark_H
         }
         private void CopyToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-            ButtonCopyJobs_Click(sender, EventArgs.Empty);
+            ButtonCopyJobs_Click(sender, e);
         }
         private void PasteToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-            ButtonPasteJobs_Click(sender, EventArgs.Empty);
+            ButtonPasteJobs_Click(sender, e);
         }
         private void SendToScriptConstructorToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
@@ -3643,7 +3682,6 @@ namespace FLAC_Benchmark_H
                 {
                     object? value = checkBoxCell.Value;
                     bool currentValue = value != null && Convert.ToBoolean(value);
-
                     checkBoxCell.Value = !currentValue;
                 }
             }
@@ -3661,7 +3699,6 @@ namespace FLAC_Benchmark_H
         private void InvertSelectionToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
             List<DataGridViewRow> unselectedRows = [.. dataGridViewJobs.Rows.Cast<DataGridViewRow>().Where(r => !r.Selected)];
-
             dataGridViewJobs.ClearSelection();
 
             foreach (DataGridViewRow row in unselectedRows)
@@ -3690,19 +3727,7 @@ namespace FLAC_Benchmark_H
         }
         private void ClearSelectedToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-            List<int> selectedIndices = [.. dataGridViewJobs.SelectedRows.Cast<DataGridViewRow>()
-            .Select(row => row.Index)
-            .OrderByDescending(index => index)];
-
-            foreach (int index in selectedIndices)
-            {
-                if (index >= 0 && index < dataGridViewJobs.Rows.Count)
-                {
-                    dataGridViewJobs.Rows.RemoveAt(index);
-                }
-            }
-            dataGridViewJobs.ClearSelection();
-            dataGridViewJobs.CurrentCell = null;
+            ButtonClearSelectedJob_Click(sender, e);
         }
         private void ClearDuplicateEntriesToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
@@ -3750,8 +3775,8 @@ namespace FLAC_Benchmark_H
                 firstRow.Cells["Column3Passes"].Value = totalPasses.ToString();
 
                 List<int> indicesToRemove = [.. group.Skip(1)
-            .Select(r => r.Index)
-            .OrderByDescending(i => i)];
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)];
 
                 foreach (int index in indicesToRemove)
                 {
@@ -6829,82 +6854,46 @@ namespace FLAC_Benchmark_H
         // Key actions
         private void ListViewEncoders_KeyDown(object? sender, KeyEventArgs e)
         {
-            // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 buttonClearSelectedEncoder.PerformClick();
             }
-
-            // Check if Ctrl and A are pressed simultaneously
-            if (e.Control && e.KeyCode == Keys.A)
+            else if (e.Control && e.KeyCode == Keys.A)
             {
-                e.Handled = true; // Cancel default behavior
-
-                // Select all items
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 foreach (ListViewItem item in listViewEncoders.Items)
                 {
-                    item.Selected = true; // Set selection for each item
+                    item.Selected = true;
                 }
             }
         }
         private void ListViewAudioFiles_KeyDown(object? sender, KeyEventArgs e)
         {
-            // Check if Delete key is pressed
             if (e.KeyCode == Keys.Delete)
             {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 buttonClearSelectedAudioFile.PerformClick();
             }
-
-            // Check if Ctrl and A are pressed simultaneously
-            if (e.Control && e.KeyCode == Keys.A)
+            else if (e.Control && e.KeyCode == Keys.A)
             {
-                e.Handled = true; // Cancel default behavior
-
-                // Select all items
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 foreach (ListViewItem item in listViewAudioFiles.Items)
                 {
-                    item.Selected = true; // Set selection for each item
+                    item.Selected = true;
                 }
-            }
-        }
-        private void DataGridViewJobs_KeyDown(object? sender, KeyEventArgs e)
-        {
-            // Check if Delete key is pressed
-            if (e.KeyCode == Keys.Delete)
-            {
-                buttonClearSelectedJob.PerformClick(); // Reuse the existing remove logic
-            }
-
-            // Check if Ctrl and A are pressed simultaneously
-            if (e.Control && e.KeyCode == Keys.A)
-            {
-                e.Handled = true; // Cancel default behavior
-                e.SuppressKeyPress = true; // Also suppress the key press to prevent beep
-
-                // Select all rows in dataGridViewJobs
-                dataGridViewJobs.SelectAll(); // This is the standard way to select all rows
-            }
-
-            // Handle Ctrl+C (Copy in custom format)
-            if (e.Control && e.KeyCode == Keys.C)
-            {
-                ButtonCopyJobs_Click(sender, EventArgs.Empty);
-                e.Handled = true; // Cancel default behavior
-                e.SuppressKeyPress = true; // Suppress beep
-            }
-
-            // Handle Ctrl+V (Paste)
-            if (e.Control && e.KeyCode == Keys.V)
-            {
-                buttonPasteJobs.PerformClick(); // Reuse the existing paste logic
-                e.Handled = true; // Cancel default behavior
-                e.SuppressKeyPress = true; // Suppress beep
             }
         }
         private void DataGridViewLog_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 List<BenchmarkPass> passesToDelete = [];
 
                 foreach (DataGridViewRow row in dataGridViewLog.SelectedRows)
@@ -6935,9 +6924,9 @@ namespace FLAC_Benchmark_H
                         // Then take only the first 'passesCount' entries - this corresponds to the group that was analyzed
                         List<BenchmarkPass> matchingPasses = [.. _benchmarkPasses
                         .Where(p =>
-                        p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
-                        p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
-                        p.Parameters == parameters)
+                            p.AudioFilePath.Equals(audioFilePath, StringComparison.OrdinalIgnoreCase) &&
+                            p.EncoderPath.Equals(encoderPath, StringComparison.OrdinalIgnoreCase) &&
+                            p.Parameters == parameters)
                         .OrderBy(p => p.Timestamp) // Oldest first / Take exactly N = Passes
                         .Take(passesCount)];
 
@@ -6947,8 +6936,8 @@ namespace FLAC_Benchmark_H
 
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLog.SelectedRows.Cast<DataGridViewRow>()
-                .Select(r => r.Index)
-                .OrderByDescending(i => i)];
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
@@ -6961,45 +6950,48 @@ namespace FLAC_Benchmark_H
                 {
                     _ = _benchmarkPasses.Remove(pass);
                 }
-
-                // Suppress default key press behavior (e.g., error beep)
-                e.SuppressKeyPress = true;
             }
         }
         private void DataGridViewLogDetectDupes_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLogDetectDupes.SelectedRows.Cast<DataGridViewRow>()
-                .Select(r => r.Index)
-                .OrderByDescending(i => i)];
+                    .Select(r => r.Index)
+                    .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
-                    dataGridViewLogDetectDupes.Rows.RemoveAt(index);
+                    if (index >= 0 && index < dataGridViewLogDetectDupes.Rows.Count)
+                    {
+                        dataGridViewLogDetectDupes.Rows.RemoveAt(index);
+                    }
                 }
-
-                // Suppress default key press behavior (e.g., error beep)
-                e.SuppressKeyPress = true;
             }
         }
         private void DataGridViewLogTestForErrors_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+
                 // Remove selected rows from DataGridView (reverse order to avoid index issues)
                 List<int> indexes = [.. dataGridViewLogTestForErrors.SelectedRows.Cast<DataGridViewRow>()
-                .Select(r => r.Index)
-                .OrderByDescending(i => i)];
+            .Select(r => r.Index)
+            .OrderByDescending(i => i)];
 
                 foreach (int index in indexes)
                 {
-                    dataGridViewLogTestForErrors.Rows.RemoveAt(index);
+                    if (index >= 0 && index < dataGridViewLogTestForErrors.Rows.Count)
+                    {
+                        dataGridViewLogTestForErrors.Rows.RemoveAt(index);
+                    }
                 }
-
-                // Suppress default key press behavior (e.g., error beep)
-                e.SuppressKeyPress = true;
             }
         }
 
@@ -9456,36 +9448,36 @@ namespace FLAC_Benchmark_H
         {
             if (e.KeyCode == Keys.Enter)
             {
+                e.Handled = true;
                 e.SuppressKeyPress = true;
-
-                ButtonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, EventArgs.Empty);
             }
         }
         private void TextBoxThreads_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
+                e.Handled = true;
                 e.SuppressKeyPress = true;
-
-                ButtonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, EventArgs.Empty);
             }
         }
         private void TextBoxCommandLineOptionsEncoder_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
+                e.Handled = true;
                 e.SuppressKeyPress = true;
-
-                ButtonAddJobToJobListEncoder_Click(sender, e);
+                ButtonAddJobToJobListEncoder_Click(sender, EventArgs.Empty);
             }
         }
         private void TextBoxCommandLineOptionsDecoder_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
+                e.Handled = true;
                 e.SuppressKeyPress = true;
-
-                ButtonAddJobToJobListDecoder_Click(sender, e);
+                ButtonAddJobToJobListDecoder_Click(sender, EventArgs.Empty);
             }
         }
 

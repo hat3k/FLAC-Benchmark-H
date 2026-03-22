@@ -156,6 +156,10 @@
             labelAudioFileRemoved = new Label();
             groupBoxJobsList = new GroupBox();
             dataGridViewJobs = new DataGridViewEx();
+            Column1CheckBox = new DataGridViewCheckBoxColumn();
+            Column2JobType = new DataGridViewTextBoxColumn();
+            Column3Passes = new DataGridViewTextBoxColumn();
+            Column4Parameters = new DataGridViewTextBoxColumn();
             contextMenuStripJobs = new ContextMenuStrip(components);
             editCurrentCellToolStripMenuItemJobs = new ToolStripMenuItem();
             copyToolStripMenuItemJobs = new ToolStripMenuItem();
@@ -265,10 +269,6 @@
             groupBoxInformation = new GroupBox();
             labelCpuUsageValue = new Label();
             buttonAbout = new Button();
-            Column1CheckBox = new DataGridViewCheckBoxColumn();
-            Column2JobType = new DataGridViewTextBoxColumn();
-            Column3Passes = new DataGridViewTextBoxColumn();
-            Column4Parameters = new DataGridViewTextBoxColumn();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             contextMenuStripEncoders.SuspendLayout();
@@ -1116,7 +1116,6 @@
             // 
             selectAllToolStripMenuItemAudioFiles.DropDownItems.AddRange(new ToolStripItem[] { selectAllAllAudioFilesToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator8, selectAllFLACToolStripMenuItemAudioFiles, selectAllWAVToolStripMenuItemAudioFiles });
             selectAllToolStripMenuItemAudioFiles.Name = "selectAllToolStripMenuItemAudioFiles";
-            selectAllToolStripMenuItemAudioFiles.ShortcutKeyDisplayString = "";
             selectAllToolStripMenuItemAudioFiles.ShortcutKeys = Keys.Control | Keys.A;
             selectAllToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             selectAllToolStripMenuItemAudioFiles.Text = "Select All";
@@ -1476,18 +1475,47 @@
             dataGridViewJobs.KeyDown += DataGridViewJobs_KeyDown;
             dataGridViewJobs.MouseDown += DataGridViewJobs_MouseDown;
             // 
+            // Column1CheckBox
+            // 
+            Column1CheckBox.FillWeight = 21F;
+            Column1CheckBox.Frozen = true;
+            Column1CheckBox.HeaderText = "";
+            Column1CheckBox.Name = "Column1CheckBox";
+            Column1CheckBox.Width = 21;
+            // 
+            // Column2JobType
+            // 
+            Column2JobType.FillWeight = 60F;
+            Column2JobType.HeaderText = "Job Type";
+            Column2JobType.Name = "Column2JobType";
+            Column2JobType.ReadOnly = true;
+            Column2JobType.Resizable = DataGridViewTriState.True;
+            Column2JobType.Width = 60;
+            // 
+            // Column3Passes
+            // 
+            Column3Passes.FillWeight = 48F;
+            Column3Passes.HeaderText = "Passes";
+            Column3Passes.Name = "Column3Passes";
+            Column3Passes.Width = 48;
+            // 
+            // Column4Parameters
+            // 
+            Column4Parameters.HeaderText = "Parameters";
+            Column4Parameters.Name = "Column4Parameters";
+            Column4Parameters.Width = 633;
+            // 
             // contextMenuStripJobs
             // 
             contextMenuStripJobs.Items.AddRange(new ToolStripItem[] { editCurrentCellToolStripMenuItemJobs, copyToolStripMenuItemJobs, pasteToolStripMenuItemJobs, sendToScriptConstructorToolStripMenuItemJobs, toolStripJobsSeparator1, checkAllToolStripMenuItemJobs, uncheckAllToolStripMenuItemJobs, checkSelectedToolStripMenuItemJobs, unCheckSelectedToolStripMenuItemJobs, invertCheckToolStripMenuItemJobs, toolStripJobsSeparator2, selectAllToolStripMenuItemJobs, deselectAllToolStripMenuItemJobs, invertSelectionToolStripMenuItemJobs, toolStripJobsSeparator3, moveUpToolStripMenuItemJobs, moveDownToolStripMenuItemJobs, toolStripJobsSeparator4, clearUncheckedToolStripMenuItemJobs, clearSelectedToolStripMenuItemJobs, clearDuplicateEntriesToolStripMenuItemJobs, mergeDuplicateEntriesToolStripMenuItemJobs, clearAllJobsToolStripMenuItemJobs });
             contextMenuStripJobs.Name = "contextMenuStrip1";
-            contextMenuStripJobs.Size = new Size(214, 446);
+            contextMenuStripJobs.Size = new Size(214, 468);
             contextMenuStripJobs.Closing += ContextMenu_Closing;
             contextMenuStripJobs.Opening += ContextMenuStripJobs_Opening;
             // 
             // editCurrentCellToolStripMenuItemJobs
             // 
             editCurrentCellToolStripMenuItemJobs.Name = "editCurrentCellToolStripMenuItemJobs";
-            editCurrentCellToolStripMenuItemJobs.ShortcutKeys = Keys.F2;
             editCurrentCellToolStripMenuItemJobs.Size = new Size(213, 22);
             editCurrentCellToolStripMenuItemJobs.Text = "Edit Current Cell";
             editCurrentCellToolStripMenuItemJobs.Click += EditCurrentCellToolStripMenuItemJobs_Click;
@@ -1495,7 +1523,6 @@
             // copyToolStripMenuItemJobs
             // 
             copyToolStripMenuItemJobs.Name = "copyToolStripMenuItemJobs";
-            copyToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.C;
             copyToolStripMenuItemJobs.Size = new Size(213, 22);
             copyToolStripMenuItemJobs.Text = "Copy";
             copyToolStripMenuItemJobs.Click += CopyToolStripMenuItemJobs_Click;
@@ -1503,7 +1530,6 @@
             // pasteToolStripMenuItemJobs
             // 
             pasteToolStripMenuItemJobs.Name = "pasteToolStripMenuItemJobs";
-            pasteToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.V;
             pasteToolStripMenuItemJobs.Size = new Size(213, 22);
             pasteToolStripMenuItemJobs.Text = "Paste";
             pasteToolStripMenuItemJobs.Click += PasteToolStripMenuItemJobs_Click;
@@ -1564,7 +1590,6 @@
             // selectAllToolStripMenuItemJobs
             // 
             selectAllToolStripMenuItemJobs.Name = "selectAllToolStripMenuItemJobs";
-            selectAllToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.A;
             selectAllToolStripMenuItemJobs.Size = new Size(213, 22);
             selectAllToolStripMenuItemJobs.Text = "Select All";
             selectAllToolStripMenuItemJobs.Click += SelectAllToolStripMenuItemJobs_Click;
@@ -1572,7 +1597,6 @@
             // deselectAllToolStripMenuItemJobs
             // 
             deselectAllToolStripMenuItemJobs.Name = "deselectAllToolStripMenuItemJobs";
-            deselectAllToolStripMenuItemJobs.ShortcutKeys = Keys.Control | Keys.D;
             deselectAllToolStripMenuItemJobs.Size = new Size(213, 22);
             deselectAllToolStripMenuItemJobs.Text = "Deselect All";
             deselectAllToolStripMenuItemJobs.Click += DeselectAllToolStripMenuItemJobs_Click;
@@ -1620,7 +1644,6 @@
             // clearSelectedToolStripMenuItemJobs
             // 
             clearSelectedToolStripMenuItemJobs.Name = "clearSelectedToolStripMenuItemJobs";
-            clearSelectedToolStripMenuItemJobs.ShortcutKeys = Keys.Delete;
             clearSelectedToolStripMenuItemJobs.Size = new Size(213, 22);
             clearSelectedToolStripMenuItemJobs.Text = "Clear Selected";
             clearSelectedToolStripMenuItemJobs.Click += ClearSelectedToolStripMenuItemJobs_Click;
@@ -2700,36 +2723,6 @@
             buttonAbout.Text = "About";
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += ButtonAbout_Click;
-            // 
-            // Column1CheckBox
-            // 
-            Column1CheckBox.FillWeight = 21F;
-            Column1CheckBox.Frozen = true;
-            Column1CheckBox.HeaderText = "";
-            Column1CheckBox.Name = "Column1CheckBox";
-            Column1CheckBox.Width = 21;
-            // 
-            // Column2JobType
-            // 
-            Column2JobType.FillWeight = 60F;
-            Column2JobType.HeaderText = "Job Type";
-            Column2JobType.Name = "Column2JobType";
-            Column2JobType.ReadOnly = true;
-            Column2JobType.Resizable = DataGridViewTriState.True;
-            Column2JobType.Width = 60;
-            // 
-            // Column3Passes
-            // 
-            Column3Passes.FillWeight = 48F;
-            Column3Passes.HeaderText = "Passes";
-            Column3Passes.Name = "Column3Passes";
-            Column3Passes.Width = 48;
-            // 
-            // Column4Parameters
-            // 
-            Column4Parameters.HeaderText = "Parameters";
-            Column4Parameters.Name = "Column4Parameters";
-            Column4Parameters.Width = 633;
             // 
             // Form1
             // 
