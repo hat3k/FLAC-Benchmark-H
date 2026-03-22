@@ -92,6 +92,7 @@
             buttonAddJobToJobListScript.TabIndex = 6;
             buttonAddJobToJobListScript.Text = "Add to Job List";
             buttonAddJobToJobListScript.UseVisualStyleBackColor = true;
+            buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
             // 
             // comboBoxScript
             // 
@@ -102,6 +103,7 @@
             comboBoxScript.Size = new Size(699, 23);
             comboBoxScript.TabIndex = 2;
             comboBoxScript.Text = "-[0..8]";
+            comboBoxScript.TextChanged += ComboBoxScript_TextChanged;
             // 
             // labelPreviewJobsListMadeByScript
             // 
@@ -131,6 +133,9 @@
             dataGridViewPreviewJobsListMadeByScript.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewPreviewJobsListMadeByScript.Size = new Size(760, 236);
             dataGridViewPreviewJobsListMadeByScript.TabIndex = 8;
+            dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreviewJobsListMadeByScript_CellFormatting;
+            dataGridViewPreviewJobsListMadeByScript.KeyDown += DataGridViewPreviewJobsListMadeByScript_KeyDown;
+            dataGridViewPreviewJobsListMadeByScript.MouseDown += DataGridViewPreviewJobsListMadeByScript_MouseDown;
             // 
             // Column1CheckBox
             // 
@@ -183,6 +188,8 @@
             Name = "ScriptConstructorForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Script Constructor";
+            Shown += ScriptConstructorForm_Shown;
+            MouseDown += ScriptConstructorForm_MouseDown;
             ((System.ComponentModel.ISupportInitialize)dataGridViewPreviewJobsListMadeByScript).EndInit();
             ResumeLayout(false);
             PerformLayout();

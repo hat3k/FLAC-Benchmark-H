@@ -20,9 +20,7 @@ namespace FLAC_Benchmark_H
         public ScriptConstructorForm()
         {
             InitializeComponent();
-            // Use Shown event for reliable focus and layout setup
-            Shown += ScriptConstructorForm_Shown;
-            MouseDown += ScriptConstructorForm_MouseDown;
+            LoadHelpText();
 
             _debounceTimer = new System.Windows.Forms.Timer
             {
@@ -327,22 +325,6 @@ namespace FLAC_Benchmark_H
 
         public event Action<List<ScriptJobData>> OnJobsAdded = delegate { };
 
-        protected override void OnCreateControl()
-        {
-            base.OnCreateControl();
-
-            if (!DesignMode)
-            {
-                LoadHelpText();
-                comboBoxScript.TextChanged += ComboBoxScript_TextChanged;
-                buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
-
-                // Subscribe to CellFormatting event for the new DataGridView to handle colors
-                dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreviewJobsListMadeByScript_CellFormatting;
-                dataGridViewPreviewJobsListMadeByScript.MouseDown += DataGridViewPreviewJobsListMadeByScript_MouseDown;
-                dataGridViewPreviewJobsListMadeByScript.KeyDown += DataGridViewPreviewJobsListMadeByScript_KeyDown;
-            }
-        }
         private void DataGridViewPreviewJobsListMadeByScript_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             // Check if it's the 'Job Type' column (assuming it's the second column, index 1)
