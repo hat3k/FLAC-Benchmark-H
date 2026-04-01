@@ -35,19 +35,40 @@ namespace FLAC_Benchmark_H
         }
         private readonly System.Windows.Forms.Timer _debounceTimer;
 
-        /// <summary>
-        /// Called when the form is fully displayed.
-        /// Ensures help text is visible, preview is updated, and input field has focus.
-        /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string InitialScriptText
+        public string InitialJobType
         {
-            get => comboBoxScriptEncode.Text;
+            get => radioButtonScriptEncode.Checked ? "Encode" : "Decode";
             set
             {
-                if (comboBoxScriptEncode.Text != value)
+                if (value.Equals("Decode", StringComparison.OrdinalIgnoreCase))
                 {
-                    comboBoxScriptEncode.Text = value;
+                    radioButtonScriptDecode.Checked = true;
+                }
+                else
+                {
+                    radioButtonScriptEncode.Checked = true;
+                }
+            }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string? InitialScriptText
+        {
+            get => radioButtonScriptEncode.Checked ? comboBoxScriptEncode.Text : comboBoxScriptDecode.Text;
+            set
+            {
+                string targetComboBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode.Text : comboBoxScriptDecode.Text;
+                if (targetComboBox != value)
+                {
+                    if (radioButtonScriptEncode.Checked)
+                    {
+                        comboBoxScriptEncode.Text = value ?? string.Empty;
+                    }
+                    else
+                    {
+                        comboBoxScriptDecode.Text = value ?? string.Empty;
+                    }
                 }
             }
         }

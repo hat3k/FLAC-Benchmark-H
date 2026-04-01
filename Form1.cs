@@ -3605,27 +3605,44 @@ namespace FLAC_Benchmark_H
         }
         private void SendToScriptConstructorToolStripMenuItemJobs_Click(object sender, EventArgs e)
         {
-            if (dataGridViewJobs.CurrentCell?.ColumnIndex == 3) // Parameters column
+            // Get the currently selected row (regardless of which cell was clicked)
+            DataGridViewRow row = dataGridViewJobs.Rows[dataGridViewJobs.CurrentCell!.RowIndex];
+
+            // Read JobType and Parameters from the corresponding columns
+            string jobType = row.Cells["Column2JobType"].Value?.ToString()!;
+            string? parameters = row.Cells["Column4Parameters"].Value?.ToString();
+
+            if (_scriptForm == null || _scriptForm.IsDisposed)
             {
-                string? parameters = dataGridViewJobs.CurrentCell.Value?.ToString();
-                if (!string.IsNullOrEmpty(parameters))
+                _scriptForm = new ScriptConstructorForm
                 {
-                    if (_scriptForm == null || _scriptForm.IsDisposed)
-                    {
-                        _scriptForm = new ScriptConstructorForm
-                        {
-                            InitialScriptText = parameters
-                        };
-                        _scriptForm.FormClosed += (s, args) => _scriptForm = null;
-                        _scriptForm.Show(this);
-                    }
-                    else
-                    {
-                        _scriptForm.InitialScriptText = parameters;
-                        _scriptForm.BringToFront();
-                        _ = _scriptForm.Focus();
-                    }
-                }
+                    InitialJobType = jobType,
+                    InitialScriptText = parameters
+                };
+
+                _scriptForm.OnJobsAdded += (jobs) =>
+                {
+                    ScriptJobData job = jobs[0];
+
+                    _ = dataGridViewJobs.Rows.Add(
+                        job.IsChecked,
+                        job.JobType,
+                        job.Passes,
+                        job.Parameters);
+
+                    dataGridViewJobs.ClearSelection();
+                    dataGridViewJobs.CurrentCell = null;
+                };
+
+                _scriptForm.FormClosed += (s, args) => _scriptForm = null;
+                _scriptForm.Show(this);
+            }
+            else
+            {
+                _scriptForm.InitialJobType = jobType;
+                _scriptForm.InitialScriptText = parameters;
+                _scriptForm.BringToFront();
+                _ = _scriptForm.Focus();
             }
         }
         private void CheckAllToolStripMenuItemJobs_Click(object sender, EventArgs e)
@@ -9121,24 +9138,21 @@ namespace FLAC_Benchmark_H
             {
                 _scriptForm = new ScriptConstructorForm
                 {
+                    InitialJobType = "Encode",
                     InitialScriptText = parameters
                 };
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
-                    // Iterate through the list of jobs received from the ScriptConstructorForm
-                    // Each job is now a ScriptJobData struct containing the script definition
-                    foreach (ScriptJobData job in jobs) // job is ScriptJobData
-                    {
-                        // Extract data directly from the ScriptJobData struct
-                        bool isChecked = job.IsChecked; // Get the checked state
-                        string jobType = job.JobType; // Get the job type (e.g., "Encode")
-                        string passes = job.Passes; // Get the number of passes
-                        string jobParameters = job.Parameters; // Get the script parameters (the script itself)
+                    ScriptJobData job = jobs[0];
 
-                        // Add a new row to dataGridViewJobs with the extracted data
-                        _ = dataGridViewJobs.Rows.Add(isChecked, jobType, passes, jobParameters);
-                    }
+                    // Add a new row to dataGridViewJobs with the extracted data
+                    _ = dataGridViewJobs.Rows.Add(
+                        job.IsChecked,
+                        job.JobType,
+                        job.Passes,
+                        job.Parameters);
+
                     // Optionally clear selection after adding new jobs to maintain a clean UI state
                     dataGridViewJobs.ClearSelection();
                     dataGridViewJobs.CurrentCell = null;
@@ -9149,6 +9163,7 @@ namespace FLAC_Benchmark_H
             }
             else
             {
+                _scriptForm.InitialJobType = "Encode";
                 _scriptForm.InitialScriptText = parameters;
                 _scriptForm.BringToFront();
                 _ = _scriptForm.Focus();
