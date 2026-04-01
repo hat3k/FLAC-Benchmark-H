@@ -28,90 +28,144 @@
         /// </summary>
         private void InitializeComponent()
         {
-            richTextBoxScriptHelp = new RichTextBox();
-            buttonClearScript = new Button();
+            splitContainerScriptConstructor = new SplitContainer();
             labelTypeYourScript = new Label();
-            buttonCloseScriptConstructorForm = new Button();
-            buttonAddJobToJobListScript = new Button();
-            comboBoxScript = new ComboBox();
+            radioButtonScriptEncode = new RadioButton();
+            comboBoxScriptEncode = new ComboBox();
+            buttonClearScriptEncode = new Button();
+            radioButtonScriptDecode = new RadioButton();
+            comboBoxScriptDecode = new ComboBox();
+            buttonClearScriptDecode = new Button();
             labelPreviewJobsListMadeByScript = new Label();
             dataGridViewPreviewJobsListMadeByScript = new DataGridViewEx();
             Column1CheckBox = new DataGridViewCheckBoxColumn();
             Column2JobType = new DataGridViewTextBoxColumn();
             Column3Passes = new DataGridViewTextBoxColumn();
             Column4Parameters = new DataGridViewTextBoxColumn();
+            checkBoxScriptShowHelp = new CheckBox();
+            buttonAddJobToJobListScript = new Button();
+            buttonCloseScriptConstructorForm = new Button();
+            richTextBoxScriptHelp = new RichTextBox();
+            ((System.ComponentModel.ISupportInitialize)splitContainerScriptConstructor).BeginInit();
+            splitContainerScriptConstructor.Panel1.SuspendLayout();
+            splitContainerScriptConstructor.Panel2.SuspendLayout();
+            splitContainerScriptConstructor.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewPreviewJobsListMadeByScript).BeginInit();
             SuspendLayout();
             // 
-            // richTextBoxScriptHelp
+            // splitContainerScriptConstructor
             // 
-            richTextBoxScriptHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            richTextBoxScriptHelp.Location = new Point(12, 12);
-            richTextBoxScriptHelp.Name = "richTextBoxScriptHelp";
-            richTextBoxScriptHelp.ReadOnly = true;
-            richTextBoxScriptHelp.Size = new Size(760, 207);
-            richTextBoxScriptHelp.TabIndex = 0;
-            richTextBoxScriptHelp.Text = "";
+            splitContainerScriptConstructor.Dock = DockStyle.Fill;
+            splitContainerScriptConstructor.Location = new Point(0, 0);
+            splitContainerScriptConstructor.Margin = new Padding(0);
+            splitContainerScriptConstructor.Name = "splitContainerScriptConstructor";
             // 
-            // buttonClearScript
+            // splitContainerScriptConstructor.Panel1
             // 
-            buttonClearScript.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonClearScript.Location = new Point(717, 240);
-            buttonClearScript.Name = "buttonClearScript";
-            buttonClearScript.Size = new Size(55, 23);
-            buttonClearScript.TabIndex = 3;
-            buttonClearScript.Text = "Clear";
-            buttonClearScript.UseVisualStyleBackColor = true;
+            splitContainerScriptConstructor.Panel1.Controls.Add(labelTypeYourScript);
+            splitContainerScriptConstructor.Panel1.Controls.Add(radioButtonScriptEncode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(comboBoxScriptEncode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(buttonClearScriptEncode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(radioButtonScriptDecode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(comboBoxScriptDecode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(buttonClearScriptDecode);
+            splitContainerScriptConstructor.Panel1.Controls.Add(labelPreviewJobsListMadeByScript);
+            splitContainerScriptConstructor.Panel1.Controls.Add(dataGridViewPreviewJobsListMadeByScript);
+            splitContainerScriptConstructor.Panel1.Controls.Add(checkBoxScriptShowHelp);
+            splitContainerScriptConstructor.Panel1.Controls.Add(buttonAddJobToJobListScript);
+            splitContainerScriptConstructor.Panel1.Controls.Add(buttonCloseScriptConstructorForm);
+            // 
+            // splitContainerScriptConstructor.Panel2
+            // 
+            splitContainerScriptConstructor.Panel2.Controls.Add(richTextBoxScriptHelp);
+            splitContainerScriptConstructor.Panel2.Padding = new Padding(3, 12, 12, 12);
+            splitContainerScriptConstructor.Size = new Size(784, 561);
+            splitContainerScriptConstructor.SplitterDistance = 435;
+            splitContainerScriptConstructor.TabIndex = 0;
             // 
             // labelTypeYourScript
             // 
             labelTypeYourScript.AutoSize = true;
-            labelTypeYourScript.Location = new Point(12, 222);
+            labelTypeYourScript.Location = new Point(12, 9);
             labelTypeYourScript.Name = "labelTypeYourScript";
             labelTypeYourScript.Size = new Size(94, 15);
             labelTypeYourScript.TabIndex = 1;
             labelTypeYourScript.Text = "Type your Script:";
             // 
-            // buttonCloseScriptConstructorForm
+            // radioButtonScriptEncode
             // 
-            buttonCloseScriptConstructorForm.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonCloseScriptConstructorForm.Location = new Point(717, 526);
-            buttonCloseScriptConstructorForm.Name = "buttonCloseScriptConstructorForm";
-            buttonCloseScriptConstructorForm.Size = new Size(55, 23);
-            buttonCloseScriptConstructorForm.TabIndex = 7;
-            buttonCloseScriptConstructorForm.Text = "Close";
-            buttonCloseScriptConstructorForm.UseVisualStyleBackColor = true;
-            buttonCloseScriptConstructorForm.Click += ButtonCloseScriptConstructorForm_Click;
+            radioButtonScriptEncode.AutoSize = true;
+            radioButtonScriptEncode.Location = new Point(15, 30);
+            radioButtonScriptEncode.Name = "radioButtonScriptEncode";
+            radioButtonScriptEncode.Size = new Size(64, 19);
+            radioButtonScriptEncode.TabIndex = 2;
+            radioButtonScriptEncode.TabStop = true;
+            radioButtonScriptEncode.Text = "Encode";
+            radioButtonScriptEncode.UseVisualStyleBackColor = true;
+            radioButtonScriptEncode.CheckedChanged += RadioButtonScriptEncode_CheckedChanged;
             // 
-            // buttonAddJobToJobListScript
+            // comboBoxScriptEncode
             // 
-            buttonAddJobToJobListScript.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonAddJobToJobListScript.Location = new Point(616, 526);
-            buttonAddJobToJobListScript.Name = "buttonAddJobToJobListScript";
-            buttonAddJobToJobListScript.Size = new Size(95, 23);
-            buttonAddJobToJobListScript.TabIndex = 6;
-            buttonAddJobToJobListScript.Text = "Add to Job List";
-            buttonAddJobToJobListScript.UseVisualStyleBackColor = true;
-            buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
+            comboBoxScriptEncode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxScriptEncode.FormattingEnabled = true;
+            comboBoxScriptEncode.Location = new Point(94, 28);
+            comboBoxScriptEncode.Name = "comboBoxScriptEncode";
+            comboBoxScriptEncode.Size = new Size(268, 23);
+            comboBoxScriptEncode.TabIndex = 3;
+            comboBoxScriptEncode.Text = "-[0..8]";
+            comboBoxScriptEncode.TextChanged += ComboBoxScript_TextChanged;
             // 
-            // comboBoxScript
+            // buttonClearScriptEncode
             // 
-            comboBoxScript.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            comboBoxScript.FormattingEnabled = true;
-            comboBoxScript.Location = new Point(12, 240);
-            comboBoxScript.Name = "comboBoxScript";
-            comboBoxScript.Size = new Size(699, 23);
-            comboBoxScript.TabIndex = 2;
-            comboBoxScript.Text = "-[0..8]";
-            comboBoxScript.TextChanged += ComboBoxScript_TextChanged;
+            buttonClearScriptEncode.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonClearScriptEncode.Location = new Point(368, 28);
+            buttonClearScriptEncode.Name = "buttonClearScriptEncode";
+            buttonClearScriptEncode.Size = new Size(55, 23);
+            buttonClearScriptEncode.TabIndex = 4;
+            buttonClearScriptEncode.Text = "Clear";
+            buttonClearScriptEncode.UseVisualStyleBackColor = true;
+            buttonClearScriptEncode.Click += ButtonClearScriptComboBox_Click;
+            // 
+            // radioButtonScriptDecode
+            // 
+            radioButtonScriptDecode.AutoSize = true;
+            radioButtonScriptDecode.Location = new Point(15, 55);
+            radioButtonScriptDecode.Name = "radioButtonScriptDecode";
+            radioButtonScriptDecode.Size = new Size(65, 19);
+            radioButtonScriptDecode.TabIndex = 5;
+            radioButtonScriptDecode.TabStop = true;
+            radioButtonScriptDecode.Text = "Decode";
+            radioButtonScriptDecode.UseVisualStyleBackColor = true;
+            radioButtonScriptDecode.CheckedChanged += RadioButtonScriptDecode_CheckedChanged;
+            // 
+            // comboBoxScriptDecode
+            // 
+            comboBoxScriptDecode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxScriptDecode.FormattingEnabled = true;
+            comboBoxScriptDecode.Location = new Point(94, 53);
+            comboBoxScriptDecode.Name = "comboBoxScriptDecode";
+            comboBoxScriptDecode.Size = new Size(268, 23);
+            comboBoxScriptDecode.TabIndex = 6;
+            comboBoxScriptDecode.TextChanged += ComboBoxScript_TextChanged;
+            // 
+            // buttonClearScriptDecode
+            // 
+            buttonClearScriptDecode.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonClearScriptDecode.Location = new Point(368, 53);
+            buttonClearScriptDecode.Name = "buttonClearScriptDecode";
+            buttonClearScriptDecode.Size = new Size(55, 23);
+            buttonClearScriptDecode.TabIndex = 7;
+            buttonClearScriptDecode.Text = "Clear";
+            buttonClearScriptDecode.UseVisualStyleBackColor = true;
+            buttonClearScriptDecode.Click += ButtonClearScriptComboBox_Click;
             // 
             // labelPreviewJobsListMadeByScript
             // 
             labelPreviewJobsListMadeByScript.AutoSize = true;
-            labelPreviewJobsListMadeByScript.Location = new Point(12, 266);
+            labelPreviewJobsListMadeByScript.Location = new Point(12, 79);
             labelPreviewJobsListMadeByScript.Name = "labelPreviewJobsListMadeByScript";
             labelPreviewJobsListMadeByScript.Size = new Size(93, 15);
-            labelPreviewJobsListMadeByScript.TabIndex = 4;
+            labelPreviewJobsListMadeByScript.TabIndex = 8;
             labelPreviewJobsListMadeByScript.Text = "Preview Job List:";
             // 
             // dataGridViewPreviewJobsListMadeByScript
@@ -126,13 +180,13 @@
             dataGridViewPreviewJobsListMadeByScript.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             dataGridViewPreviewJobsListMadeByScript.Columns.AddRange(new DataGridViewColumn[] { Column1CheckBox, Column2JobType, Column3Passes, Column4Parameters });
             dataGridViewPreviewJobsListMadeByScript.GridColor = SystemColors.Control;
-            dataGridViewPreviewJobsListMadeByScript.Location = new Point(12, 284);
+            dataGridViewPreviewJobsListMadeByScript.Location = new Point(12, 97);
             dataGridViewPreviewJobsListMadeByScript.Name = "dataGridViewPreviewJobsListMadeByScript";
             dataGridViewPreviewJobsListMadeByScript.ReadOnly = true;
             dataGridViewPreviewJobsListMadeByScript.RowHeadersVisible = false;
             dataGridViewPreviewJobsListMadeByScript.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewPreviewJobsListMadeByScript.Size = new Size(760, 236);
-            dataGridViewPreviewJobsListMadeByScript.TabIndex = 8;
+            dataGridViewPreviewJobsListMadeByScript.Size = new Size(411, 424);
+            dataGridViewPreviewJobsListMadeByScript.TabIndex = 9;
             dataGridViewPreviewJobsListMadeByScript.CellFormatting += DataGridViewPreviewJobsListMadeByScript_CellFormatting;
             dataGridViewPreviewJobsListMadeByScript.KeyDown += DataGridViewPreviewJobsListMadeByScript_KeyDown;
             dataGridViewPreviewJobsListMadeByScript.MouseDown += DataGridViewPreviewJobsListMadeByScript_MouseDown;
@@ -170,19 +224,58 @@
             Column4Parameters.ReadOnly = true;
             Column4Parameters.Width = 629;
             // 
+            // checkBoxScriptShowHelp
+            // 
+            checkBoxScriptShowHelp.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            checkBoxScriptShowHelp.AutoSize = true;
+            checkBoxScriptShowHelp.Checked = true;
+            checkBoxScriptShowHelp.CheckState = CheckState.Checked;
+            checkBoxScriptShowHelp.Location = new Point(12, 530);
+            checkBoxScriptShowHelp.Name = "checkBoxScriptShowHelp";
+            checkBoxScriptShowHelp.Size = new Size(83, 19);
+            checkBoxScriptShowHelp.TabIndex = 10;
+            checkBoxScriptShowHelp.Text = "Show Help";
+            checkBoxScriptShowHelp.UseVisualStyleBackColor = true;
+            checkBoxScriptShowHelp.CheckedChanged += CheckBoxScriptShowHelp_CheckedChanged;
+            // 
+            // buttonAddJobToJobListScript
+            // 
+            buttonAddJobToJobListScript.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonAddJobToJobListScript.Location = new Point(267, 527);
+            buttonAddJobToJobListScript.Name = "buttonAddJobToJobListScript";
+            buttonAddJobToJobListScript.Size = new Size(95, 23);
+            buttonAddJobToJobListScript.TabIndex = 11;
+            buttonAddJobToJobListScript.Text = "Add to Job List";
+            buttonAddJobToJobListScript.UseVisualStyleBackColor = true;
+            buttonAddJobToJobListScript.Click += ButtonAddJobToJobListScript_Click;
+            // 
+            // buttonCloseScriptConstructorForm
+            // 
+            buttonCloseScriptConstructorForm.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonCloseScriptConstructorForm.Location = new Point(368, 527);
+            buttonCloseScriptConstructorForm.Name = "buttonCloseScriptConstructorForm";
+            buttonCloseScriptConstructorForm.Size = new Size(55, 23);
+            buttonCloseScriptConstructorForm.TabIndex = 12;
+            buttonCloseScriptConstructorForm.Text = "Close";
+            buttonCloseScriptConstructorForm.UseVisualStyleBackColor = true;
+            buttonCloseScriptConstructorForm.Click += ButtonCloseScriptConstructorForm_Click;
+            // 
+            // richTextBoxScriptHelp
+            // 
+            richTextBoxScriptHelp.Dock = DockStyle.Fill;
+            richTextBoxScriptHelp.Location = new Point(3, 12);
+            richTextBoxScriptHelp.Name = "richTextBoxScriptHelp";
+            richTextBoxScriptHelp.ReadOnly = true;
+            richTextBoxScriptHelp.Size = new Size(330, 537);
+            richTextBoxScriptHelp.TabIndex = 0;
+            richTextBoxScriptHelp.Text = "";
+            // 
             // ScriptConstructorForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 561);
-            Controls.Add(dataGridViewPreviewJobsListMadeByScript);
-            Controls.Add(labelPreviewJobsListMadeByScript);
-            Controls.Add(comboBoxScript);
-            Controls.Add(buttonAddJobToJobListScript);
-            Controls.Add(buttonCloseScriptConstructorForm);
-            Controls.Add(labelTypeYourScript);
-            Controls.Add(buttonClearScript);
-            Controls.Add(richTextBoxScriptHelp);
+            Controls.Add(splitContainerScriptConstructor);
             DoubleBuffered = true;
             MinimumSize = new Size(300, 432);
             Name = "ScriptConstructorForm";
@@ -190,24 +283,34 @@
             Text = "Script Constructor";
             Shown += ScriptConstructorForm_Shown;
             MouseDown += ScriptConstructorForm_MouseDown;
+            splitContainerScriptConstructor.Panel1.ResumeLayout(false);
+            splitContainerScriptConstructor.Panel1.PerformLayout();
+            splitContainerScriptConstructor.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainerScriptConstructor).EndInit();
+            splitContainerScriptConstructor.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridViewPreviewJobsListMadeByScript).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private RichTextBox richTextBoxScriptHelp;
-        private Button buttonClearScript;
+        private SplitContainer splitContainerScriptConstructor;
         private Label labelTypeYourScript;
-        private Button buttonCloseScriptConstructorForm;
-        private Button buttonAddJobToJobListScript;
-        private ComboBox comboBoxScript;
+        private RadioButton radioButtonScriptEncode;
+        private ComboBox comboBoxScriptEncode;
+        private Button buttonClearScriptEncode;
+        private RadioButton radioButtonScriptDecode;
+        private ComboBox comboBoxScriptDecode;
+        private Button buttonClearScriptDecode;
         private Label labelPreviewJobsListMadeByScript;
         private DataGridViewEx dataGridViewPreviewJobsListMadeByScript;
         private DataGridViewCheckBoxColumn Column1CheckBox;
         private DataGridViewTextBoxColumn Column2JobType;
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
+        private CheckBox checkBoxScriptShowHelp;
+        private Button buttonAddJobToJobListScript;
+        private Button buttonCloseScriptConstructorForm;
+        private RichTextBox richTextBoxScriptHelp;
     }
 }

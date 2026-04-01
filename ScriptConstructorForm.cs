@@ -42,12 +42,12 @@ namespace FLAC_Benchmark_H
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string InitialScriptText
         {
-            get => comboBoxScript.Text;
+            get => comboBoxScriptEncode.Text;
             set
             {
-                if (comboBoxScript.Text != value)
+                if (comboBoxScriptEncode.Text != value)
                 {
-                    comboBoxScript.Text = value;
+                    comboBoxScriptEncode.Text = value;
                 }
             }
         }
@@ -66,11 +66,11 @@ namespace FLAC_Benchmark_H
             PreviewJobs();
 
             // 3. Position cursor at the end
-            comboBoxScript.SelectionStart = comboBoxScript.Text.Length;
-            comboBoxScript.SelectionLength = 0;
+            comboBoxScriptEncode.SelectionStart = comboBoxScriptEncode.Text.Length;
+            comboBoxScriptEncode.SelectionLength = 0;
 
             // 4. Set focus to the input combo box
-            comboBoxScript.Select();
+            comboBoxScriptEncode.Select();
         }
 
         private void LoadHelpText()
@@ -220,7 +220,21 @@ namespace FLAC_Benchmark_H
             // Clear DataGridView rows for preview
             dataGridViewPreviewJobsListMadeByScript.Rows.Clear();
 
-            string? scriptLine = comboBoxScript.Text?.Trim();
+            // Get active script
+            string? scriptLine;
+            string jobType;
+
+            if (radioButtonScriptEncode.Checked)
+            {
+                scriptLine = comboBoxScriptEncode.Text?.Trim();
+                jobType = "Encode";
+            }
+            else
+            {
+                scriptLine = comboBoxScriptDecode.Text?.Trim();
+                jobType = "Decode";
+            }
+
             if (string.IsNullOrWhiteSpace(scriptLine))
             {
                 labelPreviewJobsListMadeByScript.Text = "Preview Job List (0 items)";
@@ -229,7 +243,7 @@ namespace FLAC_Benchmark_H
                 return;
             }
 
-            // --- NEW: Basic syntax checks for common errors ---
+            // Basic syntax checks for common errors
 
             // 1. Check for balanced brackets
             if (scriptLine.Count(c => c == '[') != scriptLine.Count(c => c == ']'))
@@ -258,12 +272,12 @@ namespace FLAC_Benchmark_H
                 return;
             }
 
-            // --- NEW: Notify user that parsing has started ---
+            // Notify user that parsing has started
             labelPreviewJobsListMadeByScript.Text = "Parsing script...                             ";
             labelPreviewJobsListMadeByScript.ForeColor = Color.Blue;
             labelPreviewJobsListMadeByScript.Refresh(); // Force UI update before heavy operation
 
-            // --- Attempt to expand the script ---
+            // Attempt to expand the script
             List<string> expanded = ScriptParser.ExpandScriptLine(scriptLine);
 
             if (expanded.Count == 0)
@@ -279,7 +293,7 @@ namespace FLAC_Benchmark_H
                 foreach (string param in expanded)
                 {
                     // Add row to DataGridView for preview
-                    _ = dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, "Encode", "1", param); // Checkbox (true), Job Type, Passes, Parameters
+                    _ = dataGridViewPreviewJobsListMadeByScript.Rows.Add(true, jobType, "1", param); // Checkbox (true), Job Type, Passes, Parameters
                 }
                 labelPreviewJobsListMadeByScript.Text = $"Preview Job List ({expanded.Count} items)";
                 labelPreviewJobsListMadeByScript.ForeColor = SystemColors.ControlText; // Default color
@@ -297,7 +311,20 @@ namespace FLAC_Benchmark_H
         }
         private void ButtonAddJobToJobListScript_Click(object? sender, EventArgs e)
         {
-            string scriptText = comboBoxScript.Text.Trim();
+            string scriptText;
+            string jobType;
+
+            if (radioButtonScriptEncode.Checked)
+            {
+                scriptText = comboBoxScriptEncode.Text.Trim();
+                jobType = "Encode";
+            }
+            else
+            {
+                scriptText = comboBoxScriptDecode.Text.Trim();
+                jobType = "Decode";
+            }
+
             if (string.IsNullOrWhiteSpace(scriptText))
             {
                 _ = MessageBox.Show("Script is empty.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -317,7 +344,7 @@ namespace FLAC_Benchmark_H
 
             List<ScriptJobData> jobsToAdd =
             [
-                new(true, "Encode", "1", scriptText) // Pass the script text as the 'parameter'
+                new(true, jobType, "1", scriptText) // Pass the script text as the 'parameter'
             ];
 
             OnJobsAdded?.Invoke(jobsToAdd);
@@ -455,6 +482,39 @@ namespace FLAC_Benchmark_H
         private void ButtonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
         {
             Close();
+        }
+
+        private void CheckBoxScriptShowHelp_CheckedChanged(object sender, EventArgs e)
+        {
+            splitContainerScriptConstructor.Panel2Collapsed = !checkBoxScriptShowHelp.Checked;
+        }
+
+        private void ButtonClearScriptComboBox_Click(object sender, EventArgs e)
+        {
+            if (sender == buttonClearScriptEncode)
+            {
+                comboBoxScriptEncode.Text = string.Empty;
+            }
+            else if (sender == buttonClearScriptDecode)
+            {
+                comboBoxScriptDecode.Text = string.Empty;
+            }
+        }
+
+        private void RadioButtonScriptEncode_CheckedChanged(object sender, EventArgs e)
+        {
+            comboBoxScriptEncode.Enabled = radioButtonScriptEncode.Checked;
+            buttonClearScriptEncode.Enabled = radioButtonScriptEncode.Checked;
+            _ = comboBoxScriptEncode.Focus();
+            PreviewJobs();
+        }
+
+        private void RadioButtonScriptDecode_CheckedChanged(object sender, EventArgs e)
+        {
+            comboBoxScriptDecode.Enabled = radioButtonScriptDecode.Checked;
+            buttonClearScriptDecode.Enabled = radioButtonScriptDecode.Checked;
+            _ = comboBoxScriptDecode.Focus();
+            PreviewJobs();
         }
     }
 }
