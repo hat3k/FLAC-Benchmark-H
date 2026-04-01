@@ -32,8 +32,19 @@ namespace FLAC_Benchmark_H
                 PreviewJobs(); // Perform the actual parsing
             };
 
+            _jobAddedTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 2000, // 2 seconds display time
+            };
+            _jobAddedTimer.Tick += (s, e) =>
+            {
+                _jobAddedTimer.Stop();
+                labelScripConstructorJobAdded.Visible = false;
+            };
+
         }
         private readonly System.Windows.Forms.Timer _debounceTimer;
+        private readonly System.Windows.Forms.Timer _jobAddedTimer;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string InitialJobType
@@ -369,6 +380,10 @@ namespace FLAC_Benchmark_H
             ];
 
             OnJobsAdded?.Invoke(jobsToAdd);
+
+            // Show "Job added" label with auto-hide timer
+            labelScripConstructorJobAdded.Visible = true;
+            _jobAddedTimer.Start();
         }
 
         public event Action<List<ScriptJobData>> OnJobsAdded = delegate { };

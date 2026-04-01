@@ -43,6 +43,7 @@
             Column3Passes = new DataGridViewTextBoxColumn();
             Column4Parameters = new DataGridViewTextBoxColumn();
             checkBoxScriptShowHelp = new CheckBox();
+            labelScripConstructorJobAdded = new Label();
             buttonAddJobToJobListScript = new Button();
             buttonCloseScriptConstructorForm = new Button();
             richTextBoxScriptHelp = new RichTextBox();
@@ -72,6 +73,7 @@
             splitContainerScriptConstructor.Panel1.Controls.Add(labelPreviewJobsListMadeByScript);
             splitContainerScriptConstructor.Panel1.Controls.Add(dataGridViewPreviewJobsListMadeByScript);
             splitContainerScriptConstructor.Panel1.Controls.Add(checkBoxScriptShowHelp);
+            splitContainerScriptConstructor.Panel1.Controls.Add(labelScripConstructorJobAdded);
             splitContainerScriptConstructor.Panel1.Controls.Add(buttonAddJobToJobListScript);
             splitContainerScriptConstructor.Panel1.Controls.Add(buttonCloseScriptConstructorForm);
             // 
@@ -95,6 +97,7 @@
             // radioButtonScriptEncode
             // 
             radioButtonScriptEncode.AutoSize = true;
+            radioButtonScriptEncode.Checked = true;
             radioButtonScriptEncode.Location = new Point(15, 30);
             radioButtonScriptEncode.Name = "radioButtonScriptEncode";
             radioButtonScriptEncode.Size = new Size(64, 19);
@@ -133,7 +136,6 @@
             radioButtonScriptDecode.Name = "radioButtonScriptDecode";
             radioButtonScriptDecode.Size = new Size(65, 19);
             radioButtonScriptDecode.TabIndex = 5;
-            radioButtonScriptDecode.TabStop = true;
             radioButtonScriptDecode.Text = "Decode";
             radioButtonScriptDecode.UseVisualStyleBackColor = true;
             radioButtonScriptDecode.CheckedChanged += RadioButtonScriptDecode_CheckedChanged;
@@ -141,6 +143,7 @@
             // comboBoxScriptDecode
             // 
             comboBoxScriptDecode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxScriptDecode.Enabled = false;
             comboBoxScriptDecode.FormattingEnabled = true;
             comboBoxScriptDecode.Location = new Point(94, 53);
             comboBoxScriptDecode.Name = "comboBoxScriptDecode";
@@ -151,6 +154,7 @@
             // buttonClearScriptDecode
             // 
             buttonClearScriptDecode.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonClearScriptDecode.Enabled = false;
             buttonClearScriptDecode.Location = new Point(368, 53);
             buttonClearScriptDecode.Name = "buttonClearScriptDecode";
             buttonClearScriptDecode.Size = new Size(55, 23);
@@ -238,6 +242,17 @@
             checkBoxScriptShowHelp.UseVisualStyleBackColor = true;
             checkBoxScriptShowHelp.CheckedChanged += CheckBoxScriptShowHelp_CheckedChanged;
             // 
+            // labelScripConstructorJobAdded
+            // 
+            labelScripConstructorJobAdded.AutoSize = true;
+            labelScripConstructorJobAdded.ForeColor = Color.Green;
+            labelScripConstructorJobAdded.Location = new Point(200, 531);
+            labelScripConstructorJobAdded.Name = "labelScripConstructorJobAdded";
+            labelScripConstructorJobAdded.Size = new Size(61, 15);
+            labelScripConstructorJobAdded.TabIndex = 13;
+            labelScripConstructorJobAdded.Text = "Job added";
+            labelScripConstructorJobAdded.Visible = false;
+            // 
             // buttonAddJobToJobListScript
             // 
             buttonAddJobToJobListScript.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -309,6 +324,7 @@
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
         private CheckBox checkBoxScriptShowHelp;
+        private Label labelScripConstructorJobAdded;
         private Button buttonAddJobToJobListScript;
         private Button buttonCloseScriptConstructorForm;
         private RichTextBox richTextBoxScriptHelp;
