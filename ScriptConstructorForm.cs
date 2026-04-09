@@ -86,7 +86,14 @@ namespace FLAC_Benchmark_H
 
         private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
         {
-            // 1. Scroll help text to the very top
+            // 1. Read saved setting from Form1 and apply to checkbox
+            if (Owner is Form1 mainForm)
+            {
+                checkBoxScriptShowHelp.Checked = mainForm.scriptShowHelp;
+                splitContainerScriptConstructor.Panel2Collapsed = !mainForm.scriptShowHelp;
+            }
+
+            // 2. Scroll help text to the very top
             if (richTextBoxScriptHelp.TextLength > 0)
             {
                 richTextBoxScriptHelp.SelectionStart = 0;
@@ -94,14 +101,14 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.ScrollToCaret();
             }
 
-            // 2. Update preview based on current script text
+            // 3. Update preview based on current script text
             PreviewJobs();
 
-            // 3. Position cursor at the end
+            // 4. Position cursor at the end
             comboBoxScriptEncode.SelectionStart = comboBoxScriptEncode.Text.Length;
             comboBoxScriptEncode.SelectionLength = 0;
 
-            // 4. Set focus to the input combo box
+            // 5. Set focus to the input combo box
             comboBoxScriptEncode.Select();
         }
 
@@ -523,6 +530,12 @@ namespace FLAC_Benchmark_H
         private void CheckBoxScriptShowHelp_CheckedChanged(object sender, EventArgs e)
         {
             splitContainerScriptConstructor.Panel2Collapsed = !checkBoxScriptShowHelp.Checked;
+
+            // Update Form1's setting immediately when user toggles
+            if (Owner is Form1 mainForm)
+            {
+                mainForm.scriptShowHelp = checkBoxScriptShowHelp.Checked;
+            }
         }
 
         private void ButtonClearScriptComboBox_Click(object sender, EventArgs e)

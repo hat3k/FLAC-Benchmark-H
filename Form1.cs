@@ -41,6 +41,7 @@ namespace FLAC_Benchmark_H
         // UI state
         private bool isCpuInfoLoaded = false;
         private ScriptConstructorForm? _scriptForm = null;
+        public bool scriptShowHelp = true;
 
         // Encoder loading queue and progress
         private readonly Queue<List<(string path, bool isChecked)>> _encodersLoadQueue = new();
@@ -484,7 +485,8 @@ namespace FLAC_Benchmark_H
                     $"AddMD5OnLoadWav={checkBoxAddMD5OnLoadWav.Checked}",
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
-                    $"IgnoredVersion={programVersionIgnored ?? ""}"
+                    $"IgnoredVersion={programVersionIgnored ?? ""}",
+                    $"ScriptShowHelp={scriptShowHelp}"
                 ];
 
                 // Logs
@@ -684,6 +686,9 @@ namespace FLAC_Benchmark_H
                             break;
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
+                            break;
+                        case "ScriptShowHelp":
+                            scriptShowHelp = bool.TryParse(value, out bool showHelp) && showHelp;
                             break;
 
                         // Logs
