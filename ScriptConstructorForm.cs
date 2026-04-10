@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text;
+﻿using System.Text;
 
 namespace FLAC_Benchmark_H
 {
@@ -46,57 +45,37 @@ namespace FLAC_Benchmark_H
         private readonly System.Windows.Forms.Timer _debounceTimer;
         private readonly System.Windows.Forms.Timer _jobAddedTimer;
 
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string InitialJobType
+        public void SetInitialScriptData(string jobType, string? parameters)
         {
-            get => radioButtonScriptEncode.Checked ? "Encode" : "Decode";
-            set
+            ComboBox targetComboBoxScript;
+
+            if (jobType.Equals("Encode", StringComparison.OrdinalIgnoreCase))
             {
-                if (value.Equals("Decode", StringComparison.OrdinalIgnoreCase))
-                {
-                    radioButtonScriptDecode.Checked = true;
-                }
-                else
-                {
-                    radioButtonScriptEncode.Checked = true;
-                }
+                radioButtonScriptEncode.Checked = true;
+                targetComboBoxScript = comboBoxScriptEncode;
             }
-        }
-
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public string? InitialScriptText
-        {
-            get => radioButtonScriptEncode.Checked ? comboBoxScriptEncode.Text : comboBoxScriptDecode.Text;
-            set
+            else
             {
-                // 1. Set text immediately
-                if (radioButtonScriptEncode.Checked)
-                {
-                    comboBoxScriptEncode.Text = value ?? string.Empty;
-                }
-                else
-                {
-                    comboBoxScriptDecode.Text = value ?? string.Empty;
-                }
+                radioButtonScriptDecode.Checked = true;
+                targetComboBoxScript = comboBoxScriptDecode;
+            }
 
-                // 2. Cursor positioning logic
-                void setCursor()
-                {
-                    ComboBox activeBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
-                    activeBox.SelectionStart = activeBox.Text.Length;
-                    activeBox.SelectionLength = 0;
-                    activeBox.Select();
-                }
+            targetComboBoxScript.Text = parameters ?? string.Empty;
 
-                // 3. Defer only if handle exists, otherwise execute synchronously
-                if (IsHandleCreated)
-                {
-                    _ = BeginInvoke(setCursor);
-                }
-                else
-                {
-                    setCursor();
-                }
+            void setCursor()
+            {
+                targetComboBoxScript.SelectionStart = targetComboBoxScript.Text.Length;
+                targetComboBoxScript.SelectionLength = 0;
+                targetComboBoxScript.Select();
+            }
+
+            if (IsHandleCreated)
+            {
+                _ = BeginInvoke(setCursor);
+            }
+            else
+            {
+                setCursor();
             }
         }
 
@@ -575,27 +554,17 @@ namespace FLAC_Benchmark_H
 
         private void RadioButtonScript_CheckedChanged(object sender, EventArgs e)
         {
-            (ComboBox? comboBox, Button? radioButton) = radioButtonScriptEncode.Checked
-                ? (comboBoxScriptEncode, buttonClearScriptEncode)
-                : (comboBoxScriptDecode, buttonClearScriptDecode);
+            comboBoxScriptEncode.Enabled = radioButtonScriptEncode.Checked;
+            buttonClearScriptEncode.Enabled = radioButtonScriptEncode.Checked;
 
-            comboBox.Enabled = true;
-            radioButton.Enabled = true;
+            comboBoxScriptDecode.Enabled = radioButtonScriptDecode.Checked;
+            buttonClearScriptDecode.Enabled = radioButtonScriptDecode.Checked;
 
-            if (comboBox == comboBoxScriptEncode)
-            {
-                comboBoxScriptDecode.Enabled = false;
-                buttonClearScriptDecode.Enabled = false;
-            }
-            else
-            {
-                comboBoxScriptEncode.Enabled = false;
-                buttonClearScriptEncode.Enabled = false;
-            }
+            ComboBox activeComboBoxScript = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
 
-            comboBox.SelectionStart = comboBox.Text.Length;
-            comboBox.SelectionLength = 0;
-            comboBox.Select();
+            activeComboBoxScript.SelectionStart = activeComboBoxScript.Text.Length;
+            activeComboBoxScript.SelectionLength = 0;
+            activeComboBoxScript.Select();
 
             _debounceTimer.Stop();
             _debounceTimer.Start();

@@ -3655,11 +3655,8 @@ namespace FLAC_Benchmark_H
 
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
-                _scriptForm = new ScriptConstructorForm
-                {
-                    InitialJobType = jobType,
-                    InitialScriptText = parameters
-                };
+                _scriptForm = new ScriptConstructorForm();
+                _scriptForm.SetInitialScriptData(jobType, parameters);
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
@@ -3680,8 +3677,7 @@ namespace FLAC_Benchmark_H
             }
             else
             {
-                _scriptForm.InitialJobType = jobType;
-                _scriptForm.InitialScriptText = parameters;
+                _scriptForm.SetInitialScriptData(jobType, parameters);
                 _scriptForm.BringToFront();
                 _ = _scriptForm.Focus();
             }
@@ -9177,11 +9173,8 @@ namespace FLAC_Benchmark_H
 
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
-                _scriptForm = new ScriptConstructorForm
-                {
-                    InitialJobType = "Encode",
-                    InitialScriptText = parameters
-                };
+                _scriptForm = new ScriptConstructorForm();
+                _scriptForm.SetInitialScriptData("Encode", parameters);
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
@@ -9204,8 +9197,7 @@ namespace FLAC_Benchmark_H
             }
             else
             {
-                _scriptForm.InitialJobType = "Encode";
-                _scriptForm.InitialScriptText = parameters;
+                _scriptForm.SetInitialScriptData("Encode", parameters);
                 _scriptForm.BringToFront();
                 _ = _scriptForm.Focus();
             }
