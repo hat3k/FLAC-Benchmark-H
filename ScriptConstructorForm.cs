@@ -69,17 +69,33 @@ namespace FLAC_Benchmark_H
             get => radioButtonScriptEncode.Checked ? comboBoxScriptEncode.Text : comboBoxScriptDecode.Text;
             set
             {
-                string targetComboBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode.Text : comboBoxScriptDecode.Text;
-                if (targetComboBox != value)
+                // 1. Set text immediately
+                if (radioButtonScriptEncode.Checked)
                 {
-                    if (radioButtonScriptEncode.Checked)
-                    {
-                        comboBoxScriptEncode.Text = value ?? string.Empty;
-                    }
-                    else
-                    {
-                        comboBoxScriptDecode.Text = value ?? string.Empty;
-                    }
+                    comboBoxScriptEncode.Text = value ?? string.Empty;
+                }
+                else
+                {
+                    comboBoxScriptDecode.Text = value ?? string.Empty;
+                }
+
+                // 2. Cursor positioning logic
+                void setCursor()
+                {
+                    ComboBox activeBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
+                    activeBox.SelectionStart = activeBox.Text.Length;
+                    activeBox.SelectionLength = 0;
+                    activeBox.Select();
+                }
+
+                // 3. Defer only if handle exists, otherwise execute synchronously
+                if (IsHandleCreated)
+                {
+                    _ = BeginInvoke(setCursor);
+                }
+                else
+                {
+                    setCursor();
                 }
             }
         }
@@ -91,6 +107,13 @@ namespace FLAC_Benchmark_H
             {
                 checkBoxScriptShowHelp.Checked = mainForm.scriptShowHelp;
                 splitContainerScriptConstructor.Panel2Collapsed = !mainForm.scriptShowHelp;
+
+                // Load history into both ComboBoxes
+                comboBoxScriptEncode.Items.Clear();
+                comboBoxScriptEncode.Items.AddRange([.. mainForm.scriptEncodeHistory]);
+
+                comboBoxScriptDecode.Items.Clear();
+                comboBoxScriptDecode.Items.AddRange([.. mainForm.scriptDecodeHistory]);
             }
 
             // 2. Scroll help text to the very top
@@ -102,14 +125,14 @@ namespace FLAC_Benchmark_H
             }
 
             // 3. Update preview based on current script text
-            PreviewJobs();
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
 
-            // 4. Position cursor at the end
-            comboBoxScriptEncode.SelectionStart = comboBoxScriptEncode.Text.Length;
-            comboBoxScriptEncode.SelectionLength = 0;
-
-            // 5. Set focus to the input combo box
-            comboBoxScriptEncode.Select();
+            // 4. Focus the ACTIVE ComboBox (Encode or Decode)
+            ComboBox activeBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
+            activeBox.SelectionStart = activeBox.Text.Length;
+            activeBox.SelectionLength = 0;
+            activeBox.Select();
         }
 
         private void LoadHelpText()
@@ -312,7 +335,7 @@ namespace FLAC_Benchmark_H
             }
 
             // Notify user that parsing has started
-            labelPreviewJobsListMadeByScript.Text = "Parsing script...                             ";
+            labelPreviewJobsListMadeByScript.Text = "Parsing script...";
             labelPreviewJobsListMadeByScript.ForeColor = Color.Blue;
             labelPreviewJobsListMadeByScript.Refresh(); // Force UI update before heavy operation
 
@@ -550,20 +573,32 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void RadioButtonScriptEncode_CheckedChanged(object sender, EventArgs e)
+        private void RadioButtonScript_CheckedChanged(object sender, EventArgs e)
         {
-            comboBoxScriptEncode.Enabled = radioButtonScriptEncode.Checked;
-            buttonClearScriptEncode.Enabled = radioButtonScriptEncode.Checked;
-            _ = comboBoxScriptEncode.Focus();
-            PreviewJobs();
-        }
+            (ComboBox? comboBox, Button? radioButton) = radioButtonScriptEncode.Checked
+                ? (comboBoxScriptEncode, buttonClearScriptEncode)
+                : (comboBoxScriptDecode, buttonClearScriptDecode);
 
-        private void RadioButtonScriptDecode_CheckedChanged(object sender, EventArgs e)
-        {
-            comboBoxScriptDecode.Enabled = radioButtonScriptDecode.Checked;
-            buttonClearScriptDecode.Enabled = radioButtonScriptDecode.Checked;
-            _ = comboBoxScriptDecode.Focus();
-            PreviewJobs();
+            comboBox.Enabled = true;
+            radioButton.Enabled = true;
+
+            if (comboBox == comboBoxScriptEncode)
+            {
+                comboBoxScriptDecode.Enabled = false;
+                buttonClearScriptDecode.Enabled = false;
+            }
+            else
+            {
+                comboBoxScriptEncode.Enabled = false;
+                buttonClearScriptEncode.Enabled = false;
+            }
+
+            comboBox.SelectionStart = comboBox.Text.Length;
+            comboBox.SelectionLength = 0;
+            comboBox.Select();
+
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
         }
     }
 }

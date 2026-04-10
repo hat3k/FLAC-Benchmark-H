@@ -105,11 +105,13 @@
             radioButtonScriptEncode.TabStop = true;
             radioButtonScriptEncode.Text = "Encode";
             radioButtonScriptEncode.UseVisualStyleBackColor = true;
-            radioButtonScriptEncode.CheckedChanged += RadioButtonScriptEncode_CheckedChanged;
+            radioButtonScriptEncode.CheckedChanged += RadioButtonScript_CheckedChanged;
             // 
             // comboBoxScriptEncode
             // 
             comboBoxScriptEncode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxScriptEncode.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            comboBoxScriptEncode.AutoCompleteSource = AutoCompleteSource.ListItems;
             comboBoxScriptEncode.FormattingEnabled = true;
             comboBoxScriptEncode.Location = new Point(94, 28);
             comboBoxScriptEncode.Name = "comboBoxScriptEncode";
@@ -138,11 +140,13 @@
             radioButtonScriptDecode.TabIndex = 5;
             radioButtonScriptDecode.Text = "Decode";
             radioButtonScriptDecode.UseVisualStyleBackColor = true;
-            radioButtonScriptDecode.CheckedChanged += RadioButtonScriptDecode_CheckedChanged;
+            radioButtonScriptDecode.CheckedChanged += RadioButtonScript_CheckedChanged;
             // 
             // comboBoxScriptDecode
             // 
             comboBoxScriptDecode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            comboBoxScriptDecode.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            comboBoxScriptDecode.AutoCompleteSource = AutoCompleteSource.ListItems;
             comboBoxScriptDecode.Enabled = false;
             comboBoxScriptDecode.FormattingEnabled = true;
             comboBoxScriptDecode.Location = new Point(94, 53);

@@ -41,6 +41,8 @@ namespace FLAC_Benchmark_H
         // UI state
         private bool isCpuInfoLoaded = false;
         private ScriptConstructorForm? _scriptForm = null;
+        public List<string> scriptEncodeHistory = [];
+        public List<string> scriptDecodeHistory = [];
         public bool scriptShowHelp = true;
 
         // Encoder loading queue and progress
@@ -486,8 +488,22 @@ namespace FLAC_Benchmark_H
                     $"CheckForUpdatesOnStartup={checkBoxCheckForUpdatesOnStartup.Checked}",
                     $"WarningsAsErrors={checkBoxWarningsAsErrors.Checked}",
                     $"IgnoredVersion={programVersionIgnored ?? ""}",
+
+                    // Script Constructor
                     $"ScriptShowHelp={scriptShowHelp}"
                 ];
+
+                // Script History (Encode)
+                foreach (string item in scriptEncodeHistory.Take(50))
+                {
+                    settings.Add($"ScriptEncodeHistory={item}");
+                }
+
+                // Script History (Decode)
+                foreach (string item in scriptDecodeHistory.Take(50))
+                {
+                    settings.Add($"ScriptDecodeHistory={item}");
+                }
 
                 // Logs
                 foreach (DataGridViewColumn col in dataGridViewLog.Columns)
@@ -582,6 +598,9 @@ namespace FLAC_Benchmark_H
             // Set default value - relative path
             tempFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
 
+            scriptEncodeHistory = [];
+            scriptDecodeHistory = [];
+
             try
             {
                 if (!File.Exists(SettingsGeneralFilePath))
@@ -602,6 +621,23 @@ namespace FLAC_Benchmark_H
 
                     string key = parts[0].Trim();
                     string value = parts[1].Trim();
+
+                    if (key == "ScriptEncodeHistory")
+                    {
+                        if (scriptEncodeHistory.Count < 50)
+                        {
+                            scriptEncodeHistory.Add(value);
+                        }
+                        continue;
+                    }
+                    if (key == "ScriptDecodeHistory")
+                    {
+                        if (scriptDecodeHistory.Count < 50)
+                        {
+                            scriptDecodeHistory.Add(value);
+                        }
+                        continue;
+                    }
 
                     switch (key)
                     {
