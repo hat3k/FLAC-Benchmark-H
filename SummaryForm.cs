@@ -337,7 +337,7 @@ namespace FLAC_Benchmark_H
                 else
                 {
                     string toggleText = _filesWithoutMd5Expanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}", toggleText, -1);
+                    AppendRowWithToggle("FLAC without MD5:", $"{_flacFilesWithoutMd5Data.Count}", toggleText, 1);
 
                     if (_filesWithoutMd5Expanded)
                     {
