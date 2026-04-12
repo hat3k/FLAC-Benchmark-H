@@ -248,6 +248,7 @@
             // 
             // labelScripConstructorJobAdded
             // 
+            labelScripConstructorJobAdded.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             labelScripConstructorJobAdded.AutoSize = true;
             labelScripConstructorJobAdded.ForeColor = Color.Green;
             labelScripConstructorJobAdded.Location = new Point(200, 531);
@@ -300,6 +301,8 @@
             Name = "ScriptConstructorForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Script Constructor";
+            FormClosing += ScriptConstructorForm_FormClosing;
+            Load += ScriptConstructorForm_Load;
             Shown += ScriptConstructorForm_Shown;
             MouseDown += ScriptConstructorForm_MouseDown;
             splitContainerScriptConstructor.Panel1.ResumeLayout(false);

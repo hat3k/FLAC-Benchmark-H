@@ -40,62 +40,33 @@ namespace FLAC_Benchmark_H
                 _jobAddedTimer.Stop();
                 labelScripConstructorJobAdded.Visible = false;
             };
-
         }
         private readonly System.Windows.Forms.Timer _debounceTimer;
         private readonly System.Windows.Forms.Timer _jobAddedTimer;
 
-        public void SetInitialScriptData(string jobType, string? parameters)
+        private const int MaxHistoryItems = 50;
+        private void ScriptConstructorForm_Load(object? sender, EventArgs e)
         {
-            ComboBox targetComboBoxScript;
-
-            if (jobType.Equals("Encode", StringComparison.OrdinalIgnoreCase))
-            {
-                radioButtonScriptEncode.Checked = true;
-                targetComboBoxScript = comboBoxScriptEncode;
-            }
-            else
-            {
-                radioButtonScriptDecode.Checked = true;
-                targetComboBoxScript = comboBoxScriptDecode;
-            }
-
-            targetComboBoxScript.Text = parameters ?? string.Empty;
-
-            void setCursor()
-            {
-                targetComboBoxScript.SelectionStart = targetComboBoxScript.Text.Length;
-                targetComboBoxScript.SelectionLength = 0;
-                targetComboBoxScript.Select();
-            }
-
-            if (IsHandleCreated)
-            {
-                _ = BeginInvoke(setCursor);
-            }
-            else
-            {
-                setCursor();
-            }
-        }
-
-        private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
-        {
-            // 1. Read saved setting from Form1 and apply to checkbox
             if (Owner is Form1 mainForm)
             {
+                // Read saved setting from Form1 and apply to checkbox
                 checkBoxScriptShowHelp.Checked = mainForm.scriptShowHelp;
                 splitContainerScriptConstructor.Panel2Collapsed = !mainForm.scriptShowHelp;
+
+                // Load last state into both ComboBoxes
+                comboBoxScriptEncode.Text = mainForm.lastEncodeScript;
+                comboBoxScriptDecode.Text = mainForm.lastDecodeScript;
 
                 // Load history into both ComboBoxes
                 comboBoxScriptEncode.Items.Clear();
                 comboBoxScriptEncode.Items.AddRange([.. mainForm.scriptEncodeHistory]);
-
                 comboBoxScriptDecode.Items.Clear();
                 comboBoxScriptDecode.Items.AddRange([.. mainForm.scriptDecodeHistory]);
             }
-
-            // 2. Scroll help text to the very top
+        }
+        private void ScriptConstructorForm_Shown(object? sender, EventArgs e)
+        {
+            // 1. Scroll help text to the very top
             if (richTextBoxScriptHelp.TextLength > 0)
             {
                 richTextBoxScriptHelp.SelectionStart = 0;
@@ -103,17 +74,16 @@ namespace FLAC_Benchmark_H
                 richTextBoxScriptHelp.ScrollToCaret();
             }
 
-            // 3. Update preview based on current script text
+            // 2. Update preview based on current script text
             _debounceTimer.Stop();
             _debounceTimer.Start();
 
-            // 4. Focus the ACTIVE ComboBox (Encode or Decode)
+            // 3. Focus the ACTIVE ComboBox (Encode or Decode)
             ComboBox activeBox = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
             activeBox.SelectionStart = activeBox.Text.Length;
             activeBox.SelectionLength = 0;
             activeBox.Select();
         }
-
         private void LoadHelpText()
         {
             richTextBoxScriptHelp.Clear();
@@ -256,6 +226,40 @@ namespace FLAC_Benchmark_H
             rtb.AppendText(text);
         }
 
+        public void SetInitialScriptData(string jobType, string? parameters)
+        {
+            ComboBox targetComboBoxScript;
+
+            if (jobType.Equals("Encode", StringComparison.OrdinalIgnoreCase))
+            {
+                radioButtonScriptEncode.Checked = true;
+                targetComboBoxScript = comboBoxScriptEncode;
+            }
+            else
+            {
+                radioButtonScriptDecode.Checked = true;
+                targetComboBoxScript = comboBoxScriptDecode;
+            }
+
+            targetComboBoxScript.Text = parameters ?? string.Empty;
+
+            void setCursor()
+            {
+                targetComboBoxScript.SelectionStart = targetComboBoxScript.Text.Length;
+                targetComboBoxScript.SelectionLength = 0;
+                targetComboBoxScript.Select();
+            }
+
+            if (IsHandleCreated)
+            {
+                _ = BeginInvoke(setCursor);
+            }
+            else
+            {
+                setCursor();
+            }
+        }
+
         private void PreviewJobs()
         {
             // Clear DataGridView rows for preview
@@ -382,6 +386,8 @@ namespace FLAC_Benchmark_H
                     MessageBoxIcon.Error);
                 return;
             }
+
+            SaveBothScriptsToHistory();
 
             List<ScriptJobData> jobsToAdd =
             [
@@ -524,11 +530,72 @@ namespace FLAC_Benchmark_H
             }
         }
 
-        private void ButtonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
+        private void SaveBothScriptsCurrentState()
         {
-            Close();
+            if (Owner is Form1 mainForm)
+            {
+                mainForm.lastEncodeScript = comboBoxScriptEncode.Text?.Trim() ?? string.Empty;
+                mainForm.lastDecodeScript = comboBoxScriptDecode.Text?.Trim() ?? string.Empty;
+            }
+        }
+        private void SaveBothScriptsToHistory()
+        {
+            if (Owner is Form1 mainForm)
+            {
+                // Encode history
+                string encodeScript = comboBoxScriptEncode.Text?.Trim() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(encodeScript))
+                {
+                    _ = mainForm.scriptEncodeHistory.RemoveAll(item => item == encodeScript);
+                    mainForm.scriptEncodeHistory.Insert(0, encodeScript);
+
+                    if (mainForm.scriptEncodeHistory.Count > MaxHistoryItems)
+                    {
+                        mainForm.scriptEncodeHistory.RemoveRange(MaxHistoryItems, mainForm.scriptEncodeHistory.Count - MaxHistoryItems);
+                    }
+                }
+
+                // Decode history
+                string decodeScript = comboBoxScriptDecode.Text?.Trim() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(decodeScript))
+                {
+                    _ = mainForm.scriptDecodeHistory.RemoveAll(item => item == decodeScript);
+                    mainForm.scriptDecodeHistory.Insert(0, decodeScript);
+
+                    if (mainForm.scriptDecodeHistory.Count > MaxHistoryItems)
+                    {
+                        mainForm.scriptDecodeHistory.RemoveRange(MaxHistoryItems, mainForm.scriptDecodeHistory.Count - MaxHistoryItems);
+                    }
+                }
+
+                // Update both comboboxes history (causes flickering)
+                comboBoxScriptEncode.Items.Clear();
+                comboBoxScriptEncode.Items.AddRange([.. mainForm.scriptEncodeHistory]);
+                comboBoxScriptDecode.Items.Clear();
+                comboBoxScriptDecode.Items.AddRange([.. mainForm.scriptDecodeHistory]);
+            }
         }
 
+        private void RadioButtonScript_CheckedChanged(object sender, EventArgs e)
+        {
+            comboBoxScriptEncode.Enabled = radioButtonScriptEncode.Checked;
+            buttonClearScriptEncode.Enabled = radioButtonScriptEncode.Checked;
+
+            comboBoxScriptDecode.Enabled = radioButtonScriptDecode.Checked;
+            buttonClearScriptDecode.Enabled = radioButtonScriptDecode.Checked;
+
+            ComboBox activeComboBoxScript = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
+            ComboBox inactiveComboBoxScript = radioButtonScriptEncode.Checked ? comboBoxScriptDecode : comboBoxScriptEncode;
+
+            inactiveComboBoxScript.SelectionStart = 0;
+            inactiveComboBoxScript.SelectionLength = 0;
+            activeComboBoxScript.SelectionStart = activeComboBoxScript.Text.Length;
+            activeComboBoxScript.SelectionLength = 0;
+            activeComboBoxScript.Select();
+
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
+        }
         private void CheckBoxScriptShowHelp_CheckedChanged(object sender, EventArgs e)
         {
             splitContainerScriptConstructor.Panel2Collapsed = !checkBoxScriptShowHelp.Checked;
@@ -551,23 +618,14 @@ namespace FLAC_Benchmark_H
                 comboBoxScriptDecode.Text = string.Empty;
             }
         }
-
-        private void RadioButtonScript_CheckedChanged(object sender, EventArgs e)
+        private void ButtonCloseScriptConstructorForm_Click(object? sender, EventArgs e)
         {
-            comboBoxScriptEncode.Enabled = radioButtonScriptEncode.Checked;
-            buttonClearScriptEncode.Enabled = radioButtonScriptEncode.Checked;
-
-            comboBoxScriptDecode.Enabled = radioButtonScriptDecode.Checked;
-            buttonClearScriptDecode.Enabled = radioButtonScriptDecode.Checked;
-
-            ComboBox activeComboBoxScript = radioButtonScriptEncode.Checked ? comboBoxScriptEncode : comboBoxScriptDecode;
-
-            activeComboBoxScript.SelectionStart = activeComboBoxScript.Text.Length;
-            activeComboBoxScript.SelectionLength = 0;
-            activeComboBoxScript.Select();
-
-            _debounceTimer.Stop();
-            _debounceTimer.Start();
+            Close();
+        }
+        private void ScriptConstructorForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            SaveBothScriptsCurrentState();
+            SaveBothScriptsToHistory();
         }
     }
 }

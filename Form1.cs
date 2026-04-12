@@ -43,6 +43,8 @@ namespace FLAC_Benchmark_H
         private ScriptConstructorForm? _scriptForm = null;
         public List<string> scriptEncodeHistory = [];
         public List<string> scriptDecodeHistory = [];
+        public string? lastEncodeScript = null;
+        public string? lastDecodeScript = null;
         public bool scriptShowHelp = true;
 
         // Encoder loading queue and progress
@@ -490,7 +492,9 @@ namespace FLAC_Benchmark_H
                     $"IgnoredVersion={programVersionIgnored ?? ""}",
 
                     // Script Constructor
-                    $"ScriptShowHelp={scriptShowHelp}"
+                    $"ScriptShowHelp={scriptShowHelp}",
+                    $"LastEncodeScript={lastEncodeScript ?? ""}",
+                    $"LastDecodeScript={lastDecodeScript ?? ""}"
                 ];
 
                 // Script History (Encode)
@@ -723,8 +727,16 @@ namespace FLAC_Benchmark_H
                         case "IgnoredVersion":
                             programVersionIgnored = string.IsNullOrEmpty(value) ? null : value;
                             break;
+
+                        // Script Constructor
                         case "ScriptShowHelp":
                             scriptShowHelp = bool.TryParse(value, out bool showHelp) && showHelp;
+                            break;
+                        case "LastEncodeScript":
+                            lastEncodeScript = value;
+                            break;
+                        case "LastDecodeScript":
+                            lastDecodeScript = value;
                             break;
 
                         // Logs
@@ -3656,24 +3668,26 @@ namespace FLAC_Benchmark_H
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
                 _scriptForm = new ScriptConstructorForm();
-                _scriptForm.SetInitialScriptData(jobType, parameters);
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
                     ScriptJobData job = jobs[0];
 
+                    // Add a new row to dataGridViewJobs with the extracted data
                     _ = dataGridViewJobs.Rows.Add(
                         job.IsChecked,
                         job.JobType,
                         job.Passes,
                         job.Parameters);
 
+                    // Optionally clear selection after adding new jobs to maintain a clean UI state
                     dataGridViewJobs.ClearSelection();
                     dataGridViewJobs.CurrentCell = null;
                 };
 
                 _scriptForm.FormClosed += (s, args) => _scriptForm = null;
                 _scriptForm.Show(this);
+                _scriptForm.SetInitialScriptData(jobType, parameters);
             }
             else
             {
@@ -9174,7 +9188,6 @@ namespace FLAC_Benchmark_H
             if (_scriptForm == null || _scriptForm.IsDisposed)
             {
                 _scriptForm = new ScriptConstructorForm();
-                _scriptForm.SetInitialScriptData("Encode", parameters);
 
                 _scriptForm.OnJobsAdded += (jobs) =>
                 {
@@ -9194,6 +9207,7 @@ namespace FLAC_Benchmark_H
 
                 _scriptForm.FormClosed += (s, args) => _scriptForm = null;
                 _scriptForm.Show(this);
+                _scriptForm.SetInitialScriptData("Encode", parameters);
             }
             else
             {
