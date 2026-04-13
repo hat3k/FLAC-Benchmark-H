@@ -682,6 +682,7 @@
             listViewEncoders.TabIndex = 0;
             listViewEncoders.UseCompatibleStateImageBehavior = false;
             listViewEncoders.View = View.Details;
+            listViewEncoders.ColumnClick += ListViewEncoders_ColumnClick;
             listViewEncoders.DragDrop += ListViewEncoders_DragDrop;
             listViewEncoders.DragEnter += ListViewEncoders_DragEnter;
             listViewEncoders.KeyDown += ListViewEncoders_KeyDown;
@@ -969,6 +970,7 @@
             listViewAudioFiles.TabIndex = 0;
             listViewAudioFiles.UseCompatibleStateImageBehavior = false;
             listViewAudioFiles.View = View.Details;
+            listViewAudioFiles.ColumnClick += ListViewAudioFiles_ColumnClick;
             listViewAudioFiles.DragDrop += ListViewAudioFiles_DragDrop;
             listViewAudioFiles.DragEnter += ListViewAudioFiles_DragEnter;
             listViewAudioFiles.KeyDown += ListViewAudioFiles_KeyDown;
@@ -991,14 +993,14 @@
             BitDepth.Tag = "BitDepth";
             BitDepth.Text = "Bit Depth";
             BitDepth.TextAlign = HorizontalAlignment.Right;
-            BitDepth.Width = 62;
+            BitDepth.Width = 70;
             // 
             // SamplingRate
             // 
             SamplingRate.Tag = "SamplingRate";
             SamplingRate.Text = "Samp. Rate";
             SamplingRate.TextAlign = HorizontalAlignment.Right;
-            SamplingRate.Width = 71;
+            SamplingRate.Width = 80;
             // 
             // BitRate
             // 

@@ -1,9 +1,10 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml;
 using MediaInfoLib;
 using ScottPlot;
 using ScottPlot.Plottable;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Data;
@@ -1438,11 +1439,11 @@ namespace FLAC_Benchmark_H
 
         private void ButtonUpEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, -1); // Pass -1 to move up
+            MoveSelectedItemsForListView(listViewEncoders, -1); // Pass -1 to move up
         }
         private void ButtonDownEncoder_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, 1); // Pass 1 to move down
+            MoveSelectedItemsForListView(listViewEncoders, 1); // Pass 1 to move down
         }
         private void ButtonClearSelectedEncoder_Click(object? sender, EventArgs e)
         {
@@ -1488,6 +1489,97 @@ namespace FLAC_Benchmark_H
             else
             {
                 groupBoxEncoders.Text = baseText;
+            }
+        }
+        private void ListViewEncoders_ColumnClick(object? sender, ColumnClickEventArgs e)
+        {
+            SortOrder sortOrder = listViewEncoders.ListViewItemSorter is ListViewEncodersItemComparer comparer &&
+                comparer.ColumnIndex == e.Column
+                ? comparer.SortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending
+                : SortOrder.Ascending;
+
+            listViewEncoders.ListViewItemSorter = new ListViewEncodersItemComparer(
+                e.Column,
+                sortOrder,
+                encoderInfoCache
+            );
+
+            UpdateSortGlyphForListView(listViewEncoders, e.Column, sortOrder);
+        }
+        private class ListViewEncodersItemComparer(int columnIndex, SortOrder sortOrder, ConcurrentDictionary<string, EncoderInfo> cache) : IComparer
+        {
+            public int ColumnIndex { get; } = columnIndex;
+            public SortOrder SortOrder { get; } = sortOrder;
+            private readonly ConcurrentDictionary<string, EncoderInfo> _cache = cache;
+            private static readonly NaturalStringComparer _naturalComparer = new();
+
+            public int Compare(object? x, object? y)
+            {
+                if (x is not ListViewItem itemX || y is not ListViewItem itemY)
+                {
+                    return 0;
+                }
+
+                string pathX = itemX.Tag?.ToString() ?? "";
+                string pathY = itemY.Tag?.ToString() ?? "";
+
+                _ = _cache.TryGetValue(pathX, out EncoderInfo? infoX);
+                _ = _cache.TryGetValue(pathY, out EncoderInfo? infoY);
+
+                int result = CompareByColumn(infoX, infoY, ColumnIndex);
+
+                return SortOrder == SortOrder.Ascending ? result : -result;
+            }
+
+            private static int CompareByColumn(EncoderInfo? infoX, EncoderInfo? infoY, int columnIndex)
+            {
+                return columnIndex switch
+                {
+                    0 => _naturalComparer.Compare(infoX?.FileName, infoY?.FileName),
+                    1 => _naturalComparer.Compare(infoX?.Version, infoY?.Version),
+                    2 => ComparePaths(infoX?.DirectoryPath, infoY?.DirectoryPath),
+                    3 => (infoX?.FileSize ?? 0).CompareTo(infoY?.FileSize ?? 0),
+                    4 => CompareDates(infoX?.LastWriteTime, infoY?.LastWriteTime),
+                    _ => 0
+                };
+            }
+
+            private static int ComparePaths(string? pathX, string? pathY)
+            {
+                if (pathX == null && pathY == null)
+                {
+                    return 0;
+                }
+
+                if (pathX == null)
+                {
+                    return -1;
+                }
+
+                if (pathY == null)
+                {
+                    return 1;
+                }
+
+                string[] partsX = pathX.Split(Path.DirectorySeparatorChar);
+                string[] partsY = pathY.Split(Path.DirectorySeparatorChar);
+
+                int minLength = Math.Min(partsX.Length, partsY.Length);
+                for (int i = 0; i < minLength; i++)
+                {
+                    int result = _naturalComparer.Compare(partsX[i], partsY[i]);
+                    if (result != 0)
+                    {
+                        return result;
+                    }
+                }
+
+                return partsX.Length.CompareTo(partsY.Length);
+            }
+
+            private static int CompareDates(DateTime? dateX, DateTime? dateY)
+            {
+                return (dateX ?? DateTime.MinValue).CompareTo(dateY ?? DateTime.MinValue);
             }
         }
 
@@ -1632,11 +1724,11 @@ namespace FLAC_Benchmark_H
         }
         private void MoveUpToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, -1);
+            MoveSelectedItemsForListView(listViewEncoders, -1);
         }
         private void MoveDownToolStripMenuItemEncoders_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewEncoders, 1);
+            MoveSelectedItemsForListView(listViewEncoders, 1);
         }
         private async void RefreshAllToolStripMenuItemEncoders_Click(object? sender, EventArgs e)
         {
@@ -2385,11 +2477,11 @@ namespace FLAC_Benchmark_H
 
         private void ButtonUpAudioFile_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewAudioFiles, -1); // Pass -1 to move up
+            MoveSelectedItemsForListView(listViewAudioFiles, -1); // Pass -1 to move up
         }
         private void ButtonDownAudioFile_Click(object? sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewAudioFiles, 1); // Pass 1 to move down
+            MoveSelectedItemsForListView(listViewAudioFiles, 1); // Pass 1 to move down
         }
         private void ButtonClearSelectedAudioFile_Click(object? sender, EventArgs e)
         {
@@ -2443,6 +2535,116 @@ namespace FLAC_Benchmark_H
             else
             {
                 groupBoxAudioFiles.Text = baseText;
+            }
+        }
+        private void ListViewAudioFiles_ColumnClick(object? sender, ColumnClickEventArgs e)
+        {
+            SortOrder sortOrder = listViewAudioFiles.ListViewItemSorter is ListViewAudioFilesItemComparer comparer &&
+                comparer.ColumnIndex == e.Column
+                ? comparer.SortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending
+                : SortOrder.Ascending;
+            listViewAudioFiles.ListViewItemSorter = new ListViewAudioFilesItemComparer(
+                e.Column,
+                sortOrder,
+                audioFileInfoCache
+            );
+
+            UpdateSortGlyphForListView(listViewAudioFiles, e.Column, sortOrder);
+        }
+        private class ListViewAudioFilesItemComparer(int columnIndex, SortOrder sortOrder, ConcurrentDictionary<string, AudioFileInfo> cache) : IComparer
+        {
+            public int ColumnIndex { get; } = columnIndex;
+            public SortOrder SortOrder { get; } = sortOrder;
+            private readonly ConcurrentDictionary<string, AudioFileInfo> _cache = cache;
+            private static readonly NaturalStringComparer _naturalComparer = new();
+
+            public int Compare(object? x, object? y)
+            {
+                if (x is not ListViewItem itemX || y is not ListViewItem itemY)
+                {
+                    return 0;
+                }
+
+                string pathX = itemX.Tag?.ToString() ?? "";
+                string pathY = itemY.Tag?.ToString() ?? "";
+
+                _ = _cache.TryGetValue(pathX, out AudioFileInfo? infoX);
+                _ = _cache.TryGetValue(pathY, out AudioFileInfo? infoY);
+
+                int result = CompareByColumn(infoX, infoY, ColumnIndex);
+
+                return SortOrder == SortOrder.Ascending ? result : -result;
+            }
+
+            private static int CompareByColumn(AudioFileInfo? infoX, AudioFileInfo? infoY, int columnIndex)
+            {
+                return columnIndex switch
+                {
+                    0 => _naturalComparer.Compare(infoX?.FileName, infoY?.FileName),
+                    1 => CompareNumbers(infoX?.Channels, infoY?.Channels),
+                    2 => CompareNumbers(infoX?.BitDepth, infoY?.BitDepth),
+                    3 => CompareNumbers(infoX?.SamplingRate, infoY?.SamplingRate),
+                    4 => CompareNumbers(infoX?.BitRate, infoY?.BitRate),
+                    5 => CompareDoubles(infoX?.CompressionInputAudioFile, infoY?.CompressionInputAudioFile),
+                    6 => CompareLongs(infoX?.Duration, infoY?.Duration),
+                    7 => (infoX?.FileSize ?? 0).CompareTo(infoY?.FileSize ?? 0),
+                    8 => _naturalComparer.Compare(infoX?.Md5Hash, infoY?.Md5Hash),
+                    9 => ComparePaths(infoX?.DirectoryPath, infoY?.DirectoryPath),
+                    10 => _naturalComparer.Compare(infoX?.WritingLibrary, infoY?.WritingLibrary),
+                    _ => 0
+                };
+            }
+
+            private static int CompareNumbers(string? strX, string? strY)
+            {
+                return long.TryParse(strX, out long numX) && long.TryParse(strY, out long numY)
+                    ? numX.CompareTo(numY)
+                    : string.Compare(strX, strY, StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static int CompareDoubles(double? numX, double? numY)
+            {
+                return (numX ?? 0).CompareTo(numY ?? 0);
+            }
+
+            private static int CompareLongs(string? strX, string? strY)
+            {
+                return long.TryParse(strX, out long numX) && long.TryParse(strY, out long numY)
+                    ? numX.CompareTo(numY)
+                    : string.Compare(strX, strY, StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static int ComparePaths(string? pathX, string? pathY)
+            {
+                if (pathX == null && pathY == null)
+                {
+                    return 0;
+                }
+
+                if (pathX == null)
+                {
+                    return -1;
+                }
+
+                if (pathY == null)
+                {
+                    return 1;
+                }
+
+                string[] partsX = pathX.Split(Path.DirectorySeparatorChar);
+                string[] partsY = pathY.Split(Path.DirectorySeparatorChar);
+
+                int minLength = Math.Min(partsX.Length, partsY.Length);
+                for (int i = 0; i < minLength; i++)
+                {
+                    int result = _naturalComparer.Compare(partsX[i], partsY[i]);
+                    if (result != 0)
+                    {
+                        return result;
+                    }
+                }
+
+                return partsX.Length.CompareTo(partsY.Length);
             }
         }
 
@@ -2763,11 +2965,11 @@ namespace FLAC_Benchmark_H
         }
         private void MoveUpToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewAudioFiles, -1);
+            MoveSelectedItemsForListView(listViewAudioFiles, -1);
         }
         private void MoveDownToolStripMenuItemAudioFiles_Click(object sender, EventArgs e)
         {
-            MoveSelectedItemsForListview(listViewAudioFiles, 1);
+            MoveSelectedItemsForListView(listViewAudioFiles, 1);
         }
         private async void RefreshAllToolStripMenuItemAudioFiles_Click(object? sender, EventArgs e)
         {
@@ -9620,7 +9822,27 @@ namespace FLAC_Benchmark_H
         }
 
         // General methods
-        private static void MoveSelectedItemsForListview(ListView listView, int direction)
+        private static void UpdateSortGlyphForListView(ListView listView, int columnIndex, SortOrder sortOrder)
+        {
+            foreach (ColumnHeader col in listView.Columns)
+            {
+                string originalText = col.Text;
+                if (originalText.EndsWith(" ↑") || originalText.EndsWith(" ↓"))
+                {
+                    col.Text = originalText[..^2];
+                }
+            }
+
+            if (sortOrder == SortOrder.Ascending)
+            {
+                listView.Columns[columnIndex].Text += " ↑";
+            }
+            else if (sortOrder == SortOrder.Descending)
+            {
+                listView.Columns[columnIndex].Text += " ↓";
+            }
+        }
+        private static void MoveSelectedItemsForListView(ListView listView, int direction)
         {
             // Get selected items and sort them by indices
             List<ListViewItem> selectedItems = [.. listView.SelectedItems.Cast<ListViewItem>().OrderBy(item => item.Index)];
