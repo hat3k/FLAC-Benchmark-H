@@ -28,6 +28,12 @@ namespace FLAC_Benchmark_H
         private bool _filesWithoutSamplingRateExpanded = false;
         private bool _filesWithoutBitDepthExpanded = false;
         private bool _filesWithoutDurationExpanded = false;
+        private bool _filesWithBestCompressionExpanded = false;
+        private bool _filesWithWorstCompressionExpanded = false;
+        private bool _filesWithAvgCompressionExpanded = false;
+        private bool _filesWithLowestBitRateExpanded = false;
+        private bool _filesWithHighestBitRateExpanded = false;
+        private bool _filesWithAvgBitRateExpanded = false;
 
         // Data storage for collapsible sections (populated on initial load)
         private List<string> _flacFilesWithoutMd5Data = [];
@@ -37,6 +43,12 @@ namespace FLAC_Benchmark_H
         private List<string> _filesWithoutSamplingRate = [];
         private List<string> _filesWithoutBitDepth = [];
         private List<string> _filesWithoutDuration = [];
+        private List<string> _filesWithBestCompression = [];
+        private List<string> _filesWithWorstCompression = [];
+        private List<string> _filesWithAvgCompression = [];
+        private List<string> _filesWithLowestBitRate = [];
+        private List<string> _filesWithHighestBitRate = [];
+        private List<string> _filesWithAvgBitRate = [];
 
         // Original summary data (stored for redrawing when sections toggle)
         private int _totalFiles;
@@ -55,6 +67,16 @@ namespace FLAC_Benchmark_H
         private double _wavFilesPercent;
         private double _wavSizePercent;
         private double _wavDurationPercent;
+
+        // FLAC bitrate and compression statistics
+        private List<double> _flacBitRates = [];
+        private List<double> _flacCompressionRatios = [];
+        private double _avgFlacBitRate = 0;
+        private double _lowestFlacBitRate = 0;
+        private double _highestFlacBitRate = 0;
+        private double _avgFlacCompression = 0;
+        private double _bestFlacCompression = 0;
+        private double _worstFlacCompression = 0;
 
         // Inner class: Stores metadata about clickable links in the RichTextBox
         private class LinkInfo
@@ -109,7 +131,21 @@ namespace FLAC_Benchmark_H
             List<string> filesWithoutChannels,
             List<string> filesWithoutSamplingRate,
             List<string> filesWithoutBitDepth,
-            List<string> filesWithoutDuration)
+            List<string> filesWithoutDuration,
+
+            // FLAC bitrate and compression data
+            List<double> flacBitRates,
+            List<double> flacCompressionRatios,
+
+            // Compression extreme files
+            List<string> filesWithBestCompression,
+            List<string> filesWithWorstCompression,
+            List<string> filesWithAvgCompression,
+
+            // Bitrate extreme files
+            List<string> filesWithLowestBitRate,
+            List<string> filesWithHighestBitRate,
+            List<string> filesWithAvgBitRate)
         {
             // Store all summary data for redrawing
             _totalFiles = totalFiles;
@@ -146,6 +182,35 @@ namespace FLAC_Benchmark_H
             _filesWithoutBitDepth = filesWithoutBitDepth;
             _filesWithoutDuration = filesWithoutDuration;
 
+            // Store FLAC bitrate and compression data
+            _flacBitRates = flacBitRates;
+            _flacCompressionRatios = flacCompressionRatios;
+
+            // Store compression extreme files
+            _filesWithBestCompression = filesWithBestCompression;
+            _filesWithWorstCompression = filesWithWorstCompression;
+            _filesWithAvgCompression = filesWithAvgCompression;
+
+            // Store bitrate extreme files
+            _filesWithLowestBitRate = filesWithLowestBitRate;
+            _filesWithHighestBitRate = filesWithHighestBitRate;
+            _filesWithAvgBitRate = filesWithAvgBitRate;
+
+            // Calculate statistics
+            if (_flacBitRates.Count > 0)
+            {
+                _lowestFlacBitRate = _flacBitRates.Min();
+                _highestFlacBitRate = _flacBitRates.Max();
+                _avgFlacBitRate = _flacBitRates.Average();
+            }
+
+            if (_flacCompressionRatios.Count > 0)
+            {
+                _bestFlacCompression = _flacCompressionRatios.Min();
+                _worstFlacCompression = _flacCompressionRatios.Max();
+                _avgFlacCompression = _flacCompressionRatios.Average();
+            }
+
             // Clear visited state when new data is loaded
             _visitedFilePaths.Clear();
 
@@ -157,6 +222,12 @@ namespace FLAC_Benchmark_H
             _filesWithoutSamplingRateExpanded = false;
             _filesWithoutBitDepthExpanded = false;
             _filesWithoutDurationExpanded = false;
+            _filesWithBestCompressionExpanded = false;
+            _filesWithWorstCompressionExpanded = false;
+            _filesWithAvgCompressionExpanded = false;
+            _filesWithLowestBitRateExpanded = false;
+            _filesWithHighestBitRateExpanded = false;
+            _filesWithAvgBitRateExpanded = false;
 
             RefreshSummary();
         }
@@ -258,9 +329,7 @@ namespace FLAC_Benchmark_H
                 // Formats percentage: whole numbers show as "100%", decimals as "95,545%"
                 string FormatPercent(double percent)
                 {
-                    return percent == Math.Truncate(percent)
-                        ? $"{percent:F0}%"
-                        : $"{percent:F3}%";
+                    return percent >= 99.9995 ? "100 %" : $"{percent:F3} %";
                 }
 
                 // === GENERAL STATISTICS ===
@@ -321,6 +390,113 @@ namespace FLAC_Benchmark_H
                         {
                             AppendNormal($"  • {item}\n");
                         }
+                    }
+                    AppendNormal("\n");
+                }
+
+                // === FLAC BITRATE STATISTICS ===
+                if (_flacFiles > 0 && _flacBitRates.Count > 0)
+                {
+                    AppendNormal("FLAC BITRATE STATISTICS\n");
+                    AppendNormal($"────────────────────────────────────────────────────────────\n");
+
+                    // Average bitrate with link to avg files
+                    string avgBitrateToggleText = _filesWithAvgBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Avg bitrate:", $"{_avgFlacBitRate:F0} kb/s", avgBitrateToggleText, 11);
+
+                    if (_filesWithAvgBitRateExpanded)
+                    {
+                        foreach (string path in _filesWithAvgBitRate)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+
+                    // Best bitrate (minimum) with link to min files
+                    string lowestBitrateToggleText = _filesWithLowestBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Lowest bitrate:", $"{_lowestFlacBitRate:F0} kb/s", lowestBitrateToggleText, 12);
+
+                    if (_filesWithLowestBitRateExpanded)
+                    {
+                        foreach (string path in _filesWithLowestBitRate)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+
+                    // Worst bitrate (maximum) with link to max files
+                    string highestBitrateToggleText = _filesWithHighestBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Highest bitrate:", $"{_highestFlacBitRate:F0} kb/s", highestBitrateToggleText, 13);
+
+                    if (_filesWithHighestBitRateExpanded)
+                    {
+                        foreach (string path in _filesWithHighestBitRate)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+
+                    AppendNormal("\n");
+                }
+
+                // === FLAC COMPRESSION STATISTICS ===
+                if (_flacFiles > 0 && _flacCompressionRatios.Count > 0)
+                {
+                    AppendNormal("FLAC COMPRESSION STATISTICS\n");
+                    AppendNormal($"────────────────────────────────────────────────────────────\n");
+
+                    // Average compression with link to avg files
+                    string avgToggleText = _filesWithAvgCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Avrg compression:", FormatPercent(_avgFlacCompression * 100), avgToggleText, 10);
+
+                    if (_filesWithAvgCompressionExpanded)
+                    {
+                        foreach (string path in _filesWithAvgCompression)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+
+                    // Best compression (minimum) with link to best files
+                    string bestToggleText = _filesWithBestCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Best compression:", FormatPercent(_bestFlacCompression * 100), bestToggleText, 8);
+
+                    if (_filesWithBestCompressionExpanded)
+                    {
+                        foreach (string path in _filesWithBestCompression)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
+                    }
+
+                    // Worst compression (maximum) with link to worst files
+                    string worstToggleText = _filesWithWorstCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    AppendRowWithToggle("Worst compression:", FormatPercent(_worstFlacCompression * 100), worstToggleText, 9);
+
+                    if (_filesWithWorstCompressionExpanded)
+                    {
+                        foreach (string path in _filesWithWorstCompression)
+                        {
+                            AppendNormal("  • ");
+                            AppendPathLink(path);
+                            AppendNormal("\n");
+                        }
+                        AppendNormal("\n");
                     }
                     AppendNormal("\n");
                 }
@@ -666,6 +842,12 @@ namespace FLAC_Benchmark_H
                 case 5: _filesWithoutSamplingRateExpanded = !_filesWithoutSamplingRateExpanded; break;
                 case 6: _filesWithoutBitDepthExpanded = !_filesWithoutBitDepthExpanded; break;
                 case 7: _filesWithoutDurationExpanded = !_filesWithoutDurationExpanded; break;
+                case 8: _filesWithBestCompressionExpanded = !_filesWithBestCompressionExpanded; break;
+                case 9: _filesWithWorstCompressionExpanded = !_filesWithWorstCompressionExpanded; break;
+                case 10: _filesWithAvgCompressionExpanded = !_filesWithAvgCompressionExpanded; break;
+                case 11: _filesWithAvgBitRateExpanded = !_filesWithAvgBitRateExpanded; break;
+                case 12: _filesWithLowestBitRateExpanded = !_filesWithLowestBitRateExpanded; break;
+                case 13: _filesWithHighestBitRateExpanded = !_filesWithHighestBitRateExpanded; break;
                 default: return;
             }
 

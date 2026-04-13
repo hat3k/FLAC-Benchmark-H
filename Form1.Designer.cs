@@ -101,6 +101,8 @@
             Channels = new ColumnHeader();
             BitDepth = new ColumnHeader();
             SamplingRate = new ColumnHeader();
+            BitRate = new ColumnHeader();
+            CompressionInputAudioFile = new ColumnHeader();
             Duration = new ColumnHeader();
             InputAudioFileSize = new ColumnHeader();
             MD5Hash = new ColumnHeader();
@@ -957,7 +959,7 @@
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, BitRate, CompressionInputAudioFile, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
             listViewAudioFiles.ContextMenuStrip = contextMenuStripAudioFiles;
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
@@ -997,6 +999,20 @@
             SamplingRate.Text = "Samp. Rate";
             SamplingRate.TextAlign = HorizontalAlignment.Right;
             SamplingRate.Width = 71;
+            // 
+            // BitRate
+            // 
+            BitRate.Tag = "BitRate";
+            BitRate.Text = "Bit Rate";
+            BitRate.TextAlign = HorizontalAlignment.Right;
+            BitRate.Width = 74;
+            // 
+            // CompressionInputAudioFile
+            // 
+            CompressionInputAudioFile.Tag = "CompressionInputAudioFile";
+            CompressionInputAudioFile.Text = "Compr.";
+            CompressionInputAudioFile.TextAlign = HorizontalAlignment.Right;
+            CompressionInputAudioFile.Width = 64;
             // 
             // Duration
             // 
@@ -1509,7 +1525,7 @@
             // 
             contextMenuStripJobs.Items.AddRange(new ToolStripItem[] { editCurrentCellToolStripMenuItemJobs, copyToolStripMenuItemJobs, pasteToolStripMenuItemJobs, sendToScriptConstructorToolStripMenuItemJobs, toolStripJobsSeparator1, checkAllToolStripMenuItemJobs, uncheckAllToolStripMenuItemJobs, checkSelectedToolStripMenuItemJobs, unCheckSelectedToolStripMenuItemJobs, invertCheckToolStripMenuItemJobs, toolStripJobsSeparator2, selectAllToolStripMenuItemJobs, deselectAllToolStripMenuItemJobs, invertSelectionToolStripMenuItemJobs, toolStripJobsSeparator3, moveUpToolStripMenuItemJobs, moveDownToolStripMenuItemJobs, toolStripJobsSeparator4, clearUncheckedToolStripMenuItemJobs, clearSelectedToolStripMenuItemJobs, clearDuplicateEntriesToolStripMenuItemJobs, mergeDuplicateEntriesToolStripMenuItemJobs, clearAllJobsToolStripMenuItemJobs });
             contextMenuStripJobs.Name = "contextMenuStrip1";
-            contextMenuStripJobs.Size = new Size(214, 468);
+            contextMenuStripJobs.Size = new Size(214, 446);
             contextMenuStripJobs.Closing += ContextMenu_Closing;
             contextMenuStripJobs.Opening += ContextMenuStripJobs_Opening;
             // 
@@ -2848,6 +2864,8 @@
         private Label labelSetCompression;
         private CheckBox checkBoxClearTempFolder;
         private ColumnHeader FileName;
+        private ColumnHeader BitRate;
+        private ColumnHeader CompressionInputAudioFile;
         private ColumnHeader Duration;
         private ColumnHeader BitDepth;
         private ColumnHeader SamplingRate;
