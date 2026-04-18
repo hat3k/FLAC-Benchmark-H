@@ -8945,13 +8945,18 @@ namespace FLAC_Benchmark_H
                         }
 
                         // --- STAGE 2.3: UPDATE MD5 DISPLAY IN LISTVIEW ---
-                        foreach (ListViewItem item in listViewAudioFiles.Items)
+                        int md5ColumnIndex = listViewAudioFiles.Columns.IndexOf(MD5Hash);
+
+                        if (md5ColumnIndex >= 0)
                         {
-                            string path = item.Tag!.ToString()!;
-                            AudioFileInfo info = audioFileInfoCache[path];
-                            if (item.SubItems.Count > 8 && item.SubItems[8].Text != info.Md5Hash)
+                            foreach (ListViewItem item in listViewAudioFiles.Items)
                             {
-                                item.SubItems[8].Text = info.Md5Hash;
+                                string path = item.Tag!.ToString()!;
+                                AudioFileInfo info = audioFileInfoCache[path];
+                                if (item.SubItems.Count > md5ColumnIndex && item.SubItems[md5ColumnIndex].Text != info.Md5Hash)
+                                {
+                                    item.SubItems[md5ColumnIndex].Text = info.Md5Hash;
+                                }
                             }
                         }
 
