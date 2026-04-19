@@ -456,7 +456,7 @@ namespace FLAC_Benchmark_H
 
                     // Average compression with link to avg files
                     string avgToggleText = _filesWithAvgCompressionExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Avrg compression:", FormatPercent(_avgFlacCompression * 100), avgToggleText, 10);
+                    AppendRowWithToggle("Avg compression:", FormatPercent(_avgFlacCompression * 100), avgToggleText, 10);
 
                     if (_filesWithAvgCompressionExpanded)
                     {
