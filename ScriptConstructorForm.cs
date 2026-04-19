@@ -33,7 +33,7 @@ namespace FLAC_Benchmark_H
 
             _jobAddedTimer = new System.Windows.Forms.Timer
             {
-                Interval = 2000, // 2 seconds display time
+                Interval = 3000, // 3 seconds display time
             };
             _jobAddedTimer.Tick += (s, e) =>
             {
@@ -396,7 +396,9 @@ namespace FLAC_Benchmark_H
 
             OnJobsAdded?.Invoke(jobsToAdd);
 
-            // Show "Job added" label with auto-hide timer
+            // Show or refresh "Job added" label with auto-hide timer
+            labelScripConstructorJobAdded.Visible = false;
+            _jobAddedTimer.Stop();
             labelScripConstructorJobAdded.Visible = true;
             _jobAddedTimer.Start();
         }
