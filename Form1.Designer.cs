@@ -102,7 +102,7 @@
             BitDepth = new ColumnHeader();
             SamplingRate = new ColumnHeader();
             BitRate = new ColumnHeader();
-            CompressionInputAudioFile = new ColumnHeader();
+            InputCompressionAudio = new ColumnHeader();
             Duration = new ColumnHeader();
             InputAudioFileSize = new ColumnHeader();
             MD5Hash = new ColumnHeader();
@@ -960,7 +960,7 @@
             listViewAudioFiles.AllowDrop = true;
             listViewAudioFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listViewAudioFiles.CheckBoxes = true;
-            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, BitRate, CompressionInputAudioFile, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
+            listViewAudioFiles.Columns.AddRange(new ColumnHeader[] { FileName, Channels, BitDepth, SamplingRate, BitRate, InputCompressionAudio, Duration, InputAudioFileSize, MD5Hash, FilePath, WritingLibrary });
             listViewAudioFiles.ContextMenuStrip = contextMenuStripAudioFiles;
             listViewAudioFiles.FullRowSelect = true;
             listViewAudioFiles.Location = new Point(6, 22);
@@ -1009,12 +1009,12 @@
             BitRate.TextAlign = HorizontalAlignment.Right;
             BitRate.Width = 74;
             // 
-            // CompressionInputAudioFile
+            // InputCompressionAudio
             // 
-            CompressionInputAudioFile.Tag = "CompressionInputAudioFile";
-            CompressionInputAudioFile.Text = "Compr.";
-            CompressionInputAudioFile.TextAlign = HorizontalAlignment.Right;
-            CompressionInputAudioFile.Width = 64;
+            InputCompressionAudio.Tag = "InputCompressionAudio";
+            InputCompressionAudio.Text = "Compr.";
+            InputCompressionAudio.TextAlign = HorizontalAlignment.Right;
+            InputCompressionAudio.Width = 64;
             // 
             // Duration
             // 
@@ -2867,7 +2867,7 @@
         private CheckBox checkBoxClearTempFolder;
         private ColumnHeader FileName;
         private ColumnHeader BitRate;
-        private ColumnHeader CompressionInputAudioFile;
+        private ColumnHeader InputCompressionAudio;
         private ColumnHeader Duration;
         private ColumnHeader BitDepth;
         private ColumnHeader SamplingRate;
