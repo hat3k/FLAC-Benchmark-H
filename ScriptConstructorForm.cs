@@ -33,7 +33,7 @@ namespace FLAC_Benchmark_H
 
             _jobAddedTimer = new System.Windows.Forms.Timer
             {
-                Interval = 3000, // 3 seconds display time
+                Interval = 1500, // 1.5 seconds display time
             };
             _jobAddedTimer.Tick += (s, e) =>
             {

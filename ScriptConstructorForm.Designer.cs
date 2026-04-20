@@ -297,7 +297,7 @@
             ClientSize = new Size(784, 561);
             Controls.Add(splitContainerScriptConstructor);
             DoubleBuffered = true;
-            MinimumSize = new Size(300, 432);
+            MinimumSize = new Size(610, 432);
             Name = "ScriptConstructorForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Script Constructor";
