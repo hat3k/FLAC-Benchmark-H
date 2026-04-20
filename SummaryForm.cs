@@ -326,10 +326,10 @@ namespace FLAC_Benchmark_H
                     }
                 }
 
-                // Formats percentage: whole numbers show as "100%", decimals as "95,545%"
+                // Formats percentage
                 string FormatPercent(double percent)
                 {
-                    return percent >= 99.9995 ? "100 %" : $"{percent:F3} %";
+                    return $"{percent:F3} %";
                 }
 
                 // === GENERAL STATISTICS ===
@@ -401,7 +401,7 @@ namespace FLAC_Benchmark_H
                     AppendNormal($"────────────────────────────────────────────────────────────\n");
 
                     // Average bitrate with link to avg files
-                    string avgBitrateToggleText = _filesWithAvgBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    string avgBitrateToggleText = _filesWithAvgBitRateExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Avg bitrate:", $"{_avgFlacBitRate:F0} kb/s", avgBitrateToggleText, 11);
 
                     if (_filesWithAvgBitRateExpanded)
@@ -416,7 +416,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // Best bitrate (minimum) with link to min files
-                    string lowestBitrateToggleText = _filesWithLowestBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    string lowestBitrateToggleText = _filesWithLowestBitRateExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Lowest bitrate:", $"{_lowestFlacBitRate:F0} kb/s", lowestBitrateToggleText, 12);
 
                     if (_filesWithLowestBitRateExpanded)
@@ -431,7 +431,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // Worst bitrate (maximum) with link to max files
-                    string highestBitrateToggleText = _filesWithHighestBitRateExpanded ? "[-] Hide files" : "[+] Show files";
+                    string highestBitrateToggleText = _filesWithHighestBitRateExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Highest bitrate:", $"{_highestFlacBitRate:F0} kb/s", highestBitrateToggleText, 13);
 
                     if (_filesWithHighestBitRateExpanded)
@@ -455,7 +455,7 @@ namespace FLAC_Benchmark_H
                     AppendNormal($"────────────────────────────────────────────────────────────\n");
 
                     // Average compression with link to avg files
-                    string avgToggleText = _filesWithAvgCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    string avgToggleText = _filesWithAvgCompressionExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Avg compression:", FormatPercent(_avgFlacCompression), avgToggleText, 10);
 
                     if (_filesWithAvgCompressionExpanded)
@@ -470,7 +470,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // Best compression (minimum) with link to best files
-                    string bestToggleText = _filesWithBestCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    string bestToggleText = _filesWithBestCompressionExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Best compression:", FormatPercent(_bestFlacCompression), bestToggleText, 8);
 
                     if (_filesWithBestCompressionExpanded)
@@ -485,7 +485,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     // Worst compression (maximum) with link to worst files
-                    string worstToggleText = _filesWithWorstCompressionExpanded ? "[-] Hide files" : "[+] Show files";
+                    string worstToggleText = _filesWithWorstCompressionExpanded ? "[-] Hide files" : "[+] Show top 10";
                     AppendRowWithToggle("Worst compression:", FormatPercent(_worstFlacCompression), worstToggleText, 9);
 
                     if (_filesWithWorstCompressionExpanded)
