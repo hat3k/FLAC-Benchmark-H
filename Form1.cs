@@ -4105,8 +4105,8 @@ namespace FLAC_Benchmark_H
             _ = dataGridViewLog.Columns.Add("InputFileSize", "In. Size");
             _ = dataGridViewLog.Columns.Add("OutputFileSize", "Out. Size");
             _ = dataGridViewLog.Columns.Add("Compression", "Compr.");
-            _ = dataGridViewLog.Columns.Add("InputBitRateAudio", "In. Bit Rt. (Audio)");
-            _ = dataGridViewLog.Columns.Add("OutputBitRateAudio", "Out. Bit Rt. (Audio)");
+            _ = dataGridViewLog.Columns.Add("InputBitRateAudio", "In. Bit Rt.");
+            _ = dataGridViewLog.Columns.Add("OutputBitRateAudio", "Out. Bit Rt.");
             _ = dataGridViewLog.Columns.Add("InputCompressionAudio", "In. Compr. (Audio)");
             _ = dataGridViewLog.Columns.Add("OutputCompressionAudio", "Out. Compr. (Audio)");
             _ = dataGridViewLog.Columns.Add("Time", "Time");
@@ -4213,7 +4213,7 @@ namespace FLAC_Benchmark_H
             dataGridViewLog.Columns["InputCompressionAudio"]!.ToolTipText = "Audio stream compression vs PCM.\n100% = uncompressed.\nLower = better.";
             dataGridViewLog.Columns["OutputCompressionAudio"]!.ToolTipText = "Audio stream compression vs PCM.\nGreen = better than input.\nRed = worse than input.";
             dataGridViewLog.Columns["Time"]!.ToolTipText = "Processing time in milliseconds.";
-            dataGridViewLog.Columns["Speed"]!.ToolTipText = "En/Decoding speed relative to playtime.\nHigher = faster. Green >1x, Red <1x.";
+            dataGridViewLog.Columns["Speed"]!.ToolTipText = "En/Decoding speed relative to playtime.\nHigher = faster.\nGreen >1x, Red <1x.";
             dataGridViewLog.Columns["SpeedMin"]!.ToolTipText = "Minimum speed across all passes.";
             dataGridViewLog.Columns["SpeedMax"]!.ToolTipText = "Maximum speed across all passes.";
             dataGridViewLog.Columns["SpeedRange"]!.ToolTipText = "Speed range (max - min).";
