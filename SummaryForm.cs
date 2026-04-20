@@ -456,7 +456,7 @@ namespace FLAC_Benchmark_H
 
                     // Average compression with link to avg files
                     string avgToggleText = _filesWithAvgCompressionExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Avg compression:", FormatPercent(_avgFlacCompression * 100), avgToggleText, 10);
+                    AppendRowWithToggle("Avg compression:", FormatPercent(_avgFlacCompression), avgToggleText, 10);
 
                     if (_filesWithAvgCompressionExpanded)
                     {
@@ -471,7 +471,7 @@ namespace FLAC_Benchmark_H
 
                     // Best compression (minimum) with link to best files
                     string bestToggleText = _filesWithBestCompressionExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Best compression:", FormatPercent(_bestFlacCompression * 100), bestToggleText, 8);
+                    AppendRowWithToggle("Best compression:", FormatPercent(_bestFlacCompression), bestToggleText, 8);
 
                     if (_filesWithBestCompressionExpanded)
                     {
@@ -486,7 +486,7 @@ namespace FLAC_Benchmark_H
 
                     // Worst compression (maximum) with link to worst files
                     string worstToggleText = _filesWithWorstCompressionExpanded ? "[-] Hide files" : "[+] Show files";
-                    AppendRowWithToggle("Worst compression:", FormatPercent(_worstFlacCompression * 100), worstToggleText, 9);
+                    AppendRowWithToggle("Worst compression:", FormatPercent(_worstFlacCompression), worstToggleText, 9);
 
                     if (_filesWithWorstCompressionExpanded)
                     {
