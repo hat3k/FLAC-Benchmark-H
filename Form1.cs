@@ -47,6 +47,10 @@ namespace FLAC_Benchmark_H
         public string? lastEncodeScript = null;
         public string? lastDecodeScript = null;
         public bool scriptShowHelp = true;
+        private int _lastEncodersSortedColumnIndex = -1;
+        private SortOrder _lastEncodersSortOrder = SortOrder.None;
+        private int _lastAudioFilesSortedColumnIndex = -1;
+        private SortOrder _lastAudioFilesSortOrder = SortOrder.None;
 
         // Encoder loading queue and progress
         private readonly Queue<List<(string path, bool isChecked)>> _encodersLoadQueue = new();
@@ -1474,6 +1478,9 @@ namespace FLAC_Benchmark_H
                 _totalEncodersInQueue = 0;
             }
 
+            _lastEncodersSortedColumnIndex = -1;
+            _lastEncodersSortOrder = SortOrder.None;
+            UpdateSortGlyphForListView(listViewEncoders, -1, SortOrder.None);
             UpdateGroupBoxEncodersHeader();
         }
         private void UpdateGroupBoxEncodersHeader()
@@ -1493,18 +1500,21 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewEncoders_ColumnClick(object? sender, ColumnClickEventArgs e)
         {
-            SortOrder sortOrder = listViewEncoders.ListViewItemSorter is ListViewEncodersItemComparer comparer &&
-                comparer.ColumnIndex == e.Column
-                ? comparer.SortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending
+            bool isSameColumn = _lastEncodersSortedColumnIndex == e.Column;
+            SortOrder newOrder = isSameColumn
+                ? (_lastEncodersSortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending)
                 : SortOrder.Ascending;
 
-            listViewEncoders.ListViewItemSorter = new ListViewEncodersItemComparer(
-                e.Column,
-                sortOrder,
-                encoderInfoCache
-            );
+            ListViewEncodersItemComparer comparer = new(e.Column, newOrder, encoderInfoCache);
+            listViewEncoders.ListViewItemSorter = comparer;
+            listViewEncoders.Sort();
 
-            UpdateSortGlyphForListView(listViewEncoders, e.Column, sortOrder);
+            listViewEncoders.ListViewItemSorter = null;
+
+            _lastEncodersSortedColumnIndex = e.Column;
+            _lastEncodersSortOrder = newOrder;
+
+            UpdateSortGlyphForListView(listViewEncoders, e.Column, newOrder);
         }
         private class ListViewEncodersItemComparer(int columnIndex, SortOrder sortOrder, ConcurrentDictionary<string, EncoderInfo> cache) : IComparer
         {
@@ -2507,6 +2517,9 @@ namespace FLAC_Benchmark_H
         private void ButtonClearAudioFiles_Click(object? sender, EventArgs e)
         {
             listViewAudioFiles.Items.Clear();
+            _lastAudioFilesSortedColumnIndex = -1;
+            _lastAudioFilesSortOrder = SortOrder.None;
+            UpdateSortGlyphForListView(listViewAudioFiles, -1, SortOrder.None);
             UpdateGroupBoxAudioFilesHeader();
         }
         private void UpdateGroupBoxAudioFilesHeader()
@@ -2526,17 +2539,20 @@ namespace FLAC_Benchmark_H
         }
         private void ListViewAudioFiles_ColumnClick(object? sender, ColumnClickEventArgs e)
         {
-            SortOrder sortOrder = listViewAudioFiles.ListViewItemSorter is ListViewAudioFilesItemComparer comparer &&
-                comparer.ColumnIndex == e.Column
-                ? comparer.SortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending
+            bool isSameColumn = _lastAudioFilesSortedColumnIndex == e.Column;
+            SortOrder newOrder = isSameColumn
+                ? (_lastAudioFilesSortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending)
                 : SortOrder.Ascending;
-            listViewAudioFiles.ListViewItemSorter = new ListViewAudioFilesItemComparer(
-                e.Column,
-                sortOrder,
-                audioFileInfoCache
-            );
 
-            UpdateSortGlyphForListView(listViewAudioFiles, e.Column, sortOrder);
+            ListViewAudioFilesItemComparer comparer = new(e.Column, newOrder, audioFileInfoCache);
+            listViewAudioFiles.ListViewItemSorter = comparer;
+            listViewAudioFiles.Sort();
+            listViewAudioFiles.ListViewItemSorter = null;
+
+            _lastAudioFilesSortedColumnIndex = e.Column;
+            _lastAudioFilesSortOrder = newOrder;
+
+            UpdateSortGlyphForListView(listViewAudioFiles, e.Column, newOrder);
         }
         private class ListViewAudioFilesItemComparer(int columnIndex, SortOrder sortOrder, ConcurrentDictionary<string, AudioFileInfo> cache) : IComparer
         {
@@ -9962,13 +9978,9 @@ namespace FLAC_Benchmark_H
                 }
             }
 
-            if (sortOrder == SortOrder.Ascending)
+            if (sortOrder != SortOrder.None && columnIndex >= 0)
             {
-                listView.Columns[columnIndex].Text += " ↑";
-            }
-            else if (sortOrder == SortOrder.Descending)
-            {
-                listView.Columns[columnIndex].Text += " ↓";
+                listView.Columns[columnIndex].Text += sortOrder == SortOrder.Ascending ? " ↑" : " ↓";
             }
         }
         private static void MoveSelectedItemsForListView(ListView listView, int direction)
