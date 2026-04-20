@@ -2081,7 +2081,7 @@ namespace FLAC_Benchmark_H
                     SamplingRateString = string.Empty,
                     BitRate = 0,
                     BitRateString = string.Empty,
-                    CompressionInputAudioFile = 0,
+                    InputCompressionAudio = 0,
                     Duration = 0,
                     FileSize = fileInfo.Length,
                     Md5Hash = string.Empty,
@@ -2110,11 +2110,11 @@ namespace FLAC_Benchmark_H
                     if (cachedInfo.BitRate > 0 && cachedInfo.SamplingRate > 0 && cachedInfo.BitDepth > 0 && cachedInfo.Channels > 0)
                     {
                         long pcmBitRate = cachedInfo.SamplingRate * cachedInfo.BitDepth * cachedInfo.Channels;
-                        cachedInfo.CompressionInputAudioFile = (double)cachedInfo.BitRate / pcmBitRate * 100;
+                        cachedInfo.InputCompressionAudio = (double)cachedInfo.BitRate / pcmBitRate * 100;
                     }
                     else
                     {
-                        cachedInfo.CompressionInputAudioFile = 0;
+                        cachedInfo.InputCompressionAudio = 0;
                     }
 
                     if (cachedInfo.Extension == ".flac")
@@ -2158,7 +2158,7 @@ namespace FLAC_Benchmark_H
             _ = item.SubItems.Add(!string.IsNullOrEmpty(cachedInfo.BitDepthString) && cachedInfo.BitDepthString != "N/A" ? cachedInfo.BitDepthString : "N/A");
             _ = item.SubItems.Add(!string.IsNullOrEmpty(cachedInfo.SamplingRateString) && cachedInfo.SamplingRateString != "N/A" ? cachedInfo.SamplingRateString : "N/A");
             _ = item.SubItems.Add(!string.IsNullOrEmpty(cachedInfo.BitRateString) && cachedInfo.BitRateString != "N/A" ? cachedInfo.BitRateString : "N/A");
-            _ = item.SubItems.Add(cachedInfo.CompressionInputAudioFile > 0 ? $"{cachedInfo.CompressionInputAudioFile:F3}%" : "N/A");
+            _ = item.SubItems.Add(cachedInfo.InputCompressionAudio > 0 ? $"{cachedInfo.InputCompressionAudio:F3}%" : "N/A");
             _ = item.SubItems.Add(cachedInfo.Duration > 0 ? $"{cachedInfo.Duration:n0} ms" : "N/A");
             _ = item.SubItems.Add($"{cachedInfo.FileSize:n0} bytes");
             _ = item.SubItems.Add(!string.IsNullOrEmpty(cachedInfo.Md5Hash) && cachedInfo.Md5Hash != "N/A" ? cachedInfo.Md5Hash : "N/A");
@@ -2183,7 +2183,7 @@ namespace FLAC_Benchmark_H
             public string SamplingRateString { get; set; } = string.Empty;
             public long BitRate { get; set; }
             public string BitRateString { get; set; } = string.Empty;
-            public double CompressionInputAudioFile { get; set; }
+            public double InputCompressionAudio { get; set; }
             public long Duration { get; set; }
             public long FileSize { get; set; }
             public string Md5Hash { get; set; } = string.Empty;
@@ -2572,7 +2572,7 @@ namespace FLAC_Benchmark_H
                     2 => (infoX?.BitDepth ?? 0).CompareTo(infoY?.BitDepth ?? 0),
                     3 => (infoX?.SamplingRate ?? 0).CompareTo(infoY?.SamplingRate ?? 0),
                     4 => (infoX?.BitRate ?? 0).CompareTo(infoY?.BitRate ?? 0),
-                    5 => (infoX?.CompressionInputAudioFile ?? 0).CompareTo(infoY?.CompressionInputAudioFile ?? 0),
+                    5 => (infoX?.InputCompressionAudio ?? 0).CompareTo(infoY?.InputCompressionAudio ?? 0),
                     6 => (infoX?.Duration ?? 0).CompareTo(infoY?.Duration ?? 0),
                     7 => (infoX?.FileSize ?? 0).CompareTo(infoY?.FileSize ?? 0),
                     8 => _naturalComparer.Compare(infoX?.Md5Hash, infoY?.Md5Hash),
@@ -4643,7 +4643,7 @@ namespace FLAC_Benchmark_H
                 long inputSize = audioFileInfo.FileSize;
                 long duration = audioFileInfo.Duration;
                 long inputBitRateAudio = audioFileInfo.BitRate;
-                double inputCompressionAudio = audioFileInfo.CompressionInputAudioFile;
+                double inputCompressionAudio = audioFileInfo.InputCompressionAudio;
                 long bitDepth = audioFileInfo.BitDepth;
                 long channels = audioFileInfo.Channels;
 
@@ -5155,7 +5155,7 @@ namespace FLAC_Benchmark_H
                     Compression = $"{compressionPercentage:F3}%",
                     InputBitRateAudio = audioFileInfo.BitRate.ToString("N0", NumberFormatWithSpaces),
                     OutputBitRateAudio = group.OutputBitRateAudio.ToString("N0", NumberFormatWithSpaces),
-                    InputCompressionAudio = $"{audioFileInfo.CompressionInputAudioFile:F3}%",
+                    InputCompressionAudio = $"{audioFileInfo.InputCompressionAudio:F3}%",
                     OutputCompressionAudio = $"{group.OutputCompressionAudio:F3}%",
                     Time = group.AvgTimeMs.ToString("F3"),
                     Speed = $"{group.AvgSpeed:F3}x",
@@ -9673,15 +9673,15 @@ namespace FLAC_Benchmark_H
                 .Select(br => br / 1000.0)];
 
             List<double> flacCompressionRatios = [.. flacItems
-                .Select(i => audioFileInfoCache[i.Tag!.ToString()!].CompressionInputAudioFile)
+                .Select(i => audioFileInfoCache[i.Tag!.ToString()!].InputCompressionAudio)
                 .Where(c => c > 0)];
 
             // === COMPRESSION EXTREME FILES ===
             List<(string Path, double Compression)> compressionData = [.. flacItems
                 .Select(i => new { Info = audioFileInfoCache[i.Tag!.ToString()!] })
-                .Where(x => x.Info.CompressionInputAudioFile > 0)
-                .Select(x => (x.Info.FilePath, x.Info.CompressionInputAudioFile))
-                .OrderBy(x => x.CompressionInputAudioFile)];
+                .Where(x => x.Info.InputCompressionAudio > 0)
+                .Select(x => (x.Info.FilePath, x.Info.InputCompressionAudio))
+                .OrderBy(x => x.InputCompressionAudio)];
 
             List<string> filesWithBestCompression = [.. compressionData.Take(10).Select(x => x.Path)];
             List<string> filesWithWorstCompression = [.. compressionData.TakeLast(10).Select(x => x.Path)];
