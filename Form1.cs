@@ -22,7 +22,7 @@ namespace FLAC_Benchmark_H
     public partial class Form1 : Form
     {
         // Application version
-        public string programVersionCurrent = "1.9.1 build 20260419"; // Current app version
+        public string programVersionCurrent = "1.9.2 build 20260422"; // Current app version
         public string? programVersionIgnored = null;                  // Previously ignored update
 
         // Hardware info
