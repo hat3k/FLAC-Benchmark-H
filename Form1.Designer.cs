@@ -1052,7 +1052,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, deselectAllToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 414);
+            contextMenuStripAudioFiles.Size = new Size(202, 436);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1316,7 +1316,7 @@
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Name = "clearDuplicateEntriesToolStripMenuItemAudioFiles";
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Size = new Size(201, 22);
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Text = "Clear Duplicate Entries";
-            clearDuplicateEntriesToolStripMenuItemAudioFiles.ToolTipText = "Clear entries if the same Encoder is loaded more than once.";
+            clearDuplicateEntriesToolStripMenuItemAudioFiles.ToolTipText = "Clear entries if the same Audio File is loaded more than once.";
             clearDuplicateEntriesToolStripMenuItemAudioFiles.Click += ClearDuplicateEntriesToolStripMenuItemAudioFiles_Click;
             // 
             // clearAllToolStripMenuItemAudioFiles
