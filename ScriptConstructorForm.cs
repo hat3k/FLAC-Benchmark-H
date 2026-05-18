@@ -614,10 +614,30 @@ namespace FLAC_Benchmark_H
             if (sender == buttonClearScriptEncode)
             {
                 comboBoxScriptEncode.Text = string.Empty;
+
+                if (ModifierKeys == Keys.Shift)
+                {
+                    if (Owner is Form1 mainForm)
+                    {
+                        mainForm.scriptEncodeHistory.Clear();
+                    }
+
+                    comboBoxScriptEncode.Items.Clear();
+                }
             }
             else if (sender == buttonClearScriptDecode)
             {
                 comboBoxScriptDecode.Text = string.Empty;
+
+                if (ModifierKeys == Keys.Shift)
+                {
+                    if (Owner is Form1 mainForm)
+                    {
+                        mainForm.scriptDecodeHistory.Clear();
+                    }
+
+                    comboBoxScriptDecode.Items.Clear();
+                }
             }
         }
         private void ButtonCloseScriptConstructorForm_Click(object? sender, EventArgs e)

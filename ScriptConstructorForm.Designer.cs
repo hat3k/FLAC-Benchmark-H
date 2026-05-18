@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             splitContainerScriptConstructor = new SplitContainer();
             labelTypeYourScript = new Label();
             radioButtonScriptEncode = new RadioButton();
@@ -47,6 +48,7 @@
             buttonAddJobToJobListScript = new Button();
             buttonCloseScriptConstructorForm = new Button();
             richTextBoxScriptHelp = new RichTextBox();
+            toolTip1 = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)splitContainerScriptConstructor).BeginInit();
             splitContainerScriptConstructor.Panel1.SuspendLayout();
             splitContainerScriptConstructor.Panel2.SuspendLayout();
@@ -128,6 +130,7 @@
             buttonClearScriptEncode.Size = new Size(55, 23);
             buttonClearScriptEncode.TabIndex = 4;
             buttonClearScriptEncode.Text = "Clear";
+            toolTip1.SetToolTip(buttonClearScriptEncode, "Click to clear encoding script.\r\nHold 'Shift' while clicking to clear encoding scripts history.");
             buttonClearScriptEncode.UseVisualStyleBackColor = true;
             buttonClearScriptEncode.Click += ButtonClearScriptComboBox_Click;
             // 
@@ -164,6 +167,7 @@
             buttonClearScriptDecode.Size = new Size(55, 23);
             buttonClearScriptDecode.TabIndex = 7;
             buttonClearScriptDecode.Text = "Clear";
+            toolTip1.SetToolTip(buttonClearScriptDecode, "Click to clear decoding script.\r\nHold 'Shift' while clicking to clear decoding scripts history.");
             buttonClearScriptDecode.UseVisualStyleBackColor = true;
             buttonClearScriptDecode.Click += ButtonClearScriptComboBox_Click;
             // 
@@ -290,6 +294,12 @@
             richTextBoxScriptHelp.TabIndex = 0;
             richTextBoxScriptHelp.Text = "";
             // 
+            // toolTip1
+            // 
+            toolTip1.AutoPopDelay = 20000;
+            toolTip1.InitialDelay = 500;
+            toolTip1.ReshowDelay = 100;
+            // 
             // ScriptConstructorForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -335,5 +345,6 @@
         private Button buttonAddJobToJobListScript;
         private Button buttonCloseScriptConstructorForm;
         private RichTextBox richTextBoxScriptHelp;
+        private ToolTip toolTip1;
     }
 }
