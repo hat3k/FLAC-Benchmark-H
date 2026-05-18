@@ -250,7 +250,7 @@
             checkBoxLogSettingsSamplingRate.Size = new Size(102, 19);
             checkBoxLogSettingsSamplingRate.TabIndex = 6;
             checkBoxLogSettingsSamplingRate.Text = "Sampling Rate";
-            toolTip1.SetToolTip(checkBoxLogSettingsSamplingRate, "Audio sampling rate (e.g., 44100 Hz)");
+            toolTip1.SetToolTip(checkBoxLogSettingsSamplingRate, "Audio sampling rate (e.g., 44 100)");
             checkBoxLogSettingsSamplingRate.UseVisualStyleBackColor = true;
             // 
             // textBoxLogSettingsSamplingRate
