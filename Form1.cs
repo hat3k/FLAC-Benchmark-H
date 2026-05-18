@@ -2359,11 +2359,21 @@ namespace FLAC_Benchmark_H
                     encoderExePath = encoderItem?.Tag?.ToString();
                 });
 
-                // Validate encoder path
+                // Validate encoder path - try embedded flac.exe if none found in list
                 if (string.IsNullOrEmpty(encoderExePath) || !File.Exists(encoderExePath))
                 {
-                    UpdateCacheWithMD5Error(flacFilePath, "No .exe encoder found in the list");
-                    return "MD5 calculation failed";
+                    // Fallback to embedded flac.exe
+                    string embeddedFlacPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "flac.exe");
+
+                    if (File.Exists(embeddedFlacPath))
+                    {
+                        encoderExePath = embeddedFlacPath;
+                    }
+                    else
+                    {
+                        UpdateCacheWithMD5Error(flacFilePath, "No FLAC encoder found (neither in list nor embedded).");
+                        return "MD5 calculation failed";
+                    }
                 }
 
                 // Ensure temp folder exists
@@ -2413,7 +2423,7 @@ namespace FLAC_Benchmark_H
                     return "MD5 calculation failed";
                 }
 
-                // Create a chache entry for temp WAV file
+                // Create a cache entry for temp WAV file
                 FileInfo tempFileInfo = new(tempWavFile);
                 AudioFileInfo tempCachedInfo = audioFileInfoCache.GetOrAdd(tempWavFile, _ => new AudioFileInfo
                 {
@@ -5107,7 +5117,7 @@ namespace FLAC_Benchmark_H
                     avgSpeedForAllFilesByEncoder[encoderName] = speedList;
                 }
                 speedList.Add((group.Parameters, group.AvgSpeed));
-                
+
                 // Aggregated compression series for all files by Encoder
                 if (!avgCompressionForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Compression)>? compList))
                 {
@@ -9667,6 +9677,7 @@ namespace FLAC_Benchmark_H
                             .Where(filePath => audioFileInfoCache[filePath].Extension == ".flac")
                             );
 
+                        // Try to get encoder from user's list first
                         encoderPath = listViewEncoders.Items
                             .Cast<ListViewItem>()
                             .FirstOrDefault(item =>
@@ -9685,6 +9696,15 @@ namespace FLAC_Benchmark_H
                         useWarningsAsErrors = checkBoxWarningsAsErrors.Checked;
                     });
 
+                    // If no encoder found in user's list, try embedded flac.exe
+                    if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
+                    {
+                        string embeddedFlacPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "flac.exe");
+                        if (File.Exists(embeddedFlacPath))
+                        {
+                            encoderPath = embeddedFlacPath;
+                        }
+                    }
                     return (flacFilePaths, encoderPath, useWarningsAsErrors);
                 });
 
@@ -9697,7 +9717,7 @@ namespace FLAC_Benchmark_H
 
                 if (string.IsNullOrEmpty(encoderPath) || !File.Exists(encoderPath))
                 {
-                    _ = MessageBox.Show("No encoders found in the list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    _ = MessageBox.Show("No FLAC encoder found (neither in list nor embedded).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 

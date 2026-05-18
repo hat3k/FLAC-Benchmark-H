@@ -50,6 +50,16 @@
             <TargetPath>metaflac.exe</TargetPath>
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </None>
+		<None Update="x64\flac.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>flac.exe</TargetPath>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+		<None Update="x64\libFLAC.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>libFLAC.dll</TargetPath>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
     </ItemGroup>
 
     <ItemGroup Condition="'$(PlatformTarget)' == 'x86' OR '$(Platform)' == 'x86'">
@@ -63,6 +73,16 @@
             <TargetPath>metaflac.exe</TargetPath>
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </None>
+		<None Update="x86\flac.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>flac.exe</TargetPath>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+		<None Update="x86\libFLAC.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>libFLAC.dll</TargetPath>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
     </ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
