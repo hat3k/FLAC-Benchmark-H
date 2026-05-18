@@ -162,7 +162,7 @@ namespace FLAC_Benchmark_H
             }
 
             // Remove duplicates (empty strings are also considered)
-            return [.. values.Distinct(StringComparer.OrdinalIgnoreCase)];
+            return [.. values.Distinct()];
         }
 
         /// <summary>
