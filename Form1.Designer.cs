@@ -271,6 +271,9 @@
             groupBoxInformation = new GroupBox();
             labelCpuUsageValue = new Label();
             buttonAbout = new Button();
+            tabPageAudioCompressionByParameters = new TabPage();
+            plotScalingPlotAudioCompressionByParameters = new ScottPlot.FormsPlot();
+            plotScalingMultiPlotAudioCompressionByParameters = new ScottPlot.FormsPlot();
             groupBoxEncoderSettings.SuspendLayout();
             groupBoxEncoders.SuspendLayout();
             contextMenuStripEncoders.SuspendLayout();
@@ -306,6 +309,7 @@
             tabPageMiscSettings.SuspendLayout();
             groupBoxDecoderSettings.SuspendLayout();
             groupBoxInformation.SuspendLayout();
+            tabPageAudioCompressionByParameters.SuspendLayout();
             SuspendLayout();
             // 
             // groupBoxEncoderSettings
@@ -1052,7 +1056,7 @@
             // 
             contextMenuStripAudioFiles.Items.AddRange(new ToolStripItem[] { checkAllToolStripMenuItemAudioFiles, uncheckAllToolStripMenuItemAudioFiles, checkSelectedToolStripMenuItemAudioFiles, uncheckSelectedToolStripMenuItemAudioFiles, invertCheckToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator1, selectAllToolStripMenuItemAudioFiles, deselectAllToolStripMenuItemAudioFiles, invertSelectionToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator2, moveUpToolStripMenuItemAudioFiles, moveDownToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator3, refreshAllToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator4, openContainingFolderToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator5, toolsToolStripMenuItemAudioFiles, toolStripAudioFilesSeparator6, clearUncheckedToolStripMenuItemAudioFiles, clearSelectedToolStripMenuItemAudioFiles, clearDuplicateEntriesToolStripMenuItemAudioFiles, clearAllToolStripMenuItemAudioFiles });
             contextMenuStripAudioFiles.Name = "contextMenuStripAudioFiles";
-            contextMenuStripAudioFiles.Size = new Size(202, 436);
+            contextMenuStripAudioFiles.Size = new Size(202, 414);
             contextMenuStripAudioFiles.Closing += ContextMenu_Closing;
             contextMenuStripAudioFiles.Opening += ContextMenuStripAudioFiles_Opening;
             // 
@@ -1927,6 +1931,7 @@
             tabControlScalingPlots.Controls.Add(tabPageMultiplotByThreads);
             tabControlScalingPlots.Controls.Add(tabPageSpeedByParameters);
             tabControlScalingPlots.Controls.Add(tabPageCompressionByParameters);
+            tabControlScalingPlots.Controls.Add(tabPageAudioCompressionByParameters);
             tabControlScalingPlots.Controls.Add(tabPageMultiplotByParameters);
             tabControlScalingPlots.Dock = DockStyle.Fill;
             tabControlScalingPlots.Location = new Point(0, 0);
@@ -2103,14 +2108,16 @@
             // 
             tableLayoutPanelMultiPlotByParameters.ColumnCount = 1;
             tableLayoutPanelMultiPlotByParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotAudioCompressionByParameters, 0, 2);
             tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotSpeedByParameters, 0, 0);
             tableLayoutPanelMultiPlotByParameters.Controls.Add(plotScalingMultiPlotCompressionByParameters, 0, 1);
             tableLayoutPanelMultiPlotByParameters.Dock = DockStyle.Fill;
             tableLayoutPanelMultiPlotByParameters.Location = new Point(0, 0);
             tableLayoutPanelMultiPlotByParameters.Name = "tableLayoutPanelMultiPlotByParameters";
-            tableLayoutPanelMultiPlotByParameters.RowCount = 2;
-            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMultiPlotByParameters.RowCount = 3;
+            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanelMultiPlotByParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
             tableLayoutPanelMultiPlotByParameters.Size = new Size(751, 284);
             tableLayoutPanelMultiPlotByParameters.TabIndex = 0;
             // 
@@ -2120,16 +2127,16 @@
             plotScalingMultiPlotSpeedByParameters.Location = new Point(4, 3);
             plotScalingMultiPlotSpeedByParameters.Margin = new Padding(4, 3, 4, 3);
             plotScalingMultiPlotSpeedByParameters.Name = "plotScalingMultiPlotSpeedByParameters";
-            plotScalingMultiPlotSpeedByParameters.Size = new Size(743, 136);
+            plotScalingMultiPlotSpeedByParameters.Size = new Size(743, 88);
             plotScalingMultiPlotSpeedByParameters.TabIndex = 3;
             // 
             // plotScalingMultiPlotCompressionByParameters
             // 
             plotScalingMultiPlotCompressionByParameters.Dock = DockStyle.Fill;
-            plotScalingMultiPlotCompressionByParameters.Location = new Point(4, 145);
+            plotScalingMultiPlotCompressionByParameters.Location = new Point(4, 97);
             plotScalingMultiPlotCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
             plotScalingMultiPlotCompressionByParameters.Name = "plotScalingMultiPlotCompressionByParameters";
-            plotScalingMultiPlotCompressionByParameters.Size = new Size(743, 136);
+            plotScalingMultiPlotCompressionByParameters.Size = new Size(743, 88);
             plotScalingMultiPlotCompressionByParameters.TabIndex = 4;
             // 
             // DetectDupes
@@ -2742,6 +2749,35 @@
             buttonAbout.UseVisualStyleBackColor = true;
             buttonAbout.Click += ButtonAbout_Click;
             // 
+            // tabPageAudioCompressionByParameters
+            // 
+            tabPageAudioCompressionByParameters.Controls.Add(plotScalingPlotAudioCompressionByParameters);
+            tabPageAudioCompressionByParameters.Location = new Point(4, 24);
+            tabPageAudioCompressionByParameters.Name = "tabPageAudioCompressionByParameters";
+            tabPageAudioCompressionByParameters.Size = new Size(751, 284);
+            tabPageAudioCompressionByParameters.TabIndex = 9;
+            tabPageAudioCompressionByParameters.Text = "Audio Compression by Parameters";
+            toolTip1.SetToolTip(tabPageAudioCompressionByParameters, "Scale Audio Compression by Parameters");
+            tabPageAudioCompressionByParameters.UseVisualStyleBackColor = true;
+            // 
+            // plotScalingPlotAudioCompressionByParameters
+            // 
+            plotScalingPlotAudioCompressionByParameters.Dock = DockStyle.Fill;
+            plotScalingPlotAudioCompressionByParameters.Location = new Point(0, 0);
+            plotScalingPlotAudioCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingPlotAudioCompressionByParameters.Name = "plotScalingPlotAudioCompressionByParameters";
+            plotScalingPlotAudioCompressionByParameters.Size = new Size(751, 284);
+            plotScalingPlotAudioCompressionByParameters.TabIndex = 1;
+            // 
+            // plotScalingMultiPlotAudioCompressionByParameters
+            // 
+            plotScalingMultiPlotAudioCompressionByParameters.Dock = DockStyle.Fill;
+            plotScalingMultiPlotAudioCompressionByParameters.Location = new Point(4, 191);
+            plotScalingMultiPlotAudioCompressionByParameters.Margin = new Padding(4, 3, 4, 3);
+            plotScalingMultiPlotAudioCompressionByParameters.Name = "plotScalingMultiPlotAudioCompressionByParameters";
+            plotScalingMultiPlotAudioCompressionByParameters.Size = new Size(743, 90);
+            plotScalingMultiPlotAudioCompressionByParameters.TabIndex = 5;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2809,6 +2845,7 @@
             groupBoxDecoderSettings.ResumeLayout(false);
             groupBoxDecoderSettings.PerformLayout();
             groupBoxInformation.ResumeLayout(false);
+            tabPageAudioCompressionByParameters.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -3056,5 +3093,8 @@
         private DataGridViewTextBoxColumn Column2JobType;
         private DataGridViewTextBoxColumn Column3Passes;
         private DataGridViewTextBoxColumn Column4Parameters;
+        private TabPage tabPageAudioCompressionByParameters;
+        private ScottPlot.FormsPlot plotScalingPlotAudioCompressionByParameters;
+        private ScottPlot.FormsPlot plotScalingMultiPlotAudioCompressionByParameters;
     }
 }

@@ -5054,13 +5054,16 @@ namespace FLAC_Benchmark_H
                 avgCPUClockValue.AvgCPUClocksForAllFiles.Add(group.AvgCPUClock);
             }
 
-            // Speed and Compression by Parameters (2 graphs)
+            // Speed and Compression by Parameters (3 graphs)
             Dictionary<string, (List<string> Params, List<double> AvgSpeeds)> speedByParamsSeries = [];
             Dictionary<string, (List<string> Params, List<double> Compressions)> compressionByParamsSeries = [];
+            Dictionary<string, (List<string> Params, List<double> AudioCompressions)> audioCompressionByParamsSeries = [];
+
 
             // Aggregated metrics across all files for one "Encoder" set
-            Dictionary<string, List<(string Param, double Compression)>> avgCompressionForAllFilesByEncoder = [];
             Dictionary<string, List<(string Param, double Speed)>> avgSpeedForAllFilesByEncoder = [];
+            Dictionary<string, List<(string Param, double Compression)>> avgCompressionForAllFilesByEncoder = [];
+            Dictionary<string, List<(string Param, double AudioCompression)>> avgAudioCompressionForAllFilesByEncoder = [];
 
             foreach (var group in grouped)
             {
@@ -5088,13 +5091,14 @@ namespace FLAC_Benchmark_H
                 compValue.Params.Add(group.Parameters);
                 compValue.Compressions.Add(compression);
 
-                // Aggregated compression series for all files by Encoder
-                if (!avgCompressionForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Compression)>? compList))
+                // Audio Stream Compression by Parameters series
+                if (!audioCompressionByParamsSeries.TryGetValue(seriesKey, out (List<string> Params, List<double> AudioCompressions) audioCompValue))
                 {
-                    compList = [];
-                    avgCompressionForAllFilesByEncoder[encoderName] = compList;
+                    audioCompValue = (new List<string>(), new List<double>());
+                    audioCompressionByParamsSeries[seriesKey] = audioCompValue;
                 }
-                compList.Add((group.Parameters, compression));
+                audioCompValue.Params.Add(group.Parameters);
+                audioCompValue.AudioCompressions.Add(group.OutputCompressionAudio);
 
                 // Aggregated speed series for all files by Encoder
                 if (!avgSpeedForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Speed)>? speedList))
@@ -5103,6 +5107,22 @@ namespace FLAC_Benchmark_H
                     avgSpeedForAllFilesByEncoder[encoderName] = speedList;
                 }
                 speedList.Add((group.Parameters, group.AvgSpeed));
+                
+                // Aggregated compression series for all files by Encoder
+                if (!avgCompressionForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double Compression)>? compList))
+                {
+                    compList = [];
+                    avgCompressionForAllFilesByEncoder[encoderName] = compList;
+                }
+                compList.Add((group.Parameters, compression));
+
+                // Aggregated audio compression series for all files by Encoder
+                if (!avgAudioCompressionForAllFilesByEncoder.TryGetValue(encoderName, out List<(string Param, double AudioCompression)>? audioCompList))
+                {
+                    audioCompList = [];
+                    avgAudioCompressionForAllFilesByEncoder[encoderName] = audioCompList;
+                }
+                audioCompList.Add((group.Parameters, group.OutputCompressionAudio));
             }
 
             List<LogEntry> resultEntries = [];
@@ -5426,6 +5446,10 @@ namespace FLAC_Benchmark_H
                 RenderScalingGraphCompressionByParameters(
                     compressionByParamsSeries,
                     avgCompressionForAllFilesByEncoder);
+
+                RenderScalingGraphAudioCompressionByParameters(
+                    audioCompressionByParamsSeries,
+                    avgAudioCompressionForAllFilesByEncoder);
 
                 UpdateSeriesVisibility();
 
@@ -6424,7 +6448,7 @@ namespace FLAC_Benchmark_H
                     }
 
                     plt.XTicks(xPositions, xLabels);
-                    plt.XLabel("Parameters");
+                    // plt.XLabel("Parameters");
                     plt.YLabel("Compression (%)");
                     plt.Title("Compression by Parameters");
                     _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
@@ -6436,6 +6460,208 @@ namespace FLAC_Benchmark_H
 
             plotScalingMultiPlotCompressionByParameters.Configuration.AddLinkedControl(
                 plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
+        }
+
+        private void RenderScalingGraphAudioCompressionByParameters(
+            Dictionary<string, (List<string> Params, List<double> AudioCompressions)> series,
+            Dictionary<string, List<(string Param, double AudioCompression)>>? aggregatedSeries = null)
+        {
+            List<string> allParams = [];
+            double[] xPositions = [];
+            string[] xLabels = [];
+
+            if (series.Count > 0)
+            {
+                allParams = [.. series.Values
+            .Where(v => v.Params != null)
+            .SelectMany(v => v.Params)
+            .Select(p => string.IsNullOrEmpty(p) ? "[default]" : p)
+            .Distinct()
+            .OrderBy(p => p, new NaturalStringComparer())];
+
+                xPositions = [.. Enumerable.Range(0, allParams.Count).Select(i => (double)i)];
+
+                xLabels = [.. allParams.Select(param => checkBoxWrapLongPlotLabels.Checked &&
+                int.TryParse(textBoxWrapLongPlotLabels.Text, out int maxLength) &&
+                maxLength > 0
+                ? param.Length > maxLength ? WrapTextLabelsOnPlots(param, maxLength) : param
+                : param)];
+            }
+
+            //Single plot
+            {
+                Plot plt = plotScalingPlotAudioCompressionByParameters.Plot;
+                plt.Clear();
+                allScatterSeriesAudioCompressionByParameters.Clear();
+
+                if (series.Count == 0)
+                {
+                    plt.Title("No audio compression data found");
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> AudioCompressions)> kvp in series)
+                    {
+                        string label = kvp.Key;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> audioCompressions = kvp.Value.AudioCompressions;
+
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(audioCompressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
+
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
+                        allIndividualSeries.Add(scatter);
+                        allScatterSeriesAudioCompressionByParameters.Add((scatter, label));
+                    }
+
+                    if (aggregatedSeries != null)
+                    {
+                        foreach (KeyValuePair<string, List<(string Param, double AudioCompression)>> kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg Audio Compression: {kvp.Key}";
+                            List<(string Param, double AudioCompression)> dataPoints = kvp.Value;
+
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.AudioCompression });
+
+                            var groupedByParam = normalizedData
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgAudioCompression = g.Average(x => x.AudioCompression)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgAudioCompression)];
+
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            allAggregatedSeries.Add(scatter);
+                            allScatterSeriesAudioCompressionByParameters.Add((scatter, label));
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Audio Stream Compr. (%)");
+                    plt.Title("Audio Stream Compression by Parameters");
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.AxisAuto();
+
+                    // Add line 100% (PCM uncompressed)
+                    //double[] hundredLineX = [xPositions.FirstOrDefault(), xPositions.LastOrDefault()];
+                    //double[] hundredLineY = [100, 100];
+                    //plt.AddScatter(hundredLineX, hundredLineY,
+                    //    label: "PCM (100% uncompressed)",
+                    //    color: Color.Gray,
+                    //    lineStyle: ScottPlot.LineStyle.Dash,
+                    //    markerSize: 0);
+                }
+            }
+
+            //Multi plot
+            {
+                Plot plt = plotScalingMultiPlotAudioCompressionByParameters.Plot;
+                plt.Clear();
+
+                if (series.Count == 0)
+                {
+                    plt.Title("No audio compression data found");
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, (List<string> Params, List<double> AudioCompressions)> kvp in series)
+                    {
+                        string label = kvp.Key;
+                        List<string> paramsList = kvp.Value.Params;
+                        List<double> audioCompressions = kvp.Value.AudioCompressions;
+
+                        IEnumerable<string> normalizedParams = paramsList.Select(p => string.IsNullOrEmpty(p) ? "[default]" : p);
+                        var points = normalizedParams.Select(p => (double)allParams.IndexOf(p))
+                                                  .Zip(audioCompressions, (x, y) => new { x, y })
+                                                  .OrderBy(p => p.x)
+                                                  .ToArray();
+                        double[] xs = [.. points.Select(p => p.x)];
+                        double[] ys = [.. points.Select(p => p.y)];
+
+                        ScatterPlot scatter = plt.AddScatter(xs, ys, label: label);
+                        allIndividualSeries.Add(scatter);
+                        allScatterSeriesAudioCompressionByParameters.Add((scatter, label));
+                    }
+
+                    if (aggregatedSeries != null)
+                    {
+                        foreach (KeyValuePair<string, List<(string Param, double AudioCompression)>> kvp in aggregatedSeries)
+                        {
+                            string label = $"Avg Audio Compression: {kvp.Key}";
+                            List<(string Param, double AudioCompression)> dataPoints = kvp.Value;
+
+                            var normalizedData = dataPoints.Select(dp =>
+                                new { Param = string.IsNullOrEmpty(dp.Param) ? "[default]" : dp.Param, dp.AudioCompression });
+
+                            var groupedByParam = normalizedData
+                                .GroupBy(x => x.Param)
+                                .Select(g => new
+                                {
+                                    Param = g.Key,
+                                    AvgAudioCompression = g.Average(x => x.AudioCompression)
+                                })
+                                .Where(x => allParams.Contains(x.Param))
+                                .OrderBy(x => x.Param, new NaturalStringComparer())
+                                .ToList();
+
+                            if (groupedByParam.Count == 0)
+                            {
+                                continue;
+                            }
+
+                            double[] xs = [.. groupedByParam.Select(x => (double)allParams.IndexOf(x.Param))];
+                            double[] ys = [.. groupedByParam.Select(x => x.AvgAudioCompression)];
+
+                            ScatterPlot scatter = plt.AddScatter(xs, ys, label: label, lineWidth: 3);
+                            allAggregatedSeries.Add(scatter);
+                            allScatterSeriesAudioCompressionByParameters.Add((scatter, label));
+                        }
+                    }
+
+                    plt.XTicks(xPositions, xLabels);
+                    plt.XLabel("Parameters");
+                    plt.YLabel("Audio Stream Compr. (%)");
+                    plt.Title("Audio Stream Compression by Parameters");
+                    _ = plt.Legend(true, location: ScottPlot.Alignment.UpperRight);
+                    plt.AxisAuto();
+
+                    // Add line 100% (PCM uncompressed)
+                    //double[] hundredLineX = [xPositions.FirstOrDefault(), xPositions.LastOrDefault()];
+                    //double[] hundredLineY = [100, 100];
+                    //plt.AddScatter(hundredLineX, hundredLineY,
+                    //    label: "PCM (100% uncompressed)",
+                    //    color: Color.Gray,
+                    //    lineStyle: ScottPlot.LineStyle.Dash,
+                    //    markerSize: 0);
+                }
+            }
+
+            allParamsAudioCompressionByParameters = allParams;
+
+            // Link graphs
+            plotScalingMultiPlotAudioCompressionByParameters.Configuration.AddLinkedControl(
+                plotScalingMultiPlotSpeedByParameters, horizontal: true, vertical: false);
+            plotScalingMultiPlotAudioCompressionByParameters.Configuration.AddLinkedControl(
+                plotScalingMultiPlotCompressionByParameters, horizontal: true, vertical: false);
         }
 
         private static string WrapTextLabelsOnPlots(string text, int maxLineLength)
@@ -6805,6 +7031,78 @@ namespace FLAC_Benchmark_H
                 plotScalingMultiPlotCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotCompressionByParameters);
                 dynamicTooltipMultiplotCompressionByParameters = null;
                 plotScalingMultiPlotCompressionByParameters.Refresh();
+            }
+        }
+        private void PlotScalingPlotAudioCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            if (sender is not ScottPlot.FormsPlot formsPlot || !checkBoxShowTooltipsOnPlots.Checked)
+            {
+                return;
+            }
+
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesAudioCompressionByParameters, formsPlot);
+
+            if (found && dynamicTooltipAudioCompressionByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsAudioCompressionByParameters.Count
+                    ? allParamsAudioCompressionByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nAudio Compression: {y:F3}%";
+                dynamicTooltipAudioCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipAudioCompressionByParameters != null)
+            {
+                plt.Remove(dynamicTooltipAudioCompressionByParameters);
+                dynamicTooltipAudioCompressionByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingPlotAudioCompressionByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipAudioCompressionByParameters != null)
+            {
+                plotScalingPlotAudioCompressionByParameters.Plot.Remove(dynamicTooltipAudioCompressionByParameters);
+                dynamicTooltipAudioCompressionByParameters = null;
+                plotScalingPlotAudioCompressionByParameters.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotAudioCompressionByParameters_MouseMove(object? sender, MouseEventArgs e)
+        {
+            if (sender is not ScottPlot.FormsPlot formsPlot || !checkBoxShowTooltipsOnPlots.Checked)
+            {
+                return;
+            }
+
+            Plot plt = formsPlot.Plot;
+            (string? label, double x, double y, bool found) = FindNearestPoint(allScatterSeriesAudioCompressionByParameters, formsPlot);
+
+            if (found && dynamicTooltipMultiplotAudioCompressionByParameters == null)
+            {
+                int paramIndex = (int)Math.Round(x);
+                string paramStr = paramIndex >= 0 && paramIndex < allParamsAudioCompressionByParameters.Count
+                    ? allParamsAudioCompressionByParameters[paramIndex]
+                    : "N/A";
+                string tooltipText = $"{label}\nParameters: {paramStr}\nAudio Compression: {y:F3}%";
+                dynamicTooltipMultiplotAudioCompressionByParameters = plt.AddTooltip(tooltipText, x, y);
+                formsPlot.Refresh();
+            }
+            else if (!found && dynamicTooltipMultiplotAudioCompressionByParameters != null)
+            {
+                plt.Remove(dynamicTooltipMultiplotAudioCompressionByParameters);
+                dynamicTooltipMultiplotAudioCompressionByParameters = null;
+                formsPlot.Refresh();
+            }
+        }
+        private void PlotScalingMultiPlotAudioCompressionByParameters_MouseLeave(object? sender, EventArgs e)
+        {
+            if (dynamicTooltipMultiplotAudioCompressionByParameters != null)
+            {
+                plotScalingMultiPlotAudioCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotAudioCompressionByParameters);
+                dynamicTooltipMultiplotAudioCompressionByParameters = null;
+                plotScalingMultiPlotAudioCompressionByParameters.Refresh();
             }
         }
 
@@ -7262,6 +7560,7 @@ namespace FLAC_Benchmark_H
             allScatterSeriesCPUClockByThreads.Clear();
             allScatterSeriesSpeedByParameters.Clear();
             allScatterSeriesCompressionByParameters.Clear();
+            allScatterSeriesAudioCompressionByParameters.Clear();
 
             dynamicTooltipSpeedByThreads = null;
             dynamicTooltipMultiplotSpeedByThreads = null;
@@ -7273,12 +7572,15 @@ namespace FLAC_Benchmark_H
             dynamicTooltipMultiplotSpeedByParameters = null;
             dynamicTooltipCompressionByParameters = null;
             dynamicTooltipMultiplotCompressionByParameters = null;
+            dynamicTooltipAudioCompressionByParameters = null;
+            dynamicTooltipMultiplotAudioCompressionByParameters = null;
 
             idealCPULoadLineSingle = null;
             idealCPULoadLineMultiplot = null;
 
             allParamsSpeedByParameters.Clear();
             allParamsCompressionByParameters.Clear();
+            allParamsAudioCompressionByParameters.Clear();
 
             plotScalingPlotSpeedByThreads.Plot.Clear();
             plotScalingMultiPlotSpeedByThreads.Plot.Clear();
@@ -7290,6 +7592,8 @@ namespace FLAC_Benchmark_H
             plotScalingMultiPlotSpeedByParameters.Plot.Clear();
             plotScalingPlotCompressionByParameters.Plot.Clear();
             plotScalingMultiPlotCompressionByParameters.Plot.Clear();
+            plotScalingPlotAudioCompressionByParameters.Plot.Clear();
+            plotScalingMultiPlotAudioCompressionByParameters.Plot.Clear();
 
             plotScalingPlotSpeedByThreads.Refresh();
             plotScalingMultiPlotSpeedByThreads.Refresh();
@@ -7301,6 +7605,8 @@ namespace FLAC_Benchmark_H
             plotScalingMultiPlotSpeedByParameters.Refresh();
             plotScalingPlotCompressionByParameters.Refresh();
             plotScalingMultiPlotCompressionByParameters.Refresh();
+            plotScalingPlotAudioCompressionByParameters.Refresh();
+            plotScalingMultiPlotAudioCompressionByParameters.Refresh();
         }
 
         // Key actions
@@ -10249,6 +10555,11 @@ namespace FLAC_Benchmark_H
         private ScottPlot.Plottable.Tooltip? dynamicTooltipCompressionByParameters;
         private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotCompressionByParameters;
 
+        private List<string> allParamsAudioCompressionByParameters = [];
+        private readonly List<(ScottPlot.Plottable.ScatterPlot Series, string Label)> allScatterSeriesAudioCompressionByParameters = [];
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipAudioCompressionByParameters;
+        private ScottPlot.Plottable.Tooltip? dynamicTooltipMultiplotAudioCompressionByParameters;
+
         private void CheckBoxShowIndividualFilesPlots_CheckedChanged(object? sender, EventArgs e)
         {
             UpdateSeriesVisibility();
@@ -10285,6 +10596,10 @@ namespace FLAC_Benchmark_H
                 plotScalingPlotCompressionByParameters.MouseLeave += PlotScalingPlotCompressionByParameters_MouseLeave;
                 plotScalingMultiPlotCompressionByParameters.MouseMove += PlotScalingMultiPlotCompressionByParameters_MouseMove;
                 plotScalingMultiPlotCompressionByParameters.MouseLeave += PlotScalingMultiPlotCompressionByParameters_MouseLeave;
+                plotScalingPlotAudioCompressionByParameters.MouseMove += PlotScalingPlotAudioCompressionByParameters_MouseMove;
+                plotScalingPlotAudioCompressionByParameters.MouseLeave += PlotScalingPlotAudioCompressionByParameters_MouseLeave;
+                plotScalingMultiPlotAudioCompressionByParameters.MouseMove += PlotScalingMultiPlotAudioCompressionByParameters_MouseMove;
+                plotScalingMultiPlotAudioCompressionByParameters.MouseLeave += PlotScalingMultiPlotAudioCompressionByParameters_MouseLeave;
             }
             else
             {
@@ -10308,6 +10623,10 @@ namespace FLAC_Benchmark_H
                 plotScalingPlotCompressionByParameters.MouseLeave -= PlotScalingPlotCompressionByParameters_MouseLeave;
                 plotScalingMultiPlotCompressionByParameters.MouseMove -= PlotScalingMultiPlotCompressionByParameters_MouseMove;
                 plotScalingMultiPlotCompressionByParameters.MouseLeave -= PlotScalingMultiPlotCompressionByParameters_MouseLeave;
+                plotScalingPlotAudioCompressionByParameters.MouseMove -= PlotScalingPlotAudioCompressionByParameters_MouseMove;
+                plotScalingPlotAudioCompressionByParameters.MouseLeave -= PlotScalingPlotAudioCompressionByParameters_MouseLeave;
+                plotScalingMultiPlotAudioCompressionByParameters.MouseMove -= PlotScalingMultiPlotAudioCompressionByParameters_MouseMove;
+                plotScalingMultiPlotAudioCompressionByParameters.MouseLeave -= PlotScalingMultiPlotAudioCompressionByParameters_MouseLeave;
 
                 List<FormsPlot> plotsToRefresh = [];
 
@@ -10325,6 +10644,9 @@ namespace FLAC_Benchmark_H
 
                 if (dynamicTooltipCompressionByParameters != null) { plotScalingPlotCompressionByParameters.Plot.Remove(dynamicTooltipCompressionByParameters); dynamicTooltipCompressionByParameters = null; plotsToRefresh.Add(plotScalingPlotCompressionByParameters); }
                 if (dynamicTooltipMultiplotCompressionByParameters != null) { plotScalingMultiPlotCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotCompressionByParameters); dynamicTooltipMultiplotCompressionByParameters = null; plotsToRefresh.Add(plotScalingMultiPlotCompressionByParameters); }
+
+                if (dynamicTooltipAudioCompressionByParameters != null) { plotScalingPlotAudioCompressionByParameters.Plot.Remove(dynamicTooltipAudioCompressionByParameters); dynamicTooltipAudioCompressionByParameters = null; plotsToRefresh.Add(plotScalingPlotAudioCompressionByParameters); }
+                if (dynamicTooltipMultiplotAudioCompressionByParameters != null) { plotScalingMultiPlotAudioCompressionByParameters.Plot.Remove(dynamicTooltipMultiplotAudioCompressionByParameters); dynamicTooltipMultiplotAudioCompressionByParameters = null; plotsToRefresh.Add(plotScalingMultiPlotAudioCompressionByParameters); }
 
                 foreach (FormsPlot plot in plotsToRefresh)
                 {
@@ -10352,11 +10674,13 @@ namespace FLAC_Benchmark_H
             plotScalingPlotCPUClockByThreads.Refresh();
             plotScalingPlotSpeedByParameters.Refresh();
             plotScalingPlotCompressionByParameters.Refresh();
+            plotScalingPlotAudioCompressionByParameters.Refresh();
             plotScalingMultiPlotSpeedByThreads.Refresh();
             plotScalingMultiPlotCPULoadByThreads.Refresh();
             plotScalingMultiPlotCPUClockByThreads.Refresh();
             plotScalingMultiPlotSpeedByParameters.Refresh();
             plotScalingMultiPlotCompressionByParameters.Refresh();
+            plotScalingMultiPlotAudioCompressionByParameters.Refresh();
         }
         private void CheckBoxDrawMultiplots_CheckedChanged(object? sender, EventArgs e)
         {
@@ -10376,11 +10700,12 @@ namespace FLAC_Benchmark_H
                 }
 
                 tabControlScalingPlots.SelectedTab = previouslyActiveTab == tabPageSpeedByThreads ||
-                    previouslyActiveTab == tabPageCPULoadByThreads ||
-                    previouslyActiveTab == tabPageCPUClockByThreads
+                                                     previouslyActiveTab == tabPageCPULoadByThreads ||
+                                                     previouslyActiveTab == tabPageCPUClockByThreads
                     ? tabPageMultiplotByThreads
                     : previouslyActiveTab == tabPageSpeedByParameters ||
-                         previouslyActiveTab == tabPageCompressionByParameters
+                      previouslyActiveTab == tabPageCompressionByParameters ||
+                      previouslyActiveTab == tabPageAudioCompressionByParameters
                         ? tabPageMultiplotByParameters
                         : tabPageMultiplotByThreads;
 
@@ -10389,6 +10714,7 @@ namespace FLAC_Benchmark_H
                 tabControlScalingPlots.TabPages.Remove(tabPageCPUClockByThreads);
                 tabControlScalingPlots.TabPages.Remove(tabPageSpeedByParameters);
                 tabControlScalingPlots.TabPages.Remove(tabPageCompressionByParameters);
+                tabControlScalingPlots.TabPages.Remove(tabPageAudioCompressionByParameters);
             }
             else
             {
@@ -10417,9 +10743,16 @@ namespace FLAC_Benchmark_H
                     tabControlScalingPlots.TabPages.Add(tabPageCompressionByParameters);
                 }
 
+                if (!tabControlScalingPlots.TabPages.Contains(tabPageAudioCompressionByParameters))
+                {
+                    tabControlScalingPlots.TabPages.Add(tabPageAudioCompressionByParameters);
+                }
+
                 tabControlScalingPlots.SelectedTab = previouslyActiveTab == tabPageMultiplotByThreads
                     ? tabPageSpeedByThreads
-                    : previouslyActiveTab == tabPageMultiplotByParameters ? tabPageSpeedByParameters : tabPageSpeedByThreads;
+                    : previouslyActiveTab == tabPageMultiplotByParameters
+                        ? tabPageSpeedByParameters
+                        : tabPageSpeedByThreads;
 
                 tabControlScalingPlots.TabPages.Remove(tabPageMultiplotByThreads);
                 tabControlScalingPlots.TabPages.Remove(tabPageMultiplotByParameters);
